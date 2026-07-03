@@ -24,6 +24,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { LeadsModule } from './leads/leads.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { LeadsModule } from './leads/leads.module';
     CategoriesModule, 
      PackagesModule, PaymentModule,
      PackagesModule, BookingsModule, GuestsModule, TimelineModule, ChecklistModule, NotificationsModule, AdminModule,
-     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule,
+     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
