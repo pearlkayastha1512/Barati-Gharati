@@ -1,8 +1,46 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { CalendarDays } from "lucide-react";
 
+import { useBookingStore } from "@/store/bookingStore";
+
+
+
 export default function WeddingCountdown() {
+  const bookings = useBookingStore(
+  (state) => state.bookings
+);
+
+const nextBooking = useMemo(() => {
+  const today = new Date();
+
+  return bookings
+    .filter(
+      (booking) =>
+        booking.bookingStatus !== "cancelled" &&
+        new Date(booking.eventDate) >= today
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.eventDate).getTime() -
+        new Date(b.eventDate).getTime()
+    )[0];
+}, [bookings]);
+
+const daysRemaining = useMemo(() => {
+  if (!nextBooking) return 0;
+
+  const today = new Date();
+
+  const wedding = new Date(nextBooking.eventDate);
+
+  return Math.ceil(
+    (wedding.getTime() - today.getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
+}, [nextBooking]);
   return (
     <div className="rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 p-8 text-white shadow-xl">
 
@@ -17,11 +55,13 @@ export default function WeddingCountdown() {
       </div>
 
       <h1 className="mt-10 text-7xl font-bold">
-        120
+        {daysRemaining}
       </h1>
 
       <p className="text-3xl">
-        Days Remaining
+       {nextBooking
+  ? "Days Remaining"
+  : "No Upcoming Wedding"}
       </p>
 
       <div className="mt-12">
@@ -31,7 +71,15 @@ export default function WeddingCountdown() {
         </p>
 
         <h3 className="mt-2 text-4xl font-semibold">
-          12 February 2027
+          {nextBooking
+  ? new Date(
+      nextBooking.eventDate
+    ).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+  : "--"}
         </h3>
 
       </div>

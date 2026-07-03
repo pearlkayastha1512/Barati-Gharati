@@ -21,4 +21,8 @@ export interface PlannerTask {
   priority: TaskPriority;
 
   status: TaskStatus;
+
+  createdAt: string;
+
+  updatedAt: string;
 }

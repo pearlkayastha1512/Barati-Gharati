@@ -19,6 +19,9 @@ import {
   Building2,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
+
 const menuItems = [
   {
     title: "Dashboard",
@@ -79,6 +82,17 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const router = useRouter();
+
+const { logout } = useAuthStore();
+
+
+const handleLogout = () => {
+  logout();
+
+  router.push("/");
+};
 
   return (
     <aside className="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white lg:flex">
@@ -199,13 +213,14 @@ export default function Sidebar() {
 
           </div>
 
-          <button className="mt-5 flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-medium text-red-500 transition hover:bg-red-50">
+          <button
+  onClick={handleLogout}
+  className="mt-5 flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-medium text-red-500 transition hover:bg-red-50"
+>
+  <LogOut size={20} />
 
-            <LogOut size={20} />
-
-            Logout
-
-          </button>
+  Logout
+</button>
 
         </div>
 

@@ -70,8 +70,10 @@ export default function QuickActionCard({
 
         {/* Footer */}
 
-        <div className="mt-6 flex items-center gap-2 font-semibold text-rose-500">
 
+           
+        <div className="mt-6 flex items-center gap-2 font-semibold text-rose-500">
+           
           Open
 
           <ArrowRight
@@ -80,6 +82,7 @@ export default function QuickActionCard({
           />
 
         </div>
+       
 
       </Link>
     </motion.div>

@@ -6,10 +6,14 @@ import { AuthService } from './auth.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
+    NotificationsModule,
     PrismaModule,
+     MailModule,
     PassportModule.register({
     defaultStrategy: 'jwt',
   }),

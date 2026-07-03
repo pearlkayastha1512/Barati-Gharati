@@ -27,6 +27,7 @@ import { LeadsModule } from './leads/leads.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { APP_GUARD } from '@nestjs/core';
     CategoriesModule, 
      PackagesModule, PaymentModule,
      PackagesModule, BookingsModule, GuestsModule, TimelineModule, ChecklistModule, NotificationsModule, AdminModule,
-     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule,
+     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule,
   ],
   controllers: [AppController],
   providers: [

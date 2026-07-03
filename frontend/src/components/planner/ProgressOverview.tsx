@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+
 import { motion } from "framer-motion";
+
 import {
   CheckCircle2,
   Clock3,
@@ -8,45 +11,85 @@ import {
   Target,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Tasks",
-    value: "24",
-    subtitle: "Wedding checklist",
-    icon: ListTodo,
-  },
-  {
-    title: "Completed",
-    value: "08",
-    subtitle: "Finished tasks",
-    icon: CheckCircle2,
-  },
-  {
-    title: "Pending",
-    value: "16",
-    subtitle: "Still remaining",
-    icon: Clock3,
-  },
-  {
-    title: "Progress",
-    value: "33%",
-    subtitle: "Overall completion",
-    icon: Target,
-  },
-];
+import { usePlannerStore } from "@/store/plannerStore";
 
 export default function ProgressOverview() {
+  const tasks = usePlannerStore(
+    (state) => state.tasks
+  );
+
+  const loadTasks = usePlannerStore(
+    (state) => state.loadTasks
+  );
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
+  const stats = useMemo(() => {
+    const totalTasks = tasks.length;
+
+    const completedTasks = tasks.filter(
+      (task) =>
+        task.status === "completed"
+    ).length;
+
+    const pendingTasks =
+      totalTasks - completedTasks;
+
+    const progress =
+      totalTasks === 0
+        ? 0
+        : Math.round(
+            (completedTasks /
+              totalTasks) *
+              100
+          );
+
+    return [
+      {
+        title: "Total Tasks",
+        value: totalTasks.toString(),
+        subtitle: "Wedding checklist",
+        icon: ListTodo,
+      },
+      {
+        title: "Completed",
+        value: completedTasks.toString(),
+        subtitle: "Finished tasks",
+        icon: CheckCircle2,
+      },
+      {
+        title: "Pending",
+        value: pendingTasks.toString(),
+        subtitle: "Still remaining",
+        icon: Clock3,
+      },
+      {
+        title: "Progress",
+        value: `${progress}%`,
+        subtitle: "Overall completion",
+        icon: Target,
+      },
+    ];
+  }, [tasks]);
+
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-
       {stats.map((item, index) => {
         const Icon = item.icon;
 
         return (
           <motion.div
             key={item.title}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{
+              opacity: 0,
+              y: 15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
             transition={{
               delay: index * 0.08,
             }}
@@ -95,7 +138,6 @@ export default function ProgressOverview() {
           </motion.div>
         );
       })}
-
     </section>
   );
 }

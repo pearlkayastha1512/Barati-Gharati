@@ -33,13 +33,15 @@ model User {
   vendor        Vendor?
   bookings      Booking[]
   reviews       Review[]
-  budgets       Budget[]
+  budget        Budget[]
   timelines     Timeline[]
   checklists    Checklist[]
   notifications Notification[]
   guests        Guest[]
   chatMessages  ChatMessage[]
   leads         Lead[]
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Vendor {
@@ -149,10 +151,10 @@ model Booking {
   package   Package @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   eventDate          DateTime
-  status             BookingStatus @default(PENDING)
-  totalAmount        Decimal       @db.Decimal(10, 2)
-  notes              String?
-  cancellationReason String?
+  status              BookingStatus @default(PENDING)
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  notes               String?
+  cancellationReason  String?
 
   paymentStatus PaymentStatus @default(PENDING)
 
@@ -348,4 +350,26 @@ model SiteContent {
   title     String
   content   String   @db.Text
   updatedAt DateTime @updatedAt
+}
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
 }

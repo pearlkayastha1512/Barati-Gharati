@@ -5,16 +5,33 @@ import {
   Circle,
 } from "lucide-react";
 
-const checklist = [
-  { title: "Venue Booked", completed: true },
-  { title: "Photographer", completed: true },
-  { title: "Decorator", completed: false },
-  { title: "Makeup Artist", completed: false },
-  { title: "Catering", completed: false },
-  { title: "DJ & Entertainment", completed: false },
+import { useMemo } from "react";
+import { useBookingStore } from "@/store/bookingStore";
+export default function WeddingProgress() {
+
+  const bookings = useBookingStore(
+  (state) => state.bookings
+);
+
+const requiredCategories = [
+  "Venue",
+  "Photographer",
+  "Decorator",
+  "Makeup",
+  "Caterer",
+  "DJ",
 ];
 
-export default function WeddingProgress() {
+const checklist = useMemo(() => {
+  return requiredCategories.map((category) => ({
+    title: category,
+    completed: bookings.some(
+      (booking) =>
+        booking.category === category &&
+        booking.bookingStatus !== "cancelled"
+    ),
+  }));
+}, [bookings]);
   const completed = checklist.filter(
     (item) => item.completed
   ).length;

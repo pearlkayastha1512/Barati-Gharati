@@ -5,23 +5,25 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ChatbotService } from './chatbot.service';
-import { ApiBearerAuth } from '@nestjs/swagger'; 
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SendMessageDto } from './dto/send-message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
+@ApiTags('Chatbot')
 @UseGuards(JwtAuthGuard)
 @Controller('chatbot')
-@ApiBearerAuth() 
+@ApiBearerAuth()
 export class ChatbotController {
   constructor(private chatbotService: ChatbotService) {}
 
   @Post('message')
   sendMessage(
-    @CurrentUser() user: { sub: string; role: string },
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('role') role: string,
     @Body() dto: SendMessageDto,
   ) {
-    return this.chatbotService.sendMessage(user.sub, user.role, dto.message);
+    return this.chatbotService.sendMessage(userId, role, dto.message);
   }
 
   @Post('voice-message')
@@ -32,15 +34,21 @@ export class ChatbotController {
     }),
   )
   sendVoiceMessage(
-    @CurrentUser() user: { sub: string; role: string },
-    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('role') role: string,
+    @UploadedFile() file: any,
   ) {
     if (!file) throw new BadRequestException('No audio file uploaded');
-    return this.chatbotService.transcribeAndRespond(user.sub, user.role, file.buffer, file.mimetype);
+    return this.chatbotService.transcribeAndRespond(
+      userId,
+      role,
+      file.buffer,
+      file.mimetype,
+    );
   }
 
   @Get('history')
-  getHistory(@CurrentUser() user: { sub: string }) {
-    return this.chatbotService.getHistory(user.sub);
+  getHistory(@CurrentUser('sub') userId: string) {
+    return this.chatbotService.getHistory(userId);
   }
 }

@@ -1,7 +1,14 @@
+
+"use client";
 import Link from "next/link";
 import VendorFilters from "./VendorFilters";
 import VendorCard from "./VendorCard";
 import { vendors } from "./vendor-data";
+
+
+
+
+import { useMemo, useState } from "react";
 
 interface FeaturedVendorsProps {
   showAll?: boolean;
@@ -10,7 +17,23 @@ interface FeaturedVendorsProps {
 export default function FeaturedVendors({
   showAll = false,
 }: FeaturedVendorsProps) {
-  const displayedVendors = showAll ? vendors : vendors.slice(0, 4);
+  const [activeCategory, setActiveCategory] =
+  useState("All");
+
+const filteredVendors = useMemo(() => {
+  if (activeCategory === "All") {
+    return vendors;
+  }
+
+  return vendors.filter(
+    (vendor) =>
+      vendor.category === activeCategory
+  );
+}, [activeCategory]);
+
+const displayedVendors = showAll
+  ? filteredVendors
+  : filteredVendors.slice(0, 4);
 
   return (
     <section
@@ -35,7 +58,12 @@ export default function FeaturedVendors({
         </div>
 
         {/* Filters */}
-        <VendorFilters />
+       <VendorFilters
+  activeCategory={activeCategory}
+  onCategoryChange={
+    setActiveCategory
+  }
+/>
 
         {/* Vendors Grid */}
         <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">

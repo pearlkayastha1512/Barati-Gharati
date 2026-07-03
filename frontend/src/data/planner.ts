@@ -1,52 +1,52 @@
-import { PlannerTask } from "@/types/planner";
+// import { PlannerTask } from "@/types/planner";
 
-export const plannerTasks: PlannerTask[] = [
-  {
-    id: "TASK001",
+// export const plannerTasks: PlannerTask[] = [
+//   {
+//     id: "TASK001",
 
-    customerId: "CUS001",
+//     customerId: "CUS001",
 
-    title: "Book Wedding Photographer",
+//     title: "Book Wedding Photographer",
 
-    description: "Finalize photography vendor",
+//     description: "Finalize photography vendor",
 
-    dueDate: "2026-09-10",
+//     dueDate: "2026-09-10",
 
-    priority: "high",
+//     priority: "high",
 
-    status: "pending",
-  },
+//     status: "pending",
+//   },
 
-  {
-    id: "TASK002",
+//   {
+//     id: "TASK002",
 
-    customerId: "CUS001",
+//     customerId: "CUS001",
 
-    title: "Finalize Guest List",
+//     title: "Finalize Guest List",
 
-    description: "Complete guest invitations",
+//     description: "Complete guest invitations",
 
-    dueDate: "2026-09-15",
+//     dueDate: "2026-09-15",
 
-    priority: "medium",
+//     priority: "medium",
 
-    status: "completed",
-  },
+//     status: "completed",
+//   },
 
-  {
-    id: "TASK003",
+//   {
+//     id: "TASK003",
 
-    customerId: "CUS001",
+//     customerId: "CUS001",
 
-    title: "Venue Decoration Meeting",
+//     title: "Venue Decoration Meeting",
 
-    description: "Meet decoration team",
+//     description: "Meet decoration team",
 
-    dueDate: "2026-09-20",
+//     dueDate: "2026-09-20",
 
-    priority: "high",
+//     priority: "high",
 
-    status: "pending",
-  },
-];
+//     status: "pending",
+//   },
+// ];
 

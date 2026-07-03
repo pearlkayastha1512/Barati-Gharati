@@ -11,7 +11,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-export default function VendorInformation() {
+import { Booking } from "@/types/booking";
+
+interface VendorInformationProps {
+  booking: Booking;
+}
+
+export default function VendorInformation({
+  booking,
+}: VendorInformationProps) {
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
 
@@ -35,7 +43,7 @@ export default function VendorInformation() {
 
           <Image
             src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800"
-            alt="Vendor"
+            alt={booking.vendorName}
             fill
             className="object-cover"
           />
@@ -51,11 +59,11 @@ export default function VendorInformation() {
             <div>
 
               <h3 className="text-3xl font-bold text-gray-900">
-                Royal Palace Banquet
+                {booking.vendorName}
               </h3>
 
               <p className="mt-2 text-gray-500">
-                Luxury Wedding Venue
+                {booking.category}
               </p>
 
             </div>
@@ -76,7 +84,7 @@ export default function VendorInformation() {
               />
 
               <span className="text-gray-700">
-                Premium Wedding Venue
+                {booking.packageName}
               </span>
 
             </div>
@@ -88,8 +96,8 @@ export default function VendorInformation() {
                 className="text-indigo-500"
               />
 
-              <span className="text-gray-700">
-                +91 9876543210
+              <span className="text-gray-500">
+                Will be available after confirmation
               </span>
 
             </div>
@@ -101,8 +109,8 @@ export default function VendorInformation() {
                 className="text-indigo-500"
               />
 
-              <span className="text-gray-700">
-                venue@email.com
+              <span className="text-gray-500">
+                Hidden for privacy
               </span>
 
             </div>
@@ -115,7 +123,7 @@ export default function VendorInformation() {
               />
 
               <span className="text-gray-700">
-                Noida, Uttar Pradesh
+                {booking.city}
               </span>
 
             </div>
@@ -128,7 +136,10 @@ export default function VendorInformation() {
               />
 
               <span className="font-semibold text-gray-900">
-                Premium Package • ₹5,00,000
+                ₹
+                {booking.amount.toLocaleString(
+                  "en-IN"
+                )}
               </span>
 
             </div>
@@ -136,7 +147,7 @@ export default function VendorInformation() {
           </div>
 
           <Link
-            href="/vendors/1"
+            href={`/vendors/${booking.vendorId}`}
             className="
               mt-8
               inline-flex

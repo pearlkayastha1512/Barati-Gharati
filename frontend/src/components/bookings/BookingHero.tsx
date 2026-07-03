@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { motion } from "framer-motion";
 import Link from "next/link";
+
 import {
   CalendarCheck,
   Clock3,
@@ -10,7 +13,48 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { useBookingStore } from "@/store/bookingStore";
+
 export default function BookingHero() {
+  const bookings = useBookingStore(
+    (state) => state.bookings
+  );
+
+  const {
+  totalBookings,
+  upcomingBookings,
+  completedBookings,
+  pendingBookings,
+  cancelledBookings,
+} = useMemo(() => {
+  const today = new Date();
+
+  return {
+    totalBookings: bookings.length,
+
+    upcomingBookings: bookings.filter(
+      (booking) =>
+        booking.bookingStatus !== "cancelled" &&
+        new Date(booking.eventDate) >= today
+    ).length,
+
+    completedBookings: bookings.filter(
+      (booking) =>
+        booking.bookingStatus === "completed"
+    ).length,
+
+    pendingBookings: bookings.filter(
+      (booking) =>
+        booking.bookingStatus === "pending"
+    ).length,
+
+    cancelledBookings: bookings.filter(
+      (booking) =>
+        booking.bookingStatus === "cancelled"
+    ).length,
+  };
+}, [bookings]);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -36,19 +80,15 @@ export default function BookingHero() {
       <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-2">
-
         {/* Left */}
 
         <div>
-
           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur">
-
             <Sparkles size={16} />
 
             <span className="text-sm font-medium">
               Booking Management
             </span>
-
           </div>
 
           <h1 className="mt-6 text-5xl font-bold leading-tight">
@@ -64,7 +104,6 @@ export default function BookingHero() {
           </p>
 
           <div className="mt-8 flex gap-4">
-
             <Link
               href="/vendors"
               className="
@@ -84,83 +123,79 @@ export default function BookingHero() {
               Book More Vendors
 
               <ArrowRight size={18} />
-
             </Link>
-
           </div>
-
         </div>
 
         {/* Right */}
 
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+  <div className="flex items-center gap-3">
+    <CalendarCheck size={22} />
 
-          <div className="flex items-center gap-3">
+    <h3 className="text-xl font-semibold">
+      Booking Summary
+    </h3>
+  </div>
 
-            <CalendarCheck size={22} />
+  <div className="mt-8 space-y-5">
 
-            <h3 className="text-xl font-semibold">
-              Booking Summary
-            </h3>
+    <div className="flex items-center justify-between">
+      <span className="flex items-center gap-2 text-indigo-100">
+        <CalendarCheck size={18} />
+        Total Bookings
+      </span>
 
-          </div>
+      <span className="font-semibold">
+        {totalBookings}
+      </span>
+    </div>
 
-          <div className="mt-8 space-y-5">
+    <div className="flex items-center justify-between">
+      <span className="flex items-center gap-2 text-indigo-100">
+        <Clock3 size={18} />
+        Upcoming
+      </span>
 
-            <div className="flex items-center justify-between">
+      <span className="font-semibold">
+        {upcomingBookings}
+      </span>
+    </div>
 
-              <span className="flex items-center gap-2 text-indigo-100">
+    <div className="flex items-center justify-between">
+      <span className="flex items-center gap-2 text-indigo-100">
+        <CheckCircle2 size={18} />
+        Completed
+      </span>
 
-                <CalendarCheck size={18} />
+      <span className="font-semibold">
+        {completedBookings}
+      </span>
+    </div>
 
-                Total Bookings
+    <div className="flex items-center justify-between">
+      <span className="text-indigo-100">
+        Pending
+      </span>
 
-              </span>
+      <span className="font-semibold">
+        {pendingBookings}
+      </span>
+    </div>
 
-              <span className="font-semibold">
-                12
-              </span>
+    <div className="flex items-center justify-between">
+      <span className="text-indigo-100">
+        Cancelled
+      </span>
 
-            </div>
+      <span className="font-semibold">
+        {cancelledBookings}
+      </span>
+    </div>
 
-            <div className="flex items-center justify-between">
-
-              <span className="flex items-center gap-2 text-indigo-100">
-
-                <Clock3 size={18} />
-
-                Upcoming
-
-              </span>
-
-              <span className="font-semibold">
-                8
-              </span>
-
-            </div>
-
-            <div className="flex items-center justify-between">
-
-              <span className="flex items-center gap-2 text-indigo-100">
-
-                <CheckCircle2 size={18} />
-
-                Completed
-
-              </span>
-
-              <span className="font-semibold">
-                4
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
+  </div>
+</div>
       </div>
-
     </motion.section>
   );
 }

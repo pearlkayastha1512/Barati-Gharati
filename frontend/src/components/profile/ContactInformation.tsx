@@ -1,6 +1,17 @@
 "use client";
 
+import { useCustomerProfileStore } from "@/store/customerProfileStore";
+
 export default function ContactInformation() {
+  const profile =
+    useCustomerProfileStore(
+      (state) => state.profile
+    );
+
+  if (!profile) {
+    return null;
+  }
+
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
 
@@ -8,26 +19,38 @@ export default function ContactInformation() {
         Contact Information
       </h2>
 
-      <div className="mt-8 space-y-6 text-rose-500">
+      <div className="mt-8 space-y-6 text-rose-400">
 
         <Info
           label="Address"
-          value="Ghaziabad, Uttar Pradesh"
+          value={
+            profile.address ||
+            "Not Provided"
+          }
         />
 
         <Info
           label="City"
-          value="Ghaziabad"
+          value={
+            profile.city ||
+            "Not Provided"
+          }
         />
 
         <Info
           label="State"
-          value="Uttar Pradesh"
+          value={
+            profile.state ||
+            "Not Provided"
+          }
         />
 
         <Info
           label="Country"
-          value="India"
+          value={
+            profile.country ||
+            "Not Provided"
+          }
         />
 
       </div>
@@ -50,7 +73,7 @@ function Info({
         {label}
       </p>
 
-      <p className="mt-1 font-semibold">
+      <p className="mt-1 font-semibold text-gray-700">
         {value}
       </p>
 

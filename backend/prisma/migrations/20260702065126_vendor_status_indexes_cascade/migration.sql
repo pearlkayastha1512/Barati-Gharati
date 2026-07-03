@@ -53,68 +53,10 @@ ALTER TABLE "Review" ALTER COLUMN "bookingId" SET NOT NULL;
 ALTER TABLE "Vendor" ADD COLUMN     "approvedAt" TIMESTAMP(3),
 ADD COLUMN     "rejectionReason" TEXT;
 
--- CreateIndex
-CREATE INDEX "Booking_userId_idx" ON "Booking"("userId");
 
--- CreateIndex
-CREATE INDEX "Booking_vendorId_idx" ON "Booking"("vendorId");
 
--- CreateIndex
-CREATE INDEX "Booking_packageId_idx" ON "Booking"("packageId");
 
--- CreateIndex
-CREATE INDEX "Booking_status_idx" ON "Booking"("status");
 
--- CreateIndex
-CREATE INDEX "ChatMessage_userId_idx" ON "ChatMessage"("userId");
-
--- CreateIndex
-CREATE INDEX "Checklist_userId_idx" ON "Checklist"("userId");
-
--- CreateIndex
-CREATE INDEX "Expense_budgetId_idx" ON "Expense"("budgetId");
-
--- CreateIndex
-CREATE INDEX "Guest_userId_idx" ON "Guest"("userId");
-
--- CreateIndex
-CREATE INDEX "Lead_vendorId_idx" ON "Lead"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Lead_userId_idx" ON "Lead"("userId");
-
--- CreateIndex
-CREATE INDEX "Lead_status_idx" ON "Lead"("status");
-
--- CreateIndex
-CREATE INDEX "Notification_userId_isRead_idx" ON "Notification"("userId", "isRead");
-
--- CreateIndex
-CREATE INDEX "Package_vendorId_idx" ON "Package"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Package_categoryId_idx" ON "Package"("categoryId");
-
--- CreateIndex
-CREATE INDEX "Review_vendorId_idx" ON "Review"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Review_userId_idx" ON "Review"("userId");
-
--- CreateIndex
-CREATE INDEX "Review_packageId_idx" ON "Review"("packageId");
-
--- CreateIndex
-CREATE INDEX "Timeline_userId_idx" ON "Timeline"("userId");
-
--- CreateIndex
-CREATE INDEX "Vendor_categoryId_idx" ON "Vendor"("categoryId");
-
--- CreateIndex
-CREATE INDEX "Vendor_status_idx" ON "Vendor"("status");
-
--- CreateIndex
-CREATE INDEX "VendorGallery_vendorId_idx" ON "VendorGallery"("vendorId");
 
 -- AddForeignKey
 ALTER TABLE "Package" ADD CONSTRAINT "Package_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
