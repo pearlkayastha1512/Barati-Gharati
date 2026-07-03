@@ -18,6 +18,22 @@ export function getUsers(): StoredUser[] {
   return JSON.parse(users);
 }
 
+export function updateUser(updatedUser: User): void {
+  const users = getUsers();
+
+  const updatedUsers = users.map((user) =>
+    user._id === updatedUser._id
+      ? {
+          ...user,
+          ...updatedUser,
+          updatedAt: new Date().toISOString(),
+        }
+      : user
+  );
+
+  saveUsers(updatedUsers);
+}
+
 export function saveUsers(users: StoredUser[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
 }
@@ -44,6 +60,9 @@ export function registerUser(
     };
   }
 
+
+
+  
   const newUser: StoredUser = {
     _id: crypto.randomUUID(),
     name: data.name,

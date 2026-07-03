@@ -1,5 +1,6 @@
 import { VendorRegistrationForm } from "@/types/vendorRegistration";
 import { User } from "@/types/auth";
+import { VendorSettings } from "@/types/vendorSettings";
 import { getUsers, saveUsers } from "./auth.service";
 
 const STORAGE_KEY = "vendors";
@@ -10,11 +11,17 @@ export type StoredVendor = VendorRegistrationForm & {
   // Links Vendor <-> User
   userId: string;
 
+  // Admin Approval
   isApproved: boolean;
+
+  // Vendor can activate/deactivate business
+  isActive: boolean;
 
   createdAt: string;
 
   updatedAt: string;
+
+  settings: VendorSettings;
 };
 
 export function getVendors(): StoredVendor[] {
@@ -28,13 +35,40 @@ export function getVendors(): StoredVendor[] {
     return [];
   }
 
-  return JSON.parse(vendors);
+  const parsedVendors: StoredVendor[] = JSON.parse(vendors);
+
+  const updatedVendors = parsedVendors.map((vendor) => ({
+    ...vendor,
+
+    // Backward compatibility
+    isActive: vendor.isActive ?? true,
+
+    settings: vendor.settings ?? {
+      business: {
+        acceptNewBookings: true,
+        displayPricingPublicly: false,
+        showAvailabilityCalendar: true,
+      },
+
+      notifications: {
+        newBookingNotifications: true,
+        paymentAlerts: true,
+        customerMessages: true,
+        marketingEmails: false,
+      },
+
+      security: {
+        loginAlerts: true,
+        twoFactorAuthentication: false,
+      },
+    },
+  }));
+
+  // Update old vendors automatically
+  saveVendors(updatedVendors);
+
+  return updatedVendors;
 }
-
-
-
-
-
 
 export function saveVendors(
   vendors: StoredVendor[]
@@ -44,13 +78,6 @@ export function saveVendors(
     JSON.stringify(vendors)
   );
 }
-
-
-
-
-
-
-
 
 export function updateVendor(
   updatedVendor: StoredVendor
@@ -68,7 +95,6 @@ export function updateVendor(
 
   saveVendors(updated);
 }
-
 
 export function getVendorByUserId(
   userId: string
@@ -95,24 +121,6 @@ export function registerVendor(
 } {
   const vendors = getVendors();
   const users = getUsers();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 
   // Global Email Check
   const existingUser = users.find(
@@ -164,13 +172,38 @@ export function registerVendor(
   const newVendor: StoredVendor = {
     ...data,
 
-    // Numeric vendor id for bookings
+    // Numeric Vendor ID
     id: Date.now(),
 
-    // Link vendor to authenticated user
+    // Link Vendor ↔ User
     userId,
 
+    // Approval Status (Admin)
     isApproved: false,
+
+    // Vendor Business Status
+    isActive: true,
+
+    // Vendor Settings
+    settings: {
+      business: {
+        acceptNewBookings: true,
+        displayPricingPublicly: false,
+        showAvailabilityCalendar: true,
+      },
+
+      notifications: {
+        newBookingNotifications: true,
+        paymentAlerts: true,
+        customerMessages: true,
+        marketingEmails: false,
+      },
+
+      security: {
+        loginAlerts: true,
+        twoFactorAuthentication: false,
+      },
+    },
 
     createdAt: new Date().toISOString(),
 
