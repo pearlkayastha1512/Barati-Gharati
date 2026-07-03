@@ -97,6 +97,39 @@ export class MailService {
     message: 'Password reset email sent successfully.',
   };
 }
-   
+async sendBookingInvoice(
+  to: string,
+  name: string,
+  pdfPath: string,
+) {
+  await this.mailerService.sendMail({
+    to,
+    subject: 'Wedding Planner - Booking Invoice',
+
+    html: `
+      <h2>Hello ${name},</h2>
+
+      <p>Your booking has been confirmed successfully.</p>
+
+      <p>Please find your booking invoice attached with this email.</p>
+
+      <br>
+
+      <p>Thank you for choosing Wedding Planner ❤️</p>
+    `,
+
+    attachments: [
+      {
+        filename: 'Booking-Invoice.pdf',
+        path: pdfPath,
+      },
+    ],
+  });
+
+  return {
+    success: true,
+    message: 'Invoice email sent successfully.',
+  };
+}
 
 }
