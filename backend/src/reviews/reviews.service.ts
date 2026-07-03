@@ -8,6 +8,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { VendorReplyDto } from './dto/vendor-reply.dto';
 import { BookingStatus } from '@prisma/client';
+import { VendorStatus } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
@@ -18,7 +19,7 @@ export class ReviewsService {
       where: { id: dto.bookingId },
       include: { review: true },
     });
-
+    
     if (!booking) throw new NotFoundException('Booking not found');
     if (booking.userId !== userId)
       throw new ForbiddenException('This booking does not belong to you');
@@ -28,6 +29,21 @@ export class ReviewsService {
       );
     if (booking.review)
       throw new ForbiddenException('You have already reviewed this booking');
+    const vendor = await this.prisma.vendor.findUnique({
+    where: {
+      id: booking.vendorId,
+    },
+  });
+
+  if (!vendor)
+    throw new NotFoundException(
+      'Vendor not found',
+    );
+
+  if (vendor.status !== VendorStatus.APPROVED)
+    throw new ForbiddenException(
+      'Vendor is not approved by admin',
+    );
 
     return this.prisma.review.create({
       data: {

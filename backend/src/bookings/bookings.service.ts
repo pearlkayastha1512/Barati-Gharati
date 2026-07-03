@@ -9,6 +9,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { Role, BookingStatus } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
+import { VendorStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingsService {
@@ -18,9 +19,23 @@ export class BookingsService {
     const pkg = await this.prisma.package.findUnique({
       where: { id: dto.packageId },
     });
-
+    
     if (!pkg) throw new NotFoundException('Package not found');
+    const vendor = await this.prisma.vendor.findUnique({
+  where: {
+    id: pkg.vendorId,
+  },
+});
 
+if (!vendor) {
+  throw new NotFoundException('Vendor not found');
+}
+
+if (vendor.status !== VendorStatus.APPROVED) {
+  throw new ForbiddenException(
+    'Vendor is not approved by admin',
+  );
+}
     return this.prisma.booking.create({
       data: {
         userId,
@@ -43,7 +58,11 @@ export class BookingsService {
     if (role === Role.VENDOR) {
       const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
       if (!vendor) throw new NotFoundException('Vendor profile not found');
-
+      if (vendor.status !== VendorStatus.APPROVED) {
+  throw new ForbiddenException(
+    'Vendor is not approved by admin',
+  );
+}
       return this.prisma.booking.findMany({
         where: { vendorId: vendor.id },
         include: {
@@ -75,9 +94,14 @@ export class BookingsService {
     });
 
     if (!booking) throw new NotFoundException('Booking not found');
-
+    
     if (role === Role.VENDOR) {
       const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+      if (vendor?.status !== VendorStatus.APPROVED) {
+  throw new ForbiddenException(
+    'Vendor is not approved by admin',
+  );
+}
       if (!vendor || booking.vendorId !== vendor.id)
         throw new ForbiddenException('Access denied');
     } else {
@@ -125,7 +149,7 @@ export class BookingsService {
     throw new ForbiddenException('Access denied');
   }
 
-  if (booking.paymentStatus !== PaymentStatus.PAID) {
+  if (booking.paymentStatus !== PaymentStatus.SUCCESS) {
     throw new BadRequestException(
       'Payment must be completed before confirmation',
     );
@@ -165,15 +189,46 @@ export class BookingsService {
     });
   }
 
-  private async getVendorBooking(id: string, userId: string) {
-    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
-    if (!vendor) throw new NotFoundException('Vendor profile not found');
+  private async getVendorBooking(
+  id: string,
+  userId: string,
+) {
+  const vendor = await this.prisma.vendor.findUnique({
+    where: {
+      userId,
+    },
+  });
 
-    const booking = await this.prisma.booking.findUnique({ where: { id } });
-    if (!booking) throw new NotFoundException('Booking not found');
-    if (booking.vendorId !== vendor.id)
-      throw new ForbiddenException('Access denied');
-
-    return booking;
+  if (!vendor) {
+    throw new NotFoundException(
+      'Vendor profile not found',
+    );
   }
+
+  if (vendor.status !== VendorStatus.APPROVED) {
+    throw new ForbiddenException(
+      'Vendor is not approved by admin',
+    );
+  }
+
+  const booking = await this.prisma.booking.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundException(
+      'Booking not found',
+    );
+  }
+
+  if (booking.vendorId !== vendor.id) {
+    throw new ForbiddenException(
+      'Access denied',
+    );
+  }
+
+  return booking;
+}
 }

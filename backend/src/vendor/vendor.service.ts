@@ -410,7 +410,19 @@ async uploadGallery(
       'Please upload at least one image',
     );
   }
+  const existingImages =
+  await this.prisma.vendorGallery.count({
+    where: {
+      vendorId: vendor.id,
+    },
+  });
 
+// Maximum 10 images allowed
+if (existingImages + files.length > 10) {
+  throw new BadRequestException(
+    `Maximum 10 gallery images are allowed. You already have ${existingImages} image(s).`,
+  );
+}
   const uploadedImages: any[] = [];
 
   for (const file of files) {

@@ -24,6 +24,9 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { LeadsModule } from './leads/leads.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { MailModule } from './mail/mail.module';
 
 @Module({
@@ -31,7 +34,12 @@ import { MailModule } from './mail/mail.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-
+    ThrottlerModule.forRoot([
+  {
+    ttl: 60000,
+    limit: 100,
+  },
+]),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -43,6 +51,13 @@ import { MailModule } from './mail/mail.module';
      PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+  AppService,
+  {
+    provide: APP_GUARD,
+    useClass: ThrottlerGuard,
+  },
+],
+  
 })
 export class AppModule {}
