@@ -11,11 +11,15 @@ import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { PaymentStatus } from '@prisma/client';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
+import { InvoiceService } from '../invoice/invoice.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly invoiceService: InvoiceService,
+    private readonly mailService: MailService,
   ) {}
 
   // ===============================
@@ -78,6 +82,15 @@ export class PaymentService {
       where: {
         id: bookingId,
       },
+      include: {
+    user: true,
+    vendor: true,
+    package: {
+      include: {
+        category: true,
+      },
+    },
+  },
     });
 
     if (!booking) {
@@ -119,19 +132,58 @@ const expectedSignature = crypto
 
     const updatedBooking =
       await this.prisma.booking.update({
-        where: {
-          id: booking.id,
-        },
-        data: {
-          paymentStatus: PaymentStatus.SUCCESS,
-        },
-      });
+  where: {
+    id: booking.id,
+  },
+  data: {
+  paymentStatus: PaymentStatus.SUCCESS,
+  amountPaid: booking.totalAmount,
+  remainingAmount: 0,
+}
+});
 
-    return {
-      success: true,
-      message: 'Payment verified successfully',
-      data: updatedBooking,
-    };
+// Fetch complete booking details for invoice
+const completedBooking =
+  await this.prisma.booking.findUnique({
+    where: {
+      id: booking.id,
+    },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+    },
+  });
+
+if (!completedBooking) {
+  throw new NotFoundException(
+    'Booking not found',
+  );
+}
+
+// Generate Invoice PDF
+const invoicePath =
+  await this.invoiceService.generateInvoice(
+    completedBooking,
+  );
+
+// Send Email with Invoice
+await this.mailService.sendBookingInvoice(
+  completedBooking.user.email,
+  completedBooking.user.name,
+  invoicePath,
+);
+
+return {
+  success: true,
+  message:
+    'Payment verified and invoice sent successfully.',
+  data: completedBooking,
+};
   }
 
   // ===============================

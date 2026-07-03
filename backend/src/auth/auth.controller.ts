@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')   // 👈 Controller ke upar
 @Controller('auth')
