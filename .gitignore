@@ -1,1 +1,30 @@
+# OS
 .DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+
+# Build
+dist/
+build/
+
+# Expo
+.expo/
+.expo-shared/
+
+# React Native
+android/app/build/
+ios/build/
+
+# Logs
+logs/
+*.log
+
+# TypeScript
+*.tsbuildinfo
