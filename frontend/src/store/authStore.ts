@@ -24,12 +24,18 @@ interface AuthStore {
 
   openRegister: () => void;
 
+  
+
   closeRegister: () => void;
 
   openForgot: () => void;
 
   closeForgot: () => void;
 
+
+  updateUser: (
+  user: User
+) => void;
   login: (user: User) => void;
 
   logout: () => void;
@@ -53,6 +59,11 @@ export const useAuthStore = create<AuthStore>()(
       isRegisterOpen: false,
 
       isForgotOpen: false,
+
+      updateUser: (user) =>
+  set({
+    user,
+  }),
 
       openLogin: () =>
         set({

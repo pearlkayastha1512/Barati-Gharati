@@ -1,4 +1,8 @@
 import { Booking, BookingStatus } from "@/types/booking";
+import {
+ 
+  PaymentStatus
+} from "@/types/booking";
 
 const STORAGE_KEY = "bookings";
 
@@ -72,6 +76,51 @@ export function updateBookingStatus(
   }
 
   booking.bookingStatus = status;
+
+  booking.updatedAt =
+    new Date().toISOString();
+
+  saveBookings(bookings);
+}
+
+
+
+
+export function payAdvance(
+  bookingId: string,
+  amount: number
+): void {
+  const bookings = getBookings();
+
+  const booking = bookings.find(
+    (item) => item.id === bookingId
+  );
+
+  if (!booking) {
+    return;
+  }
+
+  const advancePaid = Math.min(
+    booking.advancePaid + amount,
+    booking.amount
+  );
+
+  booking.advancePaid = advancePaid;
+
+  booking.remainingAmount =
+    booking.amount - advancePaid;
+
+  let paymentStatus: PaymentStatus =
+    "pending";
+
+  if (booking.remainingAmount === 0) {
+    paymentStatus = "paid";
+  } else if (advancePaid > 0) {
+    paymentStatus = "partial";
+  }
+
+  booking.paymentStatus =
+    paymentStatus;
 
   booking.updatedAt =
     new Date().toISOString();

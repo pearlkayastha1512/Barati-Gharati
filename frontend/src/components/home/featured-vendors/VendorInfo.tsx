@@ -57,10 +57,17 @@ export default function VendorInfo({
         >
           View Profile
         </Link>
+ 
 
-        <button className="flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl">
+       <Link href={`/vendors/${id}`} 
+        // className="flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl"
+
+        className="flex-1 rounded-xl border border-gray-100 py-3 text-center  text-gray-100 font-semibold transition hover:border-rose-500 hover:text-rose-100 bg-gradient-to-r from-rose-500 to-pink-500"
+       >
+        
           Book Now
-        </button>
+       
+        </Link>
 
       </div>
 

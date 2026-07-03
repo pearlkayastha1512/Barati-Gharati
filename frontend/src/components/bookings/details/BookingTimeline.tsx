@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import {
   CalendarCheck2,
   CheckCircle2,
@@ -9,45 +10,70 @@ import {
   PartyPopper,
 } from "lucide-react";
 
-const timeline = [
-  {
-    title: "Booking Requested",
-    description: "Your booking request has been submitted.",
-    date: "10 Jan 2027",
-    completed: true,
-    icon: CalendarCheck2,
-  },
-  {
-    title: "Vendor Accepted",
-    description: "The vendor confirmed your booking.",
-    date: "11 Jan 2027",
-    completed: true,
-    icon: CheckCircle2,
-  },
-  {
-    title: "Advance Payment",
-    description: "Advance payment received successfully.",
-    date: "12 Jan 2027",
-    completed: true,
-    icon: CreditCard,
-  },
-  {
-    title: "Planning Meeting",
-    description: "Schedule a meeting with the vendor.",
-    date: "25 Jan 2027",
-    completed: false,
-    icon: Users,
-  },
-  {
-    title: "Wedding Day",
-    description: "Your special day is here.",
-    date: "12 Feb 2027",
-    completed: false,
-    icon: PartyPopper,
-  },
-];
+import { Booking } from "@/types/booking";
 
-export default function BookingTimeline() {
+interface BookingTimelineProps {
+  booking: Booking;
+}
+
+export default function BookingTimeline({
+  booking,
+}: BookingTimelineProps) {
+  const timeline = [
+    {
+      title: "Booking Requested",
+      description:
+        "Your booking request has been submitted.",
+      date: booking.createdAt,
+      completed: true,
+      icon: CalendarCheck2,
+    },
+
+    {
+      title: "Vendor Response",
+      description:
+        booking.bookingStatus === "pending"
+          ? "Waiting for vendor approval."
+          : "Vendor accepted your booking.",
+      date: booking.updatedAt,
+      completed:
+        booking.bookingStatus !== "pending",
+      icon: CheckCircle2,
+    },
+
+    {
+      title: "Advance Payment",
+      description:
+        booking.paymentStatus === "pending"
+          ? "Waiting for advance payment."
+          : "Advance payment received.",
+      date: booking.updatedAt,
+      completed:
+        booking.paymentStatus !== "pending",
+      icon: CreditCard,
+    },
+
+    {
+      title: "Planning Meeting",
+      description:
+        "Coordinate with your vendor before the event.",
+      date: booking.eventDate,
+      completed:
+        booking.bookingStatus === "completed",
+      icon: Users,
+    },
+
+    {
+      title: "Wedding Day",
+      description:
+        "Celebrate your special day.",
+      date: booking.eventDate,
+      completed:
+        booking.bookingStatus === "completed",
+      icon: PartyPopper,
+    },
+  ];
+
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
 
@@ -81,47 +107,26 @@ export default function BookingTimeline() {
               className="relative flex gap-5 pb-8 last:pb-0"
             >
 
-              {/* Vertical Line */}
-
               {index !== timeline.length - 1 && (
 
                 <div
-                  className={`
-                    absolute
-                    left-[19px]
-                    top-10
-                    h-full
-                    w-[2px]
-
-                    ${
-                      step.completed
-                        ? "bg-green-400"
-                        : "bg-gray-200"
-                    }
-                  `}
+                  className={`absolute left-[19px] top-10 h-full w-[2px]
+                  ${
+                    step.completed
+                      ? "bg-green-400"
+                      : "bg-gray-200"
+                  }`}
                 />
 
               )}
 
-              {/* Icon */}
-
               <div
-                className={`
-                  relative
-                  z-10
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-full
-
-                  ${
-                    step.completed
-                      ? "bg-green-100"
-                      : "bg-indigo-100"
-                  }
-                `}
+                className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full
+                ${
+                  step.completed
+                    ? "bg-green-100"
+                    : "bg-indigo-100"
+                }`}
               >
 
                 <Icon
@@ -135,8 +140,6 @@ export default function BookingTimeline() {
 
               </div>
 
-              {/* Content */}
-
               <div className="flex-1 rounded-2xl border border-gray-100 p-5 transition hover:border-indigo-200 hover:bg-indigo-50/30">
 
                 <div className="flex items-center justify-between">
@@ -146,19 +149,12 @@ export default function BookingTimeline() {
                   </h3>
 
                   <span
-                    className={`
-                      rounded-full
-                      px-3
-                      py-1
-                      text-xs
-                      font-semibold
-
-                      ${
-                        step.completed
-                          ? "bg-green-100 text-green-700"
-                          : "bg-indigo-100 text-indigo-600"
-                      }
-                    `}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold
+                    ${
+                      step.completed
+                        ? "bg-green-100 text-green-700"
+                        : "bg-indigo-100 text-indigo-600"
+                    }`}
                   >
                     {step.completed
                       ? "Completed"
@@ -171,9 +167,9 @@ export default function BookingTimeline() {
                   {step.description}
                 </p>
 
-                <p className="mt-3 text-sm font-medium text-gray-700">
-                  {step.date}
-                </p>
+               <p className="mt-3 text-sm font-medium text-gray-700">
+  {new Date(booking.createdAt).toLocaleDateString("en-GB")}
+</p>
 
               </div>
 

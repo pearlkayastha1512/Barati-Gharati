@@ -1,6 +1,17 @@
 "use client";
 
+import { useCustomerProfileStore } from "@/store/customerProfileStore";
+
 export default function PartnerInformation() {
+  const profile =
+    useCustomerProfileStore(
+      (state) => state.profile
+    );
+
+  if (!profile) {
+    return null;
+  }
+
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
 
@@ -10,13 +21,37 @@ export default function PartnerInformation() {
 
       <div className="mt-8 space-y-6 text-rose-400">
 
-        <Info label="Partner Name" value="Priya Sharma" />
+        <Info
+          label="Partner Name"
+          value={
+            profile.partnerName ||
+            "Not Provided"
+          }
+        />
 
-        <Info label="Email" value="priya@gmail.com" />
+        <Info
+          label="Email"
+          value={
+            profile.partnerEmail ||
+            "Not Provided"
+          }
+        />
 
-        <Info label="Phone" value="+91 9123456789" />
+        <Info
+          label="Phone"
+          value={
+            profile.partnerPhone ||
+            "Not Provided"
+          }
+        />
 
-        <Info label="Occupation" value="Software Engineer" />
+        <Info
+          label="Occupation"
+          value={
+            profile.partnerOccupation ||
+            "Not Provided"
+          }
+        />
 
       </div>
 
@@ -38,7 +73,7 @@ function Info({
         {label}
       </p>
 
-      <p className="mt-1 font-semibold">
+      <p className="mt-1 font-semibold text-gray-700">
         {value}
       </p>
 

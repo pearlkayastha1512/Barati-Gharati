@@ -44,7 +44,18 @@ export default function UpcomingBookings() {
       {/* Booking List */}
       <div className="divide-y divide-gray-100">
 
-        {bookings.map((booking) => (
+       {bookings
+  .filter(
+    (booking) =>
+      booking.bookingStatus !== "cancelled"
+  )
+  .sort(
+    (a, b) =>
+      new Date(a.eventDate).getTime() -
+      new Date(b.eventDate).getTime()
+  )
+  .slice(0, 5)
+  .map((booking) => (
           <div
             key={booking.id}
             className="flex items-center justify-between px-7 py-5 transition hover:bg-rose-50"
@@ -62,7 +73,13 @@ export default function UpcomingBookings() {
 
                 <span className="flex items-center gap-1">
                   <CalendarDays size={15} />
-                  {booking.eventDate}
+                 {new Date(
+  booking.eventDate
+).toLocaleDateString("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+})}
                 </span>
 
                 <span className="flex items-center gap-1">
@@ -78,9 +95,12 @@ export default function UpcomingBookings() {
               </div>
             </div>
 
-            <button className="rounded-xl bg-rose-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-rose-600">
-              Details
-            </button>
+           <Link
+  href={`/customer/bookings/${booking.id}`}
+  className="rounded-xl bg-rose-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+>
+  Details
+</Link>
           </div>
         ))}
 

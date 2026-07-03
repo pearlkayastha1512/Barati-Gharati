@@ -75,8 +75,8 @@ export default async function StoryPage({
 
         <div className="text-center">
           <p className="text-4xl font-black text-rose-500">
-            250+
-          </p>
+  {story.guests}+
+</p>
 
           <p className="mt-2 text-gray-600">
             Guests
@@ -85,7 +85,7 @@ export default async function StoryPage({
 
         <div className="text-center">
           <p className="text-4xl font-black text-rose-500">
-            12
+            {story.vendors}
           </p>
 
           <p className="mt-2 text-gray-600">
@@ -95,8 +95,8 @@ export default async function StoryPage({
 
         <div className="text-center">
           <p className="text-4xl font-black text-rose-500">
-            3 Days
-          </p>
+  {story.celebrationDays} Days
+</p>
 
           <p className="mt-2 text-gray-600">
             Celebration
@@ -104,9 +104,9 @@ export default async function StoryPage({
         </div>
 
         <div className="text-center">
-          <p className="text-4xl font-black text-rose-500">
-            ₹25L
-          </p>
+        <p className="text-4xl font-black text-rose-500">
+  {story.budget}
+</p>
 
           <p className="mt-2 text-gray-600">
             Budget
@@ -136,22 +136,11 @@ export default async function StoryPage({
 
           <div className="mt-10 space-y-8 text-lg leading-9 text-gray-600">
 
-            <p>
-              Every wedding has a unique story. This celebration brought
-              together timeless traditions, elegant décor, unforgettable
-              moments and memories that will be cherished forever.
-            </p>
-
-            <p>
-              Every detail was planned with love—from selecting the perfect
-              venue to choosing trusted professionals who transformed every
-              dream into reality.
-            </p>
-
-            <p>
-              Their wedding became more than a celebration—it became a memory
-              that families and friends will treasure for generations.
-            </p>
+<div className="mt-10 space-y-8 text-lg leading-9 text-gray-600">
+  {story.story.map((paragraph, index) => (
+    <p key={index}>{paragraph}</p>
+  ))}
+</div>
 
           </div>
 
@@ -173,7 +162,7 @@ export default async function StoryPage({
               </span>
 
               <span className="font-semibold text-rose-500">
-                Royal Palace Resort
+                {story.highlights.venue}
               </span>
             </div>
 
@@ -183,7 +172,7 @@ export default async function StoryPage({
               </span>
 
               <span className="font-semibold text-rose-500">
-                Bliss Photography
+               {story.highlights.photographer}
               </span>
             </div>
 
@@ -193,7 +182,7 @@ export default async function StoryPage({
               </span>
 
               <span className="font-semibold text-rose-500">
-                Dream Decor Studio
+                {story.highlights.decor}
               </span>
             </div>
 
@@ -203,7 +192,7 @@ export default async function StoryPage({
               </span>
 
               <span className="font-semibold text-rose-500">
-                ₹25 Lakhs
+                {story.highlights.budget}
               </span>
             </div>
 

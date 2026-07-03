@@ -8,6 +8,12 @@ import InsightsSection from "@/components/dashboard/sections/InsightsSection";
 import UpcomingBookings from "@/components/dashboard/widgets/UpcomingBookings";
 import BudgetOverview from "@/components/dashboard/widgets/BudgetOverview";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useEffect, useMemo } from "react";
+
+import { useAuthStore } from "@/store/authStore";
+import { useBookingStore } from "@/store/bookingStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { useReviewStore } from "@/store/reviewStore";
 
 import {
   Search,
@@ -24,6 +30,47 @@ import {
 } from "lucide-react";
 
 export default function CustomerDashboardPage() {
+
+  const { user } = useAuthStore();
+
+const {
+  bookings,
+  loadCustomerBookings,
+} = useBookingStore();
+
+const {
+  wishlist,
+  loadWishlist,
+} = useWishlistStore();
+
+const {
+  reviews,
+  loadCustomerReviews,
+} = useReviewStore();
+
+useEffect(() => {
+  if (!user) return;
+
+  loadCustomerBookings(user._id);
+
+  loadWishlist(user._id);
+
+  loadCustomerReviews(user._id);
+}, [
+  user,
+  loadCustomerBookings,
+  loadWishlist,
+  loadCustomerReviews,
+]);
+
+const remainingBudget = useMemo(() => {
+  const total = bookings.reduce(
+    (sum, booking) => sum + booking.remainingAmount,
+    0
+  );
+
+  return `₹${total.toLocaleString("en-IN")}`;
+}, [bookings]);
   
 
   return (
@@ -36,29 +83,29 @@ export default function CustomerDashboardPage() {
 
         <StatsCard
           title="Bookings"
-          value="08"
-          subtitle="+2 this month"
+         value={bookings.length.toString()}
+subtitle="Total Bookings"
           icon={CalendarDays}
         />
 
         <StatsCard
           title="Wishlist"
-          value="15"
-          subtitle="Saved vendors"
+          value={wishlist.length.toString()}
+subtitle="Saved Vendors"
           icon={Heart}
         />
 
         <StatsCard
           title="Budget"
-          value="₹4.8L"
-          subtitle="Budget Remaining"
+          value={remainingBudget}
+subtitle="Budget Remaining"
           icon={Wallet}
         />
 
         <StatsCard
           title="Reviews"
-          value="12"
-          subtitle="Reviews Given"
+          value={reviews.length.toString()}
+subtitle="Reviews Given"
           icon={Star}
         />
 

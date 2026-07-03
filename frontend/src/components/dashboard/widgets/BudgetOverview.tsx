@@ -1,20 +1,48 @@
 "use client";
 
+import { useMemo } from "react";
+
 import {
   Wallet,
   TrendingUp,
   CircleDollarSign,
 } from "lucide-react";
 
-const totalBudget = 1000000;
-const spent = 620000;
-const remaining = totalBudget - spent;
+import { useBookingStore } from "@/store/bookingStore";
 
-const percentage = Math.round(
-  (spent / totalBudget) * 100
-);
+
 
 export default function BudgetOverview() {
+
+  const bookings = useBookingStore(
+  (state) => state.bookings
+);
+
+const totalBudget = useMemo(() => {
+  return bookings.reduce(
+    (sum, booking) => sum + booking.amount,
+    0
+  );
+}, [bookings]);
+
+const spent = useMemo(() => {
+  return bookings.reduce(
+    (sum, booking) => sum + booking.advancePaid,
+    0
+  );
+}, [bookings]);
+
+const remaining = useMemo(() => {
+  return bookings.reduce(
+    (sum, booking) => sum + booking.remainingAmount,
+    0
+  );
+}, [bookings]);
+
+const percentage =
+  totalBudget === 0
+    ? 0
+    : Math.round((spent / totalBudget) * 100);
   return (
     <div className="rounded-3xl border border-gray-200 bg-white shadow-sm">
 
@@ -98,7 +126,7 @@ export default function BudgetOverview() {
             </div>
 
             <span className="font-bold">
-              ₹10,00,000
+            ₹{totalBudget.toLocaleString("en-IN")}
             </span>
 
           </div>
@@ -117,7 +145,7 @@ export default function BudgetOverview() {
             </div>
 
             <span className="font-bold text-red-500">
-              ₹6,20,000
+             ₹{spent.toLocaleString("en-IN")}
             </span>
 
           </div>
@@ -136,7 +164,7 @@ export default function BudgetOverview() {
             </div>
 
             <span className="font-bold text-green-600">
-              ₹3,80,000
+             ₹{remaining.toLocaleString("en-IN")}
             </span>
 
           </div>

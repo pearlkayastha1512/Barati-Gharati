@@ -90,7 +90,7 @@ export default function WishlistCard({
 
           <Link
             href="/vendors/1"
-            className="flex-1 rounded-2xl border border-gray-200 py-3 text-center font-semibold transition hover:bg-gray-50"
+            className="flex-1 rounded-2xl border border-gray-200 py-3 text-center font-semibold transition hover:bg-gray-50 text-gray-600"
           >
             View
           </Link>
