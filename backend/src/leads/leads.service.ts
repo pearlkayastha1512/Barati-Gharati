@@ -9,6 +9,7 @@ import { ReplyLeadDto } from './dto/reply-lead.dto';
 import { UpdateLeadStatusDto } from './dto/update-lead-status.dto';
 import { ConvertLeadDto } from './dto/convert-lead.dto';
 import { Role, LeadStatus, BookingStatus } from '@prisma/client';
+import { VendorStatus } from '@prisma/client';
 
 @Injectable()
 export class LeadsService {
@@ -19,7 +20,10 @@ export class LeadsService {
       where: { id: dto.vendorId },
     });
     if (!vendor) throw new NotFoundException('Vendor not found');
-
+    if (vendor.status !== VendorStatus.APPROVED)
+    throw new ForbiddenException(
+      'Vendor is not approved by admin',
+    );
     if (dto.packageId) {
       const pkg = await this.prisma.package.findUnique({
         where: { id: dto.packageId },

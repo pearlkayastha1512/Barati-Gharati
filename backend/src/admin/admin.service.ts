@@ -1,6 +1,6 @@
 import { Injectable,NotFoundException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BookingStatus,Role,VendorStatus } from '@prisma/client';
+import { BookingStatus,Role,VendorStatus,PaymentStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -331,7 +331,7 @@ async updateBookingStatus(
 async getAnalytics() {
   const bookings = await this.prisma.booking.findMany({
     where: {
-      paymentStatus: 'PAID',
+      paymentStatus: PaymentStatus.SUCCESS,
     },
     select: {
       totalAmount: true,

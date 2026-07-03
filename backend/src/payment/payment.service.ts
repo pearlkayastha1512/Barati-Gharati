@@ -45,7 +45,7 @@ export class PaymentService {
       );
     }
 
-    if (booking.paymentStatus === PaymentStatus.PAID) {
+    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
       throw new BadRequestException(
         'Payment already completed',
       );
@@ -92,7 +92,7 @@ export class PaymentService {
       );
     }
 
-    if (booking.paymentStatus === PaymentStatus.PAID) {
+    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
       throw new BadRequestException(
         'Payment already verified',
       );
@@ -123,7 +123,7 @@ const expectedSignature = crypto
           id: booking.id,
         },
         data: {
-          paymentStatus: PaymentStatus.PAID,
+          paymentStatus: PaymentStatus.SUCCESS,
         },
       });
 
@@ -142,7 +142,7 @@ const expectedSignature = crypto
       await this.prisma.booking.findMany({
         where: {
           userId,
-          paymentStatus: PaymentStatus.PAID,
+          paymentStatus: PaymentStatus.SUCCESS,
         },
         include: {
           package: true,

@@ -33,7 +33,7 @@ import { VendorService } from './vendor.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { SearchVendorDto } from './dto/search-vendor.dto';
-
+import { imageFileFilter } from '../common/file-filter';
 
 @ApiTags('Vendor')
 @ApiBearerAuth()
@@ -147,7 +147,15 @@ export class VendorController {
   @Post('upload-logo')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)
-  @UseInterceptors(FileInterceptor('image'))
+  
+  @UseInterceptors(
+  FileInterceptor('image', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5 MB
+    },
+    fileFilter: imageFileFilter,
+  }),
+)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -177,7 +185,14 @@ export class VendorController {
   @Post('upload-cover')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(
+  FileInterceptor('image', {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+    },
+    fileFilter: imageFileFilter,
+  }),
+)
   async uploadVendorCover(
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
@@ -195,7 +210,14 @@ export class VendorController {
   @Post('gallery')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(
+  FilesInterceptor('images', 10, {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+    },
+    fileFilter: imageFileFilter,
+  }),
+)
   async uploadGallery(
     @Req() req: any,
     @UploadedFiles() files: Express.Multer.File[],

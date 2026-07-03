@@ -17,6 +17,14 @@ export class CloudinaryService {
         .upload_stream(
           {
             folder: 'wedding-planner/vendors',
+            quality: 'auto',
+            fetch_format: 'auto',
+            transformation:[
+             { width:1200,
+              height:1200,
+              crop:'limit'
+            },
+            ]
           },
           (error, result) => {
             if (error) return reject(error);
