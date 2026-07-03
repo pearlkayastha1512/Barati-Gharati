@@ -1,5 +1,10 @@
-import SplashScreen from "./src/screens/splash/SplashScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import AppNavigator from "./src/navigation/AppNavigator";
 
 export default function App() {
-  return <SplashScreen />;
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
 }
