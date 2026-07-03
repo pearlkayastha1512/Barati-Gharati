@@ -1,7 +1,34 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 
+import { useAuthStore } from "../../store/authStore";
+import { useAppStore } from "../../store/appStore";
 export default function SplashScreen() {
+  const navigation = useNavigation<any>();
+
+const { restoreSession, isAuthenticated, user } = useAuthStore();
+const { isFirstLaunch } = useAppStore();
+useEffect(() => {
+  const checkApp = async () => {
+    await restoreSession();
+
+    setTimeout(() => {
+      if (isFirstLaunch) {
+        navigation.replace("Onboarding");
+      } else if (!isAuthenticated) {
+        navigation.replace("Auth");
+      } else if (user?.role === "VENDOR") {
+        navigation.replace("Vendor");
+      } else {
+        navigation.replace("Couple");
+      }
+    }, 2000);
+  };
+
+  checkApp();
+}, []);
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
