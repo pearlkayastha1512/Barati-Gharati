@@ -9,44 +9,35 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 
-export default function SplashScreen({ navigation }: any) {
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.8)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
+import { useAuthStore } from "../../store/authStore";
+import { useAppStore } from "../../store/appStore";
+export default function SplashScreen() {
+  const navigation = useNavigation<any>();
 
-  useEffect(() => {
-  const run = async () => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.spring(logoScale, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.timing(textOpacity, {
-        toValue: 1,
-        duration: 700,
-        easing: Easing.ease,
-        useNativeDriver: true,
-      }),
-    ]).start();
+const { restoreSession, isAuthenticated, user } = useAuthStore();
+const { isFirstLaunch } = useAppStore();
+useEffect(() => {
+  const checkApp = async () => {
+    await restoreSession();
 
-    // ⏱ splash delay (5 seconds example)
-    await new Promise(resolve => setTimeout(resolve, 10000));
-
-    navigation.replace("Onboarding");
+    setTimeout(() => {
+      if (isFirstLaunch) {
+        navigation.replace("Onboarding");
+      } else if (!isAuthenticated) {
+        navigation.replace("Auth");
+      } else if (user?.role === "VENDOR") {
+        navigation.replace("Vendor");
+      } else {
+        navigation.replace("Couple");
+      }
+    }, 2000);
   };
 
-  run();
+  checkApp();
 }, []);
-
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />

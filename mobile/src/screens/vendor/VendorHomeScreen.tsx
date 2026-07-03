@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 
-export default function LoginScreen() {
+export default function VendorHomeScreen() {
   return (
     <View
       style={{
@@ -9,7 +9,7 @@ export default function LoginScreen() {
         alignItems: "center",
       }}
     >
-      <Text>Login Screen</Text>
+      <Text>Vendor Dashboard</Text>
     </View>
   );
 }
