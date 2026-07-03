@@ -1,35 +1,179 @@
 "use client";
 
-const services = [
-  ["Wedding Photography", "₹12.5L"],
-  ["Luxury Decoration", "₹9.8L"],
-  ["Premium Catering", "₹8.2L"],
-  ["DJ Services", "₹4.3L"],
-];
+import { useMemo } from "react";
+
+import {
+  BriefcaseBusiness,
+  TrendingUp,
+} from "lucide-react";
+
+import { useServiceStore } from "@/store/serviceStore";
+import { useBookingStore } from "@/store/bookingStore";
 
 export default function TopServices() {
+  const services = useServiceStore(
+    (state) => state.services
+  );
+
+  const bookings = useBookingStore(
+    (state) => state.bookings
+  );
+
+  const topServices = useMemo(() => {
+    const revenueMap = new Map<
+      string,
+      {
+        revenue: number;
+        bookings: number;
+      }
+    >();
+
+    services.forEach((service) => {
+      revenueMap.set(service.category, {
+        revenue: 0,
+        bookings: 0,
+      });
+    });
+
+    bookings.forEach((booking) => {
+      if (
+        booking.bookingStatus ===
+        "cancelled"
+      ) {
+        return;
+      }
+
+      const current =
+        revenueMap.get(
+          booking.category
+        ) || {
+          revenue: 0,
+          bookings: 0,
+        };
+
+      current.revenue +=
+        booking.amount;
+
+      current.bookings += 1;
+
+      revenueMap.set(
+        booking.category,
+        current
+      );
+    });
+
+    return Array.from(
+      revenueMap.entries()
+    )
+      .map(([category, data]) => ({
+        category,
+        revenue: data.revenue,
+        bookings: data.bookings,
+      }))
+      .sort(
+        (a, b) =>
+          b.revenue -
+          a.revenue
+      )
+      .slice(0, 5);
+  }, [services, bookings]);
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-800">
-        Top Performing Services
-      </h2>
 
-      <div className="mt-8 space-y-5">
-        {services.map(([name, revenue]) => (
-          <div
-            key={name}
-            className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 transition hover:bg-slate-100"
-          >
-            <span className="font-medium text-gray-700">
-              {name}
-            </span>
+      <div className="flex items-center justify-between">
 
-            <span className="font-bold text-blue-700">
-              {revenue}
-            </span>
-          </div>
-        ))}
+        <div>
+
+          <h2 className="text-2xl font-bold text-slate-900">
+            Top Performing Services
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Ranked by generated revenue
+          </p>
+
+        </div>
+
+        <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+          {topServices.length} Services
+        </div>
+
       </div>
+
+      <div className="mt-8 space-y-4">
+
+        {topServices.length === 0 ? (
+          <div className="rounded-2xl bg-slate-50 py-12 text-center text-slate-500">
+            No services available.
+          </div>
+        ) : (
+          topServices.map(
+            (service, index) => (
+              <div
+                key={
+                  service.category
+                }
+                className="flex items-center justify-between rounded-2xl border border-slate-100 p-5 transition hover:bg-slate-50"
+              >
+                <div className="flex items-center gap-4">
+
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+
+                    <BriefcaseBusiness
+                      size={20}
+                      className="text-blue-700"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <h3 className="font-semibold text-slate-900">
+                      {
+                        service.category
+                      }
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {
+                        service.bookings
+                      }{" "}
+                      Bookings
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="text-right">
+
+                  <div className="text-xl font-bold text-blue-700">
+                    ₹
+                    {service.revenue.toLocaleString(
+                      "en-IN"
+                    )}
+                  </div>
+
+                  <div className="mt-1 flex items-center justify-end gap-1 text-sm text-green-600">
+
+                    <TrendingUp
+                      size={15}
+                    />
+
+                    #{index + 1}
+
+                  </div>
+
+                </div>
+
+              </div>
+            )
+          )
+        )}
+
+      </div>
+
     </section>
   );
 }

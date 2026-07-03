@@ -35,6 +35,7 @@ export function getVendors(): StoredVendor[] {
 
 
 
+
 export function saveVendors(
   vendors: StoredVendor[]
 ) {
@@ -43,6 +44,31 @@ export function saveVendors(
     JSON.stringify(vendors)
   );
 }
+
+
+
+
+
+
+
+
+export function updateVendor(
+  updatedVendor: StoredVendor
+): void {
+  const vendors = getVendors();
+
+  const updated = vendors.map((vendor) =>
+    vendor.id === updatedVendor.id
+      ? {
+          ...updatedVendor,
+          updatedAt: new Date().toISOString(),
+        }
+      : vendor
+  );
+
+  saveVendors(updated);
+}
+
 
 export function getVendorByUserId(
   userId: string
@@ -69,6 +95,24 @@ export function registerVendor(
 } {
   const vendors = getVendors();
   const users = getUsers();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   // Global Email Check
   const existingUser = users.find(

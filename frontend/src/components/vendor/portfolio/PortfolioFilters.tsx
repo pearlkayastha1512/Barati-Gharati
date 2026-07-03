@@ -2,31 +2,80 @@
 
 import { Search } from "lucide-react";
 
-export default function PortfolioFilters() {
+interface PortfolioFiltersProps {
+  search: string;
+
+  setSearch: (
+    value: string
+  ) => void;
+
+  category: string;
+
+  setCategory: (
+    value: string
+  ) => void;
+
+  categories: string[];
+}
+
+export default function PortfolioFilters({
+  search,
+  setSearch,
+  category,
+  setCategory,
+  categories,
+}: PortfolioFiltersProps) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
-        <div className="relative w-full lg:max-w-md">
+
+      <div className="flex flex-col gap-4 xl:flex-row">
+
+        {/* Search */}
+
+        <div className="relative flex-1">
+
           <Search
             size={18}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
           />
 
           <input
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
             type="text"
-            placeholder="Search gallery..."
-            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+            placeholder="Search portfolio..."
+            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-gray-700 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
           />
+
         </div>
 
-        <select className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100">
-          <option>All Albums</option>
-          <option>Wedding</option>
-          <option>Reception</option>
-          <option>Pre Wedding</option>
-          <option>Engagement</option>
+        {/* Category */}
+
+        <select
+          value={category}
+          onChange={(e) =>
+            setCategory(e.target.value)
+          }
+          className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+        >
+          <option value="All">
+            All Categories
+          </option>
+
+          {categories.map((category) => (
+            <option
+              key={category}
+              value={category}
+            >
+              {category}
+            </option>
+          ))}
         </select>
+
       </div>
+
     </section>
   );
 }

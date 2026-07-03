@@ -314,3 +314,15 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+.calendar-blocked {
+  background: #ef4444 !important;
+  color: white !important;
+  border-radius: 999px;
+}
+
+.calendar-booked {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-radius: 999px;
+}

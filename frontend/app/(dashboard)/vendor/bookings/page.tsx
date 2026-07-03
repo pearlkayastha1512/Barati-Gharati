@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import BookingHero from "@/components/vendor/bookings/BookingHero";
 import BookingStats from "@/components/vendor/bookings/BookingStats";
@@ -10,34 +14,103 @@ import BookingDetailsCard from "@/components/vendor/bookings/BookingDetailsCard"
 
 import { useAuthStore } from "@/store/authStore";
 import { useBookingStore } from "@/store/bookingStore";
+
 import { getVendorByUserId } from "@/services/vendor.service";
 
 export default function VendorBookingsPage() {
- const { user } = useAuthStore();
+  const { user } =
+    useAuthStore();
 
-const { loadVendorBookings } = useBookingStore();
+  const {
+    bookings,
+    loadVendorBookings,
+  } = useBookingStore();
 
-useEffect(() => {
-  if (!user) return;
+  const [search, setSearch] =
+    useState("");
 
-  const vendor = getVendorByUserId(user._id);
+  const [status, setStatus] =
+    useState("All");
 
-  if (!vendor) return;
+  useEffect(() => {
+    if (!user) return;
 
-  loadVendorBookings(vendor.id);
-}, [user, loadVendorBookings]);
+    const vendor =
+      getVendorByUserId(
+        user._id
+      );
+
+    if (!vendor) return;
+
+    loadVendorBookings(
+      vendor.id
+    );
+  }, [
+    user,
+    loadVendorBookings,
+  ]);
+
+  const filteredBookings =
+    useMemo(() => {
+      return bookings.filter(
+        (booking) => {
+          const searchMatch =
+            booking.customerName
+              .toLowerCase()
+              .includes(
+                search.toLowerCase()
+              ) ||
+            booking.eventType
+              .toLowerCase()
+              .includes(
+                search.toLowerCase()
+              ) ||
+            booking.category
+              .toLowerCase()
+              .includes(
+                search.toLowerCase()
+              );
+
+          const statusMatch =
+            status === "All"
+              ? true
+              : booking.bookingStatus ===
+                status.toLowerCase();
+
+          return (
+            searchMatch &&
+            statusMatch
+          );
+        }
+      );
+    }, [
+      bookings,
+      search,
+      status,
+    ]);
 
   return (
     <div className="space-y-8">
+
       <BookingHero />
 
       <BookingStats />
 
-      <BookingFilters />
+      <BookingFilters
+        search={search}
+        setSearch={setSearch}
+        status={status}
+        setStatus={setStatus}
+      />
 
-      <BookingTable />
+      <BookingTable
+        bookings={
+          filteredBookings
+        }
+      />
 
       <BookingDetailsCard />
+
     </div>
   );
 }
