@@ -17,6 +17,10 @@ export interface Review {
 
   comment: string;
 
+  reply?: string;
+
+  repliedAt?: string;
+
   createdAt: string;
 
   updatedAt: string;

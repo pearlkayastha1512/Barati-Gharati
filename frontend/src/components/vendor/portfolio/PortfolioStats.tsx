@@ -1,137 +1,155 @@
-// "use client";
-
-// import {
-//   Images,
-//   Eye,
-//   Heart,
-//   Star,
-// } from "lucide-react";
-
-// const stats = [
-//   {
-//     title: "Photos",
-//     value: "248",
-//     icon: Images,
-//   },
-//   {
-//     title: "Views",
-//     value: "12.4K",
-//     icon: Eye,
-//   },
-//   {
-//     title: "Likes",
-//     value: "4.8K",
-//     icon: Heart,
-//   },
-//   {
-//     title: "Featured",
-//     value: "18",
-//     icon: Star,
-//   },
-// ];
-
-// export default function PortfolioStats() {
-//   return (
-//     <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
-//       {stats.map((item) => {
-
-//         const Icon = item.icon;
-
-//         return (
-
-//           <div
-//             key={item.title}
-//             className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-//           >
-
-//             <div className="w-fit rounded-2xl bg-violet-100 p-3">
-
-//               <Icon
-//                 size={22}
-//                 className="text-violet-700"
-//               />
-
-//             </div>
-
-//             <p className="mt-5 text-sm text-slate-500">
-//               {item.title}
-//             </p>
-
-//             <h3 className="mt-2 text-4xl font-bold">
-//               {item.value}
-//             </h3>
-
-//           </div>
-
-//         );
-
-//       })}
-
-//     </section>
-//   );
-// }
-
 "use client";
+
+import { useMemo } from "react";
 
 import {
   Images,
-  Eye,
-  Heart,
-  Star,
+  FolderOpen,
+  CalendarDays,
+  Clock3,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Photos",
-    value: "248",
-    icon: Images,
-  },
-  {
-    title: "Views",
-    value: "12.4K",
-    icon: Eye,
-  },
-  {
-    title: "Likes",
-    value: "4.8K",
-    icon: Heart,
-  },
-  {
-    title: "Featured",
-    value: "18",
-    icon: Star,
-  },
-];
+import { usePortfolioStore } from "@/store/portfolioStore";
 
 export default function PortfolioStats() {
+  const portfolio = usePortfolioStore(
+    (state) => state.portfolio
+  );
+
+  const stats = useMemo(() => {
+    const totalPhotos =
+      portfolio.length;
+
+    const totalCategories =
+      new Set(
+        portfolio.map(
+          (item) =>
+            item.category
+        )
+      ).size;
+
+    const currentMonth =
+      new Date().getMonth();
+
+    const currentYear =
+      new Date().getFullYear();
+
+    const thisMonth =
+      portfolio.filter(
+        (item) => {
+          const date =
+            new Date(
+              item.createdAt
+            );
+
+          return (
+            date.getMonth() ===
+              currentMonth &&
+            date.getFullYear() ===
+              currentYear
+          );
+        }
+      ).length;
+
+    const latestUpload =
+      portfolio.length > 0
+        ? new Date(
+            Math.max(
+              ...portfolio.map(
+                (item) =>
+                  new Date(
+                    item.createdAt
+                  ).getTime()
+              )
+            )
+          ).toLocaleDateString(
+            "en-GB",
+            {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            }
+          )
+        : "--";
+
+    return {
+      totalPhotos,
+      totalCategories,
+      thisMonth,
+      latestUpload,
+    };
+  }, [portfolio]);
+
+  const cards = [
+    {
+      title: "Portfolio Items",
+      value: stats.totalPhotos,
+      subtitle:
+        "Uploaded",
+      icon: Images,
+    },
+    {
+      title: "Categories",
+      value:
+        stats.totalCategories,
+      subtitle:
+        "Used",
+      icon: FolderOpen,
+    },
+    {
+      title: "This Month",
+      value: stats.thisMonth,
+      subtitle:
+        "Uploads",
+      icon: CalendarDays,
+    },
+    {
+      title: "Latest Upload",
+      value:
+        stats.latestUpload,
+      subtitle:
+        "Recent Work",
+      icon: Clock3,
+    },
+  ];
+
   return (
     <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-      {stats.map((item) => {
-        const Icon = item.icon;
+
+      {cards.map((card) => {
+        const Icon =
+          card.icon;
 
         return (
           <div
-            key={item.title}
-            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+            key={card.title}
+            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
           >
             <div className="w-fit rounded-2xl bg-violet-100 p-3">
+
               <Icon
                 size={22}
                 className="text-violet-700"
               />
+
             </div>
 
-            <p className="mt-5 text-sm font-medium text-gray-500">
-              {item.title}
+            <p className="mt-5 text-sm text-slate-500">
+              {card.title}
             </p>
 
-            <h3 className="mt-2 text-4xl font-bold text-gray-800">
-              {item.value}
+            <h3 className="mt-2 text-3xl font-bold text-slate-900">
+              {card.value}
             </h3>
+
+            <p className="mt-2 text-sm text-slate-500">
+              {card.subtitle}
+            </p>
+
           </div>
         );
       })}
+
     </section>
   );
 }

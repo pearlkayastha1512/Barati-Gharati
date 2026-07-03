@@ -1,37 +1,89 @@
 "use client";
 
+import { useState } from "react";
+
+import EditVendorProfileModal from "./EditVendorProfileModal";
+
+import { useAuthStore } from "@/store/authStore";
+import { getVendorByUserId } from "@/services/vendor.service";
+
 export default function BusinessProfileCard() {
+  const { user } = useAuthStore();
+
+  const vendor = user
+    ? getVendorByUserId(user._id)
+    : null;
+
+  const [open, setOpen] = useState(false);
+
+  if (!vendor) return null;
+
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col items-center gap-6 md:flex-row">
-        <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-r from-blue-700 to-indigo-700 text-4xl font-bold text-white">
-          W
-        </div>
+    <>
+      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold text-gray-800">
-            WedPlanner Studio
-          </h2>
+        <div className="flex flex-col items-center gap-6 md:flex-row">
 
-          <p className="mt-2 text-gray-500">
-            Premium Wedding Photography
-          </p>
+          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-blue-700 to-indigo-700">
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
-              Verified Vendor
-            </span>
+            {vendor.profileImage ? (
+              <img
+                src={vendor.profileImage}
+                alt={vendor.businessName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-4xl font-bold text-white">
+                {vendor.businessName.charAt(0)}
+              </span>
+            )}
 
-            <span className="rounded-full bg-slate-100 px-4 py-2 text-sm text-gray-700">
-              Since 2021
-            </span>
           </div>
+
+          <div className="flex-1">
+
+            <h2 className="text-3xl font-bold text-slate-900">
+              {vendor.businessName}
+            </h2>
+
+            <p className="mt-2 text-slate-500">
+              {vendor.category}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+
+              <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
+                {vendor.isApproved
+                  ? "Verified Vendor"
+                  : "Pending Verification"}
+              </span>
+
+              <span className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-700">
+                Since{" "}
+                {new Date(
+                  vendor.createdAt
+                ).getFullYear()}
+              </span>
+
+            </div>
+
+          </div>
+
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
+          >
+            Edit Profile
+          </button>
+
         </div>
 
-        <button className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800">
-          Edit Profile
-        </button>
-      </div>
-    </section>
+      </section>
+
+      <EditVendorProfileModal
+        open={open}
+        onClose={() => setOpen(false)}
+      />
+    </>
   );
 }

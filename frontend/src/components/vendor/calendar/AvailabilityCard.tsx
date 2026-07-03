@@ -1,52 +1,252 @@
 "use client";
 
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  CalendarCheck2,
+  Ban,
+  CheckCircle2,
+} from "lucide-react";
+
+import { useBookingStore } from "@/store/bookingStore";
+import { useAuthStore } from "@/store/authStore";
+
+import { getVendorByUserId } from "@/services/vendor.service";
+
+import { Availability } from "@/types/availability";
+import ManageAvailabilityModal from "./ManageAvailabilityModal";
+
 export default function AvailabilityCard() {
+  const bookings = useBookingStore(
+    (state) => state.bookings
+  );
+
+  const { user } = useAuthStore();
+   const [openModal, setOpenModal] =
+  useState(false);
+
+  const vendor = user
+    ? getVendorByUserId(user._id)
+    : null;
+
+  const [blockedDates, setBlockedDates] =
+    useState<Availability[]>([]);
+
+  useEffect(() => {
+    const data =
+      localStorage.getItem("availability");
+
+    if (data) {
+      setBlockedDates(
+        JSON.parse(data)
+      );
+    }
+  }, []);
+
+  const currentDate = new Date();
+
+  const currentMonth =
+    currentDate.getMonth();
+
+  const currentYear =
+    currentDate.getFullYear();
+
+  const stats = useMemo(() => {
+    const bookedDays = bookings.filter(
+      (booking) => {
+        const date = new Date(
+          booking.eventDate
+        );
+
+        return (
+          booking.bookingStatus !==
+            "cancelled" &&
+          date.getMonth() ===
+            currentMonth &&
+          date.getFullYear() ===
+            currentYear
+        );
+      }
+    ).length;
+
+    const blocked = blockedDates.filter(
+      (item) =>
+        vendor &&
+        item.vendorId === vendor.id &&
+        item.status === "blocked"
+    ).length;
+
+    const daysInMonth = new Date(
+      currentYear,
+      currentMonth + 1,
+      0
+    ).getDate();
+
+    const available = Math.max(
+      daysInMonth -
+        bookedDays -
+        blocked,
+      0
+    );
+ 
+    const percentage =
+      Math.round(
+        (available / daysInMonth) * 100
+      );
+
+    return {
+      available,
+      bookedDays,
+      blocked,
+      percentage,
+    };
+  }, [
+    bookings,
+    blockedDates,
+    vendor,
+    currentMonth,
+    currentYear,
+  ]);
+
+  const handleManageAvailability =
+    () => {
+      document
+        .getElementById(
+          "calendar-view"
+        )
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    };
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-bold text-gray-800">
+
+      <h2 className="text-xl font-bold text-slate-900">
         Availability
       </h2>
 
-      <div className="mt-6 space-y-5">
-        <Row
-          label="Available Days"
-          value="18"
-        />
+      <p className="mt-2 text-sm text-slate-500">
+        Current month's availability
+      </p>
 
-        <Row
-          label="Booked Days"
-          value="12"
-        />
+      <div className="mt-6">
 
-        <Row
-          label="Blocked"
-          value="05"
-        />
+        <div className="mb-2 flex items-center justify-between">
+
+          <span className="text-sm text-slate-600">
+            Available
+          </span>
+
+          <span className="text-sm font-semibold text-green-700">
+            {stats.percentage}%
+          </span>
+
+        </div>
+
+        <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
+            style={{
+              width: `${stats.percentage}%`,
+            }}
+          />
+
+        </div>
+
       </div>
 
-      <button className="mt-8 w-full rounded-2xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700">
-        Block Date
-      </button>
+      <div className="mt-8 space-y-5">
+
+        <Row
+          icon={
+            <CheckCircle2
+              size={18}
+              className="text-green-600"
+            />
+          }
+          label="Available Days"
+          value={stats.available}
+        />
+
+        <Row
+          icon={
+            <CalendarCheck2
+              size={18}
+              className="text-blue-600"
+            />
+          }
+          label="Booked Days"
+          value={stats.bookedDays}
+        />
+
+        <Row
+          icon={
+            <Ban
+              size={18}
+              className="text-red-600"
+            />
+          }
+          label="Blocked Days"
+          value={stats.blocked}
+        />
+
+      </div>
+
+     <button
+  onClick={() =>
+    setOpenModal(true)
+  }
+  className="mt-8 w-full rounded-2xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700"
+>
+  Manage Availability
+</button>
+
+<ManageAvailabilityModal
+  open={openModal}
+  onClose={() =>
+    setOpenModal(false)
+  }
+/>
+
     </section>
   );
 }
 
 function Row({
+  icon,
   label,
   value,
 }: {
+  icon: React.ReactNode;
+
   label: string;
-  value: string;
+
+  value: number;
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-gray-500">
-        {label}
-      </span>
 
-      <span className="font-semibold text-gray-800">
+      <div className="flex items-center gap-3">
+
+        {icon}
+
+        <span className="text-slate-600">
+          {label}
+        </span>
+
+      </div>
+
+      <span className="font-bold text-slate-900">
         {value}
       </span>
+
     </div>
   );
 }

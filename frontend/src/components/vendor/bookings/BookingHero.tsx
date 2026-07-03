@@ -36,13 +36,13 @@ export default function BookingHero() {
 
         </div>
 
-        <button className="flex items-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-slate-900">
+        {/* <button className="flex items-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-slate-900">
 
           <Plus size={18} />
 
           New Booking
 
-        </button>
+        </button> */}
 
       </div>
     </motion.section>

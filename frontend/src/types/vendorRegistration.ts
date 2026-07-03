@@ -13,8 +13,27 @@ export interface VendorRegistrationForm {
   address: string;
   description: string;
 
-  // Gallery
+  // Images
   profileImage: string;
   coverImage: string;
   portfolioImages: string[];
+
+  // NEW
+  website: string;
+  instagram: string;
+  facebook: string;
+  youtube: string;
+  linkedin: string;
+
+  experience: string;
+
+  gstNumber: string;
+
+  bankVerified: boolean;
+
+  
+
+  businessVerified: boolean;
+gstVerified: boolean;
+documentsUploaded: boolean;
 }
