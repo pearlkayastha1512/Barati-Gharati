@@ -38,6 +38,11 @@ interface ReviewStore {
     review: Review
   ) => void;
 
+  replyToReview: (
+    reviewId: string,
+    reply: string
+  ) => void;
+
   deleteExistingReview: (
     id: string
   ) => void;
@@ -98,6 +103,31 @@ export const useReviewStore =
         reviews: getReviews(),
       });
     },
+    replyToReview: (
+  reviewId,
+  reply
+) => {
+  const review = getReviews().find(
+    (item) => item.id === reviewId
+  );
+
+  if (!review) {
+    return;
+  }
+
+  updateReview({
+    ...review,
+
+    reply,
+
+    repliedAt:
+      new Date().toISOString(),
+  });
+
+  set({
+    reviews: getReviews(),
+  });
+},
 
     deleteExistingReview: (
       id
