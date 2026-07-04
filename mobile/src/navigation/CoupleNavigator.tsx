@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import HomeScreen from "../screens/couple/HomeScreen";
-import VendorsScreen from "../screens/couple/VendorsScreen";
+import VendorStackNavigator from "./VendorStackNavigator";
 import BookingScreen from "../screens/couple/BookingScreen";
 import BudgetScreen from "../screens/couple/BudgetScreen";
 import ProfileScreen from "../screens/couple/ProfileScreen";
@@ -38,7 +38,7 @@ export default function CoupleNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Vendors" component={VendorsScreen} />
+      <Tab.Screen name="Vendors" component={VendorStackNavigator} />
       <Tab.Screen name="Bookings" component={BookingScreen} />
       <Tab.Screen name="Budget" component={BudgetScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
