@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import VendorListScreen from "../screens/couple/VendorListScreen";
 import VendorDetailsScreen from "../screens/vendor/VendorDetailsScreen";
 import PackageDetailsScreen from "../screens/vendor/PackageDetailsScreen";
+//import BecomeVendorScreen from "../screens/vendor/BecomeVendorScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,20 +14,12 @@ export default function VendorStackNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen
-        name="VendorList"
-        component={VendorListScreen}
-      />
+      <Stack.Screen name="VendorList" component={VendorListScreen} />
 
-      <Stack.Screen
-        name="VendorDetails"
-        component={VendorDetailsScreen}
-      />
+      <Stack.Screen name="VendorDetails" component={VendorDetailsScreen} />
 
-      <Stack.Screen
-        name="PackageDetails"
-        component={PackageDetailsScreen}
-      />
+      <Stack.Screen name="PackageDetails" component={PackageDetailsScreen} />
+
     </Stack.Navigator>
   );
 }
