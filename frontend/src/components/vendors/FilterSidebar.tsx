@@ -9,33 +9,13 @@ import {
   UtensilsCrossed,
   Music2,
   HeartHandshake,
-  RotateCcw,
+  
 } from "lucide-react";
 
-const categoryOptions = [
-  { name: "Wedding Venue", icon: Building2 },
-  { name: "Photographer", icon: Camera },
-  { name: "Makeup Artist", icon: Sparkles },
-  { name: "Decorator", icon: Flower2 },
-  { name: "Catering", icon: UtensilsCrossed },
-  { name: "DJ & Music", icon: Music2 },
-  { name: "Wedding Planner", icon: HeartHandshake },
-  { name: "Wedding Transport", icon: Building2 },
-  { name: "Florist", icon: Flower2 },
-];
+import { RotateCcw } from "lucide-react";
+import { CATEGORY_CARDS } from "@/constants/categories";
 
-const cityOptions = [
-  "Delhi",
-  "Jaipur",
-  "Mumbai",
-  "Goa",
-  "Udaipur",
-  "Bengaluru",
-  "Hyderabad",
-  "Pune",
-  "Chandigarh",
-  "Kolkata",
-];
+import { CITIES } from "@/constants/cities";
 export default function FilterSidebar() {
 
   
@@ -92,20 +72,19 @@ export default function FilterSidebar() {
 
         <div className="space-y-3">
 
-          {categoryOptions.map(({ name, icon: Icon }) => (
+         {CATEGORY_CARDS.map(({ title, icon: Icon }) => (
   <label
-    key={name}
-    className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition
-      ${
-        categories.includes(name)
-          ? "bg-rose-100 border border-rose-300"
-          : "hover:bg-rose-50"
-      }`}
+    key={title}
+    className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition ${
+      categories.includes(title)
+        ? "border border-rose-300 bg-rose-100"
+        : "hover:bg-rose-50"
+    }`}
   >
     <input
       type="checkbox"
-      checked={categories.includes(name)}
-      onChange={() => toggleCategory(name)}
+      checked={categories.includes(title)}
+      onChange={() => toggleCategory(title)}
       className="accent-rose-500"
     />
 
@@ -114,7 +93,9 @@ export default function FilterSidebar() {
       className="text-rose-500"
     />
 
-    <span className="text-gray-700">{name}</span>
+    <span className="text-gray-700">
+      {title}
+    </span>
   </label>
 ))}
 
@@ -197,10 +178,14 @@ export default function FilterSidebar() {
 
         <div className="space-y-3">
 
-        {cityOptions.map((city) => (
+     {CITIES.map((city) => (
   <label
     key={city}
-    className="flex cursor-pointer items-center gap-3 rounded-xl p-2 transition hover:bg-rose-50"
+    className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition ${
+      cities.includes(city)
+        ? "border border-rose-300 bg-rose-100"
+        : "hover:bg-rose-50"
+    }`}
   >
     <input
       type="checkbox"

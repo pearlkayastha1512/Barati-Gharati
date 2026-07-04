@@ -2,7 +2,7 @@
 
 import { FaMapMarkerAlt } from "react-icons/fa";
 
-import { cities } from "@/data/cities";
+import { CITIES } from "@/constants/cities";
 import SearchDropdown from "./SearchDropdown";
 
 interface LocationSelectProps {
@@ -19,7 +19,7 @@ export default function LocationSelect({
       label="Location"
       placeholder="Select your city"
       value={value}
-      items={cities}
+      items={CITIES}
       icon={<FaMapMarkerAlt />}
       onChange={onChange}
     />
