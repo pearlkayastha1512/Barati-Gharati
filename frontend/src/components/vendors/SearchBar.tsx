@@ -1,17 +1,21 @@
-
-
 "use client";
 
-import { Search, MapPin, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  SlidersHorizontal,
+} from "lucide-react";
+
 import { useVendorStore } from "@/store/vendorStore";
+import { CITIES } from "@/constants/cities";
 
 export default function SearchBar() {
-const {
-  search,
-  setSearch,
-  city,
-  setCity,
-} = useVendorStore();
+  const {
+    search,
+    setSearch,
+    city,
+    setCity,
+  } = useVendorStore();
 
   return (
     <div className="sticky top-24 z-30 mb-10 rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-lg backdrop-blur-xl">
@@ -27,7 +31,9 @@ const {
             type="text"
             placeholder="Search vendors, venues, photographers..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
             className="
               h-14
               w-full
@@ -54,8 +60,10 @@ const {
           />
 
           <select
-           value={city}
-  onChange={(e) => setCity(e.target.value)}
+            value={city}
+            onChange={(e) =>
+              setCity(e.target.value)
+            }
             className="
               h-14
               w-full
@@ -71,12 +79,18 @@ const {
               focus:border-rose-500
             "
           >
-            <option value="">All Cities</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Jaipur">Jaipur</option>
-  <option value="Mumbai">Mumbai</option>
-  <option value="Goa">Goa</option>
-  <option value="Udaipur">Udaipur</option>
+            <option value="">
+              All Cities
+            </option>
+
+            {CITIES.map((city) => (
+              <option
+                key={city}
+                value={city}
+              >
+                {city}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -89,10 +103,10 @@ const {
             justify-center
             gap-2
             rounded-2xl
-            text-gray-700
             border
             border-gray-200
             px-6
+            text-gray-700
             transition
             hover:bg-rose-500
             hover:text-white

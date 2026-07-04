@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 interface FooterColumnProps {
@@ -19,7 +21,13 @@ export default function FooterColumn({
         {title}
       </h3>
 
-      <ul className="space-y-4">
+      <ul
+        className={
+          title === "Services"
+            ? "grid grid-cols-2 gap-x-6 gap-y-3"
+            : "space-y-4"
+        }
+      >
         {links.map((link) => (
           <li key={link.title}>
             <Link

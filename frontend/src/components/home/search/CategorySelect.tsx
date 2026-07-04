@@ -2,7 +2,7 @@
 
 import { FaMagic } from "react-icons/fa";
 
-import { categories } from "@/data/categories";
+import { VENDOR_CATEGORIES } from "@/constants/categories";
 import SearchDropdown from "./SearchDropdown";
 
 interface CategorySelectProps {
@@ -19,7 +19,7 @@ export default function CategorySelect({
       label="Category"
       placeholder="Select category"
       value={value}
-      items={categories}
+      items={[...VENDOR_CATEGORIES]}
       icon={<FaMagic />}
       onChange={onChange}
     />

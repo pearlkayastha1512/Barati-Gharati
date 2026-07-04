@@ -4,6 +4,7 @@ import { VendorSettings } from "@/types/vendorSettings";
 import { getUsers, saveUsers } from "./auth.service";
 
 const STORAGE_KEY = "vendors";
+import { emailService } from "./email.service";
 
 export type StoredVendor = VendorRegistrationForm & {
   id: number;
@@ -12,7 +13,10 @@ export type StoredVendor = VendorRegistrationForm & {
   userId: string;
 
   // Admin Approval
-  isApproved: boolean;
+  approvalStatus:
+    | "pending"
+    | "approved"
+    | "rejected";
 
   // Vendor can activate/deactivate business
   isActive: boolean;
@@ -23,6 +27,59 @@ export type StoredVendor = VendorRegistrationForm & {
 
   settings: VendorSettings;
 };
+
+// export function getVendors(): StoredVendor[] {
+//   if (typeof window === "undefined") {
+//     return [];
+//   }
+
+//   const vendors = localStorage.getItem(STORAGE_KEY);
+
+//   if (!vendors) {
+//     return [];
+//   }
+
+//   const parsedVendors = JSON.parse(vendors);
+
+//   const updatedVendors: StoredVendor[] =
+//     parsedVendors.map((vendor: any) => ({
+//       ...vendor,
+
+//       // Backward Compatibility
+//       isActive: vendor.isActive ?? true,
+
+//       approvalStatus:
+//         vendor.approvalStatus ??
+//         (vendor.isApproved
+//           ? "approved"
+//           : "pending"),
+
+//       settings: vendor.settings ?? {
+//         business: {
+//           acceptNewBookings: true,
+//           displayPricingPublicly: false,
+//           showAvailabilityCalendar: true,
+//         },
+
+//         notifications: {
+//           newBookingNotifications: true,
+//           paymentAlerts: true,
+//           customerMessages: true,
+//           marketingEmails: false,
+//         },
+
+//         security: {
+//           loginAlerts: true,
+//           twoFactorAuthentication: false,
+//         },
+//       },
+//     }));
+
+//   // Automatically migrate old vendors
+//   saveVendors(updatedVendors);
+
+//   return updatedVendors;
+// }
 
 export function getVendors(): StoredVendor[] {
   if (typeof window === "undefined") {
@@ -35,36 +92,84 @@ export function getVendors(): StoredVendor[] {
     return [];
   }
 
-  const parsedVendors: StoredVendor[] = JSON.parse(vendors);
+  const parsedVendors = JSON.parse(vendors);
 
-  const updatedVendors = parsedVendors.map((vendor) => ({
-    ...vendor,
+  const updatedVendors: StoredVendor[] = parsedVendors.map(
+    (vendor: any) => ({
+      ...vendor,
 
-    // Backward compatibility
-    isActive: vendor.isActive ?? true,
+      // Approval Migration
+      approvalStatus:
+        vendor.approvalStatus ??
+        (vendor.isApproved
+          ? "approved"
+          : "pending"),
 
-    settings: vendor.settings ?? {
-      business: {
-        acceptNewBookings: true,
-        displayPricingPublicly: false,
-        showAvailabilityCalendar: true,
+      // Status
+      isActive: vendor.isActive ?? true,
+
+      // Business Profile
+      website: vendor.website ?? "",
+
+      instagram: vendor.instagram ?? "",
+
+      facebook: vendor.facebook ?? "",
+
+      youtube: vendor.youtube ?? "",
+
+      linkedin: vendor.linkedin ?? "",
+
+      experience: vendor.experience ?? "",
+
+      gstNumber: vendor.gstNumber ?? "",
+
+      // Images
+      profileImage:
+        vendor.profileImage ?? "",
+
+      coverImage:
+        vendor.coverImage ?? "",
+
+      portfolioImages:
+        vendor.portfolioImages ?? [],
+
+      // Verification
+      businessVerified:
+        vendor.businessVerified ?? false,
+
+      gstVerified:
+        vendor.gstVerified ?? false,
+
+      bankVerified:
+        vendor.bankVerified ?? false,
+
+      documentsUploaded:
+        vendor.documentsUploaded ?? false,
+
+      // Settings
+      settings: vendor.settings ?? {
+        business: {
+          acceptNewBookings: true,
+          displayPricingPublicly: false,
+          showAvailabilityCalendar: true,
+        },
+
+        notifications: {
+          newBookingNotifications: true,
+          paymentAlerts: true,
+          customerMessages: true,
+          marketingEmails: false,
+        },
+
+        security: {
+          loginAlerts: true,
+          twoFactorAuthentication: false,
+        },
       },
+    })
+  );
 
-      notifications: {
-        newBookingNotifications: true,
-        paymentAlerts: true,
-        customerMessages: true,
-        marketingEmails: false,
-      },
-
-      security: {
-        loginAlerts: true,
-        twoFactorAuthentication: false,
-      },
-    },
-  }));
-
-  // Update old vendors automatically
+  // Auto-migrate existing vendors
   saveVendors(updatedVendors);
 
   return updatedVendors;
@@ -82,6 +187,8 @@ export function saveVendors(
 export function updateVendor(
   updatedVendor: StoredVendor
 ): void {
+  console.log("Incoming vendor:", updatedVendor);
+
   const vendors = getVendors();
 
   const updated = vendors.map((vendor) =>
@@ -93,9 +200,10 @@ export function updateVendor(
       : vendor
   );
 
+  console.log("Saving vendors:", updated);
+
   saveVendors(updated);
 }
-
 export function getVendorByUserId(
   userId: string
 ): StoredVendor | undefined {
@@ -136,7 +244,7 @@ export function registerVendor(
     };
   }
 
-  // Create User ID first so both records share it
+  // Shared User ID
   const userId = crypto.randomUUID();
 
   // Authentication User
@@ -172,19 +280,14 @@ export function registerVendor(
   const newVendor: StoredVendor = {
     ...data,
 
-    // Numeric Vendor ID
     id: Date.now(),
 
-    // Link Vendor ↔ User
     userId,
 
-    // Approval Status (Admin)
-    isApproved: false,
+    approvalStatus: "pending",
 
-    // Vendor Business Status
     isActive: true,
 
-    // Vendor Settings
     settings: {
       business: {
         acceptNewBookings: true,
@@ -213,6 +316,20 @@ export function registerVendor(
   vendors.push(newVendor);
 
   saveVendors(vendors);
+
+  emailService.sendEmail(
+  newUser.email,
+  "Vendor Registration",
+  `
+Hi ${newUser.name},
+
+Thank you for registering.
+
+Your account is under review.
+
+We'll notify you once approved.
+`
+);
 
   return {
     success: true,

@@ -62,7 +62,7 @@ export default function SplashScreen() {
       } else {
         navigation.replace("Couple");
       }
-    }, 20000);
+    }, 2000);
   };
 
   checkApp();

@@ -1,5 +1,14 @@
+"use client";
+
 import Link from "next/link";
-import { Mail, Phone, MapPin, Heart } from "lucide-react";
+
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Heart,
+} from "lucide-react";
+
 import {
   FaFacebookF,
   FaInstagram,
@@ -8,7 +17,8 @@ import {
 } from "react-icons/fa";
 
 import FooterColumn from "./FooterColumn";
-import { footerLinks } from "./footer-data";
+
+import { FOOTER_LINKS } from "@/constants/footer";
 
 export default function Footer() {
   const socialIcons = [
@@ -25,22 +35,27 @@ export default function Footer() {
 
       {/* Background Glow */}
       <div className="absolute -left-32 top-0 h-72 w-72 rounded-full bg-rose-500/10 blur-[120px]" />
+
       <div className="absolute -right-32 bottom-0 h-72 w-72 rounded-full bg-pink-500/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-20">
-        <div className="grid gap-16 lg:grid-cols-5">
+        <div className="grid gap-16 lg:grid-cols-4">
           {/* Logo */}
           <div className="lg:col-span-2">
             <Link
               href="/"
               className="text-4xl font-bold tracking-wide"
             >
-              Wed<span className="text-rose-500">Plan</span>
+              Wed
+              <span className="text-rose-500">
+                Plan
+              </span>
             </Link>
 
             <p className="mt-6 max-w-md leading-8 text-gray-400">
-              Making wedding planning effortless with verified vendors,
-              beautiful inspiration, transparent pricing and unforgettable
+              Making wedding planning effortless with
+              verified vendors, beautiful inspiration,
+              transparent pricing and unforgettable
               experiences across India.
             </p>
 
@@ -51,6 +66,7 @@ export default function Footer() {
                   size={18}
                   className="text-rose-500"
                 />
+
                 +91 98765 43210
               </div>
 
@@ -59,6 +75,7 @@ export default function Footer() {
                   size={18}
                   className="text-rose-500"
                 />
+
                 hello@wedplan.com
               </div>
 
@@ -67,6 +84,7 @@ export default function Footer() {
                   size={18}
                   className="text-rose-500"
                 />
+
                 New Delhi, India
               </div>
             </div>
@@ -101,17 +119,14 @@ export default function Footer() {
           {/* Footer Columns */}
           <FooterColumn
             title="Company"
-            links={footerLinks.company}
+            links={FOOTER_LINKS.company}
           />
 
-          <FooterColumn
-            title="Services"
-            links={footerLinks.services}
-          />
+         
 
           <FooterColumn
             title="Resources"
-            links={footerLinks.resources}
+            links={FOOTER_LINKS.resources}
           />
         </div>
 
@@ -120,7 +135,10 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="flex flex-col items-center justify-between gap-4 text-center text-sm text-gray-400 md:flex-row">
-          <p>© {new Date().getFullYear()} WedPlan. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} WedPlan. All
+            rights reserved.
+          </p>
 
           <p className="flex items-center gap-2">
             Made with

@@ -425,12 +425,12 @@ export default async function StoryPage({
 
           </div>
 
-          <Link
+          {/* <Link
             href="/gallery"
             className="hidden rounded-full border border-rose-200 px-6 py-3 font-semibold text-rose-500 transition hover:bg-rose-500 hover:text-white md:inline-flex"
           >
             View All
-          </Link>
+          </Link> */}
 
         </div>
 
@@ -474,13 +474,13 @@ export default async function StoryPage({
         </div>
 
         <div className="mt-14 text-center">
-
+{/* 
           <Link
             href="/gallery"
             className="inline-flex rounded-full bg-gradient-to-r from-rose-500 to-pink-500 px-8 py-4 font-semibold text-white transition hover:scale-105"
           >
             Browse All Wedding Stories
-          </Link>
+          </Link> */}
 
         </div>
 

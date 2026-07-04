@@ -20,7 +20,13 @@ export default function VendorDetailsPage() {
   const id = params.id as string;
 
   const allVendors = useMemo(() => {
-    const registeredVendors: Vendor[] = getVendors().map((vendor) => ({
+   const registeredVendors: Vendor[] = getVendors()
+  .filter(
+    (vendor) =>
+      vendor.approvalStatus === "approved" &&
+      vendor.isActive
+  )
+  .map((vendor) => ({
       id: vendor.id,
 
       userId: vendor.userId,
