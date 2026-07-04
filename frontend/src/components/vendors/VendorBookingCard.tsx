@@ -13,6 +13,8 @@ import { Vendor } from "@/types/vendor";
 
 import { useRouter } from "next/navigation";
 import { useMessageStore } from "@/store/messageStore";
+import { toast } from "sonner";
+import { getVendorById } from "@/services/vendor.service";
 
 interface VendorBookingCardProps {
   vendor: Vendor;
@@ -231,12 +233,29 @@ const canBook =
  {canBook && (
   <button
     onClick={() => {
-      if (isAuthenticated) {
-        setOpen(true);
-      } else {
-        openLogin();
-      }
-    }}
+  const storedVendor = getVendorById(
+    vendor.id
+  );
+
+  if (
+    storedVendor &&
+    (!storedVendor.isActive ||
+      storedVendor.approvalStatus !==
+        "approved")
+  ) {
+    toast.error(
+      "This vendor is currently unavailable."
+    );
+
+    return;
+  }
+
+  if (isAuthenticated) {
+    setOpen(true);
+  } else {
+    openLogin();
+  }
+}}
     className="
       mt-8
       flex
@@ -257,6 +276,10 @@ const canBook =
       hover:scale-[1.02]
     "
   >
+
+
+
+
     <Calendar size={20} />
     Book Now
   </button>

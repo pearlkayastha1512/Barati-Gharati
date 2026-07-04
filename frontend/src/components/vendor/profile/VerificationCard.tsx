@@ -1,92 +1,113 @@
-// "use client";
-
-// export default function VerificationCard() {
-//   return (
-//     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-//       <h2 className="text-2xl font-bold text-gray-800">
-//         Verification
-//       </h2>
-
-//       <div className="mt-8 space-y-4">
-//         <Row
-//           label="Business Verified"
-//           value="Yes"
-//         />
-
-//         <Row
-//           label="GST Verified"
-//           value="Pending"
-//         />
-
-//         <Row
-//           label="Bank Account"
-//           value="Verified"
-//         />
-//       </div>
-
-//       <button className="mt-8 w-full rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800">
-//         Upload Documents
-//       </button>
-//     </section>
-//   );
-// }
-
-// function Row({
-//   label,
-//   value,
-// }: {
-//   label: string;
-//   value: string;
-// }) {
-//   return (
-//     <div className="flex items-center justify-between">
-//       <span className="text-gray-500">
-//         {label}
-//       </span>
-
-//       <span className="font-semibold text-gray-800">
-//         {value}
-//       </span>
-//     </div>
-//   );
-// }
-
-
 "use client";
 
-import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
+import {
+  CheckCircle2,
+  Clock3,
+  XCircle,
+} from "lucide-react";
+
+import { useAuthStore } from "@/store/authStore";
+import { getVendorByUserId } from "@/services/vendor.service";
 
 export default function VerificationCard() {
-  const { formData } = useVendorRegistrationStore();
+  const { user } = useAuthStore();
+
+  const vendor = user
+    ? getVendorByUserId(user._id)
+    : null;
+
+  if (!vendor) {
+    return null;
+  }
+
+  const approved =
+    vendor.approvalStatus === "approved";
+
+  const rejected =
+    vendor.approvalStatus === "rejected";
+
+  const pending =
+    vendor.approvalStatus === "pending";
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+
       <h2 className="text-2xl font-bold text-gray-800">
-        Verification
+        Verification Status
       </h2>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 space-y-5">
+
         <Row
-          label="Business Verified"
-          verified={formData.businessVerified}
+          label="Business Verification"
+          verified={approved}
         />
 
         <Row
-          label="GST Verified"
-          verified={formData.gstVerified}
+          label="GST Verification"
+          verified={approved}
         />
 
         <Row
-          label="Bank Account"
-          verified={formData.bankVerified}
+          label="Bank Verification"
+          verified={approved}
         />
+
       </div>
 
-      <button className="mt-8 w-full rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800">
-        {formData.documentsUploaded
-          ? "Update Documents"
-          : "Upload Documents"}
-      </button>
+      <div
+        className={`mt-8 flex items-center gap-3 rounded-2xl p-4 ${
+          approved
+            ? "bg-green-50 border border-green-200"
+            : rejected
+            ? "bg-red-50 border border-red-200"
+            : "bg-amber-50 border border-amber-200"
+        }`}
+      >
+        {approved ? (
+          <CheckCircle2
+            className="text-green-600"
+            size={24}
+          />
+        ) : rejected ? (
+          <XCircle
+            className="text-red-600"
+            size={24}
+          />
+        ) : (
+          <Clock3
+            className="text-amber-600"
+            size={24}
+          />
+        )}
+
+        <div>
+          <p
+            className={`font-semibold ${
+              approved
+                ? "text-green-700"
+                : rejected
+                ? "text-red-700"
+                : "text-amber-700"
+            }`}
+          >
+            {approved
+              ? "Verified by Admin"
+              : rejected
+              ? "Verification Rejected"
+              : "Verification Pending"}
+          </p>
+
+          <p className="mt-1 text-sm text-gray-600">
+            {approved
+              ? "Your business has been verified. Customers can now book your services."
+              : rejected
+              ? "Your verification was rejected. Please contact the administrator."
+              : "Your account is currently under review by our admin team."}
+          </p>
+        </div>
+      </div>
+
     </section>
   );
 }
@@ -99,16 +120,24 @@ function Row({
   verified: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-gray-500">{label}</span>
+    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+
+      <span className="text-gray-600">
+        {label}
+      </span>
 
       <span
         className={`font-semibold ${
-          verified ? "text-green-600" : "text-amber-600"
+          verified
+            ? "text-green-600"
+            : "text-amber-600"
         }`}
       >
-        {verified ? "Verified" : "Pending"}
+        {verified
+          ? "Verified"
+          : "Pending"}
       </span>
+
     </div>
   );
 }

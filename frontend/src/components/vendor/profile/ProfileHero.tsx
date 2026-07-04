@@ -76,15 +76,23 @@ export default function ProfileHero() {
                 {vendor.category}
               </span>
 
-              <span className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-2 text-sm text-emerald-100">
+              <span
+  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm ${
+    vendor.approvalStatus === "approved"
+      ? "bg-emerald-500/20 text-emerald-100"
+      : vendor.approvalStatus === "rejected"
+      ? "bg-red-500/20 text-red-100"
+      : "bg-amber-500/20 text-amber-100"
+  }`}
+>
+  <ShieldCheck size={16} />
 
-                <ShieldCheck size={16} />
-
-                {vendor.isApproved
-                  ? "Verified Vendor"
-                  : "Verification Pending"}
-
-              </span>
+  {vendor.approvalStatus === "approved"
+    ? "Verified Vendor"
+    : vendor.approvalStatus === "rejected"
+    ? "Verification Rejected"
+    : "Verification Pending"}
+</span>
 
             </div>
 

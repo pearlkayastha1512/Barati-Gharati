@@ -23,9 +23,15 @@ export default function EditVendorProfileModal({
 }: Props) {
   const { user } = useAuthStore();
 
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
+const [vendor, setVendor] = useState(
+  () => (user ? getVendorByUserId(user._id) : null)
+);
+
+useEffect(() => {
+  if (open && user) {
+    setVendor(getVendorByUserId(user._id) ?? null);
+  }
+}, [open, user?._id]);
 
   const [ownerName, setOwnerName] =
     useState("");
@@ -72,6 +78,9 @@ export default function EditVendorProfileModal({
   const [profileImage, setProfileImage] =
     useState("");
 
+    const [gstNumber, setGstNumber] =
+  useState("");
+
   const [coverImage, setCoverImage] =
     useState("");
 
@@ -84,48 +93,34 @@ export default function EditVendorProfileModal({
 
     setPhone(vendor.phone);
 
-    setBusinessName(
-      vendor.businessName
-    );
+setGstNumber(vendor.gstNumber ?? "");
 
-    setCategory(vendor.category);
+setBusinessName(vendor.businessName);
 
-    setCity(vendor.city);
+setCategory(vendor.category);
 
-    setAddress(vendor.address);
+setCity(vendor.city);
 
-    setDescription(
-      vendor.description
-    );
+setAddress(vendor.address);
 
-    setWebsite(vendor.website);
+setDescription(vendor.description ?? "");
 
-    setInstagram(
-      vendor.instagram
-    );
+setWebsite(vendor.website ?? "");
 
-    setFacebook(
-      vendor.facebook
-    );
+setInstagram(vendor.instagram ?? "");
 
-    setYoutube(vendor.youtube);
+setFacebook(vendor.facebook ?? "");
 
-    setLinkedin(
-      vendor.linkedin
-    );
+setYoutube(vendor.youtube ?? "");
 
-    setExperience(
-      vendor.experience
-    );
+setLinkedin(vendor.linkedin ?? "");
 
-    setProfileImage(
-      vendor.profileImage
-    );
+setExperience(vendor.experience ?? "");
 
-    setCoverImage(
-      vendor.coverImage
-    );
-  }, [open, vendor]);
+setProfileImage(vendor.profileImage ?? "");
+
+setCoverImage(vendor.coverImage ?? "");
+  }, [open, vendor?.id]);
 
   const handleProfileImage = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -167,12 +162,22 @@ export default function EditVendorProfileModal({
       return;
     }
 
+     console.log({
+  website,
+  instagram,
+  facebook,
+  linkedin,
+  youtube,
+  experience,
+  gstNumber,
+});
     updateVendor({
       ...vendor,
 
       ownerName,
 
       email,
+      gstNumber,
 
       phone,
 
@@ -206,13 +211,9 @@ export default function EditVendorProfileModal({
         new Date().toISOString(),
     });
 
-    toast.success(
-      "Profile updated successfully."
-    );
+   toast.success("Profile updated successfully.");
 
-    onClose();
-
-    window.location.reload();
+onClose();
   };
 
   if (!open || !vendor) {
@@ -240,12 +241,13 @@ export default function EditVendorProfileModal({
 
         {/* Body */}
 
-        <div className="space-y-8 p-8"></div>
+        {/* Body */}
 
+<div className="space-y-8 p-8">
 
-        {/* Business Information */}
+  {/* Business Information */}
 
-<div className="grid gap-6 md:grid-cols-2">
+  <div className="grid gap-6 md:grid-cols-2">
 
   <div>
     <label className="mb-2 block font-medium text-slate-700">
@@ -338,7 +340,7 @@ export default function EditVendorProfileModal({
     </label>
 
     <input
-      value={experience}
+      value={experience ?? ""}
       onChange={(e) =>
         setExperience(e.target.value)
       }
@@ -346,6 +348,21 @@ export default function EditVendorProfileModal({
       className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
     />
   </div>
+
+  <div>
+  <label className="mb-2 block font-medium text-slate-700">
+    GST Number
+  </label>
+
+  <input
+   value={gstNumber ?? ""}
+    onChange={(e) =>
+      setGstNumber(e.target.value)
+    }
+    placeholder="GST Number"
+    className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600 text-gray-600"
+  />
+</div>
 
   <div>
     <label className="mb-2 block font-medium text-slate-700">
@@ -398,17 +415,18 @@ export default function EditVendorProfileModal({
 
 <div className="grid gap-6 md:grid-cols-2">
 
-  <input
-    value={website}
-    onChange={(e) =>
-      setWebsite(e.target.value)
-    }
-    placeholder="Website"
-    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
-  />
+ <input
+  value={website ?? ""}
+  onChange={(e) => {
+    console.log("Website:", e.target.value);
+    setWebsite(e.target.value);
+  }}
+  placeholder="Website"
+  className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600 text-gray-600"
+/>
 
   <input
-    value={instagram}
+    value={instagram ?? ""}
     onChange={(e) =>
       setInstagram(e.target.value)
     }
@@ -417,7 +435,7 @@ export default function EditVendorProfileModal({
   />
 
   <input
-    value={facebook}
+    value={facebook ?? ""}
     onChange={(e) =>
       setFacebook(e.target.value)
     }
@@ -426,7 +444,7 @@ export default function EditVendorProfileModal({
   />
 
   <input
-    value={youtube}
+    value={youtube ?? ""}
     onChange={(e) =>
       setYoutube(e.target.value)
     }
@@ -435,7 +453,7 @@ export default function EditVendorProfileModal({
   />
 
   <input
-    value={linkedin}
+   value={linkedin ?? ""}
     onChange={(e) =>
       setLinkedin(e.target.value)
     }
@@ -524,16 +542,19 @@ export default function EditVendorProfileModal({
     Cancel
   </button>
 
-  <button
-    onClick={handleSave}
-    className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
-  >
-    Save Changes
-  </button>
-
+ <button
+  type="button"
+  onClick={handleSave}
+  className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
+>
+  Save Changes
+</button>
 </div>
 
+
       </div>
+    </div>
+
     </div>
   );
 }
