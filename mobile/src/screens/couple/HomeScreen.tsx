@@ -14,7 +14,17 @@ import { MaterialIcons } from "@expo/vector-icons";
 type CategoryProps = {
   icon: any;
   label: string;
+  onPress: () => void;
 };
+
+function Category({ icon, label, onPress }: CategoryProps) {
+  return (
+    <TouchableOpacity style={styles.categoryItem} onPress={onPress}>
+      <MaterialIcons name={icon} size={28} color="#C2185B" />
+      <Text style={styles.categoryText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
 
 type StatCardProps = {
   icon: any;
@@ -31,14 +41,7 @@ type VendorCardProps = {
   price?: string;
 };
 
-function Category({ icon, label }: CategoryProps) {
-  return (
-    <View style={styles.categoryItem}>
-      <MaterialIcons name={icon} size={28} color="#C2185B" />
-      <Text style={styles.categoryText}>{label}</Text>
-    </View>
-  );
-}
+
 
 function StatCard({ icon, title, value, bgColor = "#F3E8FF", iconColor = "#C2185B" }: StatCardProps) {
   return (
@@ -75,7 +78,11 @@ function VendorCard({ title, category, rating = "4.8", price = "₹50,000 onward
   );
 }
 
+import { useNavigation } from "@react-navigation/native";
+
 export default function HomeScreen() {
+  const navigation = useNavigation<any>();
+  // ...rest of your existing code {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
@@ -153,16 +160,15 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
       <View style={styles.categoriesGrid}>
-        <Category icon="location-city" label="Venue" />
-        <Category icon="photo-camera" label="Photography" />
-        <Category icon="brush" label="Makeup" />
-        <Category icon="celebration" label="Decorator" />
-        <Category icon="headset" label="DJ" />
-        <Category icon="restaurant" label="Caterer" />
-        <Category icon="spa" label="Mehendi" />
-        <Category icon="music-note" label="Band" />
-      </View>
-
+  <Category icon="location-city" label="Venue" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Venue" } })} />
+  <Category icon="photo-camera" label="Photography" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Photography" } })} />
+  <Category icon="brush" label="Makeup" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Makeup" } })} />
+  <Category icon="celebration" label="Decorator" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Decorator" } })} />
+  <Category icon="headset" label="DJ" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "DJ" } })} />
+  <Category icon="restaurant" label="Caterer" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Caterer" } })} />
+  <Category icon="spa" label="Mehendi" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Mehendi" } })} />
+  <Category icon="music-note" label="Band" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Band" } })} />
+</View>
       {/* Featured Vendors */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Featured Vendors</Text>
