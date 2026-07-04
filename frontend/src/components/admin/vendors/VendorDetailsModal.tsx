@@ -1,0 +1,175 @@
+"use client";
+
+import Image from "next/image";
+import { X } from "lucide-react";
+
+import { StoredVendor } from "@/services/vendor.service";
+import { getVendorById } from "@/services/vendor.service";
+
+interface Props {
+  vendor: StoredVendor | null;
+
+  open: boolean;
+
+  onClose: () => void;
+
+  onApprove: (vendorId: number) => void;
+
+  onReject: (vendorId: number) => void;
+}
+
+export default function VendorDetailsModal({
+  vendor,
+  open,
+  onClose,
+  onApprove,
+  onReject,
+}: Props) {
+  if (!open || !vendor) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+        {/* Header */}
+
+        <div className="flex items-center justify-between border-b border-gray-200 p-6">
+          <h2 className="text-3xl font-bold text-gray-700">
+            Vendor Details
+          </h2>
+
+          <button
+            onClick={onClose}
+            className="rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          >
+            <X />
+          </button>
+        </div>
+
+        <div className="space-y-8 p-8 text-gray-600">
+          {/* Profile */}
+
+          <div className="flex items-center gap-6">
+            <div className="relative h-28 w-28 overflow-hidden rounded-3xl bg-gray-100">
+              {vendor.profileImage ? (
+                <Image
+                  src={vendor.profileImage}
+                  alt={vendor.businessName}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-4xl font-bold text-gray-400">
+                  {vendor.businessName.charAt(0)}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold text-gray-700">
+                {vendor.businessName}
+              </h2>
+
+              <p className="mt-2 text-gray-500">
+                {vendor.ownerName}
+              </p>
+
+              <div className="mt-4">
+                <span
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                    vendor.approvalStatus === "approved"
+                      ? "bg-green-100 text-green-700"
+                      : vendor.approvalStatus === "rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-amber-100 text-amber-700"
+                  }`}
+                >
+                  {vendor.approvalStatus === "approved"
+                    ? "Approved"
+                    : vendor.approvalStatus === "rejected"
+                    ? "Rejected"
+                    : "Pending"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Information */}
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Info label="Email" value={vendor.email} />
+            <Info label="Phone" value={vendor.phone} />
+            <Info label="Category" value={vendor.category} />
+            <Info label="City" value={vendor.city} />
+            <Info label="GST Number" value={vendor.gstNumber} />
+            <Info label="Experience" value={vendor.experience} />
+          </div>
+
+          {/* Description */}
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700">
+              Description
+            </h3>
+
+            <p className="mt-3 leading-7 text-gray-600">
+              {vendor.description || "-"}
+            </p>
+          </div>
+
+          {/* Social */}
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Info label="Website" value={vendor.website} />
+            <Info label="Instagram" value={vendor.instagram} />
+            <Info label="Facebook" value={vendor.facebook} />
+            <Info label="LinkedIn" value={vendor.linkedin} />
+          </div>
+
+          {/* Actions */}
+
+          <div className="flex justify-end gap-4">
+            {vendor.approvalStatus !== "approved" && (
+              <button
+                onClick={() => onApprove(vendor.id)}
+                className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
+              >
+                Approve Vendor
+              </button>
+            )}
+
+            {vendor.approvalStatus !== "rejected" && (
+              <button
+                onClick={() => onReject(vendor.id)}
+                className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
+              >
+                Reject Vendor
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Info({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string;
+}) {
+  return (
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        {label}
+      </p>
+
+      <p className="mt-1 break-words text-base font-medium text-gray-600">
+        {value || "-"}
+      </p>
+    </div>
+  );
+}

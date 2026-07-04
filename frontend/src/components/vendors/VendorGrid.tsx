@@ -26,52 +26,57 @@ export default function VendorGrid() {
     useState<Vendor[]>([]);
 
   useEffect(() => {
-    const vendors: Vendor[] = getVendors().map(
-      (vendor) => ({
-        id: vendor.id,
-         userId: vendor.userId,
+   const vendors: Vendor[] = getVendors()
+  .filter(
+    (vendor) =>
+      vendor.approvalStatus === "approved" &&
+      vendor.isActive
+  )
+  .map((vendor) => ({
+    id: vendor.id,
 
-        name: vendor.businessName,
+    userId: vendor.userId,
 
-        category: vendor.category,
+    name: vendor.businessName,
 
-        city: vendor.city,
+    category: vendor.category,
 
-        rating: 5,
+    city: vendor.city,
 
-        reviews: 0,
+    rating: 5,
 
+    reviews: 0,
+
+    price: 25000,
+
+    image:
+      vendor.profileImage ||
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+
+    images:
+      vendor.portfolioImages?.length > 0
+        ? vendor.portfolioImages
+        : [
+            vendor.profileImage ||
+              "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+          ],
+
+    featured: false,
+
+    description:
+      vendor.description ||
+      "No description available.",
+
+    amenities: [],
+
+    packages: [
+      {
+        id: 1,
+        name: "Standard Package",
         price: 25000,
-
-        image:
-          vendor.profileImage ||
-          "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-
-        images:
-          vendor.portfolioImages?.length > 0
-            ? vendor.portfolioImages
-            : [
-                vendor.profileImage ||
-                  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-              ],
-
-        featured: false,
-
-        description:
-          vendor.description ||
-          "No description available.",
-
-        amenities: [],
-
-        packages: [
-          {
-            id: 1,
-            name: "Standard Package",
-            price: 25000,
-          },
-        ],
-      })
-    );
+      },
+    ],
+  }));
 
     setRegisteredVendors(vendors);
   }, []);

@@ -61,6 +61,11 @@ export function getVendorBookings(
   );
 }
 
+
+export function getAllBookings(): Booking[] {
+  return getBookings();
+}
+
 export function updateBookingStatus(
   bookingId: string,
   status: BookingStatus

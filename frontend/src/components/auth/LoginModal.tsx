@@ -85,17 +85,20 @@ export default function LoginModal() {
 
   const result = loginUser(email, password);
 
-  if (!result.success) {
-    setLoading(false);
 
-    setErrors({
-      email: result.message,
-      password: "",
-    });
 
-    return;
-  }
 
+  
+if (!result.success) {
+  setLoading(false);
+
+  setErrors({
+    email: result.message,
+    password: "",
+  });
+
+  return;
+}
   login(result.user!);
 
 const dashboard = getDashboardRoute(

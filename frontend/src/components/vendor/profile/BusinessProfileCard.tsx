@@ -6,6 +6,7 @@ import EditVendorProfileModal from "./EditVendorProfileModal";
 
 import { useAuthStore } from "@/store/authStore";
 import { getVendorByUserId } from "@/services/vendor.service";
+import { ShieldCheck } from "lucide-react";
 
 export default function BusinessProfileCard() {
   const { user } = useAuthStore();
@@ -52,11 +53,23 @@ export default function BusinessProfileCard() {
 
             <div className="mt-5 flex flex-wrap gap-3">
 
-              <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
-                {vendor.isApproved
-                  ? "Verified Vendor"
-                  : "Pending Verification"}
-              </span>
+             <span
+  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm text-gray-700  ${
+    vendor.approvalStatus === "approved"
+      ? "bg-emerald-500/20 text-emerald-100"
+      : vendor.approvalStatus === "rejected"
+      ? "bg-red-500/20 text-red-100"
+      : "bg-amber-500/20 text-amber-100"
+  }`}
+>
+  <ShieldCheck size={16} />
+
+  {vendor.approvalStatus === "approved"
+    ? "Verified Vendor"
+    : vendor.approvalStatus === "rejected"
+    ? "Verification Rejected"
+    : "Verification Pending"}
+</span>
 
               <span className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-700">
                 Since{" "}

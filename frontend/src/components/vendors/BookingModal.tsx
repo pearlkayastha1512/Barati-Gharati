@@ -17,6 +17,12 @@ import { useNotificationStore } from "@/store/notificationStore";
 import { getVendorById } from "@/services/vendor.service";
 
 
+import PaymentModal from "@/components/payment/PaymentModal";
+import { paymentService } from "@/services/payment.service";
+
+import { emailService } from "@/services/email.service";
+
+
 import {
   isDateBlocked,
   isDateBooked,
@@ -62,6 +68,9 @@ export default function BookingModal({
 }: BookingModalProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const [paymentOpen, setPaymentOpen] =
+  useState(false);
   const [bookingId, setBookingId] = useState("");
 
   const { user } = useAuthStore();
@@ -89,15 +98,9 @@ const { addNotification } =
       setSuccess(false);
     }
   }, [open]);
-
 const handleBooking = () => {
-
-
-
-console.log("Blocked?", isDateBlocked(vendorId, date));
   if (!user) return;
 
-  // Check vendor availability
   if (isDateBlocked(vendorId, date)) {
     toast.error(
       "This date is blocked by the vendor."
@@ -112,126 +115,177 @@ console.log("Blocked?", isDateBlocked(vendorId, date));
     return;
   }
 
-  setLoading(true);
-
-  setTimeout(() => {
-    setLoading(false);
-
-    const bookingNumber =
-      "WD" +
-      new Date().getFullYear() +
-      Math.floor(
-        100000 + Math.random() * 900000
-      );
-
-    setBookingId(bookingNumber);
-
-    const booking: Booking = {
-      id: crypto.randomUUID(),
-
-      bookingNumber,
-
-      customerId: user._id,
-
-      vendorId,
-
-      customerName: user.name,
-
-      customerEmail: formData.email,
-
-      customerPhone: formData.phone,
-
-      vendorName,
-
-      category,
-
-      packageName,
-
-      eventType: "Wedding",
-
-      eventDate: date,
-
-      eventTime: "",
-
-      venue: vendorName,
-
-      city,
-
-      guests,
-
-      brideName: formData.brideName,
-
-      groomName: formData.groomName,
-
-      specialRequirements:
-        formData.requirements,
-
-      amount: price,
-
-      advancePaid: 0,
-
-      remainingAmount: price,
-
-      paymentStatus: "pending",
-
-      bookingStatus: "pending",
-
-      createdAt: new Date().toISOString(),
-
-      updatedAt: new Date().toISOString(),
-    };
-
-   addBooking(booking);
-
-// Find vendor
-const vendor = getVendorById(vendorId);
-
-if (vendor) {
-  // Customer Notification
-  addNotification({
-    id: crypto.randomUUID(),
-
-    userId: user._id,
-
-    title: "Booking Submitted",
-
-    message: `Your booking request for ${vendorName} has been submitted.`,
-
-    type: "booking",
-
-    link: "/customer/bookings",
-
-    isRead: false,
-
-    createdAt: new Date().toISOString(),
-});
-
-
-
-  // Vendor Notification
-  addNotification({
-    id: crypto.randomUUID(),
-
-    userId: vendor.userId,
-
-    title: "New Booking",
-
-    message: `${user.name} booked your ${category} service.`,
-
-    type: "booking",
-
-    link: "/vendor/bookings",
-
-    isRead: false,
-
-    createdAt: new Date().toISOString(),
-});
-}
-
-setSuccess(true);
-  }, 2000);
+  setPaymentOpen(true);
 };
 
+
+
+
+const handlePaymentSuccess = () => {
+  if (!user) return;
+
+  const bookingNumber =
+    "WD" +
+    new Date().getFullYear() +
+    Math.floor(
+      100000 + Math.random() * 900000
+    );
+
+  setBookingId(bookingNumber);
+
+  const booking: Booking = {
+    id: crypto.randomUUID(),
+
+    bookingNumber,
+
+    customerId: user._id,
+
+    vendorId,
+
+    customerName: user.name,
+
+    customerEmail: formData.email,
+
+    customerPhone: formData.phone,
+
+    vendorName,
+
+    category,
+
+    packageName,
+
+    eventType: "Wedding",
+
+    eventDate: date,
+
+    eventTime: "",
+
+    venue: vendorName,
+
+    city,
+
+    guests,
+
+    brideName: formData.brideName,
+
+    groomName: formData.groomName,
+
+    specialRequirements:
+      formData.requirements,
+
+    amount: price,
+
+    // 25% advance payment
+    advancePaid: price * 0.25,
+
+    remainingAmount:
+      price - price * 0.25,
+
+    paymentStatus: "partial",
+
+    bookingStatus: "pending",
+
+    createdAt: new Date().toISOString(),
+
+    updatedAt: new Date().toISOString(),
+  };
+
+ const payment =
+  paymentService.processPayment({
+    amount: booking.advancePaid,
+  });
+
+if (!payment.success) {
+  toast.error(
+    "Payment failed."
+  );
+
+  return;
+}
+
+  addBooking(booking);
+
+
+
+
+  emailService.sendEmail(
+  booking.customerEmail,
+  "Booking Confirmation",
+  `
+Hi ${booking.customerName},
+
+Your booking for ${booking.vendorName}
+has been confirmed.
+
+Booking ID:
+${booking.bookingNumber}
+
+Advance Paid:
+₹${booking.advancePaid}
+
+Remaining:
+₹${booking.remainingAmount}
+
+Thank you.
+`
+);
+
+toast.success(
+  "Confirmation email sent."
+);
+
+  const vendor = getVendorById(vendorId);
+
+  if (vendor) {
+    addNotification({
+      id: crypto.randomUUID(),
+
+      userId: user._id,
+
+      title: "Booking Submitted",
+
+      message: `Your booking request for ${vendorName} has been submitted.`,
+
+      type: "booking",
+
+      link: "/customer/bookings",
+
+      isRead: false,
+
+      createdAt: new Date().toISOString(),
+    });
+
+    addNotification({
+      id: crypto.randomUUID(),
+
+      userId: vendor.userId,
+
+      title: "New Booking",
+
+      message: `${user.name} booked your ${category} service.`,
+
+      type: "booking",
+
+      link: "/vendor/bookings",
+
+      isRead: false,
+
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  toast.success(
+    "Advance payment successful."
+  );
+
+  toast.success(
+    "Confirmation email sent."
+  );
+
+  setPaymentOpen(false);
+
+  setSuccess(true);
+};
 const [formData, setFormData] = useState({
   brideName: "",
   groomName: "",
@@ -507,6 +561,13 @@ const isFormValid =
           </motion.div>
         </motion.div>
       )}
+
+      <PaymentModal
+  open={paymentOpen}
+  amount={price * 0.25}
+  onClose={() => setPaymentOpen(false)}
+  onSuccess={handlePaymentSuccess}
+/>
     </AnimatePresence>
   );
 }

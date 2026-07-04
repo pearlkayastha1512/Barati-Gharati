@@ -30,81 +30,92 @@ export default function DangerZone() {
     }
   }, [user]);
 
-  const handleDeactivate = () => {
-    if (!vendor) return;
+  if (!vendor) return null;
 
-    if (!vendor.isActive) {
-      toast.info("Business is already deactivated.");
-      return;
-    }
-
+  const handleToggleBusiness = () => {
     setLoading(true);
 
     const updatedVendor: StoredVendor = {
       ...vendor,
-      isActive: false,
+
+      isActive: !vendor.isActive,
+
+      updatedAt: new Date().toISOString(),
     };
 
     updateVendor(updatedVendor);
 
     setVendor(updatedVendor);
 
-    toast.success("Business has been deactivated.");
+    toast.success(
+      updatedVendor.isActive
+        ? "Business activated successfully."
+        : "Business deactivated successfully."
+    );
 
     setLoading(false);
   };
 
   return (
     <section className="rounded-3xl border border-red-200 bg-red-50 p-8">
+
       <h2 className="text-2xl font-bold text-red-600">
         Danger Zone
       </h2>
 
-      <p className="mt-4 text-gray-600">
-        These actions affect your business visibility on the platform.
+      <p className="mt-3 text-gray-600 leading-7">
+        Deactivating your business hides it from customers.
+        Existing bookings remain unaffected.
       </p>
 
-      <div className="mt-6 flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-600">
-          Current Status:
-        </span>
+      <div className="mt-8 flex items-center justify-between rounded-2xl border border-red-100 bg-white p-5">
+
+        <div>
+
+          <p className="font-semibold text-gray-800">
+            Business Status
+          </p>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Customers can only book active businesses.
+          </p>
+
+        </div>
 
         <span
-          className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            vendor?.isActive
+          className={`rounded-full px-4 py-2 text-sm font-semibold ${
+            vendor.isActive
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-700"
           }`}
         >
-          {vendor?.isActive ? "Active" : "Inactive"}
+          {vendor.isActive
+            ? "Active"
+            : "Inactive"}
         </span>
+
       </div>
 
       <div className="mt-8 flex flex-wrap gap-4">
-        <button
-          disabled
-          className="cursor-not-allowed rounded-2xl bg-red-300 px-6 py-3 font-semibold text-white"
-        >
-          Delete Account
-          <span className="ml-2 text-xs">
-            (Coming Soon)
-          </span>
-        </button>
 
         <button
-          onClick={handleDeactivate}
-          disabled={
-            loading || !vendor?.isActive
-          }
-          className="rounded-2xl border border-red-300 px-6 py-3 font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={handleToggleBusiness}
+          disabled={loading}
+          className={`rounded-2xl px-6 py-3 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
+            vendor.isActive
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
         >
           {loading
             ? "Updating..."
-            : vendor?.isActive
+            : vendor.isActive
             ? "Deactivate Business"
-            : "Business Deactivated"}
+            : "Activate Business"}
         </button>
+
       </div>
+
     </section>
   );
 }
