@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import VendorsScreen from "../screens/couple/VendorsScreen";
+import VendorListScreen from "../screens/couple/VendorListScreen";
 import VendorDetailsScreen from "../screens/vendor/VendorDetailsScreen";
 import PackageDetailsScreen from "../screens/vendor/PackageDetailsScreen";
 
@@ -15,7 +15,7 @@ export default function VendorStackNavigator() {
     >
       <Stack.Screen
         name="VendorList"
-        component={VendorsScreen}
+        component={VendorListScreen}
       />
 
       <Stack.Screen
