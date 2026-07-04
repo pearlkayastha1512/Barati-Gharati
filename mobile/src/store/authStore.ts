@@ -1,14 +1,8 @@
 import { create } from "zustand";
 import { saveToken, deleteToken,getToken } from "../utils/secureStore";
 import { decodeToken } from "../utils/jwt";
+import { User,UserRole } from "../types/user";
 
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 interface AuthState {
   token: string | null;
@@ -68,11 +62,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   set({
     token,
     user: {
-      id: decoded.sub,
-      email: decoded.email,
-      role: decoded.role,
-      name: "",
-    },
+  id: decoded.sub,
+  name: "",
+  email: decoded.email,
+  phone: "",
+  role: decoded.role as UserRole,
+  isVerified: true,
+},
     isAuthenticated: true,
     isLoading: false,
   });
