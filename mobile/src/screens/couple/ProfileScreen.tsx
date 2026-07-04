@@ -1,6 +1,7 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
 
-export default function ProfileScreen() {
+export default function HomeScreen() {
   return (
     <View
       style={{
@@ -9,7 +10,9 @@ export default function ProfileScreen() {
         alignItems: "center",
       }}
     >
-      <Text>Home Screen</Text>
+      <Text variant="headlineMedium">
+        Profile Screen
+      </Text>
     </View>
   );
 }
