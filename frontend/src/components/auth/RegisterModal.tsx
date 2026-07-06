@@ -14,7 +14,9 @@ import {
 
 import { useAuthStore } from "@/store/authStore";
 
-import { registerUser } from "@/services/auth.service";
+// import { registerUser } from "@/services/auth.service";
+import { registerApi } from "@/services/api/auth.api";
+import { toast } from "sonner";
 
 export default function RegisterModal() {
  const {
@@ -66,7 +68,7 @@ const [errors, setErrors] = useState({
       window.removeEventListener("keydown", handleEsc);
   }, [closeRegister]);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
 
 
     const newErrors = {
@@ -129,35 +131,86 @@ if (!form.confirmPassword) {
   
   setLoading(true);
 
-const result = registerUser(form);
+// const result = registerUser(form);
 
-if (!result.success) {
+// if (!result.success) {
+//   setLoading(false);
+
+//   setErrors((prev) => ({
+//     ...prev,
+//     email: result.message,
+//   }));
+
+//   return;
+// }
+
+
+try {
+  setLoading(true);
+
+  await registerApi({
+  name: form.name,
+  email: form.email,
+  phone: form.phone,
+  password: form.password,
+});
+
+  setLoading(false);
+
+  // if (!result.ok) {
+  //   setErrors((prev) => ({
+  //     ...prev,
+  //     email:
+  //       result.data.message ??
+  //       "Registration failed.",
+  //   }));
+
+  //   return;
+  // }
+
+  closeRegister();
+
+  toast.success(
+  "Registration successful. Please verify your email."
+);
+
+  openLogin();
+
+  setForm({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  setAgree(false);
+} catch (error: any) {
   setLoading(false);
 
   setErrors((prev) => ({
     ...prev,
-    email: result.message,
+    email:
+      error.message ||
+      "Registration failed.",
   }));
-
-  return;
 }
+// setLoading(false);
 
-setLoading(false);
+// closeRegister();
 
-closeRegister();
-
-openLogin();
+// openLogin();
 
 
-setForm({
-  name: "",
-  email: "",
-  phone: "",
-  password: "",
-  confirmPassword: "",
-});
+// setForm({
+//   name: "",
+//   email: "",
+//   phone: "",
+//   password: "",
+//   confirmPassword: "",
+// });
 
-setAgree(false);
+// setAgree(false);
 };
 
 
@@ -216,31 +269,7 @@ setAgree(false);
 
               {/* Full Name */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-  {/* Full Name */}
-  {/* <div>
-    <label className="mb-2 block text-sm font-medium text-gray-700">
-      Full Name
-    </label>
-
-    <div className="relative">
-      <User
-        size={18}
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-      />
-
-      <input
-        value={form.name}
-        onChange={(e) =>
-          setForm({
-            ...form,
-            name: e.target.value,
-          })
-        }
-        placeholder="Full Name"
-        className="h-11 w-full rounded-xl border border-gray-300 pl-11 pr-4 text-gray-700 outline-none transition focus:border-rose-500"
-      />
-    </div>
-  </div> */}
+  
 
 
 

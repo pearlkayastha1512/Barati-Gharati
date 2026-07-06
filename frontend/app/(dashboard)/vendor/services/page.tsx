@@ -33,15 +33,29 @@ export default function VendorServicesPage() {
   } = useServiceStore();
 
   useEffect(() => {
-    if (!user) return;
+    async function loadVendor() {
+      if (!user) return;
 
-    const vendor = getVendorByUserId(user._id);
+      const vendor = await getVendorByUserId();
 
-    if (!vendor) return;
+      if (!vendor) return;
 
-    loadVendorServices(vendor.id);
+      await loadVendorServices(vendor.id);
+    }
+
+    loadVendor();
   }, [user, loadVendorServices]);
 
+
+//   useEffect(() => {
+//   async function loadServices() {
+//     if (!user) return;
+
+//     await loadVendorServices(0);
+//   }
+
+//   loadServices();
+// }, [user, loadVendorServices]);
   const categories = useMemo(
     () => [
       ...new Set(

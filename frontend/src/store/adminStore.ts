@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
 import { getUsers } from "@/services/auth.service";
-import {
-  getVendors,
-  StoredVendor,
-} from "@/services/vendor.service";
+import { getVendors, StoredVendor } from "@/services/vendor.service";
 import { getAllBookings } from "@/services/booking.service";
+
+import {
+  getAllVendorsApi,
+} from "@/services/api/admin.api";
 
 interface DashboardStats {
   totalVendors: number;
@@ -20,9 +21,9 @@ interface AdminStore {
 
   vendors: StoredVendor[];
 
-  loadDashboard: () => void;
+  loadDashboard: () => Promise<void>;
 
-  loadVendors: () => void;
+  loadVendors: () => Promise<void>;
 }
 
 export const useAdminStore = create<AdminStore>((set) => ({
@@ -36,7 +37,13 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
   vendors: [],
 
-  loadDashboard: () => {
+  // -----------------------------
+  // TEMPORARY
+  // Dashboard is still using localStorage
+  // We'll migrate it after Bookings,
+  // Users and Analytics are connected.
+  // -----------------------------
+  loadDashboard: async () => {
     const users = getUsers();
 
     const vendors = getVendors();
@@ -68,9 +75,19 @@ export const useAdminStore = create<AdminStore>((set) => ({
     });
   },
 
-  loadVendors: () => {
+  // -----------------------------
+  // Vendors now come from backend
+  // Backend MUST return StoredVendor[]
+  // -----------------------------
+  loadVendors: async () => {
+    const result = await getAllVendorsApi();
+
+    if (!result.ok) {
+      return;
+    }
+
     set({
-      vendors: getVendors(),
+      vendors: result.data.data,
     });
   },
 }));

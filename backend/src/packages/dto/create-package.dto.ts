@@ -1,34 +1,68 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreatePackageDto {
-  @ApiProperty({ example: 'Basic Photography Package' })
+  @ApiProperty({
+    example: 'Premium Photography',
+  })
   @IsString()
   @IsNotEmpty()
-  title!: string;
+  name!: string;
 
-  @ApiProperty({ example: 'Includes 4 hours of coverage', required: false })
+  @ApiProperty({
+    example: 'Photographer',
+  })
+  @IsString()
+  @IsNotEmpty()
+  category!: string;
+
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: 25000 })
-  @IsNumber()
+  @ApiProperty({
+    example: 'Full Day',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiProperty({
+    example: 25000,
+  })
   @Type(() => Number)
+  @IsNumber()
   price!: number;
 
-  @ApiProperty({ example: 'cat-uuid-here' })
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  categoryId!: string;
+  image?: string;
 
-  @ApiProperty({ 
-    example: ['4 hours coverage', '500 edited photos', '1 photographer'],
-    required: false 
+  @ApiProperty({
+    required: false,
+    example: [
+      '4 Hours Coverage',
+      'Drone',
+      'Album',
+    ],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  inclusions?: string[];
+  includes?: string[];
 }

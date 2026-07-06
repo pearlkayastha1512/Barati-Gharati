@@ -113,4 +113,14 @@ export class PackagesController {
       user.sub,
     );
   }
+
+  @Get("vendor/:vendorId")
+findVendorPackages(
+  @Param("vendorId") vendorId: number,
+) {
+  return this.packagesService.findVendorPackages(
+    Number(vendorId),
+  );
 }
+}
+

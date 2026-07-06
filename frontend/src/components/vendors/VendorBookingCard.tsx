@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+
 import { Calendar, MessageCircle, Users } from "lucide-react";
 import BookingModal from "./BookingModal";
 import { useAuthStore } from "@/store/authStore";
@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useMessageStore } from "@/store/messageStore";
 import { toast } from "sonner";
 import { getVendorById } from "@/services/vendor.service";
+import { useEffect, useState } from "react";
 
 interface VendorBookingCardProps {
   vendor: Vendor;
@@ -25,16 +26,6 @@ export default function VendorBookingCard({
 }: VendorBookingCardProps) {
 
 
-  const packages = getVendorServices(vendor.id).map(
-  (service, index) => ({
-    id: index + 1,
-    name: service.name,
-    price: service.price,
-  })
-);
-  const [selectedPackage, setSelectedPackage] = useState(
-  () => packages[0]
-);
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState(200);
   const [open, setOpen] = useState(false);
@@ -46,10 +37,49 @@ const {
   sendMessage,
   setSelectedConversation,
 } = useMessageStore();
+
+ const {
+  isAuthenticated,
+  openLogin,
+  user,
+} = useAuthStore();
     
+const [packages, setPackages] = useState<
+  {
+    id: string;
+    name: string;
+    price: number;
+  }[]
+>([]);
 
+const [selectedPackage, setSelectedPackage] =
+  useState<{
+    id: string;
+    name: string;
+    price: number;
+  } | null>(null);
 
-if (packages.length === 0) {
+useEffect(() => {
+  async function loadPackages() {
+    const services = await getVendorServices(vendor.id);
+
+    const mapped = services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+    }));
+
+    setPackages(mapped);
+
+    if (mapped.length > 0) {
+      setSelectedPackage(mapped[0]);
+    }
+  }
+
+  loadPackages();
+}, [vendor.id]);
+
+if (!selectedPackage)  {
   return (
     <aside className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
 
@@ -65,11 +95,7 @@ if (packages.length === 0) {
   );
 }
 
-  const {
-  isAuthenticated,
-  openLogin,
-  user,
-} = useAuthStore();
+ 
 const canBook =
   !isAuthenticated ||
   user?.role === "customer";
@@ -111,12 +137,12 @@ const canBook =
           value={selectedPackage.id}
           onChange={(e) => {
             const pkg = packages.find(
-              (item) => item.id === Number(e.target.value)
-            );
+  (item) => item.id === e.target.value
+);
 
-            if (pkg) {
-              setSelectedPackage(pkg);
-            }
+if (pkg) {
+  setSelectedPackage(pkg);
+}
           }}
           className="
             h-12
@@ -232,23 +258,15 @@ const canBook =
 
  {canBook && (
   <button
-    onClick={() => {
-  const storedVendor = getVendorById(
-    vendor.id
-  );
 
-  if (
-    storedVendor &&
-    (!storedVendor.isActive ||
-      storedVendor.approvalStatus !==
-        "approved")
-  ) {
-    toast.error(
-      "This vendor is currently unavailable."
-    );
+  
+   onClick={async () => {
+ const storedVendor = await getVendorById(vendor.id);
 
-    return;
-  }
+if (!storedVendor) {
+  toast.error("Vendor not found.");
+  return;
+}
 
   if (isAuthenticated) {
     setOpen(true);
@@ -256,6 +274,11 @@ const canBook =
     openLogin();
   }
 }}
+
+
+
+
+
     className="
       mt-8
       flex
@@ -291,6 +314,10 @@ const canBook =
     openLogin();
     return;
   }
+
+
+
+
 
   if (user?.role !== "customer") {
     return;

@@ -132,4 +132,63 @@ async sendBookingInvoice(
   };
 }
 
+
+async sendVendorApprovedEmail(
+  to: string,
+  name: string,
+) {
+  await this.mailerService.sendMail({
+    to,
+    subject: 'Wedding Planner - Vendor Approved',
+
+    html: `
+      <h2>Hello ${name},</h2>
+
+      <p>Congratulations 🎉</p>
+
+      <p>Your vendor account has been approved by the admin.</p>
+
+      <p>You can now log in and start receiving bookings.</p>
+
+      <br>
+
+      <p>Thank you for joining Wedding Planner ❤️</p>
+    `,
+  });
+
+  return {
+    success: true,
+    message: 'Vendor approval email sent.',
+  };
+}
+
+async sendVendorRejectedEmail(
+  to: string,
+  name: string,
+) {
+  await this.mailerService.sendMail({
+    to,
+    subject: 'Wedding Planner - Vendor Application',
+
+    html: `
+      <h2>Hello ${name},</h2>
+
+      <p>We're sorry.</p>
+
+      <p>Your vendor registration has been rejected by the admin.</p>
+
+      <p>You may contact support for more information.</p>
+
+      <br>
+
+      <p>Wedding Planner Team</p>
+    `,
+  });
+
+  return {
+    success: true,
+    message: 'Vendor rejection email sent.',
+  };
+}
+
 }

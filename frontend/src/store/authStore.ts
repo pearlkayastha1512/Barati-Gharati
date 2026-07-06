@@ -15,6 +15,7 @@ interface AuthStore {
   isLoginOpen: boolean;
 
   isRegisterOpen: boolean;
+  token: string | null;
 
   isForgotOpen: boolean;
 
@@ -31,12 +32,15 @@ interface AuthStore {
   openForgot: () => void;
 
   closeForgot: () => void;
-
+setToken: (token: string | null) => void;
 
   updateUser: (
   user: User
 ) => void;
-  login: (user: User) => void;
+login: (
+  user: User,
+  token: string
+) => void;
 
   logout: () => void;
 
@@ -47,6 +51,7 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       user: null,
+      token: null,
 
       isAuthenticated: false,
 
@@ -59,6 +64,7 @@ export const useAuthStore = create<AuthStore>()(
       isRegisterOpen: false,
 
       isForgotOpen: false,
+      
 
       updateUser: (user) =>
   set({
@@ -69,6 +75,10 @@ export const useAuthStore = create<AuthStore>()(
         set({
           isLoginOpen: true,
         }),
+        setToken: (token) =>
+  set({
+    token,
+  }),
 
       closeLogin: () =>
         set({
@@ -97,18 +107,20 @@ export const useAuthStore = create<AuthStore>()(
           isForgotOpen: false,
         }),
 
-      login: (user) =>
-        set({
-          user,
-          isAuthenticated: true,
-          isLoginOpen: false,
-        }),
+     login: (user, token) =>
+  set({
+    user,
+    token,
+    isAuthenticated: true,
+    isLoginOpen: false,
+  }),
 
-      logout: () =>
-        set({
-          user: null,
-          isAuthenticated: false,
-        }),
+     logout: () =>
+  set({
+    user: null,
+    token: null,
+    isAuthenticated: false,
+  }),
 
       setHasHydrated: (state) =>
         set({

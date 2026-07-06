@@ -137,7 +137,7 @@ const expectedSignature = crypto
   },
   data: {
   paymentStatus: PaymentStatus.SUCCESS,
-  amountPaid: booking.totalAmount,
+amountPaid: booking.totalAmount,
   remainingAmount: 0,
 }
 });

@@ -1,183 +1,236 @@
-
 import { create } from "zustand";
 
 import { Booking, BookingStatus } from "@/types/booking";
 
 import {
-  getCustomerBookings,
-  getVendorBookings,
-  getAllBookings,
-  createBooking,
-  updateBookingStatus,
-  deleteBooking,
-  payAdvance,
-} from "@/services/booking.service";
+  createBookingApi,
+  getBookingByIdApi,
+  getCustomerBookingsApi,
+  getVendorBookingsApi,
+  updateBookingStatusApi,
+} from "@/services/api/booking.api";
 
 interface BookingStore {
   bookings: Booking[];
+
   selectedBooking: Booking | null;
+
   activeTab: string;
 
+  loading: boolean;
+
   setActiveTab: (tab: string) => void;
-  selectBooking: (booking: Booking) => void;
+
+  selectBooking: (
+    booking: Booking
+  ) => void;
+
   clearSelectedBooking: () => void;
 
-  loadCustomerBookings: (customerId: string) => void;
-  loadVendorBookings: (vendorId: number) => void;
-  loadAllBookings: () => void;
+  loadCustomerBookings: (
+    customerId: string
+  ) => Promise<void>;
 
-  addBooking: (booking: Booking) => void;
+  loadVendorBookings: (
+    vendorId: number
+  ) => Promise<void>;
+
+  loadAllBookings: () => Promise<void>;
+
+  loadBooking: (
+    bookingId: string
+  ) => Promise<void>;
+
+  addBooking: (
+    booking: Booking
+  ) => Promise<boolean>;
 
   updateStatus: (
     bookingId: string,
     status: BookingStatus
-  ) => void;
-
-  payAdvance: (
-    bookingId: string,
-    amount: number
-  ) => void;
-
-  deleteBooking: (
-    bookingId: string
-  ) => void;
+  ) => Promise<boolean>;
 }
 
-export const useBookingStore = create<BookingStore>((set) => ({
-  bookings: [],
-  selectedBooking: null,
-  activeTab: "All",
+export const useBookingStore =
+  create<BookingStore>((set) => ({
+    bookings: [],
 
-  setActiveTab: (tab) =>
-    set({
-      activeTab: tab,
-    }),
+    selectedBooking: null,
 
-  selectBooking: (booking) =>
-    set({
-      selectedBooking: booking,
-    }),
+    activeTab: "All",
 
-  clearSelectedBooking: () =>
-    set({
-      selectedBooking: null,
-    }),
+    loading: false,
 
-  loadCustomerBookings: (customerId) => {
-    set({
-      bookings: getCustomerBookings(customerId),
-    });
-  },
+    setActiveTab: (tab) =>
+      set({
+        activeTab: tab,
+      }),
 
-  loadVendorBookings: (vendorId) => {
-    set({
-      bookings: getVendorBookings(vendorId),
-    });
-  },
+    selectBooking: (booking) =>
+      set({
+        selectedBooking: booking,
+      }),
 
- loadAllBookings: () => {
-  set({
-    bookings: getAllBookings(),
-  });
-},
+    clearSelectedBooking: () =>
+      set({
+        selectedBooking: null,
+      }),
 
-  addBooking: (booking) => {
-    createBooking(booking);
-
-    set((state) => {
-      const bookings = [...state.bookings, booking];
-
-      return {
-        bookings,
-        selectedBooking:
-          bookings.find(
-            (b) => b.id === state.selectedBooking?.id
-          ) ?? state.selectedBooking,
-      };
-    });
-  },
-
-  updateStatus: (bookingId, status) => {
-    updateBookingStatus(bookingId, status);
-
-    set((state) => {
-      const bookings = state.bookings.map((booking) =>
-        booking.id === bookingId
-          ? {
-              ...booking,
-              bookingStatus: status,
-            }
-          : booking
-      );
-
-      return {
-        bookings,
-        selectedBooking:
-          bookings.find(
-            (b) => b.id === state.selectedBooking?.id
-          ) ?? null,
-      };
-    });
-  },
-
-  payAdvance: (bookingId, amount) => {
-    payAdvance(bookingId, amount);
-
-    set((state) => {
-      const bookings = state.bookings.map((booking) => {
-        if (booking.id !== bookingId) {
-          return booking;
-        }
-
-        const advancePaid = Math.min(
-          booking.advancePaid + amount,
-          booking.amount
-        );
-
-        const remainingAmount =
-          booking.amount - advancePaid;
-
-        return {
-          ...booking,
-          advancePaid,
-          remainingAmount,
-          paymentStatus:
-            remainingAmount === 0
-              ? ("paid" as const)
-              : advancePaid > 0
-              ? ("partial" as const)
-              : ("pending" as const),
-          updatedAt: new Date().toISOString(),
-        };
+    loadCustomerBookings: async () => {
+      set({
+        loading: true,
       });
 
-      return {
-        bookings,
-        selectedBooking:
-          bookings.find(
-            (b) => b.id === state.selectedBooking?.id
-          ) ?? null,
-      };
-    });
-  },
+      const result =
+        await getCustomerBookingsApi();
 
-  deleteBooking: (bookingId) => {
-    deleteBooking(bookingId);
+      if (
+        result.ok &&
+        result.data?.success
+      ) {
+        set({
+          bookings: result.data.data,
+          loading: false,
+        });
 
-    set((state) => {
-      const bookings = state.bookings.filter(
-        (booking) => booking.id !== bookingId
-      );
+        return;
+      }
 
-      return {
-        bookings,
-        selectedBooking:
-          state.selectedBooking?.id === bookingId
-            ? null
-            : bookings.find(
-                (b) => b.id === state.selectedBooking?.id
-              ) ?? null,
-      };
-    });
-  },
-}));
+      set({
+        bookings: [],
+        loading: false,
+      });
+    },
+
+    loadVendorBookings: async () => {
+      set({
+        loading: true,
+      });
+
+      const result =
+        await getVendorBookingsApi();
+
+      if (
+        result.ok &&
+        result.data?.success
+      ) {
+        set({
+          bookings: result.data.data,
+          loading: false,
+        });
+
+        return;
+      }
+
+      set({
+        bookings: [],
+        loading: false,
+      });
+    },
+
+    loadAllBookings: async () => {
+      const result =
+        await getCustomerBookingsApi();
+
+      if (
+        result.ok &&
+        result.data?.success
+      ) {
+        set({
+          bookings: result.data.data,
+        });
+      }
+    },
+
+    loadBooking: async (
+      bookingId
+    ) => {
+      const result =
+        await getBookingByIdApi(
+          bookingId
+        );
+
+      if (
+        result.ok &&
+        result.data?.success
+      ) {
+        set({
+          selectedBooking:
+            result.data.data,
+        });
+      }
+    },
+
+    addBooking: async (
+      booking
+    ) => {
+      const result =
+        await createBookingApi(
+          booking
+        );
+
+      if (
+        !result.ok ||
+        !result.data.success
+      ) {
+        return false;
+      }
+
+      set((state) => ({
+        bookings: [
+          result.data.data,
+          ...state.bookings,
+        ],
+      }));
+
+      return true;
+    },
+
+   updateStatus: async (
+  bookingId,
+  status
+) => {
+  const result =
+    await updateBookingStatusApi(
+      bookingId,
+      status
+    );
+
+  if (!result.ok) {
+    return false;
+  }
+
+  set((state) => ({
+    bookings: state.bookings.map((booking) =>
+      booking.id === bookingId
+        ? {
+            ...booking,
+            bookingStatus: status,
+            updatedAt: new Date().toISOString(),
+          }
+        : booking
+    ),
+
+    selectedBooking:
+      state.selectedBooking?.id === bookingId
+        ? {
+            ...state.selectedBooking,
+            bookingStatus: status,
+            updatedAt: new Date().toISOString(),
+          }
+        : state.selectedBooking,
+  }));
+
+  return true;
+},
+
+
+
+
+
+
+
+
+
+
+  }));

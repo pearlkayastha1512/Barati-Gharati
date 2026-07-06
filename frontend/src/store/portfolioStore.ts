@@ -4,10 +4,10 @@ import { Portfolio } from "@/types/portfolio";
 
 import {
   getPortfolio,
+  getVendorPortfolio,
   createPortfolio,
   updatePortfolio,
   deletePortfolio,
-  getVendorPortfolio,
 } from "@/services/portfolio.service";
 
 interface PortfolioStore {
@@ -15,27 +15,31 @@ interface PortfolioStore {
 
   selectedPortfolio: Portfolio | null;
 
-  loadPortfolio: () => void;
+  loading: boolean;
+
+  loadPortfolio: () => Promise<void>;
 
   loadVendorPortfolio: (
     vendorId: number
-  ) => void;
+  ) => Promise<void>;
 
   setSelectedPortfolio: (
-    item: Portfolio | null
+    portfolio: Portfolio | null
   ) => void;
 
   addPortfolio: (
-    item: Portfolio
-  ) => void;
+    formData: FormData
+  ) => Promise<boolean>;
 
   updateExistingPortfolio: (
-    item: Portfolio
-  ) => void;
+    portfolio: Portfolio
+  ) => Promise<boolean>;
 
-  deletePortfolio: (
+  deleteExistingPortfolio: (
     id: string
-  ) => void;
+  ) => Promise<boolean>;
+
+  clearPortfolio: () => void;
 }
 
 export const usePortfolioStore =
@@ -44,54 +48,163 @@ export const usePortfolioStore =
 
     selectedPortfolio: null,
 
-    loadPortfolio: () => {
+    loading: false,
+
+    // ==========================================
+    // Vendor Dashboard Portfolio
+    // ==========================================
+
+    loadPortfolio: async () => {
       set({
-        portfolio: getPortfolio(),
+        loading: true,
+      });
+
+      const portfolio =
+        await getPortfolio();
+
+      set({
+        portfolio: Array.isArray(
+          portfolio
+        )
+          ? portfolio
+          : [],
+        loading: false,
       });
     },
 
-    loadVendorPortfolio: (
-      vendorId
-    ) => {
-      set({
-        portfolio:
-          getVendorPortfolio(vendorId),
-      });
-    },
+    // ==========================================
+    // Public Vendor Portfolio
+    // ==========================================
+
+    loadVendorPortfolio:
+      async (vendorId) => {
+        set({
+          loading: true,
+        });
+
+        const portfolio =
+          await getVendorPortfolio(
+            vendorId
+          );
+
+        set({
+          portfolio: Array.isArray(
+            portfolio
+          )
+            ? portfolio
+            : [],
+          loading: false,
+        });
+      },
+
+    // ==========================================
 
     setSelectedPortfolio: (
-      item
+      portfolio
+    ) =>
+      set({
+        selectedPortfolio:
+          portfolio,
+      }),
+
+    // ==========================================
+    // Upload
+    // ==========================================
+
+    addPortfolio: async (
+      formData
     ) => {
-      set({
-        selectedPortfolio: item,
-      });
-    },
+      const success =
+        await createPortfolio(
+          formData
+        );
 
-    addPortfolio: (item) => {
-      createPortfolio(item);
+      if (!success) {
+        return false;
+      }
 
-      set({
-        portfolio: getPortfolio(),
-      });
-    },
-
-    updateExistingPortfolio: (
-      item
-    ) => {
-      updatePortfolio(item);
+      const portfolio =
+        await getPortfolio();
 
       set({
-        portfolio: getPortfolio(),
+        portfolio: Array.isArray(
+          portfolio
+        )
+          ? portfolio
+          : [],
       });
+
+      return true;
     },
 
-    deletePortfolio: (
-      id
-    ) => {
-      deletePortfolio(id);
+    // ==========================================
+    // Update
+    // ==========================================
 
+    updateExistingPortfolio:
+      async (portfolio) => {
+        const success =
+          await updatePortfolio(
+            portfolio
+          );
+
+        if (!success) {
+          return false;
+        }
+
+        const latest =
+          await getPortfolio();
+
+        set({
+          portfolio: Array.isArray(
+            latest
+          )
+            ? latest
+            : [],
+
+          selectedPortfolio:
+            null,
+        });
+
+        return true;
+      },
+
+    // ==========================================
+    // Delete
+    // ==========================================
+
+    deleteExistingPortfolio:
+      async (id) => {
+        const success =
+          await deletePortfolio(id);
+
+        if (!success) {
+          return false;
+        }
+
+        const latest =
+          await getPortfolio();
+
+        set({
+          portfolio: Array.isArray(
+            latest
+          )
+            ? latest
+            : [],
+
+          selectedPortfolio:
+            null,
+        });
+
+        return true;
+      },
+
+    // ==========================================
+
+    clearPortfolio: () =>
       set({
-        portfolio: getPortfolio(),
-      });
-    },
+        portfolio: [],
+        selectedPortfolio:
+          null,
+      }),
   }));

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import { Service } from "@/types/service";
+import { getVendorByUserId } from "@/services/vendor.service";
 
 import {
   getServices,
@@ -15,11 +16,11 @@ interface ServiceStore {
 
   selectedService: Service | null;
 
-  loadServices: () => void;
+  loadServices: () => Promise<void>;
 
   loadVendorServices: (
     vendorId: number
-  ) => void;
+  ) => Promise<void>;
 
   setSelectedService: (
     service: Service | null
@@ -27,15 +28,15 @@ interface ServiceStore {
 
   addService: (
     service: Service
-  ) => void;
+  ) => Promise<boolean>;
 
   updateExistingService: (
     service: Service
-  ) => void;
+  ) => Promise<boolean>;
 
   deleteExistingService: (
     id: string
-  ) => void;
+  ) => Promise<boolean>;
 }
 
 export const useServiceStore =
@@ -44,20 +45,26 @@ export const useServiceStore =
 
     selectedService: null,
 
-    loadServices: () => {
+    loadServices: async () => {
+      const services =
+        await getServices();
+
       set({
-        services: getServices(),
+        services,
       });
     },
 
-    loadVendorServices: (
-      vendorId
-    ) => {
-      set({
-        services:
-          getVendorServices(vendorId),
-      });
-    },
+    loadVendorServices:
+      async (vendorId) => {
+        const services =
+          await getVendorServices(
+            vendorId
+          );
+
+        set({
+          services,
+        });
+      },
 
     setSelectedService: (
       service
@@ -67,31 +74,90 @@ export const useServiceStore =
       });
     },
 
-    addService: (service) => {
-      createService(service);
-
-      set({
-        services: getServices(),
-      });
-    },
-
-    updateExistingService: (
+    addService: async (
       service
     ) => {
-      updateService(service);
+      const success =
+        await createService(service);
 
-      set({
-        services: getServices(),
-      });
+      if (!success) {
+        return false;
+      }
+
+      // const services =
+      //   await getVendorServices(
+      //     service.vendorId
+      //   );
+
+
+
+
+
+
+      // set({
+      //   services,
+      // });
+
+
+        const vendor =
+  await getVendorByUserId();
+
+if (!vendor) {
+  return true;
+}
+
+const services =
+  await getVendorServices(
+    vendor.id
+  );
+
+set({
+  services,
+});
+      return true;
     },
 
-    deleteExistingService: (
-      id
-    ) => {
-      deleteService(id);
+    updateExistingService:
+      async (service) => {
+        const success =
+          await updateService(
+            service
+          );
 
-      set({
-        services: getServices(),
-      });
-    },
+        if (!success) {
+          return false;
+        }
+
+        const services =
+          await getVendorServices(
+            service.vendorId
+          );
+
+        set({
+          services,
+        });
+
+        return true;
+      },
+
+    deleteExistingService:
+      async (id) => {
+        const success =
+          await deleteService(id);
+
+        if (!success) {
+          return false;
+        }
+
+        const services =
+          await getServices();
+
+        set({
+          services,
+        });
+
+        return true;
+      },
   }));
+
+

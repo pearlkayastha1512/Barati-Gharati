@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
+import {
+  UploadApiResponse,
+  v2 as cloudinary,
+} from 'cloudinary';
 
 @Injectable()
 export class CloudinaryService {
@@ -11,27 +14,46 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File) {
-    return new Promise((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            folder: 'wedding-planner/vendors',
-            quality: 'auto',
-            fetch_format: 'auto',
-            transformation:[
-             { width:1200,
-              height:1200,
-              crop:'limit'
+  async uploadImage(
+    file: Express.Multer.File,
+  ): Promise<UploadApiResponse> {
+    return new Promise<UploadApiResponse>(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder: 'wedding-planner/vendors',
+
+              quality: 'auto',
+
+              fetch_format: 'auto',
+
+              transformation: [
+                {
+                  width: 1200,
+                  height: 1200,
+                  crop: 'limit',
+                },
+              ],
             },
-            ]
-          },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          },
-        )
-        .end(file.buffer);
-    });
+            (error, result) => {
+              if (error) {
+                return reject(error);
+              }
+
+              if (!result) {
+                return reject(
+                  new Error(
+                    'Cloudinary upload failed.',
+                  ),
+                );
+              }
+
+              resolve(result);
+            },
+          )
+          .end(file.buffer);
+      },
+    );
   }
 }

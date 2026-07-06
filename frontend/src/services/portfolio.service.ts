@@ -1,73 +1,110 @@
 import { Portfolio } from "@/types/portfolio";
 
-const STORAGE_KEY = "portfolio";
+import {
+  createPortfolioApi,
+  deletePortfolioApi,
+  getMyPortfolioApi,
+  getVendorPortfolioApi,
+  updatePortfolioApi,
+} from "@/services/api/portfolio.api";
 
-export function getPortfolio(): Portfolio[] {
-  const data = localStorage.getItem(STORAGE_KEY);
+// ========================================
+// Logged-in Vendor Portfolio
+// ========================================
 
-  if (!data) {
+export async function getPortfolio(): Promise<
+  Portfolio[]
+> {
+  const result =
+    await getMyPortfolioApi();
+
+  if (
+    !result.ok ||
+    !result.data?.success
+  ) {
     return [];
   }
 
-  return JSON.parse(data);
+  return result.data.data as Portfolio[];
 }
 
-export function savePortfolio(
-  portfolio: Portfolio[]
-): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(portfolio)
-  );
-}
+// ========================================
+// Public Vendor Portfolio
+// ========================================
 
-export function createPortfolio(
-  item: Portfolio
-): void {
-  const portfolio = getPortfolio();
-
-  portfolio.push(item);
-
-  savePortfolio(portfolio);
-}
-
-export function getPortfolioById(
-  id: string
-): Portfolio | undefined {
-  return getPortfolio().find(
-    (item) => item.id === id
-  );
-}
-
-export function getVendorPortfolio(
+export async function getVendorPortfolio(
   vendorId: number
-): Portfolio[] {
-  return getPortfolio().filter(
-    (item) =>
-      item.vendorId === vendorId
+): Promise<Portfolio[]> {
+  const result =
+    await getVendorPortfolioApi(
+      vendorId
+    );
+
+  if (
+    !result.ok ||
+    !result.data?.success
+  ) {
+    return [];
+  }
+
+  return result.data.data as Portfolio[];
+}
+
+// ========================================
+// Upload Portfolio
+// ========================================
+
+export async function createPortfolio(
+  formData: FormData
+): Promise<boolean> {
+  const result =
+    await createPortfolioApi(
+      formData
+    );
+
+  return (
+    result.ok &&
+    result.data?.success
   );
 }
 
-export function updatePortfolio(
-  updatedItem: Portfolio
-): void {
-  const portfolio = getPortfolio();
+// ========================================
+// Update Portfolio
+// ========================================
 
-  savePortfolio(
-    portfolio.map((item) =>
-      item.id === updatedItem.id
-        ? updatedItem
-        : item
-    )
+export async function updatePortfolio(
+  portfolio: Portfolio
+): Promise<boolean> {
+  const result =
+    await updatePortfolioApi(
+      portfolio.id,
+      {
+        title: portfolio.title,
+        category:
+          portfolio.category,
+        description:
+          portfolio.description,
+      }
+    );
+
+  return (
+    result.ok &&
+    result.data?.success
   );
 }
 
-export function deletePortfolio(
+// ========================================
+// Delete Portfolio
+// ========================================
+
+export async function deletePortfolio(
   id: string
-): void {
-  savePortfolio(
-    getPortfolio().filter(
-      (item) => item.id !== id
-    )
+): Promise<boolean> {
+  const result =
+    await deletePortfolioApi(id);
+
+  return (
+    result.ok &&
+    result.data?.success
   );
 }

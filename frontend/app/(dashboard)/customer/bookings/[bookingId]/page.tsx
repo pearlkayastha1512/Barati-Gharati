@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect } from "react";
 import {
   useParams,
   notFound,
@@ -12,35 +12,55 @@ import BookingTimeline from "@/components/bookings/details/BookingTimeline";
 import PaymentInformation from "@/components/bookings/details/PaymentInformation";
 import BookingActions from "@/components/bookings/details/BookingActions";
 
-import { getBookingById } from "@/services/booking.service";
+import { useBookingStore } from "@/store/bookingStore";
 
 export default function BookingDetailsPage() {
   const params = useParams();
 
- const booking = useMemo(() => {
-  return getBookingById(
-    params.bookingId as string
-  );
-}, [params.bookingId]);
+  const {
+    selectedBooking,
+    loadBooking,
+  } = useBookingStore();
 
-  if (!booking) {
+  useEffect(() => {
+    loadBooking(
+      params.bookingId as string
+    );
+  }, [params.bookingId]);
+
+  if (selectedBooking === null) {
+    return null;
+  }
+
+  if (!selectedBooking) {
     notFound();
   }
 
   return (
     <div className="space-y-8">
-      <BookingDetailsHero booking={booking} />
+      <BookingDetailsHero
+        booking={selectedBooking}
+      />
 
       <section className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
-         <VendorInformation booking={booking} />
-<BookingTimeline booking={booking} />
+          <VendorInformation
+            booking={selectedBooking}
+          />
+
+          <BookingTimeline
+            booking={selectedBooking}
+          />
         </div>
 
         <div className="space-y-6">
-         <PaymentInformation booking={booking} />
+          <PaymentInformation
+            booking={selectedBooking}
+          />
 
-          <BookingActions booking={booking} />
+          <BookingActions
+            booking={selectedBooking}
+          />
         </div>
       </section>
     </div>

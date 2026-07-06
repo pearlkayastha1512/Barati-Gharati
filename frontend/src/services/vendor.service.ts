@@ -1,339 +1,220 @@
 import { VendorRegistrationForm } from "@/types/vendorRegistration";
-import { User } from "@/types/auth";
 import { VendorSettings } from "@/types/vendorSettings";
-import { getUsers, saveUsers } from "./auth.service";
+import { Vendor } from "@/types/vendor";
 
-const STORAGE_KEY = "vendors";
-import { emailService } from "./email.service";
+import {
+  getVendorsApi,
+  getVendorByIdApi,
+} from "@/services/api/vendor.api";
 
-export type StoredVendor = VendorRegistrationForm & {
+import {
+ 
+  getMyVendorProfileApi,
+} from "@/services/api/vendor.api";
+
+export interface StoredVendor {
   id: number;
 
-  // Links Vendor <-> User
   userId: string;
 
-  // Admin Approval
+  businessName: string;
+
+  description?: string;
+
+  category: string;
+
+  city: string;
+
+  address?: string;
+
+  profileImage?: string;
+
+  coverImage?: string;
+
+  portfolioImages: string[];
+
+  website?: string;
+
+  instagram?: string;
+
+  facebook?: string;
+
+  youtube?: string;
+
+  linkedin?: string;
+
+  experience?: string;
+
+  gstNumber?: string;
+
+  businessVerified: boolean;
+
+  gstVerified: boolean;
+
+  bankVerified: boolean;
+
+  documentsUploaded: boolean;
+
   approvalStatus:
     | "pending"
     | "approved"
     | "rejected";
 
-  // Vendor can activate/deactivate business
   isActive: boolean;
 
   createdAt: string;
 
   updatedAt: string;
 
-  settings: VendorSettings;
-};
+  settings?: VendorSettings;
+}
 
-// export function getVendors(): StoredVendor[] {
-//   if (typeof window === "undefined") {
-//     return [];
+/**
+ * Public vendors (Marketplace)
+ */
+export async function getVendors(): Promise<Vendor[]> {
+  const result = await getVendorsApi();
+
+  if (!result.ok || !result.data) {
+    return [];
+  }
+
+  return result.data as Vendor[];
+}
+
+/**
+ * Public vendor details
+ */
+export async function getVendorById(
+  id: number
+): Promise<Vendor | undefined> {
+  const result = await getVendorByIdApi(id);
+
+  if (!result.ok || !result.data) {
+    return undefined;
+  }
+
+  return result.data as Vendor;
+}
+
+/**
+ * Vendor dashboard profile
+ */
+// export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
+//   const result = await getMyVendorProfileApi();
+
+//   if (!result.ok || !result.data) {
+//     return undefined;
 //   }
 
-//   const vendors = localStorage.getItem(STORAGE_KEY);
-
-//   if (!vendors) {
-//     return [];
-//   }
-
-//   const parsedVendors = JSON.parse(vendors);
-
-//   const updatedVendors: StoredVendor[] =
-//     parsedVendors.map((vendor: any) => ({
-//       ...vendor,
-
-//       // Backward Compatibility
-//       isActive: vendor.isActive ?? true,
-
-//       approvalStatus:
-//         vendor.approvalStatus ??
-//         (vendor.isApproved
-//           ? "approved"
-//           : "pending"),
-
-//       settings: vendor.settings ?? {
-//         business: {
-//           acceptNewBookings: true,
-//           displayPricingPublicly: false,
-//           showAvailabilityCalendar: true,
-//         },
-
-//         notifications: {
-//           newBookingNotifications: true,
-//           paymentAlerts: true,
-//           customerMessages: true,
-//           marketingEmails: false,
-//         },
-
-//         security: {
-//           loginAlerts: true,
-//           twoFactorAuthentication: false,
-//         },
-//       },
-//     }));
-
-//   // Automatically migrate old vendors
-//   saveVendors(updatedVendors);
-
-//   return updatedVendors;
+//   return result.data as StoredVendor;
 // }
 
-export function getVendors(): StoredVendor[] {
-  if (typeof window === "undefined") {
-    return [];
+
+
+
+
+
+
+
+
+
+
+export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
+  const result = await getMyVendorProfileApi();
+
+  if (!result.ok || !result.data?.success) {
+    return undefined;
   }
 
-  const vendors = localStorage.getItem(STORAGE_KEY);
-
-  if (!vendors) {
-    return [];
-  }
-
-  const parsedVendors = JSON.parse(vendors);
-
-  const updatedVendors: StoredVendor[] = parsedVendors.map(
-    (vendor: any) => ({
-      ...vendor,
-
-      // Approval Migration
-      approvalStatus:
-        vendor.approvalStatus ??
-        (vendor.isApproved
-          ? "approved"
-          : "pending"),
-
-      // Status
-      isActive: vendor.isActive ?? true,
-
-      // Business Profile
-      website: vendor.website ?? "",
-
-      instagram: vendor.instagram ?? "",
-
-      facebook: vendor.facebook ?? "",
-
-      youtube: vendor.youtube ?? "",
-
-      linkedin: vendor.linkedin ?? "",
-
-      experience: vendor.experience ?? "",
-
-      gstNumber: vendor.gstNumber ?? "",
-
-      // Images
-      profileImage:
-        vendor.profileImage ?? "",
-
-      coverImage:
-        vendor.coverImage ?? "",
-
-      portfolioImages:
-        vendor.portfolioImages ?? [],
-
-      // Verification
-      businessVerified:
-        vendor.businessVerified ?? false,
-
-      gstVerified:
-        vendor.gstVerified ?? false,
-
-      bankVerified:
-        vendor.bankVerified ?? false,
-
-      documentsUploaded:
-        vendor.documentsUploaded ?? false,
-
-      // Settings
-      settings: vendor.settings ?? {
-        business: {
-          acceptNewBookings: true,
-          displayPricingPublicly: false,
-          showAvailabilityCalendar: true,
-        },
-
-        notifications: {
-          newBookingNotifications: true,
-          paymentAlerts: true,
-          customerMessages: true,
-          marketingEmails: false,
-        },
-
-        security: {
-          loginAlerts: true,
-          twoFactorAuthentication: false,
-        },
-      },
-    })
-  );
-
-  // Auto-migrate existing vendors
-  saveVendors(updatedVendors);
-
-  return updatedVendors;
-}
-
-export function saveVendors(
-  vendors: StoredVendor[]
-) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(vendors)
-  );
-}
-
-export function updateVendor(
-  updatedVendor: StoredVendor
-): void {
-  console.log("Incoming vendor:", updatedVendor);
-
-  const vendors = getVendors();
-
-  const updated = vendors.map((vendor) =>
-    vendor.id === updatedVendor.id
-      ? {
-          ...updatedVendor,
-          updatedAt: new Date().toISOString(),
-        }
-      : vendor
-  );
-
-  console.log("Saving vendors:", updated);
-
-  saveVendors(updated);
-}
-export function getVendorByUserId(
-  userId: string
-): StoredVendor | undefined {
-  return getVendors().find(
-    (vendor) => vendor.userId === userId
-  );
-}
-
-export function getVendorById(
-  id: number
-): StoredVendor | undefined {
-  return getVendors().find(
-    (vendor) => vendor.id === id
-  );
-}
-
-export function registerVendor(
-  data: VendorRegistrationForm
-): {
-  success: boolean;
-  message: string;
-  vendor?: StoredVendor;
-} {
-  const vendors = getVendors();
-  const users = getUsers();
-
-  // Global Email Check
-  const existingUser = users.find(
-    (user) =>
-      user.email.toLowerCase() ===
-      data.email.toLowerCase()
-  );
-
-  if (existingUser) {
-    return {
-      success: false,
-      message: "Email already registered.",
-    };
-  }
-
-  // Shared User ID
-  const userId = crypto.randomUUID();
-
-  // Authentication User
-  const newUser: User & { password: string } = {
-    _id: userId,
-
-    name: data.ownerName,
-
-    email: data.email,
-
-    phone: data.phone,
-
-    password: data.password,
-
-    avatar: "",
-
-    role: "vendor",
-
-    status: "pending",
-
-    isVerified: false,
-
-    createdAt: new Date().toISOString(),
-
-    updatedAt: new Date().toISOString(),
-  };
-
-  users.push(newUser);
-
-  saveUsers(users);
-
-  // Vendor Profile
-  const newVendor: StoredVendor = {
-    ...data,
-
-    id: Date.now(),
-
-    userId,
-
-    approvalStatus: "pending",
-
-    isActive: true,
-
-    settings: {
-      business: {
-        acceptNewBookings: true,
-        displayPricingPublicly: false,
-        showAvailabilityCalendar: true,
-      },
-
-      notifications: {
-        newBookingNotifications: true,
-        paymentAlerts: true,
-        customerMessages: true,
-        marketingEmails: false,
-      },
-
-      security: {
-        loginAlerts: true,
-        twoFactorAuthentication: false,
-      },
-    },
-
-    createdAt: new Date().toISOString(),
-
-    updatedAt: new Date().toISOString(),
-  };
-
-  vendors.push(newVendor);
-
-  saveVendors(vendors);
-
-  emailService.sendEmail(
-  newUser.email,
-  "Vendor Registration",
-  `
-Hi ${newUser.name},
-
-Thank you for registering.
-
-Your account is under review.
-
-We'll notify you once approved.
-`
-);
+  const vendor = result.data.data;
 
   return {
-    success: true,
-    message: "Vendor registered successfully.",
-    vendor: newVendor,
+    id: vendor.frontendVendorId,
+
+    userId: vendor.userId,
+
+    businessName: vendor.businessName,
+
+    description: vendor.description ?? "",
+
+    category: vendor.category ?? "",
+
+    city: vendor.city ?? "",
+
+    address: vendor.address ?? "",
+
+    profileImage: vendor.logoUrl ?? "",
+
+    coverImage: vendor.coverImage ?? "",
+
+    portfolioImages: [],
+
+    website: vendor.website ?? "",
+
+    instagram: vendor.instagram ?? "",
+
+    facebook: vendor.facebook ?? "",
+
+    youtube: vendor.youtube ?? "",
+
+    linkedin: vendor.linkedin ?? "",
+
+    experience: vendor.experience ?? "",
+
+    gstNumber: vendor.gstNumber ?? "",
+
+    businessVerified: vendor.businessVerified,
+
+    gstVerified: vendor.gstVerified,
+
+    bankVerified: vendor.bankVerified,
+
+    documentsUploaded: vendor.documentsUploaded,
+
+    approvalStatus: vendor.status.toLowerCase(),
+
+    isActive: vendor.isActive,
+
+    createdAt: vendor.createdAt,
+
+    updatedAt: vendor.updatedAt,
   };
+}
+
+/**
+ * TODO
+ * This will call PATCH /vendor/profile
+ * after backend profile update API
+ * is fully integrated.
+ */
+export async function updateVendor(
+  updatedVendor: StoredVendor
+): Promise<boolean> {
+  console.warn(
+    "updateVendor() not migrated yet.",
+    updatedVendor
+  );
+
+  return true;
+}
+
+/**
+ * No longer required.
+ * Vendors are fetched from backend.
+ */
+export function saveVendors(): void {
+  return;
+}
+
+/**
+ * Vendor registration now happens through
+ * POST /auth/register/vendor
+ */
+export function registerVendor(
+  _data: VendorRegistrationForm
+): never {
+  throw new Error(
+    "Vendor registration has been migrated to backend Auth API."
+  );
 }

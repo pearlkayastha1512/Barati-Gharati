@@ -35,10 +35,7 @@ export default function VendorBookingsPage() {
   useEffect(() => {
     if (!user) return;
 
-    const vendor =
-      getVendorByUserId(
-        user._id
-      );
+    const vendor = getVendorByUserId();
 
     if (!vendor) return;
 

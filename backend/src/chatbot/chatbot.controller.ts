@@ -17,14 +17,18 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 export class ChatbotController {
   constructor(private chatbotService: ChatbotService) {}
 
-  @Post('message')
-  sendMessage(
-    @CurrentUser('sub') userId: string,
-    @CurrentUser('role') role: string,
-    @Body() dto: SendMessageDto,
-  ) {
-    return this.chatbotService.sendMessage(userId, role, dto.message);
-  }
+ @Post('message')
+sendMessage(
+  @CurrentUser('sub') userId: string,
+  @CurrentUser('role') role: string,
+  @Body() dto: SendMessageDto,
+) {
+  return this.chatbotService.sendMessage(
+    userId,
+    role,
+    dto.message,
+  );
+}
 
   @Post('voice-message')
   @UseInterceptors(
@@ -33,22 +37,39 @@ export class ChatbotController {
       limits: { fileSize: 20 * 1024 * 1024 },
     }),
   )
-  sendVoiceMessage(
-    @CurrentUser('sub') userId: string,
-    @CurrentUser('role') role: string,
-    @UploadedFile() file: any,
-  ) {
-    if (!file) throw new BadRequestException('No audio file uploaded');
-    return this.chatbotService.transcribeAndRespond(
-      userId,
-      role,
-      file.buffer,
-      file.mimetype,
+ @Post('voice-message')
+@UseInterceptors(
+  FileInterceptor('audio', {
+    storage: memoryStorage(),
+    limits: {
+      fileSize: 20 * 1024 * 1024,
+    },
+  }),
+)
+sendVoiceMessage(
+  @CurrentUser('sub') userId: string,
+  @CurrentUser('role') role: string,
+  @UploadedFile() file: any,
+) {
+  if (!file) {
+    throw new BadRequestException(
+      'No audio file uploaded',
     );
   }
 
-  @Get('history')
-  getHistory(@CurrentUser('sub') userId: string) {
-    return this.chatbotService.getHistory(userId);
-  }
+  return this.chatbotService.transcribeAndRespond(
+    userId,
+    role,
+    file.buffer,
+    file.mimetype,
+  );
+}
+ @Get('history')
+getHistory(
+  @CurrentUser('sub') userId: string,
+) {
+  return this.chatbotService.getHistory(
+    userId,
+  );
+}
 }

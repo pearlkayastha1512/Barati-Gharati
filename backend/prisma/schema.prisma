@@ -30,45 +30,100 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  vendor        Vendor?
-  bookings      Booking[]
-  reviews       Review[]
-  budget        Budget[]
-  timelines     Timeline[]
-  checklists    Checklist[]
-  notifications Notification[]
-  guests        Guest[]
-  chatMessages  ChatMessage[]
-  leads         Lead[]
-  verificationTokens VerificationToken[]
+  vendor              Vendor?
+  bookings            Booking[]
+  reviews             Review[]
+  budget              Budget[]
+  timelines           Timeline[]
+  checklists          Checklist[]
+  notifications       Notification[]
+  guests              Guest[]
+  chatMessages        ChatMessage[]
+  leads               Lead[]
+  verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
 }
 
+model Portfolio {
+  id String @id @default(uuid())
+
+  title       String
+  category    String
+  description String?
+
+  imageUrl String
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Vendor {
-  id              String       @id @default(uuid())
-  businessName    String
-  description     String?
-  address         String?
-  logoUrl         String?
-  coverImage      String?
-  status          VendorStatus @default(PENDING)
+  id String @id @default(uuid())
+
+  frontendVendorId Int? @unique
+
+  businessName String
+
+  description String?
+
+  address String?
+
+  city String?
+
+  logoUrl String?
+
+  coverImage String?
+
+  businessVerified  Boolean @default(false)
+  gstVerified       Boolean @default(false)
+  bankVerified      Boolean @default(false)
+  documentsUploaded Boolean @default(false)
+
+  isActive Boolean @default(true)
+
+  website   String?
+  instagram String?
+  facebook  String?
+  youtube   String?
+  linkedin  String?
+
+  experience String?
+  gstNumber  String?
+
+  status VendorStatus @default(PENDING)
+
   rejectionReason String?
-  approvedAt      DateTime?
+
+  approvedAt DateTime?
 
   userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
 
-  packages  Package[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  gallery   VendorGallery[]
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  packages Package[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  gallery VendorGallery[]
 
   bookings Booking[]
-  reviews  Review[]
-  leads    Lead[]
+
+  portfolio Portfolio[]
+
+  reviews Review[]
+
+  leads      Lead[]
+  // @@index([frontendVendorId])
+ 
 
   @@index([categoryId])
   @@index([status])
@@ -141,6 +196,8 @@ enum PaymentStatus {
 model Booking {
   id String @id @default(uuid())
 
+  bookingNumber String @unique
+
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -150,19 +207,39 @@ model Booking {
   packageId String
   package   Package @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
-  eventDate          DateTime
-  status              BookingStatus @default(PENDING)
-  totalAmount         Decimal       @db.Decimal(10, 2)
+  // Event Details
+  eventType String?
+  eventDate DateTime
+  eventTime String?
+
+  venue String?
+  city  String?
+
+  guests Int @default(0)
+
+  brideName String?
+  groomName String?
+
   notes               String?
-  cancellationReason  String?
+  specialRequirements String?
+
+  // Pricing
+  totalAmount Decimal @db.Decimal(10, 2)
 
   paymentStatus PaymentStatus @default(PENDING)
+
   amountPaid Decimal @default(0) @db.Decimal(10, 2)
+
   remainingAmount Decimal @default(0) @db.Decimal(10, 2)
+
+  status BookingStatus @default(PENDING)
+
+  cancellationReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  review    Review?
+
+  review Review?
 
   @@index([userId])
   @@index([vendorId])
@@ -353,6 +430,7 @@ model SiteContent {
   content   String   @db.Text
   updatedAt DateTime @updatedAt
 }
+
 model VerificationToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -364,6 +442,7 @@ model VerificationToken {
 
   @@index([token])
 }
+
 model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique

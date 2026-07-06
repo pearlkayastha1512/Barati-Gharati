@@ -14,7 +14,11 @@ import {
 
 import { useAuthStore } from "@/store/authStore";
 
-import { loginUser } from "@/services/auth.service";
+// import { loginUser } from "@/services/auth.service";
+
+
+
+import { loginApi } from "@/services/api/auth.api";
 
 import { useRouter } from "next/navigation";
 
@@ -57,7 +61,7 @@ export default function LoginModal() {
 
   
 
-  const handleLogin = () => {
+ const handleLogin = async () => {
   const newErrors = {
     email: "",
     password: "",
@@ -81,35 +85,34 @@ export default function LoginModal() {
     return;
   }
 
-  setLoading(true);
+  try {
+    setLoading(true);
 
-  const result = loginUser(email, password);
+    const result = await loginApi({
+      email,
+      password,
+    });
 
+    login(
+      result.user,
+      result.accessToken
+    );
 
+    closeLogin();
 
-
-  
-if (!result.success) {
-  setLoading(false);
-
+    router.push(
+      getDashboardRoute(
+        result.user.role
+      )
+    );
+  } catch (error: any) {
   setErrors({
-    email: result.message,
+    email: error.message,
     password: "",
   });
-
-  return;
-}
-  login(result.user!);
-
-const dashboard = getDashboardRoute(
-  result.user!.role
-);
-
-setLoading(false);
-
-closeLogin();
-
-router.push(dashboard);
+} finally {
+    setLoading(false);
+  }
 };
   return (
     <AnimatePresence>

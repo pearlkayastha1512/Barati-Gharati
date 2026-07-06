@@ -131,41 +131,126 @@ export class LeadsService {
     });
   }
 
-  async convert(userId: string, leadId: string, dto: ConvertLeadDto) {
-    const lead = await this.prisma.lead.findUnique({ where: { id: leadId } });
-    if (!lead) throw new NotFoundException('Lead not found');
+  async convert(
+  userId: string,
+  leadId: string,
+  dto: ConvertLeadDto,
+) {
+  const lead = await this.prisma.lead.findUnique({
+    where: {
+      id: leadId,
+    },
+  });
 
-    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
-    if (!vendor || lead.vendorId !== vendor.id)
-      throw new ForbiddenException('Only the vendor can convert a lead to booking');
+  if (!lead) {
+    throw new NotFoundException(
+      'Lead not found',
+    );
+  }
 
-    const pkg = await this.prisma.package.findUnique({
-      where: { id: dto.packageId },
-    });
-    if (!pkg) throw new NotFoundException('Package not found');
-
-    // Create the booking from lead details
-    const booking = await this.prisma.booking.create({
-      data: {
-        userId: lead.userId,
-        vendorId: lead.vendorId,
-        packageId: dto.packageId,
-        eventDate: lead.eventDate,
-        totalAmount: pkg.price,
-        notes: lead.message,
-        status: BookingStatus.PENDING,
+  const vendor =
+    await this.prisma.vendor.findUnique({
+      where: {
+        userId,
       },
     });
 
-    // Mark lead as converted
-    await this.prisma.lead.update({
-      where: { id: leadId },
-      data: { status: LeadStatus.CONVERTED },
+  if (
+    !vendor ||
+    lead.vendorId !== vendor.id
+  ) {
+    throw new ForbiddenException(
+      'Only the vendor can convert a lead to booking',
+    );
+  }
+
+  if (
+    vendor.status !==
+    VendorStatus.APPROVED
+  ) {
+    throw new ForbiddenException(
+      'Vendor is not approved by admin',
+    );
+  }
+
+  const pkg =
+    await this.prisma.package.findUnique({
+      where: {
+        id: dto.packageId,
+      },
     });
 
-    return {
-      message: 'Lead converted to booking successfully',
-      booking,
-    };
+  if (!pkg) {
+    throw new NotFoundException(
+      'Package not found',
+    );
   }
+
+  const bookingNumber = `BK-${Date.now()}`;
+
+  const booking =
+    await this.prisma.booking.create({
+      data: {
+        bookingNumber,
+
+        userId: lead.userId,
+
+        vendorId: vendor.id,
+
+        packageId: pkg.id,
+
+        eventDate: lead.eventDate,
+
+        eventType: 'Wedding',
+
+        guests: lead.guestCount,
+
+        brideName: '',
+
+        groomName: '',
+
+        city: '',
+
+        venue: '',
+
+        eventTime: '',
+
+        specialRequirements:
+          lead.message,
+
+        totalAmount: pkg.price,
+
+        amountPaid: 0,
+
+        remainingAmount: pkg.price,
+
+        paymentStatus:
+          'PENDING',
+
+        status:
+          BookingStatus.PENDING,
+
+        notes: lead.message,
+      },
+    });
+
+  await this.prisma.lead.update({
+    where: {
+      id: leadId,
+    },
+    data: {
+      status:
+        LeadStatus.CONVERTED,
+    },
+  });
+
+  return {
+    success: true,
+
+    message:
+      'Lead converted to booking successfully.',
+
+    data: booking,
+  };
+}
 }
