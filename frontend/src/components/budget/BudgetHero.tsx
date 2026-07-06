@@ -20,12 +20,16 @@ export default function BudgetHero() {
   (state) => state.expenses
 );
   const weddingBudget = useCustomerStore(
-    (state) => state.weddingBudget
-  );
+  (state) => state.weddingBudget
+);
 
-  const setWeddingBudget = useCustomerStore(
-    (state) => state.setWeddingBudget
-  );
+const setWeddingBudget = useCustomerStore(
+  (state) => state.setWeddingBudget
+);
+
+const loadWeddingBudget = useCustomerStore(
+  (state) => state.loadWeddingBudget
+);
 
   const [editing, setEditing] =
     useState(false);
@@ -34,10 +38,14 @@ export default function BudgetHero() {
     useState(weddingBudget.toString());
 
   useEffect(() => {
-    setBudgetInput(
-      weddingBudget.toString()
-    );
-  }, [weddingBudget]);
+  loadWeddingBudget();
+}, [loadWeddingBudget]);
+
+useEffect(() => {
+  setBudgetInput(
+    weddingBudget.toString()
+  );
+}, [weddingBudget]);
 
 const {
   totalSpent,
@@ -70,27 +78,44 @@ const {
   };
 }, [expenses, weddingBudget]);
 
-  const saveBudget = () => {
-    const value = Number(budgetInput);
+ const saveBudget = async () => {
+  const value = Number(budgetInput);
 
-    if (
-      Number.isNaN(value) ||
-      value <= 0
-    ) {
-      toast.error(
-        "Please enter a valid budget."
-      );
-      return;
-    }
-
-    setWeddingBudget(value);
-
-    toast.success(
-      "Wedding budget updated."
+  if (
+    Number.isNaN(value) ||
+    value <= 0
+  ) {
+    toast.error(
+      "Please enter a valid budget."
     );
+    return;
+  }
 
-    setEditing(false);
-  };
+  const success =
+    await setWeddingBudget(value);
+
+  if (!success) {
+    toast.error(
+      "Failed to update budget."
+    );
+    return;
+  }
+
+  toast.success(
+    "Wedding budget updated."
+  );
+
+  setEditing(false);
+};
+
+
+
+
+
+
+
+
+
 
   return (
     <motion.section

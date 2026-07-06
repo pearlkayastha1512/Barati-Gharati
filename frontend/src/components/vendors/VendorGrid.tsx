@@ -24,69 +24,18 @@ export default function VendorGrid() {
 
   const [registeredVendors, setRegisteredVendors] =
     useState<Vendor[]>([]);
-
-  useEffect(() => {
-   const vendors: Vendor[] = getVendors()
-  .filter(
-    (vendor) =>
-      vendor.approvalStatus === "approved" &&
-      vendor.isActive
-  )
-  .map((vendor) => ({
-    id: vendor.id,
-
-    userId: vendor.userId,
-
-    name: vendor.businessName,
-
-    category: vendor.category,
-
-    city: vendor.city,
-
-    rating: 5,
-
-    reviews: 0,
-
-    price: 25000,
-
-    image:
-      vendor.profileImage ||
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-
-    images:
-      vendor.portfolioImages?.length > 0
-        ? vendor.portfolioImages
-        : [
-            vendor.profileImage ||
-              "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-          ],
-
-    featured: false,
-
-    description:
-      vendor.description ||
-      "No description available.",
-
-    amenities: [],
-
-    packages: [
-      {
-        id: 1,
-        name: "Standard Package",
-        price: 25000,
-      },
-    ],
-  }));
+useEffect(() => {
+  async function loadVendors() {
+    const vendors = await getVendors();
 
     setRegisteredVendors(vendors);
-  }, []);
+  }
 
-  const allVendors = useMemo(() => {
-    return [
-      ...demoVendors,
-      ...registeredVendors,
-    ];
-  }, [registeredVendors]);
+  loadVendors();
+}, []);
+
+
+ const allVendors = registeredVendors;
 
   const filteredVendors = allVendors.filter((vendor) => {
     const matchesSearch =

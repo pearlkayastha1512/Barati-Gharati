@@ -1,12 +1,14 @@
 import { Injectable,NotFoundException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookingStatus,Role,VendorStatus,PaymentStatus } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AdminService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+ constructor(
+  private readonly prisma: PrismaService,
+  private readonly mailService: MailService,
+) {}
 
   async getDashboard() {
     const totalUsers = await this.prisma.user.count();
@@ -122,15 +124,9 @@ async deleteUser(id: string) {
 async getAllVendors() {
   const vendors = await this.prisma.vendor.findMany({
     include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
+      user: true,
       category: true,
-      packages: true,
+      gallery: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -140,36 +136,137 @@ async getAllVendors() {
   return {
     success: true,
     count: vendors.length,
-    data: vendors,
+    data: vendors.map((vendor) => ({
+      // ===========================
+      // IDs
+      // ===========================
+      id: vendor.id,
+      userId: vendor.userId,
+
+      // ===========================
+      // Account
+      // ===========================
+      ownerName: vendor.user.name,
+      email: vendor.user.email,
+      phone: vendor.user.phone ?? '',
+
+      // Frontend still expects these
+      password: '',
+      confirmPassword: '',
+
+      // ===========================
+      // Business
+      // ===========================
+      businessName: vendor.businessName,
+
+      category: vendor.category?.name ?? '',
+
+      city: vendor.city ?? '',
+
+      address: vendor.address ?? '',
+
+      description: vendor.description ?? '',
+
+      // ===========================
+      // Images
+      // ===========================
+      profileImage: vendor.logoUrl ?? '',
+
+      coverImage: vendor.coverImage ?? '',
+
+      portfolioImages: vendor.gallery.map(
+        (image) => image.imageUrl,
+      ),
+
+      // ===========================
+      // Social
+      // ===========================
+      website: vendor.website ?? '',
+
+      instagram: vendor.instagram ?? '',
+
+      facebook: vendor.facebook ?? '',
+
+      youtube: vendor.youtube ?? '',
+
+      linkedin: vendor.linkedin ?? '',
+
+      // ===========================
+      // Business Info
+      // ===========================
+      experience: vendor.experience ?? '',
+
+      gstNumber: vendor.gstNumber ?? '',
+
+      // ===========================
+      // Verification
+      // ===========================
+      businessVerified:
+        vendor.businessVerified,
+
+      gstVerified:
+        vendor.gstVerified,
+
+      bankVerified:
+        vendor.bankVerified,
+
+      documentsUploaded:
+        vendor.documentsUploaded,
+
+      // ===========================
+      // Approval
+      // ===========================
+      approvalStatus:
+        vendor.status.toLowerCase(),
+
+      isActive:
+        vendor.isActive,
+
+      // ===========================
+      // Settings
+      // Frontend requires this object
+      // ===========================
+      settings: {
+        business: {
+          acceptNewBookings: true,
+          displayPricingPublicly: false,
+          showAvailabilityCalendar: true,
+        },
+
+        notifications: {
+          newBookingNotifications: true,
+          paymentAlerts: true,
+          customerMessages: true,
+          marketingEmails: false,
+        },
+
+        security: {
+          loginAlerts: true,
+          twoFactorAuthentication: false,
+        },
+      },
+
+      // ===========================
+      // Dates
+      // ===========================
+      createdAt: vendor.createdAt,
+
+      updatedAt: vendor.updatedAt,
+    })),
   };
 }
+
 
 async getVendorById(id: string) {
   const vendor = await this.prisma.vendor.findUnique({
-    where: { id },
+    where: {
+      id,
+    },
     include: {
       user: true,
       category: true,
-      packages: true,
       gallery: true,
-    },
-  });
-
-  if (!vendor) {
-    throw new NotFoundException('Vendor not found');
-  }
-
-  return {
-    success: true,
-    data: vendor,
-  };
-}
-
-async approveVendor(id: string) {
-
-  const vendor = await this.prisma.vendor.findUnique({
-    where: {
-      id,
+      packages: true,
     },
   });
 
@@ -179,39 +276,225 @@ async approveVendor(id: string) {
     );
   }
 
-  await this.prisma.$transaction(async (tx) => {
+  return {
+    success: true,
+    data: {
+      // ===========================
+      // IDs
+      // ===========================
+      id: vendor.id,
 
-    await tx.vendor.update({
-      where: {
-        id,
-      },
-      data: {
-        status: VendorStatus.APPROVED,
-      },
-    });
+      userId: vendor.userId,
 
-    await tx.user.update({
-      where: {
-        id: vendor.userId,
-      },
-      data: {
-        role: Role.VENDOR,
-      },
-    });
+      // ===========================
+      // Account
+      // ===========================
+      ownerName: vendor.user.name,
 
+      email: vendor.user.email,
+
+      phone: vendor.user.phone ?? '',
+
+      password: '',
+
+      confirmPassword: '',
+
+      // ===========================
+      // Business
+      // ===========================
+      businessName: vendor.businessName,
+
+      category: vendor.category?.name ?? '',
+
+      city: vendor.city ?? '',
+
+      address: vendor.address ?? '',
+
+      description: vendor.description ?? '',
+
+      // ===========================
+      // Images
+      // ===========================
+      profileImage: vendor.logoUrl ?? '',
+
+      coverImage: vendor.coverImage ?? '',
+
+      portfolioImages: vendor.gallery.map(
+        (image) => image.imageUrl,
+      ),
+
+      // ===========================
+      // Social Links
+      // ===========================
+      website: vendor.website ?? '',
+
+      instagram: vendor.instagram ?? '',
+
+      facebook: vendor.facebook ?? '',
+
+      youtube: vendor.youtube ?? '',
+
+      linkedin: vendor.linkedin ?? '',
+
+      // ===========================
+      // Business Info
+      // ===========================
+      experience: vendor.experience ?? '',
+
+      gstNumber: vendor.gstNumber ?? '',
+
+      // ===========================
+      // Verification
+      // ===========================
+      businessVerified:
+        vendor.businessVerified,
+
+      gstVerified:
+        vendor.gstVerified,
+
+      bankVerified:
+        vendor.bankVerified,
+
+      documentsUploaded:
+        vendor.documentsUploaded,
+
+      // ===========================
+      // Approval
+      // ===========================
+      approvalStatus:
+        vendor.status.toLowerCase(),
+
+      isActive:
+        vendor.isActive,
+
+      // ===========================
+      // Packages
+      // ===========================
+      packages: vendor.packages,
+
+      // ===========================
+      // Settings
+      // ===========================
+      settings: {
+        business: {
+          acceptNewBookings: true,
+          displayPricingPublicly: false,
+          showAvailabilityCalendar: true,
+        },
+
+        notifications: {
+          newBookingNotifications: true,
+          paymentAlerts: true,
+          customerMessages: true,
+          marketingEmails: false,
+        },
+
+        security: {
+          loginAlerts: true,
+          twoFactorAuthentication: false,
+        },
+      },
+
+      // ===========================
+      // Dates
+      // ===========================
+      createdAt: vendor.createdAt,
+
+      updatedAt: vendor.updatedAt,
+    },
+  };
+}
+async approveVendor(id: string) {
+  const vendor = await this.prisma.vendor.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      user: true,
+    },
   });
+
+  if (!vendor) {
+    throw new NotFoundException(
+      'Vendor not found',
+    );
+  }
+
+  const updatedVendor = await this.prisma.$transaction(
+    async (tx) => {
+      // Approve vendor
+      const updated = await tx.vendor.update({
+        where: {
+          id,
+        },
+        data: {
+          status: VendorStatus.APPROVED,
+          approvedAt: new Date(),
+
+          businessVerified: true,
+
+          isActive: true,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      // Ensure role is Vendor
+      await tx.user.update({
+        where: {
+          id: vendor.userId,
+        },
+        data: {
+          role: Role.VENDOR,
+        },
+      });
+
+      // Notification
+      await tx.notification.create({
+        data: {
+          userId: vendor.userId,
+          title: 'Vendor Approved',
+          message:
+            'Congratulations! Your vendor account has been approved. You can now receive bookings.',
+        },
+      });
+
+      return updated;
+    },
+  );
+
+  // Send Email
+  await this.mailService.sendVendorApprovedEmail(
+    updatedVendor.user.email,
+    updatedVendor.user.name,
+  );
 
   return {
     success: true,
-    message: 'Vendor approved successfully',
+    message: 'Vendor approved successfully.',
+
+    data: {
+      id: updatedVendor.id,
+
+      approvalStatus: 'approved',
+
+      businessVerified: true,
+
+      isActive: true,
+
+      approvedAt: updatedVendor.approvedAt,
+    },
   };
 }
 
 async rejectVendor(id: string) {
-
   const vendor = await this.prisma.vendor.findUnique({
     where: {
       id,
+    },
+    include: {
+      user: true,
     },
   });
 
@@ -221,20 +504,63 @@ async rejectVendor(id: string) {
     );
   }
 
-  await this.prisma.vendor.update({
-    where: {
-      id,
+  const updatedVendor = await this.prisma.$transaction(
+    async (tx) => {
+      const updated = await tx.vendor.update({
+        where: {
+          id,
+        },
+        data: {
+          status: VendorStatus.REJECTED,
+
+          businessVerified: false,
+
+          isActive: false,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      await tx.notification.create({
+        data: {
+          userId: vendor.userId,
+          title: 'Vendor Registration Rejected',
+          message:
+            'Unfortunately your vendor registration has been rejected. Please contact support for more information.',
+        },
+      });
+
+      return updated;
     },
-    data: {
-      status: VendorStatus.REJECTED,
-    },
-  });
+  );
+
+  await this.mailService.sendVendorRejectedEmail(
+    updatedVendor.user.email,
+    updatedVendor.user.name,
+  );
 
   return {
     success: true,
-    message: 'Vendor rejected successfully',
+    message: 'Vendor rejected successfully.',
+
+    data: {
+      id: updatedVendor.id,
+
+      approvalStatus: 'rejected',
+
+      businessVerified: false,
+
+      isActive: false,
+    },
   };
 }
+
+
+
+
+
+
 async deleteVendor(id: string) {
   const vendor = await this.prisma.vendor.findUnique({
     where: { id },
@@ -253,6 +579,12 @@ async deleteVendor(id: string) {
     message: 'Vendor deleted successfully',
   };
 }
+
+
+
+
+
+
 
 async getAllBookings() {
   const bookings = await this.prisma.booking.findMany({

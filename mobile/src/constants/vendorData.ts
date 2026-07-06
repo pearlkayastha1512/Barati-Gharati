@@ -1,0 +1,91 @@
+export type Vendor = {
+  id: string;
+  name: string;
+  category: string;
+  rating: string;
+  reviews: string;
+  location: string;
+  price: string;
+  image: string;
+  featured?: boolean;
+};
+
+export const CATEGORIES = [
+  "Venue",
+  "Photography",
+  "Makeup",
+  "Decorator",
+  "DJ",
+  "Caterer",
+  "Mehendi",
+  "Band",
+];
+
+// TODO: replace with a real API call — getCities() or derive from getAllVendors()
+export const CITIES = ["All Cities", "Jaipur", "Delhi", "Mumbai", "Bengaluru", "Pune"];
+
+// TODO: remove once getFeaturedVendors() / getAllVendors() is wired up
+export const DUMMY_VENDORS: Vendor[] = [
+  {
+    id: "1",
+    name: "Royal Palace Jaipur",
+    category: "Venue",
+    rating: "4.9",
+    reviews: "250",
+    location: "Jaipur",
+    price: "₹2,50,000",
+    image: "https://picsum.photos/400/300?1",
+  },
+  {
+    id: "2",
+    name: "Imperial Palace Delhi",
+    category: "Venue",
+    rating: "4.8",
+    reviews: "210",
+    location: "Delhi",
+    price: "₹75,000",
+    image: "https://picsum.photos/400/300?2",
+  },
+  {
+    id: "3",
+    name: "Bliss Photography",
+    category: "Photography",
+    rating: "4.8",
+    reviews: "180",
+    location: "Delhi",
+    price: "₹75,000",
+    image: "https://picsum.photos/400/300?3",
+    featured: true,
+  },
+  {
+    id: "4",
+    name: "Dream Decor Studio",
+    category: "Decorator",
+    rating: "4.7",
+    reviews: "145",
+    location: "Mumbai",
+    price: "₹1,20,000",
+    image: "https://picsum.photos/400/300?4",
+  },
+  {
+    id: "5",
+    name: "Flavors Catering",
+    category: "Caterer",
+    rating: "4.9",
+    reviews: "320",
+    location: "Bengaluru",
+    price: "₹1,80,000",
+    image: "https://picsum.photos/400/300?5",
+    featured: true,
+  },
+  {
+    id: "6",
+    name: "Melody Beats",
+    category: "DJ",
+    rating: "4.6",
+    reviews: "130",
+    location: "Pune",
+    price: "₹40,000",
+    image: "https://picsum.photos/400/300?6",
+  },
+];

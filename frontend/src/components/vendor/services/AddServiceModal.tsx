@@ -9,7 +9,9 @@ import { toast } from "sonner";
 
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
-import { getVendorByUserId } from "@/services/vendor.service";
+
+
+
 
 interface AddServiceModalProps {
   open: boolean;
@@ -22,14 +24,13 @@ export default function AddServiceModal({
   onClose,
 }: AddServiceModalProps) {
   const { user } = useAuthStore();
-
-  const {
-    addService,
-    selectedService,
-    updateExistingService,
-    setSelectedService,
-  } = useServiceStore();
-
+const {
+  addService,
+  selectedService,
+  updateExistingService,
+  setSelectedService,
+  loadVendorServices,
+} = useServiceStore();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -75,33 +76,27 @@ export default function AddServiceModal({
     }
   }, [open, selectedService]);
 
-  const handleSave = () => {
-    if (
-      !name ||
-      !category ||
-      !description ||
-      !duration ||
-      !price ||
-      !image
-    ) {
-      toast.error("Please fill all fields.");
-      return;
-    }
+  const handleSave = async () => {
+  if (
+    !name ||
+    !category ||
+    !description ||
+    !duration ||
+    !price ||
+    !image
+  ) {
+    toast.error("Please fill all fields.");
+    return;
+  }
 
-    if (!user) {
-      toast.error("Please login.");
-      return;
-    }
+  if (!user) {
+    toast.error("Please login.");
+    return;
+  }
 
-    const vendor = getVendorByUserId(user._id);
-
-    if (!vendor) {
-      toast.error("Vendor not found.");
-      return;
-    }
-
-    if (selectedService) {
-      updateExistingService({
+  if (selectedService) {
+    const success =
+      await updateExistingService({
         ...selectedService,
 
         name,
@@ -114,52 +109,78 @@ export default function AddServiceModal({
 
         price: Number(price),
 
-        // NEW
         image,
 
-        updatedAt: new Date().toISOString(),
+        includes:
+          selectedService.includes ?? [],
       });
 
-      toast.success("Service updated.");
-    } else {
-      addService({
-        id: crypto.randomUUID(),
-
-        vendorId: vendor.id,
-
-        name,
-
-        category,
-
-        description,
-
-        duration,
-
-        price: Number(price),
-
-        rating: 0,
-
-        reviews: 0,
-
-        // NEW
-        image,
-
-        includes: [],
-
-        status: "active",
-
-        createdAt: new Date().toISOString(),
-
-        updatedAt: new Date().toISOString(),
-      });
-
-      toast.success("Service created.");
+    if (!success) {
+      toast.error("Unable to update service.");
+      return;
     }
 
-    setSelectedService(null);
+    toast.success("Service updated.");
+  } else {
+   
 
-    onClose();
-  };
+const success = await addService({
+  id: "",
+
+  vendorId:0,
+
+  name,
+
+  category,
+
+  description,
+
+  duration,
+
+  price: Number(price),
+
+  rating: 5,
+
+  reviews: 0,
+
+  image,
+
+  includes: [],
+
+  status: "active",
+
+  createdAt: "",
+
+  updatedAt: "",
+});
+
+    if (!success) {
+      toast.error("Unable to create service.");
+      return;
+    }
+
+    toast.success("Service created.");
+  }
+
+  // Backend loads current vendor from JWT.
+await loadVendorServices(0);
+  setSelectedService(null);
+
+  onClose();
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   if (!open) {
     return null;

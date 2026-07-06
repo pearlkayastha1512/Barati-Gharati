@@ -7,26 +7,33 @@ import { X, CheckCircle2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import BookingSuccess from "./BookingSuccess";
 import { useAuthStore } from "@/store/authStore";
-import { useBookingStore } from "@/store/bookingStore";
+
+
+// import { useBookingStore } from "@/store/bookingStore";
 import { Booking } from "@/types/booking";
 
 import { toast } from "sonner";
 
 
-import { useNotificationStore } from "@/store/notificationStore";
+// import { useNotificationStore } from "@/store/notificationStore";
 import { getVendorById } from "@/services/vendor.service";
 
 
 import PaymentModal from "@/components/payment/PaymentModal";
-import { paymentService } from "@/services/payment.service";
+// import { paymentService } from "@/services/payment.service";
 
-import { emailService } from "@/services/email.service";
+// import { emailService } from "@/services/email.service";
+
+
+// import {
+//   isDateBlocked,
+//   isDateBooked,
+// } from "@/services/availability.service";
 
 
 import {
-  isDateBlocked,
-  isDateBooked,
-} from "@/services/availability.service";
+  createBooking,
+} from "@/services/booking.service";
 
 
 
@@ -74,10 +81,10 @@ export default function BookingModal({
   const [bookingId, setBookingId] = useState("");
 
   const { user } = useAuthStore();
-const { addBooking } = useBookingStore();
+// const { addBooking } = useBookingStore();
 
-const { addNotification } =
-  useNotificationStore();
+// const { addNotification } =
+//   useNotificationStore();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -98,31 +105,16 @@ const { addNotification } =
       setSuccess(false);
     }
   }, [open]);
-const handleBooking = () => {
+
+const handleBooking = async () => {
   if (!user) return;
 
-  if (isDateBlocked(vendorId, date)) {
-    toast.error(
-      "This date is blocked by the vendor."
-    );
+  if (!isFormValid) {
+    toast.error("Please fill all required fields.");
     return;
   }
 
-  if (isDateBooked(vendorId, date)) {
-    toast.error(
-      "This date has already been booked."
-    );
-    return;
-  }
-
-  setPaymentOpen(true);
-};
-
-
-
-
-const handlePaymentSuccess = () => {
-  if (!user) return;
+  setLoading(true);
 
   const bookingNumber =
     "WD" +
@@ -131,14 +123,12 @@ const handlePaymentSuccess = () => {
       100000 + Math.random() * 900000
     );
 
-  setBookingId(bookingNumber);
-
   const booking: Booking = {
-    id: crypto.randomUUID(),
+    id: "",
 
     bookingNumber,
 
-    customerId: user._id,
+ customerId: "",
 
     vendorId,
 
@@ -175,117 +165,209 @@ const handlePaymentSuccess = () => {
 
     amount: price,
 
-    // 25% advance payment
-    advancePaid: price * 0.25,
+    advancePaid: 0,
 
-    remainingAmount:
-      price - price * 0.25,
+    remainingAmount: price,
 
-    paymentStatus: "partial",
+    paymentStatus: "PENDING",
 
-    bookingStatus: "pending",
+      bookingStatus: "PENDING",
 
-    createdAt: new Date().toISOString(),
+    createdAt: "",
 
-    updatedAt: new Date().toISOString(),
+    updatedAt: "",
   };
 
- const payment =
-  paymentService.processPayment({
-    amount: booking.advancePaid,
-  });
+  const success =
+    await createBooking(booking);
 
-if (!payment.success) {
-  toast.error(
-    "Payment failed."
-  );
+  setLoading(false);
 
-  return;
-}
+  if (!success) {
+    toast.error(
+      "Unable to create booking."
+    );
 
-  addBooking(booking);
-
-
-
-
-  emailService.sendEmail(
-  booking.customerEmail,
-  "Booking Confirmation",
-  `
-Hi ${booking.customerName},
-
-Your booking for ${booking.vendorName}
-has been confirmed.
-
-Booking ID:
-${booking.bookingNumber}
-
-Advance Paid:
-₹${booking.advancePaid}
-
-Remaining:
-₹${booking.remainingAmount}
-
-Thank you.
-`
-);
-
-toast.success(
-  "Confirmation email sent."
-);
-
-  const vendor = getVendorById(vendorId);
-
-  if (vendor) {
-    addNotification({
-      id: crypto.randomUUID(),
-
-      userId: user._id,
-
-      title: "Booking Submitted",
-
-      message: `Your booking request for ${vendorName} has been submitted.`,
-
-      type: "booking",
-
-      link: "/customer/bookings",
-
-      isRead: false,
-
-      createdAt: new Date().toISOString(),
-    });
-
-    addNotification({
-      id: crypto.randomUUID(),
-
-      userId: vendor.userId,
-
-      title: "New Booking",
-
-      message: `${user.name} booked your ${category} service.`,
-
-      type: "booking",
-
-      link: "/vendor/bookings",
-
-      isRead: false,
-
-      createdAt: new Date().toISOString(),
-    });
+    return;
   }
 
-  toast.success(
-    "Advance payment successful."
-  );
-
-  toast.success(
-    "Confirmation email sent."
-  );
-
-  setPaymentOpen(false);
+  setBookingId(bookingNumber);
 
   setSuccess(true);
+
+  toast.success(
+    "Booking submitted successfully."
+  );
 };
+
+
+
+
+// const handlePaymentSuccess = () => {
+//   if (!user) return;
+
+//   const bookingNumber =
+//     "WD" +
+//     new Date().getFullYear() +
+//     Math.floor(
+//       100000 + Math.random() * 900000
+//     );
+
+//   setBookingId(bookingNumber);
+
+//   const booking: Booking = {
+//     id: crypto.randomUUID(),
+
+//     bookingNumber,
+
+//     customerId: user._id,
+
+//     vendorId,
+
+//     customerName: user.name,
+
+//     customerEmail: formData.email,
+
+//     customerPhone: formData.phone,
+
+//     vendorName,
+
+//     category,
+
+//     packageName,
+
+//     eventType: "Wedding",
+
+//     eventDate: date,
+
+//     eventTime: "",
+
+//     venue: vendorName,
+
+//     city,
+
+//     guests,
+
+//     brideName: formData.brideName,
+
+//     groomName: formData.groomName,
+
+//     specialRequirements:
+//       formData.requirements,
+
+//     amount: price,
+
+//     // 25% advance payment
+//     advancePaid: price * 0.25,
+
+//     remainingAmount:
+//       price - price * 0.25,
+
+//     paymentStatus: "partial",
+
+//     bookingStatus: "pending",
+
+//     createdAt: new Date().toISOString(),
+
+//     updatedAt: new Date().toISOString(),
+//   };
+
+//  const payment =
+//   paymentService.processPayment({
+//     amount: booking.advancePaid,
+//   });
+
+// if (!payment.success) {
+//   toast.error(
+//     "Payment failed."
+//   );
+
+//   return;
+// }
+
+//   addBooking(booking);
+
+
+
+
+//   emailService.sendEmail(
+//   booking.customerEmail,
+//   "Booking Confirmation",
+//   `
+// Hi ${booking.customerName},
+
+// Your booking for ${booking.vendorName}
+// has been confirmed.
+
+// Booking ID:
+// ${booking.bookingNumber}
+
+// Advance Paid:
+// ₹${booking.advancePaid}
+
+// Remaining:
+// ₹${booking.remainingAmount}
+
+// Thank you.
+// `
+// );
+
+// toast.success(
+//   "Confirmation email sent."
+// );
+
+//   const vendor = getVendorById(vendorId);
+
+//   if (vendor) {
+//     addNotification({
+//       id: crypto.randomUUID(),
+
+//       userId: user._id,
+
+//       title: "Booking Submitted",
+
+//       message: `Your booking request for ${vendorName} has been submitted.`,
+
+//       type: "booking",
+
+//       link: "/customer/bookings",
+
+//       isRead: false,
+
+//       createdAt: new Date().toISOString(),
+//     });
+
+//     addNotification({
+//       id: crypto.randomUUID(),
+
+//       userId: vendor.userId,
+
+//       title: "New Booking",
+
+//       message: `${user.name} booked your ${category} service.`,
+
+//       type: "booking",
+
+//       link: "/vendor/bookings",
+
+//       isRead: false,
+
+//       createdAt: new Date().toISOString(),
+//     });
+//   }
+
+//   toast.success(
+//     "Advance payment successful."
+//   );
+
+//   toast.success(
+//     "Confirmation email sent."
+//   );
+
+//   setPaymentOpen(false);
+
+//   setSuccess(true);
+// };
 const [formData, setFormData] = useState({
   brideName: "",
   groomName: "",
@@ -310,7 +392,8 @@ const handleChange = (
 const isFormValid =
   formData.brideName.trim() !== "" &&
   formData.groomName.trim() !== "" &&
-  formData.phone.trim() !== "" ;
+  formData.phone.trim() !== "" &&
+  formData.email.trim() !== "";
 
   return (
     <AnimatePresence>
@@ -562,12 +645,12 @@ const isFormValid =
         </motion.div>
       )}
 
-      <PaymentModal
+      {/* <PaymentModal
   open={paymentOpen}
   amount={price * 0.25}
   onClose={() => setPaymentOpen(false)}
   onSuccess={handlePaymentSuccess}
-/>
+/> */}
     </AnimatePresence>
   );
 }

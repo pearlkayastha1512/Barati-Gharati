@@ -1,75 +1,69 @@
 import { Service } from "@/types/service";
 
-const STORAGE_KEY = "services";
+import {
+  getServicesApi,
+  getVendorServicesApi,
+  createServiceApi,
+  updateServiceApi,
+  deleteServiceApi,
+} from "@/services/api/service.api";
 
-export function getServices(): Service[] {
-  const data = localStorage.getItem(STORAGE_KEY);
+export async function getServices(): Promise<Service[]> {
+  const result = await getServicesApi();
 
-  if (!data) {
+  if (!result.ok || !result.data) {
     return [];
   }
 
-  return JSON.parse(data);
+  return result.data;
 }
 
-export function saveServices(
-  services: Service[]
-): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(services)
-  );
+export async function getVendorServices(
+  vendorId: number
+): Promise<Service[]> {
+  void vendorId;
+
+  const result =
+    await getVendorServicesApi();
+
+  if (!result.ok || !result.data) {
+    return [];
+  }
+
+  return result.data;
 }
 
-export function createService(
+export async function createService(
   service: Service
-): void {
-  const services = getServices();
+): Promise<boolean> {
+  const result = await createServiceApi(service);
 
-  services.push(service);
-
-  saveServices(services);
+  return result.ok;
 }
 
-export function getServiceById(
+export async function updateService(
+  service: Service
+): Promise<boolean> {
+  const result = await updateServiceApi(service);
+
+  return result.ok;
+}
+
+export async function deleteService(
   id: string
-): Service | undefined {
-  return getServices().find(
+): Promise<boolean> {
+  const result = await deleteServiceApi(id);
+
+  return result.ok;
+}
+
+export async function getServiceById(
+  id: string
+): Promise<Service | undefined> {
+  const services = await getServices();
+
+  return services.find(
     (service) => service.id === id
   );
 }
 
-export function getVendorServices(
-  vendorId: number
-): Service[] {
-  return getServices().filter(
-    (service) =>
-      service.vendorId === vendorId
-  );
-}
-
-export function updateService(
-  updatedService: Service
-): void {
-  const services = getServices();
-
-  const updated = services.map((service) =>
-    service.id === updatedService.id
-      ? updatedService
-      : service
-  );
-
-  saveServices(updated);
-}
-
-export function deleteService(
-  id: string
-): void {
-  const services = getServices();
-
-  saveServices(
-    services.filter(
-      (service) => service.id !== id
-    )
-  );
-}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 
 import { vendors as demoVendors } from "@/components/home/featured-vendors/vendor-data";
@@ -19,67 +19,43 @@ export default function VendorDetailsPage() {
 
   const id = params.id as string;
 
-  const allVendors = useMemo(() => {
-   const registeredVendors: Vendor[] = getVendors()
-  .filter(
-    (vendor) =>
-      vendor.approvalStatus === "approved" &&
-      vendor.isActive
-  )
-  .map((vendor) => ({
-      id: vendor.id,
+  const [registeredVendors, setRegisteredVendors] =
+    useState<Vendor[]>([]);
 
-      userId: vendor.userId,
-      name: vendor.businessName,
+  useEffect(() => {
+    async function loadVendors() {
+      const vendors = await getVendors();
 
-      category: vendor.category,
+      setRegisteredVendors(vendors);
+    }
 
-      city: vendor.city,
-
-      rating: 5,
-
-      reviews: 0,
-
-      price: 25000,
-
-      image:
-        vendor.profileImage ||
-        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-
-      images:
-        vendor.portfolioImages.length > 0
-          ? vendor.portfolioImages
-          : [
-              vendor.profileImage ||
-                "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
-            ],
-
-      featured: false,
-
-      description:
-        vendor.description ||
-        "No description available.",
-
-      amenities: [],
-
-      packages: [
-        {
-          id: 1,
-          name: "Standard Package",
-          price: 25000,
-        },
-      ],
-    }));
-
-    return [...demoVendors, ...registeredVendors];
+    loadVendors();
   }, []);
 
+  // const allVendors = useMemo(() => {
+  //   return [
+  //     ...demoVendors,
+  //     ...registeredVendors,
+  //   ];
+  // }, [registeredVendors]);
+
+
+  const allVendors = registeredVendors;
+
   const vendor = allVendors.find(
-    (vendor) => vendor.id.toString() === id
+    (vendor) =>
+      vendor.id.toString() === id
   );
 
-  if (!vendor) {
+  if (
+    registeredVendors.length > 0 &&
+    !vendor
+  ) {
     notFound();
+  }
+
+  if (!vendor) {
+    return null;
   }
 
   return (
@@ -92,7 +68,9 @@ export default function VendorDetailsPage() {
 
           <div className="space-y-10 lg:col-span-2">
 
-           <VendorGallery vendorId={vendor.id} />
+            <VendorGallery
+              vendorId={vendor.id}
+            />
 
             <VendorAbout
               description={vendor.description}
@@ -103,9 +81,9 @@ export default function VendorDetailsPage() {
 
           <div>
 
-          <VendorBookingCard
-  vendor={vendor}
-/>
+            <VendorBookingCard
+              vendor={vendor}
+            />
 
           </div>
 
@@ -113,20 +91,12 @@ export default function VendorDetailsPage() {
 
         <div className="space-y-10 lg:col-span-2">
 
-          
-
           <VendorReviews
-  vendorId={vendor.id}
-  vendorName={vendor.name}
-/>
+            vendorId={vendor.id}
+            vendorName={vendor.name}
+          />
 
         </div>
-
-
-
-
-
-        
 
         <SimilarVendors
           currentVendorId={vendor.id}

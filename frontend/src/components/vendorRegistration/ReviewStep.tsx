@@ -9,6 +9,7 @@ import { registerVendor } from "@/services/vendor.service";
 
 
 import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
+import { registerVendorApi } from "@/services/api/auth.api";
 
 export default function ReviewStep() {
   const {
@@ -17,16 +18,64 @@ export default function ReviewStep() {
     nextStep,
   } = useVendorRegistrationStore();
 
- const handleSubmit = () => {
-  const result = registerVendor(formData);
+//  const handleSubmit = () => {
+//   const result = registerVendor(formData);
 
-  if (!result.success) {
-    alert(result.message);
+//   if (!result.success) {
+//     alert(result.message);
+//     return;
+//   }
+
+//   nextStep();
+// };
+
+
+
+
+
+
+const handleSubmit = async () => {
+  const result = await registerVendorApi({
+    ownerName: formData.ownerName,
+    email: formData.email,
+    phone: formData.phone,
+    password: formData.password,
+
+    businessName: formData.businessName,
+    category: formData.category,
+    city: formData.city,
+    address: formData.address,
+    description: formData.description,
+
+    website: formData.website,
+    instagram: formData.instagram,
+    facebook: formData.facebook,
+    youtube: formData.youtube,
+    linkedin: formData.linkedin,
+
+    experience: formData.experience,
+    gstNumber: formData.gstNumber,
+  });
+
+  if (!result.ok) {
+    alert(result.data.message);
     return;
   }
 
   nextStep();
 };
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-10">

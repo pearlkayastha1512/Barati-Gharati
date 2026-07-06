@@ -1,75 +1,207 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
+
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
 
 @Injectable()
 export class BudgetsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
-  // Acts as an upsert: creates if none exists, updates totalBudget if it does
-  async createOrUpdate(userId: string, dto: CreateBudgetDto) {
-    return this.prisma.budget.upsert({
-      where: { userId },
-      update: { totalBudget: dto.totalBudget },
-      create: { userId, totalBudget: dto.totalBudget },
+  // ===================================
+  // CREATE OR UPDATE
+  // ===================================
+
+  async createOrUpdate(
+    userId: string,
+    dto: CreateBudgetDto,
+  ) {
+    await this.prisma.budget.upsert({
+      where: {
+        userId,
+      },
+
+      update: {
+        totalBudget: dto.budget,
+      },
+
+      create: {
+        userId,
+        totalBudget: dto.budget,
+      },
     });
-  }
-
-  async findMine(userId: string) {
-    const budget = await this.prisma.budget.findUnique({
-      where: { userId },
-      include: { expenses: true },
-    });
-
-    if (!budget) throw new NotFoundException('Budget not found. Please create one first.');
-
-    return budget;
-  }
-
-  async getSummary(userId: string) {
-    const budget = await this.prisma.budget.findUnique({
-      where: { userId },
-      include: { expenses: true },
-    });
-
-    if (!budget) throw new NotFoundException('Budget not found. Please create one first.');
-
-    const spentAmount = budget.expenses.reduce(
-      (sum, expense) => sum + Number(expense.amount),
-      0,
-    );
-    const remainingBudget = Number(budget.totalBudget) - spentAmount;
-
-    const categoryBreakdown: Record<string, number> = {};
-    for (const expense of budget.expenses) {
-      categoryBreakdown[expense.category] =
-        (categoryBreakdown[expense.category] ?? 0) + Number(expense.amount);
-    }
 
     return {
-      totalBudget: Number(budget.totalBudget),
-      spentAmount,
-      remainingBudget,
-      categoryBreakdown,
+      success: true,
+      message: 'Budget saved successfully.',
     };
   }
 
-  async update(userId: string, dto: UpdateBudgetDto) {
-    const existing = await this.prisma.budget.findUnique({ where: { userId } });
-    if (!existing) throw new NotFoundException('Budget not found. Please create one first.');
+  // ===================================
+  // GET MY BUDGET
+  // ===================================
 
-    return this.prisma.budget.update({
-      where: { userId },
-      data: { totalBudget: dto.totalBudget },
-    });
+  async findMine(userId: string) {
+    const budget =
+      await this.prisma.budget.findUnique({
+        where: {
+          userId,
+        },
+      });
+
+    if (!budget) {
+      return {
+        success: true,
+
+        data: {
+          budget: 1000000,
+        },
+      };
+    }
+
+    return {
+      success: true,
+
+      data: {
+        budget: Number(
+          budget.totalBudget,
+        ),
+      },
+    };
   }
 
-  async remove(userId: string) {
-    const existing = await this.prisma.budget.findUnique({ where: { userId } });
-    if (!existing) throw new NotFoundException('Budget not found');
+  // ===================================
+  // BUDGET SUMMARY
+  // ===================================
 
-    await this.prisma.budget.delete({ where: { userId } });
-    return { message: 'Budget deleted successfully' };
+  async getSummary(userId: string) {
+    const budget =
+      await this.prisma.budget.findUnique({
+        where: {
+          userId,
+        },
+
+        include: {
+          expenses: true,
+        },
+      });
+
+    if (!budget) {
+      return {
+        success: true,
+
+        data: {
+          totalBudget: 1000000,
+
+          spentAmount: 0,
+
+          remainingBudget: 1000000,
+
+          categoryBreakdown: {},
+        },
+      };
+    }
+
+    const spentAmount =
+      budget.expenses.reduce(
+        (sum, expense) =>
+          sum + Number(expense.amount),
+        0,
+      );
+
+    const remainingBudget =
+      Number(budget.totalBudget) -
+      spentAmount;
+
+    const categoryBreakdown: Record<
+      string,
+      number
+    > = {};
+
+    for (const expense of budget.expenses) {
+      categoryBreakdown[
+        expense.category
+      ] =
+        (categoryBreakdown[
+          expense.category
+        ] ?? 0) +
+        Number(expense.amount);
+    }
+
+    return {
+      success: true,
+
+      data: {
+        totalBudget: Number(
+          budget.totalBudget,
+        ),
+
+        spentAmount,
+
+        remainingBudget,
+
+        categoryBreakdown,
+      },
+    };
+  }
+
+  // ===================================
+  // UPDATE
+  // ===================================
+
+  async update(
+    userId: string,
+    dto: UpdateBudgetDto,
+  ) {
+    await this.prisma.budget.upsert({
+      where: {
+        userId,
+      },
+
+      update: {
+        totalBudget: dto.budget,
+      },
+
+      create: {
+        userId,
+        totalBudget: dto.budget,
+      },
+    });
+
+    return {
+      success: true,
+      message:
+        'Budget updated successfully.',
+    };
+  }
+
+  // ===================================
+  // RESET
+  // ===================================
+
+  async remove(userId: string) {
+    const budget =
+      await this.prisma.budget.findUnique({
+        where: {
+          userId,
+        },
+      });
+
+    if (budget) {
+      await this.prisma.budget.delete({
+        where: {
+          userId,
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message:
+        'Budget reset successfully.',
+    };
   }
 }

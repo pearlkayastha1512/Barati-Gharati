@@ -127,58 +127,193 @@ async updateVendorProfile(
 
 async getAllVendors() {
   const vendors = await this.prisma.vendor.findMany({
+    where: {
+      status: VendorStatus.APPROVED,
+      isActive: true,
+    },
+
     include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
+      category: true,
+
+      gallery: true,
+
+      packages: {
+        orderBy: {
+          price: "asc",
         },
       },
-      category: true,
+
+      reviews: true,
     },
+
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return {
     success: true,
+
     count: vendors.length,
-    data: vendors,
+
+    data: vendors.map((vendor) => ({
+      id: vendor.frontendVendorId,
+
+      backendId: vendor.id,
+
+      userId: vendor.userId,
+
+      name: vendor.businessName,
+
+      category: vendor.category?.name ?? "",
+
+      city:
+        vendor.city ??
+        vendor.address ??
+        "",
+
+      rating:
+        vendor.reviews.length === 0
+          ? 5
+          : Number(
+              (
+                vendor.reviews.reduce(
+                  (sum, review) =>
+                    sum + review.rating,
+                  0,
+                ) /
+                vendor.reviews.length
+              ).toFixed(1),
+            ),
+
+      reviews: vendor.reviews.length,
+
+      price:
+        vendor.packages.length > 0
+          ? Number(vendor.packages[0].price)
+          : 0,
+
+      image:
+        vendor.logoUrl ||
+        vendor.coverImage ||
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+
+      images:
+        vendor.gallery.length > 0
+          ? vendor.gallery.map(
+              (image) => image.imageUrl,
+            )
+          : [
+              vendor.logoUrl ||
+                vendor.coverImage ||
+                "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+            ],
+
+      featured: false,
+
+      description:
+        vendor.description ??
+        "No description available.",
+
+      amenities: [],
+
+      packages: vendor.packages.map(
+        (pkg, index) => ({
+          id: index + 1,
+
+          name: pkg.title,
+
+          price: Number(pkg.price),
+        }),
+      ),
+    })),
   };
 }
 
 async getVendorById(id: string) {
-
-  const vendor = await this.prisma.vendor.findUnique({
+  const vendor = await this.prisma.vendor.findFirst({
     where: {
-      id,
+      frontendVendorId: Number(id),
+      status: VendorStatus.APPROVED,
+      isActive: true,
     },
     include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
+      category: true,
+      gallery: true,
+      packages: {
+        orderBy: {
+          price: "asc",
         },
       },
-      category: true,
-      packages: true,
+      reviews: true,
     },
   });
 
   if (!vendor) {
-    throw new NotFoundException(
-      'Vendor not found',
-    );
+    throw new NotFoundException("Vendor not found");
   }
 
   return {
     success: true,
-    data: vendor,
+    data: {
+      id: vendor.frontendVendorId,
+
+      backendId: vendor.id,
+
+      userId: vendor.userId,
+
+      name: vendor.businessName,
+
+      category: vendor.category?.name ?? "",
+
+      city: vendor.city ?? vendor.address ?? "",
+
+      rating:
+        vendor.reviews.length === 0
+          ? 5
+          : Number(
+              (
+                vendor.reviews.reduce(
+                  (sum, review) => sum + review.rating,
+                  0,
+                ) / vendor.reviews.length
+              ).toFixed(1),
+            ),
+
+      reviews: vendor.reviews.length,
+
+      price:
+        vendor.packages.length > 0
+          ? Number(vendor.packages[0].price)
+          : 0,
+
+      image:
+        vendor.logoUrl ||
+        vendor.coverImage ||
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+
+      images:
+        vendor.gallery.length > 0
+          ? vendor.gallery.map((g) => g.imageUrl)
+          : [
+              vendor.logoUrl ||
+              vendor.coverImage ||
+              "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800",
+            ],
+
+      featured: false,
+
+      description:
+        vendor.description ?? "No description available.",
+
+      amenities: [],
+
+      packages: vendor.packages.map((pkg, index) => ({
+        id: pkg.id,
+        name: pkg.title,
+        price: Number(pkg.price),
+      })),
+    },
   };
 }
 

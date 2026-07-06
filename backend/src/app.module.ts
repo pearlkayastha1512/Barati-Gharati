@@ -30,6 +30,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { MailModule } from './mail/mail.module';
 import { InvoiceModule } from './invoice/invoice.module';
 
+
+import { PortfolioModule } from "./portfolio/portfolio.module";
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -47,6 +50,7 @@ import { InvoiceModule } from './invoice/invoice.module';
     VendorModule,
     ChatbotModule,
     CategoriesModule, 
+     PortfolioModule,
      PackagesModule, PaymentModule,
      PackagesModule, BookingsModule, GuestsModule, TimelineModule, ChecklistModule, NotificationsModule, AdminModule,
      PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule, InvoiceModule,

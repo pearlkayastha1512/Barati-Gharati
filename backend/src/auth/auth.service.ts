@@ -4,13 +4,17 @@ import { LoginDto } from './dto/login.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
+
+import { RegisterVendorDto } from './dto/register-vendor.dto';
+
+import { Role, VendorStatus } from '@prisma/client';
 
 
 @Injectable()
@@ -102,58 +106,341 @@ await this.mailService.sendVerificationEmail(
     },
   };
 }
-  async login(loginDto: LoginDto) {
-   const user = await this.prisma.user.findUnique({
-  where: {
-    email: loginDto.email,
-  },
-});
 
-if (!user) {
-  throw new UnauthorizedException('Invalid email or password');
+ 
+
+
+
+
+
+
+
+
+ async registerVendor(
+  registerVendorDto: RegisterVendorDto,
+) {
+
+  // Check email
+  const existingUser =
+    await this.prisma.user.findUnique({
+      where: {
+        email: registerVendorDto.email,
+      },
+    });
+
+  if (existingUser) {
+    throw new BadRequestException(
+      'Email already registered',
+    );
+  }
+
+  // Check phone
+  const existingPhone =
+    await this.prisma.user.findUnique({
+      where: {
+        phone: registerVendorDto.phone,
+      },
+    });
+
+  if (existingPhone) {
+    throw new BadRequestException(
+      'Phone number already registered',
+    );
+  }
+
+  // Hash password
+  const hashedPassword =
+    await bcrypt.hash(
+      registerVendorDto.password,
+      10,
+    );
+
+  // Create User + Vendor together
+  // Generate next frontend vendor ID
+const lastVendor =
+  await this.prisma.vendor.findFirst({
+    where: {
+      frontendVendorId: {
+        not: null,
+      },
+    },
+    orderBy: {
+      frontendVendorId: 'desc',
+    },
+  });
+
+const frontendVendorId =
+  (lastVendor?.frontendVendorId ?? 0) + 1;
+
+// Create User + Vendor together
+const user =
+  await this.prisma.user.create({
+    data: {
+      name: registerVendorDto.ownerName,
+      email: registerVendorDto.email,
+      phone: registerVendorDto.phone,
+      password: hashedPassword,
+
+      role: Role.VENDOR,
+
+      vendor: {
+        create: {
+          frontendVendorId,
+
+          businessName:
+            registerVendorDto.businessName,
+
+          description:
+            registerVendorDto.description,
+
+          address:
+            registerVendorDto.city &&
+            registerVendorDto.address
+              ? `${registerVendorDto.city}, ${registerVendorDto.address}`
+              : registerVendorDto.address,
+
+          categoryId: undefined,
+
+          status: VendorStatus.PENDING,
+        },
+      },
+    },
+
+    include: {
+      vendor: true,
+    },
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Remove old verification tokens
+  await this.prisma.verificationToken.deleteMany({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  // Verification token
+  const verificationToken =
+    crypto.randomBytes(32).toString('hex');
+
+  await this.prisma.verificationToken.create({
+    data: {
+      token: verificationToken,
+      userId: user.id,
+      expiresAt: new Date(
+        Date.now() + 60 * 60 * 1000,
+      ),
+    },
+  });
+
+  // Email
+  await this.mailService.sendVerificationEmail(
+    user.email,
+    user.name,
+    verificationToken,
+  );
+
+  // Notification
+  await this.notificationsService.create(
+    user.id,
+    {
+      title:
+        'Vendor Registration Successful',
+
+      message:
+        'Your vendor account has been created and is awaiting approval.',
+    },
+  );
+
+  return {
+    success: true,
+
+    message:
+      'Vendor registration successful. Please verify your email.',
+
+    user: {
+      _id: user.id,
+
+      name: user.name,
+
+      email: user.email,
+
+      phone: user.phone ?? '',
+
+      avatar: '',
+
+      role: 'vendor',
+
+      status: 'pending',
+
+      isVerified:
+        user.isVerified,
+
+      createdAt:
+        user.createdAt,
+
+      updatedAt:
+        user.updatedAt,
+    },
+  };
 }
 
-const isPasswordCorrect = await bcrypt.compare(
-  loginDto.password,
-  user.password,
-);
 
-if (!isPasswordCorrect) {
-  throw new UnauthorizedException('Invalid email or password');
-}
 
-// NEW CODE
-if (!user.isVerified) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async login(loginDto: LoginDto) {
+  const user = await this.prisma.user.findUnique({
+    where: {
+      email: loginDto.email,
+    },
+    include: {
+      vendor: true,
+    },
+  });
+
+  if (!user) {
+    throw new UnauthorizedException(
+      'Invalid email or password',
+    );
+  }
+
+
+  const isPasswordCorrect = await bcrypt.compare(
+    loginDto.password,
+    user.password,
+  );
+
+
+
+console.log('PASSWORD MATCH =', isPasswordCorrect);
+  if (!isPasswordCorrect) {
+    throw new UnauthorizedException(
+      'Invalid email or password',
+    );
+  }
+   
+
+  // Email verification
+// if (!user.isVerified) {
+//   throw new UnauthorizedException(
+//     'Please verify your email before logging in.',
+//   );
+// }
+
+
+
+
+
+// Vendor approval check
+// if (
+//   user.role === Role.VENDOR &&
+//   user.vendor?.status === VendorStatus.PENDING
+// ) {
+//   throw new UnauthorizedException(
+//     'Your vendor account is pending admin approval.',
+//   );
+// }
+
+
+
+
+if (
+  user.role === Role.VENDOR &&
+  user.vendor?.status === VendorStatus.REJECTED
+) {
   throw new UnauthorizedException(
-    'Please verify your email before logging in.',
+    'Your vendor registration has been rejected by the admin.',
   );
 }
 
-const token = await this.jwtService.signAsync({
-  sub: user.id,
-  email: user.email,
-  role: user.role,
-});
-await this.notificationsService.create(
-  user.id,
-  {
+  const token = await this.jwtService.signAsync({
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+  });
+
+  await this.notificationsService.create(user.id, {
     title: 'Login Successful',
     message: 'You logged into your account successfully.',
-  },
-);
+  });
+
+  const roleMap = {
+    USER: 'customer',
+    VENDOR: 'vendor',
+    ADMIN: 'admin',
+  } as const;
+
   return {
-  success: true,
-  message: 'Login successful',
-  accessToken: token,
-  user: {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    role: user.role,
-  },
-};
+    success: true,
+    message: 'Login successful',
+    accessToken: token,
+
+    user: {
+      _id: user.id,
+
+      name: user.name,
+
+      email: user.email,
+
+      phone: user.phone ?? '',
+
+      avatar: '',
+
+      role: roleMap[user.role],
+
+      status: user.vendor
+        ? user.vendor.status.toLowerCase()
+        : undefined,
+
+      isVerified: user.isVerified,
+
+      createdAt: user.createdAt,
+
+      updatedAt: user.updatedAt,
+    },
+  };
 }
+
+
+
+
 async verifyEmail(token: string) {
   const verificationToken = await this.prisma.verificationToken.findUnique({
     where: {
