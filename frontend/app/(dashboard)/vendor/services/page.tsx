@@ -16,8 +16,6 @@ import AddServiceModal from "@/components/vendor/services/AddServiceModal";
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
 
-import { getVendorByUserId } from "@/services/vendor.service";
-
 export default function VendorServicesPage() {
   const [open, setOpen] = useState(false);
 
@@ -29,22 +27,18 @@ export default function VendorServicesPage() {
 
   const {
     services,
-    loadVendorServices,
+    loadMyServices,
   } = useServiceStore();
 
   useEffect(() => {
     async function loadVendor() {
       if (!user) return;
 
-      const vendor = await getVendorByUserId();
-
-      if (!vendor) return;
-
-      await loadVendorServices(vendor.id);
+      await loadMyServices();
     }
 
     loadVendor();
-  }, [user, loadVendorServices]);
+  }, [user, loadMyServices]);
 
 
 //   useEffect(() => {
@@ -128,3 +122,4 @@ export default function VendorServicesPage() {
     </div>
   );
 }
+

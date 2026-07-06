@@ -10,9 +10,6 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
 
-
-
-
 interface AddServiceModalProps {
   open: boolean;
   onClose: () => void;
@@ -24,20 +21,19 @@ export default function AddServiceModal({
   onClose,
 }: AddServiceModalProps) {
   const { user } = useAuthStore();
-const {
-  addService,
-  selectedService,
-  updateExistingService,
-  setSelectedService,
-  loadVendorServices,
-} = useServiceStore();
+  const {
+    addService,
+    selectedService,
+    updateExistingService,
+    setSelectedService,
+    loadMyServices,
+  } = useServiceStore();
+
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
-
-  // NEW
   const [image, setImage] = useState("");
 
   const handleImageChange = (
@@ -77,97 +73,70 @@ const {
   }, [open, selectedService]);
 
   const handleSave = async () => {
-  if (
-    !name ||
-    !category ||
-    !description ||
-    !duration ||
-    !price ||
-    !image
-  ) {
-    toast.error("Please fill all fields.");
-    return;
-  }
+    if (!name || !category || !description || !duration || !price || !image) {
+      toast.error("Please fill all fields.");
+      return;
+    }
 
-  if (!user) {
-    toast.error("Please login.");
-    return;
-  }
+    if (!user) {
+      toast.error("Please login.");
+      return;
+    }
 
-  if (selectedService) {
-    const success =
-      await updateExistingService({
+    if (selectedService) {
+      const success = await updateExistingService({
         ...selectedService,
-
         name,
-
         category,
-
         description,
-
         duration,
-
         price: Number(price),
-
         image,
-
-        includes:
-          selectedService.includes ?? [],
+        includes: selectedService.includes ?? [],
       });
 
-    if (!success) {
-      toast.error("Unable to update service.");
-      return;
+      if (!success) {
+        toast.error("Unable to update service.");
+        return;
+      }
+
+      toast.success("Service updated.");
+    } else {
+      const success = await addService({
+        id: "",
+        vendorId: 0,
+        name,
+        category,
+        description,
+        duration,
+        price: Number(price),
+        rating: 5,
+        reviews: 0,
+        image,
+        includes: [],
+        status: "active",
+        createdAt: "",
+        updatedAt: "",
+      });
+
+      if (!success) {
+        toast.error("Unable to create service.");
+        return;
+      }
+
+      toast.success("Service created.");
     }
 
-    toast.success("Service updated.");
-  } else {
-   
-
-const success = await addService({
-  id: "",
-
-  vendorId:0,
-
-  name,
-
-  category,
-
-  description,
-
-  duration,
-
-  price: Number(price),
-
-  rating: 5,
-
-  reviews: 0,
-
-  image,
-
-  includes: [],
-
-  status: "active",
-
-  createdAt: "",
-
-  updatedAt: "",
-});
-
-    if (!success) {
-      toast.error("Unable to create service.");
-      return;
-    }
-
-    toast.success("Service created.");
-  }
-
-  // Backend loads current vendor from JWT.
-await loadVendorServices(0);
-  setSelectedService(null);
-
-  onClose();
-};
+    await loadMyServices();
+    setName("");
+    setCategory("");
+    setDescription("");
+    setDuration("");
+    setPrice("");
+    setImage("");
+    setSelectedService(null);
+    onClose();
+  };
 
 
 
@@ -188,7 +157,7 @@ await loadVendorServices(0);
 
   // Continue with the return (...) JSX in Part 2
 
-    return (
+  return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-6">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
         {/* Header */}

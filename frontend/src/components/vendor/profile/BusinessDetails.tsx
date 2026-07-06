@@ -43,10 +43,10 @@ export default function BusinessDetails() {
         state.loadVendorBookings
     );
 
-  const loadVendorServices =
+  const loadMyServices =
     useServiceStore(
       (state) =>
-        state.loadVendorServices
+        state.loadMyServices
     );
 
   const loadVendorReviews =
@@ -60,7 +60,7 @@ export default function BusinessDetails() {
 
     loadVendorBookings(vendor.id);
 
-    loadVendorServices(vendor.id);
+    loadMyServices();
 
     loadVendorReviews(vendor.id);
 

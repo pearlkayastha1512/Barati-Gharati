@@ -9,6 +9,7 @@ import {
   updateService,
   deleteService,
   getVendorServices,
+  getMyServices,
 } from "@/services/service.service";
 
 interface ServiceStore {
@@ -21,6 +22,8 @@ interface ServiceStore {
   loadVendorServices: (
     vendorId: number
   ) => Promise<void>;
+
+  loadMyServices: () => Promise<void>;
 
   setSelectedService: (
     service: Service | null
@@ -66,6 +69,15 @@ export const useServiceStore =
         });
       },
 
+    loadMyServices: async () => {
+      const services =
+        await getMyServices();
+
+      set({
+        services,
+      });
+    },
+
     setSelectedService: (
       service
     ) => {
@@ -99,21 +111,12 @@ export const useServiceStore =
       // });
 
 
-        const vendor =
-  await getVendorByUserId();
+      const services =
+        await getMyServices();
 
-if (!vendor) {
-  return true;
-}
-
-const services =
-  await getVendorServices(
-    vendor.id
-  );
-
-set({
-  services,
-});
+      set({
+        services,
+      });
       return true;
     },
 
@@ -129,9 +132,7 @@ set({
         }
 
         const services =
-          await getVendorServices(
-            service.vendorId
-          );
+          await getMyServices();
 
         set({
           services,
@@ -150,7 +151,7 @@ set({
         }
 
         const services =
-          await getServices();
+          await getMyServices();
 
         set({
           services,
@@ -159,5 +160,3 @@ set({
         return true;
       },
   }));
-
-

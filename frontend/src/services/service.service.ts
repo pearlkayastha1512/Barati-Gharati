@@ -3,6 +3,7 @@ import { Service } from "@/types/service";
 import {
   getServicesApi,
   getVendorServicesApi,
+  getPublicVendorServicesApi,
   createServiceApi,
   updateServiceApi,
   deleteServiceApi,
@@ -18,13 +19,25 @@ export async function getServices(): Promise<Service[]> {
   return result.data;
 }
 
+export async function getMyServices(): Promise<Service[]> {
+  const result = await getVendorServicesApi();
+
+  if (!result.ok || !result.data) {
+    return [];
+  }
+
+  return result.data;
+}
+
 export async function getVendorServices(
   vendorId: number
 ): Promise<Service[]> {
-  void vendorId;
+  if (!vendorId || vendorId <= 0) {
+    return getMyServices();
+  }
 
   const result =
-    await getVendorServicesApi();
+    await getPublicVendorServicesApi(vendorId);
 
   if (!result.ok || !result.data) {
     return [];
@@ -66,4 +79,5 @@ export async function getServiceById(
     (service) => service.id === id
   );
 }
+
 
