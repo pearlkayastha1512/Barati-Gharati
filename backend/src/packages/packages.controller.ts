@@ -66,6 +66,15 @@ export class PackagesController {
     return this.packagesService.findMyPackages(user.sub);
   }
 
+  @Get('vendor/:vendorId')
+  findVendorPackages(
+    @Param('vendorId') vendorId: number,
+  ) {
+    return this.packagesService.findVendorPackages(
+      Number(vendorId),
+    );
+  }
+
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -114,13 +123,5 @@ export class PackagesController {
     );
   }
 
-  @Get("vendor/:vendorId")
-findVendorPackages(
-  @Param("vendorId") vendorId: number,
-) {
-  return this.packagesService.findVendorPackages(
-    Number(vendorId),
-  );
-}
 }
 

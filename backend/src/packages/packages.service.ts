@@ -384,3 +384,182 @@ console.log("===================================");
 }
 
 
+
+// async update(
+//   id: string,
+//   userId: string,
+//   dto: UpdatePackageDto,
+// ) {
+//   const vendor = await this.prisma.vendor.findUnique({
+//     where: {
+//       userId,
+//     },
+//   });
+
+//   if (!vendor) {
+//     throw new ForbiddenException(
+//       'Only vendors can update packages',
+//     );
+//   }
+
+//   if (vendor.status !== VendorStatus.APPROVED) {
+//     throw new ForbiddenException(
+//       'Vendor is not approved by admin',
+//     );
+//   }
+
+//   // ✅ Fixed ownership check
+//   const existing = await this.prisma.package.findUnique({
+//     where: {
+//       id,
+//     },
+//   });
+
+//   if (!existing) {
+//     throw new NotFoundException(
+//       'Package not found',
+//     );
+//   }
+
+//   if (existing.vendorId !== vendor.id) {
+//     throw new ForbiddenException(
+//       'You can only update your own packages',
+//     );
+//   }
+
+//   let categoryId: string | undefined = undefined;
+
+//   if (dto.category) {
+//     let category = await this.prisma.category.findFirst({
+//       where: {
+//         name: dto.category,
+//       },
+//     });
+
+//     if (!category) {
+//       category = await this.prisma.category.create({
+//         data: {
+//           name: dto.category,
+//         },
+//       });
+//     }
+
+//     categoryId = category.id;
+//   }
+
+//   const updated = await this.prisma.package.update({
+//     where: {
+//       id,
+//     },
+
+//     data: {
+//       title: dto.name,
+
+//       description: dto.description,
+
+//       price: dto.price,
+
+//       categoryId,
+
+//       inclusions: dto.includes,
+//     },
+
+//     include: {
+//       category: true,
+
+//       reviews: true,
+
+//       vendor: true,
+//     },
+//   });
+
+//   return this.mapService(updated);
+// }
+
+// async remove(id: string, userId: string) {
+//   const vendor = await this.prisma.vendor.findUnique({
+//     where: {
+//       userId,
+//     },
+//   });
+
+//   if (!vendor) {
+//     throw new ForbiddenException(
+//       'Only vendors can delete packages',
+//     );
+//   }
+
+//   if (vendor.status !== VendorStatus.APPROVED) {
+//     throw new ForbiddenException(
+//       'Vendor is not approved by admin',
+//     );
+//   }
+
+//   // ✅ Fixed ownership check
+//   const existing = await this.prisma.package.findUnique({
+//     where: {
+//       id,
+//     },
+//   });
+
+//   if (!existing) {
+//     throw new NotFoundException(
+//       'Package not found',
+//     );
+//   }
+
+//   if (existing.vendorId !== vendor.id) {
+//     throw new ForbiddenException(
+//       'You can only delete your own packages',
+//     );
+//   }
+
+//   return this.prisma.package.delete({
+//     where: {
+//       id,
+//     },
+//   });
+// }
+
+// async findVendorPackages(frontendVendorId: number) {
+//   const vendor =
+//     await this.prisma.vendor.findFirst({
+//       where: {
+//         frontendVendorId,
+//         status: VendorStatus.APPROVED,
+//       },
+//     });
+
+//   if (!vendor) {
+//     throw new NotFoundException(
+//       'Vendor not found',
+//     );
+//   }
+
+//   const packages =
+//     await this.prisma.package.findMany({
+//       where: {
+//         vendorId: vendor.id,
+//       },
+
+//       include: {
+//         category: true,
+//         reviews: true,
+//         vendor: true,
+//       },
+
+//       orderBy: {
+//         createdAt: 'desc',
+//       },
+//     });
+
+//   return packages.map((pkg) =>
+//     this.mapService(pkg),
+//   );
+// }
+// }
+
+
+
+
+
