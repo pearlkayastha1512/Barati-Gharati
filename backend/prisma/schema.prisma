@@ -54,6 +54,8 @@ model User {
   receivedMessages Message[] @relation("ReceivedMessages")
 
   customerConversations Conversation[] @relation("CustomerConversations")
+
+  wishlists Wishlist[]
 }
 
 model Portfolio {
@@ -134,9 +136,10 @@ model Vendor {
   reviews Review[]
 
   leads Lead[]
-  // @@index([frontendVendorId])
 
   conversations Conversation[]
+
+  wishlists Wishlist[]
 
   @@index([categoryId])
   @@index([status])
@@ -512,4 +515,20 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([receiverId])
+}
+
+model Wishlist {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, vendorId])
+  @@index([userId])
+  @@index([vendorId])
 }

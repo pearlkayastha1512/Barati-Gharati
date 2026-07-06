@@ -32,7 +32,11 @@ import { InvoiceModule } from './invoice/invoice.module';
 
 
 import { PortfolioModule } from "./portfolio/portfolio.module";
+
 import { ChatModule } from './chat/chat.module';
+
+import { WishlistModule } from './wishlist/wishlist.module';
+
 
 @Module({
   imports: [
@@ -46,6 +50,7 @@ import { ChatModule } from './chat/chat.module';
   },
 ]),
     PrismaModule,
+    WishlistModule,
     AuthModule,
     UsersModule,
     VendorModule,

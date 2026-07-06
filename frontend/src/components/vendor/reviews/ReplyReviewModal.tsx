@@ -43,7 +43,7 @@ export default function ReplyReviewModal({
     return null;
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!reply.trim()) {
       toast.error(
         "Reply cannot be empty."
@@ -52,10 +52,17 @@ export default function ReplyReviewModal({
       return;
     }
 
-    replyToReview(
+    const success = await replyToReview(
       selectedReview.id,
       reply
     );
+
+    if (!success) {
+      toast.error(
+        "Unable to save reply."
+      );
+      return;
+    }
 
     toast.success(
       selectedReview.reply

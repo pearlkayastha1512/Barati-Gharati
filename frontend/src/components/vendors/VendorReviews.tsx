@@ -36,6 +36,20 @@ export default function VendorReviews({
   const { bookings, loadCustomerBookings } =
     useBookingStore();
 
+  const reviewBooking = useMemo(() => {
+    return bookings
+      .filter(
+        (booking) =>
+          booking.vendorId === vendorId &&
+          booking.bookingStatus !== "cancelled"
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      )[0];
+  }, [bookings, vendorId]);
+
   useEffect(() => {
     if (
       user &&
@@ -363,6 +377,7 @@ export default function VendorReviews({
           setSelectedReview(null);
           setOpen(false);
         }}
+        bookingId={reviewBooking?.id ?? ""}
         vendorId={vendorId}
         vendorName={vendorName}
       />

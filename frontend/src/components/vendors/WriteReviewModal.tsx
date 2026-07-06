@@ -1,6 +1,9 @@
+
+
+
 // "use client";
 
-// import { useState } from "react";
+// import { useEffect, useState } from "react";
 // import { X, Star } from "lucide-react";
 // import { toast } from "sonner";
 
@@ -10,6 +13,8 @@
 // interface WriteReviewModalProps {
 //   open: boolean;
 //   onClose: () => void;
+//   bookingId: string;
+
 //   vendorId: number;
 //   vendorName: string;
 // }
@@ -17,18 +22,36 @@
 // export default function WriteReviewModal({
 //   open,
 //   onClose,
+//   bookingId,
+
 //   vendorId,
 //   vendorName,
 // }: WriteReviewModalProps) {
 //   const { user } = useAuthStore();
-//   const { addReview } = useReviewStore();
+
+//   const {
+//     addReview,
+//     updateExistingReview,
+//     selectedReview,
+//     setSelectedReview,
+//   } = useReviewStore();
 
 //   const [rating, setRating] = useState(5);
 //   const [comment, setComment] = useState("");
 
+//   useEffect(() => {
+//     if (selectedReview) {
+//       setRating(selectedReview.rating);
+//       setComment(selectedReview.comment);
+//     } else {
+//       setRating(5);
+//       setComment("");
+//     }
+//   }, [selectedReview, open]);
+
 //   if (!open) return null;
 
-//   const handleSubmit = () => {
+//   const handleSubmit = async() => {
 //     if (!comment.trim()) {
 //       toast.error("Please write a review.");
 //       return;
@@ -39,24 +62,71 @@
 //       return;
 //     }
 
-//     addReview({
-//       id: crypto.randomUUID(),
-//       bookingId: "",
-//       customerId: user._id,
-//       vendorId,
-//       customerName: user.name,
-//       vendorName,
-//       rating,
-//       comment,
-//       customerImage: "",
-//       createdAt: new Date().toISOString(),
-//       updatedAt: new Date().toISOString(),
-//     });
+//     if (selectedReview) {
+//       updateExistingReview({
+//         ...selectedReview,
+//         rating,
+//         comment,
+//         updatedAt: new Date().toISOString(),
+//       });
 
-//     toast.success("Review submitted.");
+//       toast.success("Review updated.");
+//     } else {
+//       // addReview({
+//       //   id: crypto.randomUUID(),
+
+//       //   bookingId: "",
+
+//       //   customerId: user._id,
+
+//       //   vendorId,
+
+//       //   customerName: user.name,
+
+//       //   vendorName,
+
+//       //   rating,
+
+//       //   comment,
+
+//       //   customerImage: "",
+
+//       //   createdAt: new Date().toISOString(),
+
+//       //   updatedAt: new Date().toISOString(),
+//       // });
+
+//       await addReview({
+//   id: "",
+
+//   bookingId,
+
+//   customerId: user._id,
+
+//   vendorId,
+
+//   customerName: user.name,
+
+//   vendorName,
+
+//   rating,
+
+//   comment,
+
+//   customerImage: "",
+
+//   createdAt: "",
+
+//   updatedAt: "",
+// });
+
+//       toast.success("Review submitted.");
+//     }
 
 //     setComment("");
 //     setRating(5);
+
+//     setSelectedReview(null);
 
 //     onClose();
 //   };
@@ -67,11 +137,16 @@
 //         {/* Header */}
 //         <div className="flex items-center justify-between border-b px-8 py-6">
 //           <h2 className="text-2xl font-bold text-gray-700">
-//             Write Review
+//             {selectedReview
+//               ? "Edit Review"
+//               : "Write Review"}
 //           </h2>
 
 //           <button
-//             onClick={onClose}
+//             onClick={() => {
+//               setSelectedReview(null);
+//               onClose();
+//             }}
 //             className="text-gray-500 transition hover:text-gray-700"
 //           >
 //             <X />
@@ -89,11 +164,16 @@
 //               {[1, 2, 3, 4, 5].map((star) => (
 //                 <button
 //                   key={star}
+//                   type="button"
 //                   onClick={() => setRating(star)}
 //                 >
 //                   <Star
 //                     size={34}
-//                     fill={star <= rating ? "#facc15" : "none"}
+//                     fill={
+//                       star <= rating
+//                         ? "#facc15"
+//                         : "none"
+//                     }
 //                     className="text-yellow-400"
 //                   />
 //                 </button>
@@ -109,7 +189,9 @@
 //             <textarea
 //               rows={5}
 //               value={comment}
-//               onChange={(e) => setComment(e.target.value)}
+//               onChange={(e) =>
+//                 setComment(e.target.value)
+//               }
 //               placeholder="Share your experience..."
 //               className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500"
 //             />
@@ -119,7 +201,10 @@
 //         {/* Footer */}
 //         <div className="flex justify-end gap-3 border-t px-8 py-6">
 //           <button
-//             onClick={onClose}
+//             onClick={() => {
+//               setSelectedReview(null);
+//               onClose();
+//             }}
 //             className="rounded-xl border border-gray-300 px-6 py-3 text-gray-600 transition hover:bg-gray-100"
 //           >
 //             Cancel
@@ -129,14 +214,15 @@
 //             onClick={handleSubmit}
 //             className="rounded-xl bg-rose-500 px-6 py-3 font-semibold text-white transition hover:bg-rose-600"
 //           >
-//             Submit Review
+//             {selectedReview
+//               ? "Update Review"
+//               : "Submit Review"}
 //           </button>
 //         </div>
 //       </div>
 //     </div>
 //   );
 // }
-
 
 
 "use client";
@@ -151,6 +237,9 @@ import { useReviewStore } from "@/store/reviewStore";
 interface WriteReviewModalProps {
   open: boolean;
   onClose: () => void;
+
+  bookingId: string;
+
   vendorId: number;
   vendorName: string;
 }
@@ -158,6 +247,7 @@ interface WriteReviewModalProps {
 export default function WriteReviewModal({
   open,
   onClose,
+  bookingId,
   vendorId,
   vendorName,
 }: WriteReviewModalProps) {
@@ -168,12 +258,15 @@ export default function WriteReviewModal({
     updateExistingReview,
     selectedReview,
     setSelectedReview,
+    loadVendorReviews,
   } = useReviewStore();
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
+    if (!open) return;
+
     if (selectedReview) {
       setRating(selectedReview.rating);
       setComment(selectedReview.comment);
@@ -181,11 +274,11 @@ export default function WriteReviewModal({
       setRating(5);
       setComment("");
     }
-  }, [selectedReview, open]);
+  }, [open, selectedReview]);
 
   if (!open) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!comment.trim()) {
       toast.error("Please write a review.");
       return;
@@ -197,38 +290,62 @@ export default function WriteReviewModal({
     }
 
     if (selectedReview) {
-      updateExistingReview({
-        ...selectedReview,
-        rating,
-        comment,
-        updatedAt: new Date().toISOString(),
-      });
+      const success =
+        await updateExistingReview({
+          ...selectedReview,
+
+          rating,
+
+          comment,
+
+          updatedAt:
+            new Date().toISOString(),
+        });
+
+      if (!success) {
+        toast.error(
+          "Unable to update review."
+        );
+        return;
+      }
+
+      await loadVendorReviews(vendorId);
 
       toast.success("Review updated.");
     } else {
-      addReview({
-        id: crypto.randomUUID(),
+      const success =
+        await addReview({
+          id: "",
 
-        bookingId: "",
+          bookingId,
 
-        customerId: user._id,
+          customerId: user._id,
 
-        vendorId,
+          vendorId,
 
-        customerName: user.name,
+          customerName: user.name,
 
-        vendorName,
+          vendorName,
 
-        rating,
+          rating,
 
-        comment,
+          comment,
 
-        customerImage: "",
+          customerImage: "",
 
-        createdAt: new Date().toISOString(),
+          createdAt: "",
 
-        updatedAt: new Date().toISOString(),
-      });
+          updatedAt: "",
+        });
+
+      if (!success) {
+        toast.error(
+          "Unable to submit review."
+        );
+        return;
+      }
+
+      await loadVendorReviews(vendorId);
 
       toast.success("Review submitted.");
     }
@@ -271,23 +388,27 @@ export default function WriteReviewModal({
             </label>
 
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                >
-                  <Star
-                    size={34}
-                    fill={
-                      star <= rating
-                        ? "#facc15"
-                        : "none"
+              {[1, 2, 3, 4, 5].map(
+                (star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() =>
+                      setRating(star)
                     }
-                    className="text-yellow-400"
-                  />
-                </button>
-              ))}
+                  >
+                    <Star
+                      size={34}
+                      fill={
+                        star <= rating
+                          ? "#facc15"
+                          : "none"
+                      }
+                      className="text-yellow-400"
+                    />
+                  </button>
+                )
+              )}
             </div>
           </div>
 

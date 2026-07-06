@@ -1,14 +1,161 @@
+// import { create } from "zustand";
+
+// import { Review } from "@/types/review";
+
+// import {
+//   getReviews,
+//   createReview,
+//   updateReview,
+//   deleteReview,
+//   getVendorReviews,
+//   getCustomerReviews,
+// } from "@/services/review.service";
+
+// interface ReviewStore {
+//   reviews: Review[];
+
+//   selectedReview: Review | null;
+
+//   loadReviews: () => void;
+
+//   loadVendorReviews: (
+//     vendorId: number
+//   ) => void;
+
+//   loadCustomerReviews: (
+//     customerId: string
+//   ) => void;
+
+//   setSelectedReview: (
+//     review: Review | null
+//   ) => void;
+
+//   addReview: (
+//     review: Review
+//   ) => void;
+
+//   updateExistingReview: (
+//     review: Review
+//   ) => void;
+
+//   replyToReview: (
+//     reviewId: string,
+//     reply: string
+//   ) => void;
+
+//   deleteExistingReview: (
+//     id: string
+//   ) => void;
+// }
+
+// export const useReviewStore =
+//   create<ReviewStore>((set) => ({
+//     reviews: [],
+
+//     selectedReview: null,
+
+//     loadReviews: () => {
+//       set({
+//         reviews: getReviews(),
+//       });
+//     },
+
+//     loadVendorReviews: (
+//       vendorId
+//     ) => {
+//       set({
+//         reviews:
+//           getVendorReviews(vendorId),
+//       });
+//     },
+
+//     loadCustomerReviews: (
+//       customerId
+//     ) => {
+//       set({
+//         reviews:
+//           getCustomerReviews(customerId),
+//       });
+//     },
+
+//     setSelectedReview: (
+//       review
+//     ) => {
+//       set({
+//         selectedReview: review,
+//       });
+//     },
+
+//     addReview: (review) => {
+//       createReview(review);
+
+//       set({
+//         reviews: getReviews(),
+//       });
+//     },
+
+//     updateExistingReview: (
+//       review
+//     ) => {
+//       updateReview(review);
+
+//       set({
+//         reviews: getReviews(),
+//       });
+//     },
+//     replyToReview: (
+//   reviewId,
+//   reply
+// ) => {
+//   const review = getReviews().find(
+//     (item) => item.id === reviewId
+//   );
+
+//   if (!review) {
+//     return;
+//   }
+
+//   updateReview({
+//     ...review,
+
+//     reply,
+
+//     repliedAt:
+//       new Date().toISOString(),
+//   });
+
+//   set({
+//     reviews: getReviews(),
+//   });
+// },
+
+//     deleteExistingReview: (
+//       id
+//     ) => {
+//       deleteReview(id);
+
+//       set({
+//         reviews: getReviews(),
+//       });
+//     },
+//   }));
+
+
+
+
+
 import { create } from "zustand";
 
 import { Review } from "@/types/review";
 
 import {
   getReviews,
-  createReview,
-  updateReview,
-  deleteReview,
   getVendorReviews,
   getCustomerReviews,
+  createReview,
+  updateReview,
+  replyReview,
+  deleteReview,
 } from "@/services/review.service";
 
 interface ReviewStore {
@@ -16,15 +163,17 @@ interface ReviewStore {
 
   selectedReview: Review | null;
 
-  loadReviews: () => void;
+  loading: boolean;
+
+  loadReviews: () => Promise<void>;
 
   loadVendorReviews: (
     vendorId: number
-  ) => void;
+  ) => Promise<void>;
 
   loadCustomerReviews: (
     customerId: string
-  ) => void;
+  ) => Promise<void>;
 
   setSelectedReview: (
     review: Review | null
@@ -32,110 +181,193 @@ interface ReviewStore {
 
   addReview: (
     review: Review
-  ) => void;
+  ) => Promise<boolean>;
 
   updateExistingReview: (
     review: Review
-  ) => void;
+  ) => Promise<boolean>;
 
   replyToReview: (
     reviewId: string,
     reply: string
-  ) => void;
+  ) => Promise<boolean>;
 
   deleteExistingReview: (
     id: string
-  ) => void;
+  ) => Promise<boolean>;
 }
 
 export const useReviewStore =
-  create<ReviewStore>((set) => ({
+  create<ReviewStore>((set, get) => ({
     reviews: [],
 
     selectedReview: null,
 
-    loadReviews: () => {
+    loading: false,
+
+    loadReviews: async () => {
       set({
-        reviews: getReviews(),
+        loading: true,
+      });
+
+      const reviews =
+        await getReviews();
+
+      set({
+        reviews,
+        loading: false,
       });
     },
 
-    loadVendorReviews: (
+    loadVendorReviews: async (
       vendorId
     ) => {
       set({
-        reviews:
-          getVendorReviews(vendorId),
+        loading: true,
+      });
+
+      const reviews =
+        await getVendorReviews(
+          vendorId
+        );
+
+      set({
+        reviews,
+        loading: false,
       });
     },
 
-    loadCustomerReviews: (
+    loadCustomerReviews: async (
       customerId
     ) => {
       set({
-        reviews:
-          getCustomerReviews(customerId),
+        loading: true,
+      });
+
+      const reviews =
+        await getCustomerReviews(
+          customerId
+        );
+
+      set({
+        reviews,
+        loading: false,
       });
     },
+
+    
 
     setSelectedReview: (
       review
-    ) => {
+    ) =>
       set({
         selectedReview: review,
-      });
-    },
+      }),
 
-    addReview: (review) => {
-      createReview(review);
-
-      set({
-        reviews: getReviews(),
-      });
-    },
-
-    updateExistingReview: (
+    addReview: async (
       review
     ) => {
-      updateReview(review);
+      const success =
+        await createReview(
+          review
+        );
+
+      if (!success) {
+        return false;
+      }
+
+      const reviews =
+        await getVendorReviews(
+          review.vendorId
+        );
 
       set({
-        reviews: getReviews(),
+        reviews,
       });
+
+      return true;
     },
-    replyToReview: (
-  reviewId,
-  reply
-) => {
-  const review = getReviews().find(
-    (item) => item.id === reviewId
-  );
 
-  if (!review) {
-    return;
-  }
+    updateExistingReview:
+      async (review) => {
+        const success =
+          await updateReview(
+            review
+          );
 
-  updateReview({
-    ...review,
+        if (!success) {
+          return false;
+        }
 
-    reply,
+        const reviews =
+          await getVendorReviews(
+            review.vendorId
+          );
 
-    repliedAt:
-      new Date().toISOString(),
-  });
+        set({
+          reviews,
+        });
 
-  set({
-    reviews: getReviews(),
-  });
-},
+        return true;
+      },
 
-    deleteExistingReview: (
-      id
+    replyToReview: async (
+      reviewId,
+      reply
     ) => {
-      deleteReview(id);
+      const review = get().reviews.find(
+        (r) => r.id === reviewId
+      );
 
-      set({
-        reviews: getReviews(),
-      });
+      const success =
+        await replyReview(
+          reviewId,
+          reply
+        );
+
+      if (!success) {
+        return false;
+      }
+
+      if (review) {
+        const reviews =
+          await getVendorReviews(
+            review.vendorId
+          );
+
+        set({
+          reviews,
+        });
+      }
+
+      return true;
     },
+
+    deleteExistingReview:
+      async (id) => {
+        const review =
+          get().reviews.find(
+            (r) => r.id === id
+          );
+
+        const success =
+          await deleteReview(id);
+
+        if (!success) {
+          return false;
+        }
+
+        if (review) {
+          const reviews =
+            await getVendorReviews(
+              review.vendorId
+            );
+
+          set({
+            reviews,
+          });
+        }
+
+        return true;
+      },
   }));

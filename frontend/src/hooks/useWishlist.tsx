@@ -1,9 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { Vendor } from "@/types/vendor";
-import { WishlistItem } from "@/types/wishlist";
 
 import { useAuthStore } from "@/store/authStore";
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -14,48 +14,36 @@ export function useWishlist(vendor: Vendor) {
   const {
     toggleWishlist,
     isVendorWishlisted,
+    loadWishlist,
+    hasLoaded,
   } = useWishlistStore();
 
-  const customerId = user?._id ?? "";
+  useEffect(() => {
+    if (isAuthenticated && !hasLoaded) {
+      loadWishlist();
+    }
+  }, [hasLoaded, isAuthenticated, loadWishlist]);
 
   const isWishlisted =
     isAuthenticated &&
-    isVendorWishlisted(customerId, vendor.id);
+    isVendorWishlisted(vendor.id);
 
-  const handleToggleWishlist = () => {
+  const handleToggleWishlist = async () => {
     if (!isAuthenticated || !user) {
       toast.error("Please login to add vendors to your wishlist.");
       return;
     }
 
-    const alreadyWishlisted = isVendorWishlisted(
-      customerId,
-      vendor.id
-    );
+    const alreadyWishlisted = isWishlisted;
 
-    const wishlistItem: WishlistItem = {
-      id: crypto.randomUUID(),
+    const success = await toggleWishlist(vendor.id);
 
-      customerId,
-
-      vendorId: vendor.id,
-
-      vendorName: vendor.name,
-
-      category: vendor.category,
-
-      city: vendor.city,
-
-      image: vendor.image,
-
-      rating: vendor.rating,
-
-      startingPrice: vendor.price,
-
-      addedAt: new Date().toISOString(),
-    };
-
-    toggleWishlist(wishlistItem);
+    if (!success) {
+      toast.error(
+        "Unable to update wishlist. Please try again."
+      );
+      return;
+    }
 
     if (alreadyWishlisted) {
       toast.success("Removed from wishlist.");
