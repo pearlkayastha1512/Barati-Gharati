@@ -33,6 +33,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Vendor" component={VendorNavigator} />
         <Stack.Screen name="BecomeVendor" component={BecomeVendorScreen} />
         <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

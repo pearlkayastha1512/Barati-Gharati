@@ -1,12 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
+
 import MessagesHero from "@/components/vendor/messages/MessagesHero";
 
 import ChatList from "@/components/chat/ChatList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import ChatInput from "@/components/chat/ChatInput";
 
+import { useMessageStore } from "@/store/messageStore";
+
 export default function VendorMessagesPage() {
+  const {
+  initializeSocket,
+  disconnectSocket,
+} = useMessageStore();
+
+useEffect(() => {
+  initializeSocket();
+
+  return () => {
+    disconnectSocket();
+  };
+}, []);
   return (
     <main className="space-y-6">
 

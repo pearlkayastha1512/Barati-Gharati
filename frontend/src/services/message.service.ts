@@ -1,39 +1,33 @@
-import { Message } from "@/types/message";
-
-const STORAGE_KEY = "messages";
+import {
+  createConversationApi,
+  getConversationsApi,
+  getMessagesApi,
+  sendMessageApi,
+} from "@/services/api/message.api";
 
 class MessageService {
-  getMessages(): Message[] {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    const data = localStorage.getItem(STORAGE_KEY);
-
-    if (!data) {
-      return [];
-    }
-
-    return JSON.parse(data);
+  async createConversation(vendorId: string) {
+    return await createConversationApi(vendorId);
   }
 
-  saveMessages(messages: Message[]) {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(messages)
+  async getConversations() {
+    return await getConversationsApi();
+  }
+
+  async getMessages(conversationId: string) {
+    return await getMessagesApi(conversationId);
+  }
+
+  async sendMessage(
+    conversationId: string,
+    receiverId: string,
+    message: string
+  ) {
+    return await sendMessageApi(
+      conversationId,
+      receiverId,
+      message
     );
-  }
-
-  sendMessage(message: Message) {
-    const messages = this.getMessages();
-
-    messages.push(message);
-
-    this.saveMessages(messages);
-  }
-
-  clearMessages() {
-    localStorage.removeItem(STORAGE_KEY);
   }
 }
 

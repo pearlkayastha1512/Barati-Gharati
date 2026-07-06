@@ -1,54 +1,129 @@
 import { create } from "zustand";
 
-import { Message } from "@/types/message";
+import {
+  Message,
+  Conversation,
+} from "@/types/message";
+
 import { messageService } from "@/services/message.service";
+import { socket } from "@/lib/socket";
 
 interface MessageStore {
+  conversations: Conversation[];
+
   messages: Message[];
 
   selectedConversation: string | null;
 
-  setMessages: (
-    messages: Message[]
-  ) => void;
+  loadConversations: () => Promise<void>;
+
+  loadMessages: (
+    conversationId: string
+  ) => Promise<void>;
 
   setSelectedConversation: (
     id: string | null
   ) => void;
 
-  sendMessage: (
-    message: Message
-  ) => void;
+  sendNewMessage: (
+    conversationId: string,
+    receiverId: string,
+    message: string
+  ) => Promise<void>;
+
+  initializeSocket: () => void;
+
+  disconnectSocket: () => void;
 
   clearConversation: () => void;
 }
 
 export const useMessageStore =
   create<MessageStore>((set) => ({
-  messages: messageService.getMessages(),
+    conversations: [],
+
+    messages: [],
 
     selectedConversation: null,
 
-    setMessages: (messages) =>
-      set({ messages }),
+    loadConversations: async () => {
+      const result =
+        await messageService.getConversations();
+
+      if (!result.ok || !result.data) return;
+
+      set({
+        conversations: result.data,
+      });
+    },
+
+    loadMessages: async (
+      conversationId
+    ) => {
+      const result =
+        await messageService.getMessages(
+          conversationId
+        );
+
+      if (!result.ok || !result.data)
+        return;
+
+      set({
+        messages: result.data,
+      });
+
+      socket.emit(
+        "joinConversation",
+        conversationId
+      );
+    },
 
     setSelectedConversation: (id) =>
       set({
         selectedConversation: id,
       }),
 
-    sendMessage: (message) =>
-  set((state) => {
-    messageService.sendMessage(message);
+    sendNewMessage: async (
+      conversationId,
+      receiverId,
+      message
+    ) => {
+      const result =
+        await messageService.sendMessage(
+          conversationId,
+          receiverId,
+          message
+        );
 
-    return {
-      messages:
-        messageService.getMessages(),
-    };
-  }),
+      if (!result.ok) return;
+
+      // Socket automatically new message receive karega.
+      // Yahan dubara getMessages() call nahi karenge.
+    },
+
+    initializeSocket: () => {
+      socket.off("newMessage");
+
+      socket.on(
+        "newMessage",
+        (message: Message) => {
+          set((state) => ({
+            messages: [
+              ...state.messages,
+              message,
+            ],
+          }));
+        }
+      );
+    },
+
+    disconnectSocket: () => {
+      socket.off("newMessage");
+    },
 
     clearConversation: () =>
       set({
         selectedConversation: null,
+        messages: [],
       }),
   }));

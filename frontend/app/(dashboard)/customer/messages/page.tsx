@@ -68,11 +68,27 @@
 // }
 "use client";
 
+import { useEffect } from "react";
+
 import ChatInput from "@/components/chat/ChatInput";
 import ChatList from "@/components/chat/ChatList";
 import ChatWindow from "@/components/chat/ChatWindow";
 
+import { useMessageStore } from "@/store/messageStore";
+
 export default function CustomerMessagesPage() {
+  const {
+  initializeSocket,
+  disconnectSocket,
+} = useMessageStore();
+
+useEffect(() => {
+  initializeSocket();
+
+  return () => {
+    disconnectSocket();
+  };
+}, []);
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 p-8">
 

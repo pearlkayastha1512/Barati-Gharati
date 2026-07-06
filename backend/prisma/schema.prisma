@@ -19,6 +19,12 @@ enum VendorStatus {
   REJECTED
 }
 
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String
@@ -42,6 +48,12 @@ model User {
   leads               Lead[]
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
+
+  sentMessages Message[] @relation("SentMessages")
+
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  customerConversations Conversation[] @relation("CustomerConversations")
 }
 
 model Portfolio {
@@ -53,11 +65,11 @@ model Portfolio {
 
   imageUrl String
 
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  vendorId      String
+  conversations Conversation[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  vendor        Vendor         @relation(fields: [vendorId], references: [id])
 }
 
 model Vendor {
@@ -121,9 +133,10 @@ model Vendor {
 
   reviews Review[]
 
-  leads      Lead[]
+  leads Lead[]
   // @@index([frontendVendorId])
- 
+
+  conversations Conversation[]
 
   @@index([categoryId])
   @@index([status])
@@ -453,4 +466,50 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  customerId String
+  vendorId   String
+
+  customer User @relation("CustomerConversations", fields: [customerId], references: [id], onDelete: Cascade)
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id])
+  portfolioId String?
+
+  @@index([customerId])
+  @@index([vendorId])
+}
+
+model Message {
+  id String @id @default(uuid())
+
+  conversationId String
+
+  senderId   String
+  receiverId String
+
+  message String
+
+  status MessageStatus @default(SENT)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  sender User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
 }

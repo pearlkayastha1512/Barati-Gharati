@@ -71,7 +71,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { SendHorizonal } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -83,66 +83,45 @@ export default function ChatInput() {
   const { user } = useAuthStore();
 
   const {
+    conversations,
     selectedConversation,
-    messages,
-    sendMessage,
+    sendNewMessage,
   } = useMessageStore();
 
-  const receiverName = useMemo(() => {
-    if (!selectedConversation || !user) {
-      return "";
-    }
+  const conversation = conversations.find(
+    (item) => item.id === selectedConversation
+  );
 
-    const message = messages.find(
-      (msg) =>
-        (msg.senderId === selectedConversation &&
-          msg.receiverId === user._id) ||
-        (msg.receiverId === selectedConversation &&
-          msg.senderId === user._id)
-    );
-
-    if (!message) {
-      return "";
-    }
-
-    return message.senderId === user._id
-      ? message.receiverName
-      : message.senderName;
-  }, [messages, selectedConversation, user]);
-
-  const handleSend = () => {
+  const handleSend = async () => {
     if (
       !user ||
       !selectedConversation ||
+      !conversation ||
       !text.trim()
     ) {
       return;
     }
 
-    sendMessage({
-      id: crypto.randomUUID(),
+    const receiverId =
+      user._id === conversation.customerId
+        ? conversation.vendor?.user?.id
+        : conversation.customer?.id;
 
-      senderId: user._id,
+    if (!receiverId) {
+      return;
+    }
 
-      senderName: user.name,
-
-      receiverId: selectedConversation,
-
-      receiverName,
-
-      message: text,
-
-      sentAt: new Date().toISOString(),
-
-      status: "sent",
-    });
+    await sendNewMessage(
+      selectedConversation,
+      receiverId,
+      text
+    );
 
     setText("");
   };
 
   return (
     <div className="flex items-center gap-3 border-t border-slate-200 p-5">
-
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -156,7 +135,6 @@ export default function ChatInput() {
       >
         <SendHorizonal size={20} />
       </button>
-
     </div>
   );
 }

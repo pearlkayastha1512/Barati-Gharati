@@ -32,6 +32,7 @@ import { InvoiceModule } from './invoice/invoice.module';
 
 
 import { PortfolioModule } from "./portfolio/portfolio.module";
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { PortfolioModule } from "./portfolio/portfolio.module";
      PortfolioModule,
      PackagesModule, PaymentModule,
      PackagesModule, BookingsModule, GuestsModule, TimelineModule, ChecklistModule, NotificationsModule, AdminModule,
-     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule, InvoiceModule,
+     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule, InvoiceModule, ChatModule,
   ],
   controllers: [AppController],
   providers: [
