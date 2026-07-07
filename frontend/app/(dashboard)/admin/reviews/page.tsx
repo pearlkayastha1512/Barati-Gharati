@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import ReviewHero from "@/components/admin/reviews/ReviewHero";
 import ReviewStats from "@/components/admin/reviews/ReviewStats";
@@ -12,10 +16,20 @@ import { getReviews } from "@/services/review.service";
 import { Review } from "@/types/review";
 
 export default function ReviewsManagementPage() {
-  const reviews = useMemo(
-    () => getReviews(),
-    []
-  );
+  const [reviews, setReviews] =
+    useState<Review[]>([]);
+
+  useEffect(() => {
+    async function loadReviews() {
+      const data = await getReviews();
+
+      setReviews(
+        Array.isArray(data) ? data : []
+      );
+    }
+
+    void loadReviews();
+  }, []);
 
   const [search, setSearch] = useState("");
 
@@ -37,7 +51,7 @@ export default function ReviewsManagementPage() {
         review.vendorName
           .toLowerCase()
           .includes(search.toLowerCase()) ||
-        review.comment
+        (review.comment ?? "")
           .toLowerCase()
           .includes(search.toLowerCase());
 
@@ -68,7 +82,7 @@ export default function ReviewsManagementPage() {
     <div className="space-y-8">
       <ReviewHero />
 
-      <ReviewStats />
+      <ReviewStats reviews={reviews} />
 
       <ReviewFilters
         search={search}

@@ -9,12 +9,16 @@ import {
   Clock3,
 } from "lucide-react";
 
-import { getAllBookings } from "@/services/booking.service";
+import { Booking } from "@/types/booking";
 
-export default function PaymentStats() {
+interface PaymentStatsProps {
+  bookings: Booking[];
+}
+
+export default function PaymentStats({
+  bookings,
+}: PaymentStatsProps) {
   const stats = useMemo(() => {
-    const bookings = getAllBookings();
-
     return {
       totalPayments: bookings.length,
 
@@ -37,7 +41,7 @@ export default function PaymentStats() {
             "partial"
       ).length,
     };
-  }, []);
+  }, [bookings]);
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

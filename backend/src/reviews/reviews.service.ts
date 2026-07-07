@@ -147,6 +147,51 @@ export class ReviewsService {
     return vendor?.id ?? null;
   }
 
+  async findAll() {
+    const reviews = await this.prisma.review.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        package: {
+          select: {
+            title: true,
+          },
+        },
+        vendor: {
+          select: {
+            businessName: true,
+            frontendVendorId: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return reviews.map((review) => ({
+      id: review.id,
+      bookingId: review.bookingId,
+      customerId: review.userId,
+      vendorId:
+        review.vendor.frontendVendorId ?? 0,
+      customerName: review.user.name,
+      vendorName: review.vendor.businessName,
+      packageName: review.package.title,
+      rating: review.rating,
+      comment: review.comment ?? '',
+      reply: review.vendorReply,
+      repliedAt: review.vendorReply
+        ? review.updatedAt
+        : undefined,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+    }));
+  }
+
   async findByVendor(vendorId: string) {
     const internalVendorId =
       await this.resolveVendorInternalId(

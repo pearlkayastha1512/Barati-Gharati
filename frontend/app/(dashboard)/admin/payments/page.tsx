@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import PaymentHero from "@/components/admin/payments/PaymentHero";
 import PaymentStats from "@/components/admin/payments/PaymentStats";
@@ -8,14 +12,35 @@ import PaymentFilters from "@/components/admin/payments/PaymentFilters";
 import PaymentTable from "@/components/admin/payments/PaymentTable";
 import PaymentDetailsModal from "@/components/admin/payments/PaymentDetailsModal";
 
-import { getAllBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
+import { getAllBookingsApi } from "@/services/api/admin.api";
+
+type ApiBookingsResponse = {
+  data?: Booking[];
+};
 
 export default function PaymentsManagementPage() {
-  const bookings = useMemo(
-    () => getAllBookings(),
-    []
-  );
+  const [bookings, setBookings] =
+    useState<Booking[]>([]);
+
+  useEffect(() => {
+    async function loadBookings() {
+      const result =
+        await getAllBookingsApi();
+
+      if (!result.ok) {
+        setBookings([]);
+        return;
+      }
+
+      setBookings(
+        (result.data as ApiBookingsResponse)
+          ?.data ?? []
+      );
+    }
+
+    void loadBookings();
+  }, []);
 
   const [search, setSearch] = useState("");
 
@@ -68,7 +93,7 @@ export default function PaymentsManagementPage() {
     <div className="space-y-8">
       <PaymentHero />
 
-      <PaymentStats />
+      <PaymentStats bookings={bookings} />
 
       <PaymentFilters
         search={search}

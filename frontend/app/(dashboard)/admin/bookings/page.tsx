@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import BookingHero from "@/components/admin/bookings/BookingHero";
 import BookingStats from "@/components/admin/bookings/BookingStats";
@@ -8,14 +12,35 @@ import BookingFilters from "@/components/admin/bookings/BookingFilters";
 import BookingTable from "@/components/admin/bookings/BookingTable";
 import BookingDetailsModal from "@/components/admin/bookings/BookingDetailsModal";
 
-import { getAllBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
+import { getAllBookingsApi } from "@/services/api/admin.api";
+
+type ApiBookingsResponse = {
+  data?: Booking[];
+};
 
 export default function BookingManagementPage() {
-  const bookings = useMemo(
-    () => getAllBookings(),
-    []
-  );
+  const [bookings, setBookings] =
+    useState<Booking[]>([]);
+
+  useEffect(() => {
+    async function loadBookings() {
+      const result =
+        await getAllBookingsApi();
+
+      if (!result.ok) {
+        setBookings([]);
+        return;
+      }
+
+      setBookings(
+        (result.data as ApiBookingsResponse)
+          ?.data ?? []
+      );
+    }
+
+    void loadBookings();
+  }, []);
 
   const [search, setSearch] = useState("");
 
@@ -79,7 +104,7 @@ export default function BookingManagementPage() {
     <div className="space-y-8">
       <BookingHero />
 
-      <BookingStats />
+      <BookingStats bookings={bookings} />
 
       <BookingFilters
         search={search}

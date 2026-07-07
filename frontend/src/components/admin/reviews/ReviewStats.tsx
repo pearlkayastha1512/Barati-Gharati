@@ -9,12 +9,16 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-import { getReviews } from "@/services/review.service";
+import { Review } from "@/types/review";
 
-export default function ReviewStats() {
+interface ReviewStatsProps {
+  reviews: Review[];
+}
+
+export default function ReviewStats({
+  reviews,
+}: ReviewStatsProps) {
   const stats = useMemo(() => {
-    const reviews = getReviews();
-
    const average =
   reviews.length === 0
     ? "0.0"
@@ -39,7 +43,7 @@ export default function ReviewStats() {
         (review) => review.rating <= 2
       ).length,
     };
-  }, []);
+  }, [reviews]);
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

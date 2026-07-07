@@ -114,6 +114,37 @@ getAnalytics() {
   return this.adminService.getAnalytics();
 }
 
+@Get('emails')
+getEmailLogs() {
+  return this.adminService.getEmailLogs();
+}
+
+@Get('notifications')
+getNotifications() {
+  return this.adminService.getNotifications();
+}
+
+@Get('settings')
+getPlatformSettings() {
+  return this.adminService.getPlatformSettings();
+}
+
+@Patch('settings')
+updatePlatformSettings(
+  @Body()
+  dto: {
+    allowVendorRegistration?: boolean;
+    allowCustomerRegistration?: boolean;
+    enableReviews?: boolean;
+    enablePayments?: boolean;
+    maintenanceMode?: boolean;
+  },
+) {
+  return this.adminService.updatePlatformSettings(
+    dto,
+  );
+}
+
 @Get('users/search/:name')
 searchUsers(
   @Param('name') name: string,

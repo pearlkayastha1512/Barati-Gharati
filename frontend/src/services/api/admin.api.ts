@@ -1,6 +1,15 @@
-const API_URL = "http://localhost:8000/api/v1/admin";
-
 import { useAuthStore } from "@/store/authStore";
+
+const API_URL = `${
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8000/api/v1"
+}/admin`;
+
+type AdminApiResult = {
+  ok: boolean;
+  data?: unknown;
+  error?: string;
+};
 
 function getHeaders() {
   const token = useAuthStore.getState().token;
@@ -11,24 +20,53 @@ function getHeaders() {
   };
 }
 
+async function requestAdmin(
+  path: string,
+  init: RequestInit = {}
+): Promise<AdminApiResult> {
+  try {
+    const response = await fetch(
+      `${API_URL}${path}`,
+      {
+        ...init,
+        headers: {
+          ...getHeaders(),
+          ...init.headers,
+        },
+      }
+    );
+
+    const text = await response.text();
+    const data = text
+      ? JSON.parse(text)
+      : undefined;
+
+    return {
+      ok: response.ok,
+      data,
+      error:
+        data?.message ??
+        "Unable to complete request.",
+    };
+  } catch {
+    return {
+      ok: false,
+      data: {
+        success: false,
+        data: [],
+      },
+      error:
+        "Unable to connect to backend server.",
+    };
+  }
+}
+
 // ================================
 // Dashboard
 // ================================
 
 export async function getDashboardApi() {
-  const response = await fetch(
-    `${API_URL}/dashboard`,
-    {
-      headers: getHeaders(),
-    }
-  );
-
-  const result = await response.json();
-
-  return {
-    ok: response.ok,
-    data: result,
-  };
+  return requestAdmin("/dashboard");
 }
 
 // ================================
@@ -36,92 +74,78 @@ export async function getDashboardApi() {
 // ================================
 
 export async function getAllVendorsApi() {
-  const response = await fetch(
-    `${API_URL}/vendors`,
-    {
-      headers: getHeaders(),
-    }
-  );
+  return requestAdmin("/vendors");
+}
 
-  const result = await response.json();
+export async function getAllUsersApi() {
+  return requestAdmin("/users");
+}
 
-  return {
-    ok: response.ok,
-    data: result,
-  };
+export async function getAllBookingsApi() {
+  return requestAdmin("/bookings");
+}
+
+export async function getEmailLogsApi() {
+  return requestAdmin("/emails");
+}
+
+export async function getAdminNotificationsApi() {
+  return requestAdmin("/notifications");
+}
+
+export type PlatformSettingsPayload = {
+  allowVendorRegistration?: boolean;
+  allowCustomerRegistration?: boolean;
+  enableReviews?: boolean;
+  enablePayments?: boolean;
+  maintenanceMode?: boolean;
+};
+
+export async function getPlatformSettingsApi() {
+  return requestAdmin("/settings");
+}
+
+export async function updatePlatformSettingsApi(
+  payload: PlatformSettingsPayload
+) {
+  return requestAdmin("/settings", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getVendorByIdApi(
   id: string,
 ) {
-  const response = await fetch(
-    `${API_URL}/vendors/${id}`,
-    {
-      headers: getHeaders(),
-    }
-  );
-
-  const result = await response.json();
-
-  return {
-    ok: response.ok,
-    data: result,
-  };
+  return requestAdmin(`/vendors/${id}`);
 }
 
 export async function approveVendorApi(
   id: string,
 ) {
-  const response = await fetch(
-    `${API_URL}/vendors/${id}/approve`,
+  return requestAdmin(
+    `/vendors/${id}/approve`,
     {
       method: "PATCH",
-      headers: getHeaders(),
     }
   );
-
-  const result = await response.json();
-
-  return {
-    ok: response.ok,
-    data: result,
-  };
 }
 
 export async function rejectVendorApi(
   id: string,
 ) {
-  const response = await fetch(
-    `${API_URL}/vendors/${id}/reject`,
+  return requestAdmin(
+    `/vendors/${id}/reject`,
     {
       method: "PATCH",
-      headers: getHeaders(),
     }
   );
-
-  const result = await response.json();
-
-  return {
-    ok: response.ok,
-    data: result,
-  };
 }
 
 export async function deleteVendorApi(
   id: string,
 ) {
-  const response = await fetch(
-    `${API_URL}/vendors/${id}`,
-    {
-      method: "DELETE",
-      headers: getHeaders(),
-    }
-  );
-
-  const result = await response.json();
-
-  return {
-    ok: response.ok,
-    data: result,
-  };
+  return requestAdmin(`/vendors/${id}`, {
+    method: "DELETE",
+  });
 }
