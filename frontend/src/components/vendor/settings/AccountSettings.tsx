@@ -1,29 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { useAuthStore } from "@/store/authStore";
-
-import {
-  getVendorByUserId,
-  StoredVendor,
-} from "@/services/vendor.service";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 
 export default function AccountSettings() {
-  const { user } = useAuthStore();
+  const { vendor, isLoading } = useVendorProfile();
 
-  const [vendor, setVendor] =
-    useState<StoredVendor | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const vendorData = getVendorByUserId(user._id);
-
-    if (vendorData) {
-      setVendor(vendorData);
-    }
-  }, [user]);
+  if (isLoading || !vendor) {
+    return null;
+  }
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">

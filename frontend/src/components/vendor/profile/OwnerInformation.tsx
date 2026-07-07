@@ -1,7 +1,6 @@
 "use client";
 
-import { useAuthStore } from "@/store/authStore";
-import { getVendorByUserId } from "@/services/vendor.service";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 
 import {
   User,
@@ -12,13 +11,9 @@ import {
 } from "lucide-react";
 
 export default function OwnerInformation() {
-  const { user } = useAuthStore();
+  const { vendor, isLoading } = useVendorProfile();
 
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
-
-  if (!user || !vendor) {
+  if (isLoading || !vendor) {
     return null;
   }
 
