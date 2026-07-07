@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -8,10 +12,14 @@ export class ExpensesService {
   constructor(private prisma: PrismaService) {}
 
   private async getOwnedBudget(userId: string) {
-    const budget = await this.prisma.budget.findUnique({ where: { userId } });
-    if (!budget)
-      throw new NotFoundException('Budget not found. Please create a budget first.');
-    return budget;
+    return this.prisma.budget.upsert({
+      where: { userId },
+      update: {},
+      create: {
+        userId,
+        totalBudget: 1000000,
+      },
+    });
   }
 
   async create(userId: string, dto: CreateExpenseDto) {

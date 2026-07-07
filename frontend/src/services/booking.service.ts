@@ -158,11 +158,19 @@ import {
 
 export async function createBooking(
   booking: Booking
-): Promise<boolean> {
+): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
   const result =
     await createBookingApi(booking);
 
-  return result.ok;
+  return {
+    ok:
+      result.ok &&
+      Boolean(result.data?.success),
+    error: result.error,
+  };
 }
 
 export async function getCustomerBookings() {

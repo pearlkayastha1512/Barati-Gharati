@@ -15,41 +15,24 @@ import { VendorStatus } from '@prisma/client';
 export class BookingsService {
   constructor(private prisma: PrismaService) {}
 
-  
-
-
-
-
-
-
-
-async create(
-  userId: string,
-  dto: CreateBookingDto,
-) {
-  // Find vendor using frontend numeric ID
-  const vendor =
-    await this.prisma.vendor.findUnique({
+  async create(userId: string, dto: CreateBookingDto) {
+    // Find vendor using frontend numeric ID
+    const vendor = await this.prisma.vendor.findUnique({
       where: {
         frontendVendorId: dto.vendorId,
       },
     });
 
-  if (!vendor) {
-    throw new NotFoundException(
-      'Vendor not found',
-    );
-  }
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
 
-  if (vendor.status !== VendorStatus.APPROVED) {
-    throw new ForbiddenException(
-      'Vendor is not approved by admin',
-    );
-  }
+    if (vendor.status !== VendorStatus.APPROVED) {
+      throw new ForbiddenException('Vendor is not approved by admin');
+    }
 
-  // Find package by vendor + package title
-  const pkg =
-    await this.prisma.package.findFirst({
+    // Find package by vendor + package title
+    const pkg = await this.prisma.package.findFirst({
       where: {
         vendorId: vendor.id,
         title: dto.packageName,
@@ -59,17 +42,17 @@ async create(
       },
     });
 
-  if (!pkg) {
-    throw new NotFoundException(
-      'Package not found',
-    );
-  }
+    if (!pkg) {
+      throw new NotFoundException('Package not found');
+    }
 
-  const booking =
-    await this.prisma.booking.create({
+    const eventDate = new Date(dto.eventDate);
+
+    await this.ensureVendorAvailable(vendor.id, eventDate);
+
+    const booking = await this.prisma.booking.create({
       data: {
-        bookingNumber:
-          dto.bookingNumber,
+        bookingNumber: dto.bookingNumber,
 
         userId,
 
@@ -77,15 +60,11 @@ async create(
 
         packageId: pkg.id,
 
-        eventType:
-          dto.eventType,
+        eventType: dto.eventType,
 
-        eventDate: new Date(
-          dto.eventDate,
-        ),
+        eventDate,
 
-        eventTime:
-          dto.eventTime,
+        eventTime: dto.eventTime,
 
         venue: dto.venue,
 
@@ -93,29 +72,21 @@ async create(
 
         guests: dto.guests,
 
-        brideName:
-          dto.brideName,
+        brideName: dto.brideName,
 
-        groomName:
-          dto.groomName,
+        groomName: dto.groomName,
 
-        specialRequirements:
-          dto.specialRequirements,
+        specialRequirements: dto.specialRequirements,
 
-        totalAmount:
-          dto.amount,
+        totalAmount: dto.amount,
 
-        amountPaid:
-          dto.advancePaid,
+        amountPaid: dto.advancePaid,
 
-        remainingAmount:
-          dto.remainingAmount,
+        remainingAmount: dto.remainingAmount,
 
-        paymentStatus:
-          dto.paymentStatus,
+        paymentStatus: dto.paymentStatus,
 
-        status:
-          dto.bookingStatus,
+        status: dto.bookingStatus,
       },
 
       include: {
@@ -131,54 +102,28 @@ async create(
       },
     });
 
-  return this.mapBooking(
-    booking,
-  );
-}
+    return this.mapBooking(booking);
+  }
 
+  async findMyBookings(userId: string, role: Role) {
+    let bookings;
 
-
-
-
-
-
-
-
-
-
-
-
- async findMyBookings(
-  userId: string,
-  role: Role,
-) {
-  let bookings;
-
-  if (role === Role.VENDOR) {
-    const vendor =
-      await this.prisma.vendor.findUnique({
+    if (role === Role.VENDOR) {
+      const vendor = await this.prisma.vendor.findUnique({
         where: {
           userId,
         },
       });
 
-    if (!vendor) {
-      throw new NotFoundException(
-        'Vendor profile not found',
-      );
-    }
+      if (!vendor) {
+        throw new NotFoundException('Vendor profile not found');
+      }
 
-    if (
-      vendor.status !==
-      VendorStatus.APPROVED
-    ) {
-      throw new ForbiddenException(
-        'Vendor is not approved by admin',
-      );
-    }
+      if (vendor.status !== VendorStatus.APPROVED) {
+        throw new ForbiddenException('Vendor is not approved by admin');
+      }
 
-    bookings =
-      await this.prisma.booking.findMany({
+      bookings = await this.prisma.booking.findMany({
         where: {
           vendorId: vendor.id,
         },
@@ -199,9 +144,8 @@ async create(
           createdAt: 'desc',
         },
       });
-  } else {
-    bookings =
-      await this.prisma.booking.findMany({
+    } else {
+      bookings = await this.prisma.booking.findMany({
         where: {
           userId,
         },
@@ -222,24 +166,17 @@ async create(
           createdAt: 'desc',
         },
       });
+    }
+
+    return {
+      success: true,
+
+      data: bookings.map((booking) => this.mapBooking(booking)),
+    };
   }
 
-  return {
-    success: true,
-
-   data: bookings.map((booking) =>
-  this.mapBooking(booking),
-),
-  };
-}
-
-  async findOne(
-  id: string,
-  userId: string,
-  role: Role,
-) {
-  const booking =
-    await this.prisma.booking.findUnique({
+  async findOne(id: string, userId: string, role: Role) {
+    const booking = await this.prisma.booking.findUnique({
       where: {
         id,
       },
@@ -257,61 +194,40 @@ async create(
       },
     });
 
-  if (!booking) {
-    throw new NotFoundException(
-      'Booking not found',
-    );
-  }
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
 
-  if (role === Role.VENDOR) {
-    const vendor =
-      await this.prisma.vendor.findUnique({
+    if (role === Role.VENDOR) {
+      const vendor = await this.prisma.vendor.findUnique({
         where: {
           userId,
         },
       });
 
-    if (!vendor) {
-      throw new ForbiddenException(
-        'Access denied',
-      );
+      if (!vendor) {
+        throw new ForbiddenException('Access denied');
+      }
+
+      if (vendor.status !== VendorStatus.APPROVED) {
+        throw new ForbiddenException('Vendor is not approved by admin');
+      }
+
+      if (booking.vendorId !== vendor.id) {
+        throw new ForbiddenException('Access denied');
+      }
+    } else {
+      if (booking.userId !== userId) {
+        throw new ForbiddenException('Access denied');
+      }
     }
 
-    if (
-      vendor.status !==
-      VendorStatus.APPROVED
-    ) {
-      throw new ForbiddenException(
-        'Vendor is not approved by admin',
-      );
-    }
+    return {
+      success: true,
 
-    if (
-      booking.vendorId !==
-      vendor.id
-    ) {
-      throw new ForbiddenException(
-        'Access denied',
-      );
-    }
-  } else {
-    if (
-      booking.userId !== userId
-    ) {
-      throw new ForbiddenException(
-        'Access denied',
-      );
-    }
+      data: this.mapBooking(booking),
+    };
   }
-
-  return {
-    success: true,
-
-  data: this.mapBooking(booking),
-  };
-}
-
-
 
   async accept(id: string, userId: string) {
     const booking = await this.getVendorBooking(id, userId);
@@ -319,24 +235,29 @@ async create(
     if (booking.status !== BookingStatus.PENDING)
       throw new BadRequestException('Only PENDING bookings can be accepted');
 
-   const updatedBooking =
-  await this.prisma.booking.update({
-    where: { id },
-    data: {
-      status: BookingStatus.ACCEPTED,
-    },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    await this.ensureVendorAvailable(
+      booking.vendorId,
+      booking.eventDate,
+      booking.id,
+    );
+
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: {
+        status: BookingStatus.ACCEPTED,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-return this.mapBooking(updatedBooking);
+    return this.mapBooking(updatedBooking);
   }
 
   async reject(id: string, userId: string, cancellationReason: string) {
@@ -345,96 +266,96 @@ return this.mapBooking(updatedBooking);
     if (booking.status !== BookingStatus.PENDING)
       throw new BadRequestException('Only PENDING bookings can be rejected');
 
-    const updatedBooking =
-  await this.prisma.booking.update({
-    where: { id },
-    data: {
-      status: BookingStatus.REJECTED,
-      cancellationReason,
-    },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: {
+        status: BookingStatus.REJECTED,
+        cancellationReason,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-return this.mapBooking(updatedBooking);
+    return this.mapBooking(updatedBooking);
   }
 
   async confirm(id: string, userId: string) {
-  const booking =
-  await this.prisma.booking.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!booking) {
-    throw new NotFoundException('Booking not found');
-  }
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
 
-  if (booking.userId !== userId) {
-    throw new ForbiddenException('Access denied');
-  }
+    if (booking.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
 
-  if (booking.paymentStatus !== PaymentStatus.SUCCESS) {
-    throw new BadRequestException(
-      'Payment must be completed before confirmation',
+    if (booking.paymentStatus !== PaymentStatus.SUCCESS) {
+      throw new BadRequestException(
+        'Payment must be completed before confirmation',
+      );
+    }
+
+    if (booking.status !== BookingStatus.ACCEPTED) {
+      throw new BadRequestException('Only ACCEPTED bookings can be confirmed');
+    }
+
+    await this.ensureVendorAvailable(
+      booking.vendorId,
+      booking.eventDate,
+      booking.id,
     );
-  }
 
-  if (booking.status !== BookingStatus.ACCEPTED) {
-    throw new BadRequestException(
-      'Only ACCEPTED bookings can be confirmed',
-    );
-  }
-
- const updatedBooking =
-  await this.prisma.booking.update({
-    where: { id },
-    data: {
-      status: BookingStatus.CONFIRMED,
-    },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: {
+        status: BookingStatus.CONFIRMED,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-return this.mapBooking(updatedBooking);
-}
+    return this.mapBooking(updatedBooking);
+  }
 
   async cancel(id: string, userId: string, dto: CancelBookingDto) {
-   const booking =
-  await this.prisma.booking.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
     if (!booking) throw new NotFoundException('Booking not found');
     if (booking.userId !== userId)
@@ -444,173 +365,174 @@ return this.mapBooking(updatedBooking);
     if (booking.status === BookingStatus.CONFIRMED)
       throw new BadRequestException('Confirmed bookings cannot be cancelled');
 
-    const updatedBooking =
-  await this.prisma.booking.update({
-    where: { id },
-    data: {
-      status: BookingStatus.CANCELLED,
-      cancellationReason:
-        dto.cancellationReason,
-    },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: {
+        status: BookingStatus.CANCELLED,
+        cancellationReason: dto.cancellationReason,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-return this.mapBooking(updatedBooking);
+    return this.mapBooking(updatedBooking);
   }
 
+  private async getVendorBooking(id: string, userId: string) {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: {
+        userId,
+      },
+    });
 
+    if (!vendor) {
+      throw new NotFoundException('Vendor profile not found');
+    }
 
+    if (vendor.status !== VendorStatus.APPROVED) {
+      throw new ForbiddenException('Vendor is not approved by admin');
+    }
 
-
-  private async getVendorBooking(
-  id: string,
-  userId: string,
-) {
-  const vendor = await this.prisma.vendor.findUnique({
-    where: {
-      userId,
-    },
-  });
-
-  if (!vendor) {
-    throw new NotFoundException(
-      'Vendor profile not found',
-    );
-  }
-
-  if (vendor.status !== VendorStatus.APPROVED) {
-    throw new ForbiddenException(
-      'Vendor is not approved by admin',
-    );
-  }
-
-  const booking =
-  await this.prisma.booking.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      user: true,
-      vendor: true,
-      package: {
-        include: {
-          category: true,
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!booking) {
-    throw new NotFoundException(
-      'Booking not found',
-    );
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.vendorId !== vendor.id) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return booking;
   }
 
-  if (booking.vendorId !== vendor.id) {
-    throw new ForbiddenException(
-      'Access denied',
-    );
+  private async ensureVendorAvailable(
+    vendorId: string,
+    eventDate: Date,
+    excludedBookingId?: string,
+  ) {
+    const { start, end } = this.getDateRange(eventDate);
+
+    const [blocked, booked] = await Promise.all([
+      this.prisma.vendorAvailability.findFirst({
+        where: {
+          vendorId,
+          date: {
+            gte: start,
+            lt: end,
+          },
+        },
+      }),
+      this.prisma.booking.findFirst({
+        where: {
+          vendorId,
+          id: excludedBookingId
+            ? {
+                not: excludedBookingId,
+              }
+            : undefined,
+          eventDate: {
+            gte: start,
+            lt: end,
+          },
+          status: {
+            in: [BookingStatus.ACCEPTED, BookingStatus.CONFIRMED],
+          },
+        },
+      }),
+    ]);
+
+    if (blocked || booked) {
+      throw new BadRequestException('Vendor is unavailable on this date.');
+    }
   }
 
-  return booking;
+  private getDateRange(date: Date) {
+    const start = new Date(date);
+    start.setUTCHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+
+    return {
+      start,
+      end,
+    };
+  }
+
+  private mapBooking(booking: any) {
+    return {
+      id: booking.id,
+
+      bookingNumber: booking.bookingNumber,
+
+      customerId: booking.userId,
+
+      vendorId: booking.vendor.frontendVendorId ?? 0,
+
+      customerName: booking.user.name,
+
+      customerEmail: booking.user.email,
+
+      customerPhone: booking.user.phone ?? '',
+
+      vendorName: booking.vendor.businessName,
+
+      category: booking.package.category?.name ?? '',
+
+      packageName: booking.package.title,
+
+      eventType: booking.eventType ?? '',
+
+      eventDate: booking.eventDate,
+
+      eventTime: booking.eventTime ?? '',
+
+      venue: booking.venue ?? '',
+
+      city: booking.city ?? '',
+
+      guests: booking.guests,
+
+      brideName: booking.brideName ?? '',
+
+      groomName: booking.groomName ?? '',
+
+      specialRequirements: booking.specialRequirements ?? '',
+
+      amount: Number(booking.totalAmount),
+
+      advancePaid: Number(booking.amountPaid),
+
+      remainingAmount: Number(booking.remainingAmount),
+
+      paymentStatus: booking.paymentStatus.toLowerCase(),
+
+      bookingStatus: booking.status.toLowerCase(),
+
+      createdAt: booking.createdAt,
+
+      updatedAt: booking.updatedAt,
+    };
+  }
 }
-
-
-
-
-
-
-private mapBooking(booking: any) {
-  return {
-    id: booking.id,
-
-    bookingNumber: booking.bookingNumber,
-
-    customerId: booking.userId,
-
-    vendorId:
-      booking.vendor.frontendVendorId ?? 0,
-
-    customerName:
-      booking.user.name,
-
-    customerEmail:
-      booking.user.email,
-
-    customerPhone:
-      booking.user.phone ?? "",
-
-    vendorName:
-      booking.vendor.businessName,
-
-    category:
-      booking.package.category?.name ?? "",
-
-    packageName:
-      booking.package.title,
-
-    eventType:
-      booking.eventType ?? "",
-
-    eventDate:
-      booking.eventDate,
-
-    eventTime:
-      booking.eventTime ?? "",
-
-    venue:
-      booking.venue ?? "",
-
-    city:
-      booking.city ?? "",
-
-    guests:
-      booking.guests,
-
-    brideName:
-      booking.brideName ?? "",
-
-    groomName:
-      booking.groomName ?? "",
-
-    specialRequirements:
-      booking.specialRequirements ?? "",
-
-    amount: Number(
-      booking.totalAmount,
-    ),
-
-    advancePaid: Number(
-      booking.amountPaid,
-    ),
-
-    remainingAmount: Number(
-      booking.remainingAmount,
-    ),
-
-    paymentStatus:
-      booking.paymentStatus.toLowerCase(),
-
-    bookingStatus:
-      booking.status.toLowerCase(),
-
-    createdAt:
-      booking.createdAt,
-
-    updatedAt:
-      booking.updatedAt,
-  };
-}
-}
-
-
-
-

@@ -126,10 +126,53 @@ async updateVendorProfile(
 }
 
 async getAllVendors() {
+  const vendorsNeedingPublicIds =
+    await this.prisma.vendor.findMany({
+      where: {
+        status: VendorStatus.APPROVED,
+        isActive: true,
+        frontendVendorId: null,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+  if (vendorsNeedingPublicIds.length > 0) {
+    const maxPublicId =
+      await this.prisma.vendor.aggregate({
+        _max: {
+          frontendVendorId: true,
+        },
+      });
+
+    let nextPublicId =
+      (maxPublicId._max.frontendVendorId ?? 0) + 1;
+
+    for (const vendor of vendorsNeedingPublicIds) {
+      await this.prisma.vendor.update({
+        where: {
+          id: vendor.id,
+        },
+        data: {
+          frontendVendorId: nextPublicId,
+        },
+      });
+
+      nextPublicId += 1;
+    }
+  }
+
   const vendors = await this.prisma.vendor.findMany({
     where: {
       status: VendorStatus.APPROVED,
       isActive: true,
+      frontendVendorId: {
+        not: null,
+      },
     },
 
     include: {

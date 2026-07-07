@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
   CalendarCheck2,
@@ -9,39 +9,25 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { useBookingStore } from "@/store/bookingStore";
-import { useAuthStore } from "@/store/authStore";
-
-import { getVendorByUserId } from "@/services/vendor.service";
-
-import { Availability } from "@/types/availability";
+import { useAvailabilityStore } from "@/store/availabilityStore";
 
 export default function CalendarStats() {
-  const bookings = useBookingStore(
-    (state) => state.bookings
+  const availability = useAvailabilityStore(
+    (state) => state.availability
   );
-
-  const { user } = useAuthStore();
-
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
-
-  const [blockedDates, setBlockedDates] =
-    useState<Availability[]>([]);
+  const loadAvailability =
+    useAvailabilityStore(
+      (state) => state.loadAvailability
+    );
 
   useEffect(() => {
-    const data =
-      localStorage.getItem("availability");
+    void loadAvailability();
+  }, [loadAvailability]);
 
-    if (data) {
-      setBlockedDates(
-        JSON.parse(data)
-      );
-    }
-  }, []);
-
-  const currentDate = new Date();
+  const currentDate = useMemo(
+    () => new Date(),
+    []
+  );
 
   const currentMonth =
     currentDate.getMonth();
@@ -51,43 +37,42 @@ export default function CalendarStats() {
 
   const stats = useMemo(() => {
     const monthBookings =
-      bookings.filter((booking) => {
-        const date = new Date(
-          booking.eventDate
-        );
+      availability.filter((item) => {
+        const date = new Date(item.date);
 
         return (
+          item.status === "booked" &&
           date.getMonth() ===
             currentMonth &&
           date.getFullYear() ===
-            currentYear &&
-          booking.bookingStatus !==
-            "cancelled"
+            currentYear
         );
       });
 
     const todayBookings =
-      bookings.filter((booking) => {
-        const date = new Date(
-          booking.eventDate
-        );
+      availability.filter((item) => {
+        const date = new Date(item.date);
 
         return (
+          item.status === "booked" &&
           date.toDateString() ===
-            currentDate.toDateString() &&
-          booking.bookingStatus !==
-            "cancelled"
+            currentDate.toDateString()
         );
       });
 
     const blocked =
-      blockedDates.filter(
-        (item) =>
-          vendor &&
-          item.vendorId ===
-            vendor.id &&
-          item.status ===
-            "blocked"
+      availability.filter(
+        (item) => {
+          const date = new Date(item.date);
+
+          return (
+            item.status === "blocked" &&
+            date.getMonth() ===
+              currentMonth &&
+            date.getFullYear() ===
+              currentYear
+          );
+        }
       ).length;
 
     const daysInMonth =
@@ -118,9 +103,7 @@ export default function CalendarStats() {
         ),
     };
   }, [
-    bookings,
-    blockedDates,
-    vendor,
+    availability,
     currentDate,
     currentMonth,
     currentYear,

@@ -1,89 +1,38 @@
 import { Expense } from "@/types/expense";
 
-const STORAGE_KEY = "expenses";
+import {
+  getExpensesApi,
+  createExpenseApi,
+  updateExpenseApi,
+  deleteExpenseApi,
+} from "@/services/api/expense.api";
 
-export function getExpenses(): Expense[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
+export async function getCustomerExpenses(): Promise<Expense[]> {
+  const result = await getExpensesApi();
 
-  const expenses = localStorage.getItem(STORAGE_KEY);
-
-  if (!expenses) {
-    return [];
-  }
-
-  return JSON.parse(expenses);
+  return result.data;
 }
 
-export function saveExpenses(
-  expenses: Expense[]
-): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(expenses)
-  );
-}
-
-export function getCustomerExpenses(
-  customerId: string
-): Expense[] {
-  return getExpenses().filter(
-    (expense) =>
-      expense.customerId === customerId
-  );
-}
-
-export function createExpense(
+export async function createExpense(
   expense: Expense
-): void {
-  const expenses = getExpenses();
+): Promise<Expense | null> {
+  const result = await createExpenseApi(expense);
 
-  expenses.push(expense);
-
-  saveExpenses(expenses);
+  return result.ok && result.data ? result.data : null;
 }
 
-export function updateExpense(
-  updatedExpense: Expense
-): void {
-  const expenses = getExpenses().map(
-    (expense) =>
-      expense.id === updatedExpense.id
-        ? updatedExpense
-        : expense
-  );
+export async function updateExpense(
+  expense: Expense
+): Promise<Expense | null> {
+  const result = await updateExpenseApi(expense);
 
-  saveExpenses(expenses);
+  return result.ok && result.data ? result.data : null;
 }
 
-export function deleteExpense(
+export async function deleteExpense(
   expenseId: string
-): void {
-  const expenses = getExpenses().filter(
-    (expense) =>
-      expense.id !== expenseId
-  );
+): Promise<boolean> {
+  const result = await deleteExpenseApi(expenseId);
 
-  saveExpenses(expenses);
-}
-
-export function getExpenseById(
-  expenseId: string
-): Expense | undefined {
-  return getExpenses().find(
-    (expense) =>
-      expense.id === expenseId
-  );
-}
-
-export function clearCustomerExpenses(
-  customerId: string
-): void {
-  const expenses = getExpenses().filter(
-    (expense) =>
-      expense.customerId !== customerId
-  );
-
-  saveExpenses(expenses);
+  return result.ok;
 }

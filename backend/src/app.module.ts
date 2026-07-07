@@ -30,13 +30,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { MailModule } from './mail/mail.module';
 import { InvoiceModule } from './invoice/invoice.module';
 
-
-import { PortfolioModule } from "./portfolio/portfolio.module";
+import { PortfolioModule } from './portfolio/portfolio.module';
 
 import { ChatModule } from './chat/chat.module';
 
 import { WishlistModule } from './wishlist/wishlist.module';
-
+import { AvailabilityModule } from './availability/availability.module';
 
 @Module({
   imports: [
@@ -44,31 +43,46 @@ import { WishlistModule } from './wishlist/wishlist.module';
       isGlobal: true,
     }),
     ThrottlerModule.forRoot([
-  {
-    ttl: 60000,
-    limit: 100,
-  },
-]),
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     PrismaModule,
     WishlistModule,
     AuthModule,
     UsersModule,
     VendorModule,
     ChatbotModule,
-    CategoriesModule, 
-     PortfolioModule,
-     PackagesModule, PaymentModule,
-     PackagesModule, BookingsModule, GuestsModule, TimelineModule, ChecklistModule, NotificationsModule, AdminModule,
-     PackagesModule, BookingsModule, ReviewsModule, BudgetsModule, ExpensesModule, LeadsModule, MailModule, InvoiceModule, ChatModule,
+    CategoriesModule,
+    PortfolioModule,
+    PackagesModule,
+    PaymentModule,
+    PackagesModule,
+    BookingsModule,
+    GuestsModule,
+    TimelineModule,
+    ChecklistModule,
+    NotificationsModule,
+    AdminModule,
+    PackagesModule,
+    BookingsModule,
+    ReviewsModule,
+    BudgetsModule,
+    ExpensesModule,
+    LeadsModule,
+    MailModule,
+    InvoiceModule,
+    ChatModule,
+    AvailabilityModule,
   ],
   controllers: [AppController],
   providers: [
-  AppService,
-  {
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard,
-  },
-],
-  
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

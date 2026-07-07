@@ -375,6 +375,7 @@ export default function ExpenseModal({
   const [expenseDate, setExpenseDate] = useState("");
   const [notes, setNotes] = useState("");
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (expense) {
       setTitle(expense.title);
@@ -390,10 +391,11 @@ export default function ExpenseModal({
       setNotes("");
     }
   }, [expense, open]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!open) return null;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!user) return;
 
     if (!title || !amount || !expenseDate) {
@@ -413,11 +415,22 @@ export default function ExpenseModal({
       updatedAt: new Date().toISOString(),
     };
 
+    const success = expense
+      ? await updateExpense(payload)
+      : await addExpense(payload);
+
+    if (!success) {
+      toast.error(
+        expense
+          ? "Failed to update expense."
+          : "Failed to add expense."
+      );
+      return;
+    }
+
     if (expense) {
-      updateExpense(payload);
       toast.success("Expense updated.");
     } else {
-      addExpense(payload);
       toast.success("Expense added.");
     }
 

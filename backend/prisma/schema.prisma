@@ -131,6 +131,8 @@ model Vendor {
 
   bookings Booking[]
 
+  availability VendorAvailability[]
+
   portfolio Portfolio[]
 
   reviews Review[]
@@ -207,6 +209,27 @@ enum PaymentStatus {
   FAILED
   PARTIAL
   REFUNDED
+}
+
+enum AvailabilityStatus {
+  BLOCKED
+}
+
+model VendorAvailability {
+  id     String             @id @default(uuid())
+  date   DateTime
+  status AvailabilityStatus @default(BLOCKED)
+  reason String?
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vendorId, date])
+  @@index([vendorId])
+  @@index([date])
 }
 
 model Booking {

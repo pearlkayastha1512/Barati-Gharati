@@ -422,6 +422,13 @@ async approveVendor(id: string) {
 
   const updatedVendor = await this.prisma.$transaction(
     async (tx) => {
+      const maxPublicId =
+        await tx.vendor.aggregate({
+          _max: {
+            frontendVendorId: true,
+          },
+        });
+
       // Approve vendor
       const updated = await tx.vendor.update({
         where: {
@@ -430,6 +437,11 @@ async approveVendor(id: string) {
         data: {
           status: VendorStatus.APPROVED,
           approvedAt: new Date(),
+          frontendVendorId:
+            vendor.frontendVendorId ??
+            (maxPublicId._max.frontendVendorId ??
+              0) +
+              1,
 
           businessVerified: true,
 

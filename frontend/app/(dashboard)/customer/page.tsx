@@ -53,7 +53,7 @@ useEffect(() => {
 
   loadCustomerBookings(user._id);
 
-  loadWishlist(user._id);
+  loadWishlist();
 
   loadCustomerReviews(user._id);
 }, [
