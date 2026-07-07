@@ -37,6 +37,22 @@ export class CreateBookingDto {
   @IsString()
   customerPhone!: string;
 
+  @IsOptional()
+  @IsString()
+  partnerName?: string;
+
+  @IsOptional()
+  @IsString()
+  partnerEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  partnerPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  partnerOccupation?: string;
+
   @IsString()
   eventType!: string;
 
@@ -54,6 +70,22 @@ export class CreateBookingDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  @IsOptional()
+  @IsString()
+  contactAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  contactState?: string;
+
+  @IsOptional()
+  @IsString()
+  contactCountry?: string;
+
+  @IsOptional()
+  @IsString()
+  weddingTheme?: string;
 
   @IsNumber()
   guests!: number;

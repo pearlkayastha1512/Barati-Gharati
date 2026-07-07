@@ -72,9 +72,31 @@ export class BookingsService {
 
         guests: dto.guests,
 
+        customerName: dto.customerName,
+
+        customerEmail: dto.customerEmail,
+
+        customerPhone: dto.customerPhone,
+
         brideName: dto.brideName,
 
         groomName: dto.groomName,
+
+        partnerName: dto.partnerName,
+
+        partnerEmail: dto.partnerEmail,
+
+        partnerPhone: dto.partnerPhone,
+
+        partnerOccupation: dto.partnerOccupation,
+
+        contactAddress: dto.contactAddress,
+
+        contactState: dto.contactState,
+
+        contactCountry: dto.contactCountry,
+
+        weddingTheme: dto.weddingTheme,
 
         specialRequirements: dto.specialRequirements,
 
@@ -490,11 +512,11 @@ export class BookingsService {
 
       vendorId: booking.vendor.frontendVendorId ?? 0,
 
-      customerName: booking.user.name,
+      customerName: booking.customerName ?? booking.user.name,
 
-      customerEmail: booking.user.email,
+      customerEmail: booking.customerEmail ?? booking.user.email,
 
-      customerPhone: booking.user.phone ?? '',
+      customerPhone: booking.customerPhone ?? booking.user.phone ?? '',
 
       vendorName: booking.vendor.businessName,
 
@@ -517,6 +539,22 @@ export class BookingsService {
       brideName: booking.brideName ?? '',
 
       groomName: booking.groomName ?? '',
+
+      partnerName: booking.partnerName ?? '',
+
+      partnerEmail: booking.partnerEmail ?? '',
+
+      partnerPhone: booking.partnerPhone ?? '',
+
+      partnerOccupation: booking.partnerOccupation ?? '',
+
+      contactAddress: booking.contactAddress ?? '',
+
+      contactState: booking.contactState ?? '',
+
+      contactCountry: booking.contactCountry ?? '',
+
+      weddingTheme: booking.weddingTheme ?? '',
 
       specialRequirements: booking.specialRequirements ?? '',
 

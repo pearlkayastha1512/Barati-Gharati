@@ -23,6 +23,11 @@ export interface Booking {
   customerEmail: string;
   customerPhone: string;
 
+  partnerName?: string;
+  partnerEmail?: string;
+  partnerPhone?: string;
+  partnerOccupation?: string;
+
   vendorName: string;
 
   category: string;
@@ -38,6 +43,11 @@ export interface Booking {
   venue: string;
 
   city: string;
+
+  contactAddress?: string;
+  contactState?: string;
+  contactCountry?: string;
+  weddingTheme?: string;
 
   guests: number;
 

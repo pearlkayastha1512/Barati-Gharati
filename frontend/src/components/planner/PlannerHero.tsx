@@ -86,12 +86,15 @@ export default function PlannerHero() {
     tasks.filter(
       (task) =>
         task.status ===
-        "completed"
+        "COMPLETED"
     ).length;
 
   const pendingTasks =
-    tasks.length -
-    completedTasks;
+    tasks.filter(
+      (task) =>
+        task.status ===
+        "PENDING"
+    ).length;
 
   const progress =
     tasks.length === 0

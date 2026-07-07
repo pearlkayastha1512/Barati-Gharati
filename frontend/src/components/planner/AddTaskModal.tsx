@@ -4,13 +4,8 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/store/authStore";
 import { usePlannerStore } from "@/store/plannerStore";
-
-import {
-  PlannerTask,
-  TaskPriority,
-} from "@/types/planner";
+import { TaskPriority } from "@/types/planner";
 
 interface Props {
   open: boolean;
@@ -21,21 +16,21 @@ export default function AddTaskModal({
   open,
   onClose,
 }: Props) {
-  const { user } = useAuthStore();
-
   const addTask = usePlannerStore(
     (state) => state.addTask
   );
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] =
+    useState("");
   const [priority, setPriority] =
-    useState<TaskPriority>("medium");
-  const [dueDate, setDueDate] = useState("");
+    useState<TaskPriority>("MEDIUM");
+  const [dueDate, setDueDate] =
+    useState("");
 
   if (!open) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || !dueDate) {
       toast.error(
         "Please fill all required fields."
@@ -43,25 +38,20 @@ export default function AddTaskModal({
       return;
     }
 
-    const task: PlannerTask = {
-      id: crypto.randomUUID(),
-      customerId: user?._id ?? "",
+    await addTask({
       title,
       description,
-      dueDate,
+      date: dueDate,
       priority,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    });
 
-    addTask(task);
-
-    toast.success("Task added successfully.");
+    toast.success(
+      "Task added successfully."
+    );
 
     setTitle("");
     setDescription("");
-    setPriority("medium");
+    setPriority("MEDIUM");
     setDueDate("");
 
     onClose();
@@ -69,7 +59,7 @@ export default function AddTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white shadow-xl text-gray-700">
+      <div className="w-full max-w-xl rounded-3xl bg-white text-gray-700 shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 p-6">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -100,7 +90,9 @@ export default function AddTaskModal({
             placeholder="Description"
             value={description}
             onChange={(e) =>
-              setDescription(e.target.value)
+              setDescription(
+                e.target.value
+              )
             }
             className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
           />
@@ -110,20 +102,21 @@ export default function AddTaskModal({
               value={priority}
               onChange={(e) =>
                 setPriority(
-                  e.target.value as TaskPriority
+                  e.target
+                    .value as TaskPriority
                 )
               }
               className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
             >
-              <option value="low">
+              <option value="LOW">
                 Low
               </option>
 
-              <option value="medium">
+              <option value="MEDIUM">
                 Medium
               </option>
 
-              <option value="high">
+              <option value="HIGH">
                 High
               </option>
             </select>
@@ -132,7 +125,9 @@ export default function AddTaskModal({
               type="date"
               value={dueDate}
               onChange={(e) =>
-                setDueDate(e.target.value)
+                setDueDate(
+                  e.target.value
+                )
               }
               className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
             />

@@ -1,88 +1,96 @@
 import { create } from "zustand";
 
 import { PlannerTask } from "@/types/planner";
-
 import { plannerService } from "@/services/planner.service";
-
 
 interface PlannerStore {
   tasks: PlannerTask[];
 
-  loadTasks: () => void;
+  loadTasks: () => Promise<void>;
 
-  addTask: (
-    task: PlannerTask
-  ) => void;
+  addTask: (task: any) => Promise<void>;
 
   updateTask: (
-    task: PlannerTask
-  ) => void;
+    id: string,
+    task: any
+  ) => Promise<void>;
 
   deleteTask: (
     id: string
-  ) => void;
+  ) => Promise<void>;
 
   toggleTask: (
-    id: string
-  ) => void;
-
-  clearTasks: () => void;
+    id: string,
+    status: string
+  ) => Promise<void>;
 }
 
 export const usePlannerStore =
   create<PlannerStore>((set) => ({
     tasks: [],
 
-    loadTasks: () => {
+    loadTasks: async () => {
+      const result =
+        await plannerService.getTasks();
+
       set({
-        tasks:
-          plannerService.getTasks(),
+        tasks: result.data,
       });
     },
 
-    addTask: (task) => {
-      plannerService.addTask(task);
+    addTask: async (task) => {
+      await plannerService.addTask(task);
+
+      const result =
+        await plannerService.getTasks();
 
       set({
-        tasks:
-          plannerService.getTasks(),
+        tasks: result.data,
       });
     },
 
-    updateTask: (task) => {
-      plannerService.updateTask(task);
+    updateTask: async (
+      id,
+      task
+    ) => {
+      await plannerService.updateTask(
+        id,
+        task
+      );
+
+      const result =
+        await plannerService.getTasks();
 
       set({
-        tasks:
-          plannerService.getTasks(),
+        tasks: result.data,
       });
     },
 
+    deleteTask: async (id) => {
+      await plannerService.deleteTask(id);
 
-    
-    deleteTask: (id) => {
-      plannerService.deleteTask(id);
+      const result =
+        await plannerService.getTasks();
 
       set({
-        tasks:
-          plannerService.getTasks(),
+        tasks: result.data,
       });
     },
 
-    toggleTask: (id) => {
-      plannerService.toggleTask(id);
+    toggleTask: async (
+      id,
+      status
+    ) => {
+      await plannerService.toggleTask(
+        id,
+        status
+      );
+
+      const result =
+        await plannerService.getTasks();
 
       set({
-        tasks:
-          plannerService.getTasks(),
-      });
-    },
-
-    clearTasks: () => {
-      plannerService.clearTasks();
-
-      set({
-        tasks: [],
+        tasks: result.data,
       });
     },
   }));

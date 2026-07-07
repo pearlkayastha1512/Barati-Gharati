@@ -1,14 +1,12 @@
 "use client";
 
-import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 
 export default function PartnerInformation() {
-  const profile =
-    useCustomerProfileStore(
-      (state) => state.profile
-    );
+  const { user, partner } =
+    useCustomerProfileData();
 
-  if (!profile) {
+  if (!user) {
     return null;
   }
 
@@ -24,7 +22,7 @@ export default function PartnerInformation() {
         <Info
           label="Partner Name"
           value={
-            profile.partnerName ||
+            partner.name ||
             "Not Provided"
           }
         />
@@ -32,7 +30,7 @@ export default function PartnerInformation() {
         <Info
           label="Email"
           value={
-            profile.partnerEmail ||
+            partner.email ||
             "Not Provided"
           }
         />
@@ -40,7 +38,7 @@ export default function PartnerInformation() {
         <Info
           label="Phone"
           value={
-            profile.partnerPhone ||
+            partner.phone ||
             "Not Provided"
           }
         />
@@ -48,7 +46,7 @@ export default function PartnerInformation() {
         <Info
           label="Occupation"
           value={
-            profile.partnerOccupation ||
+            partner.occupation ||
             "Not Provided"
           }
         />

@@ -10,8 +10,6 @@ import {
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/store/authStore";
-import { useBookingStore } from "@/store/bookingStore";
-import { usePlannerStore } from "@/store/plannerStore";
 import { useExpenseStore } from "@/store/expenseStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useCustomerProfileStore } from "@/store/customerProfileStore";
@@ -27,34 +25,14 @@ export default function DangerZone() {
   useCustomerStore(
     (state) => state.reset
   );
-  const clearPlanner =
-    usePlannerStore(
-      (state) => state.clearTasks
-    );
-
   const clearCustomerWishlist =
   useWishlistStore(
     (state) => state.clearCustomerWishlist
   );
 
-  const bookings =
-    useBookingStore(
-      (state) => state.bookings
-    );
-
-  const deleteBooking =
-    useBookingStore(
-      (state) => state.deleteBooking
-    );
-
-  const expenses =
+  const clearExpenses =
     useExpenseStore(
-      (state) => state.expenses
-    );
-
-  const deleteExpense =
-    useExpenseStore(
-      (state) => state.deleteExpense
+      (state) => state.clearExpenses
     );
 
   const resetProfile =
@@ -81,20 +59,8 @@ export default function DangerZone() {
     return;
   }
 
-  bookings.forEach((booking) =>
-    deleteBooking(booking.id)
-  );
-
-  expenses.forEach((expense) =>
-    deleteExpense(expense.id)
-  );
-
-  clearPlanner();
-  if (useAuthStore.getState().user) {
-  clearCustomerWishlist(
-    useAuthStore.getState().user!._id
-  );
-}
+  clearExpenses();
+  clearCustomerWishlist();
   resetProfile();
 
   localStorage.removeItem(
@@ -110,7 +76,7 @@ export default function DangerZone() {
   );
 
   // Reset customer store
-  resetCustomer();
+  void resetCustomer();
 
   // Logout
   logout();

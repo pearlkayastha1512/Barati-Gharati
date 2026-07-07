@@ -9,19 +9,17 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { useAuthStore } from "@/store/authStore";
-import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 import { useCustomerStore } from "@/store";
 
 export default function ProfileOverview() {
-  const user = useAuthStore(
-    (state) => state.user
-  );
-
-  const profile =
-    useCustomerProfileStore(
-      (state) => state.profile
-    );
+  const {
+    user,
+    personal,
+    partner,
+    wedding,
+    contact,
+  } = useCustomerProfileData();
 
   const weddingBudget =
     useCustomerStore(
@@ -30,32 +28,32 @@ export default function ProfileOverview() {
 
   const profileCompletion =
     useMemo(() => {
-      if (!user || !profile) {
+      if (!user) {
         return 0;
       }
 
       const fields = [
-        user.name,
-        user.email,
-        user.phone,
+        personal.fullName,
+        personal.email,
+        personal.phone,
 
-        profile.gender,
+        personal.gender,
 
-        profile.address,
-        profile.city,
-        profile.state,
-        profile.country,
+        contact.address,
+        contact.city,
+        contact.state,
+        contact.country,
 
-        profile.partnerName,
-        profile.partnerEmail,
-        profile.partnerPhone,
-        profile.partnerOccupation,
+        partner.name,
+        partner.email,
+        partner.phone,
+        partner.occupation,
 
-        profile.weddingDate,
-        profile.weddingVenue,
-        profile.weddingTheme,
+        wedding.date,
+        wedding.venue,
+        wedding.theme,
 
-        profile.guestCount > 0
+        wedding.guests > 0
           ? "yes"
           : "",
       ];
@@ -66,9 +64,15 @@ export default function ProfileOverview() {
       return Math.round(
         (filled / fields.length) * 100
       );
-    }, [user, profile]);
+    }, [
+      contact,
+      partner,
+      personal,
+      user,
+      wedding,
+    ]);
 
-  if (!user || !profile) {
+  if (!user) {
     return null;
   }
 
@@ -84,7 +88,7 @@ export default function ProfileOverview() {
     {
       title: "Partner",
       value:
-        profile.partnerName
+        partner.name
           ? "Added"
           : "Pending",
       subtitle: "Information",
@@ -94,9 +98,9 @@ export default function ProfileOverview() {
     },
     {
       title: "Wedding",
-      value: profile.weddingDate
+      value: wedding.date
         ? new Date(
-            profile.weddingDate
+            wedding.date
           ).toLocaleDateString(
             "en-GB",
             {
@@ -105,9 +109,9 @@ export default function ProfileOverview() {
             }
           )
         : "--",
-      subtitle: profile.weddingDate
+      subtitle: wedding.date
         ? new Date(
-            profile.weddingDate
+            wedding.date
           ).getFullYear()
         : "Not Set",
       icon: CalendarDays,

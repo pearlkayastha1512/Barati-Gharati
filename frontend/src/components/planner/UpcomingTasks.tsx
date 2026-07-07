@@ -25,12 +25,12 @@ export default function UpcomingTasks() {
   const upcomingTasks = useMemo(() => {
     return [...tasks]
       .filter(
-        (task) => task.status === "pending"
+        (task) => task.status === "PENDING"
       )
       .sort(
         (a, b) =>
-          new Date(a.dueDate).getTime() -
-          new Date(b.dueDate).getTime()
+          new Date(a.date).getTime() -
+          new Date(b.date).getTime()
       )
       .slice(0, 5);
   }, [tasks]);
@@ -48,9 +48,7 @@ export default function UpcomingTasks() {
 
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
-
       <div className="mb-6">
-
         <h2 className="text-2xl font-bold text-gray-900">
           Upcoming Tasks
         </h2>
@@ -58,7 +56,6 @@ export default function UpcomingTasks() {
         <p className="mt-1 text-gray-500">
           Your next wedding activities.
         </p>
-
       </div>
 
       {upcomingTasks.length === 0 ? (
@@ -67,7 +64,6 @@ export default function UpcomingTasks() {
         </div>
       ) : (
         <div className="space-y-4">
-
           {upcomingTasks.map((task) => (
             <div
               key={task.id}
@@ -82,31 +78,28 @@ export default function UpcomingTasks() {
               "
             >
               <div className="flex items-start justify-between">
-
                 <div className="flex items-center gap-4">
-
                   <div className="rounded-2xl bg-rose-100 p-3">
-
                     <CalendarClock
                       size={22}
                       className="text-rose-500"
                     />
-
                   </div>
 
                   <div>
-
                     <h3 className="font-semibold text-gray-900">
                       {task.title}
                     </h3>
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      {task.description}
-                    </p>
+                    {task.description && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        {task.description}
+                      </p>
+                    )}
 
                     <p className="mt-2 text-sm text-gray-500">
                       {new Date(
-                        task.dueDate
+                        task.date
                       ).toLocaleDateString(
                         "en-GB",
                         {
@@ -116,44 +109,35 @@ export default function UpcomingTasks() {
                         }
                       )}
                     </p>
-
                   </div>
-
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                      task.priority === "high"
+                      task.priority === "HIGH"
                         ? "bg-red-100 text-red-600"
                         : task.priority ===
-                          "medium"
+                          "MEDIUM"
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-green-100 text-green-700"
                     }`}
                   >
-                    {task.priority}
+                    {task.priority.toLowerCase()}
                   </span>
 
                   <div className="flex items-center gap-1 text-sm text-orange-500">
-
                     <AlertCircle size={14} />
 
-                    {getDaysLeft(task.dueDate)} days left
-
+                    {getDaysLeft(task.date)}{" "}
+                    days left
                   </div>
-
                 </div>
-
               </div>
-
             </div>
           ))}
-
         </div>
       )}
-
     </section>
   );
 }

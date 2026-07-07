@@ -1,22 +1,22 @@
 export type TaskStatus =
-  | "pending"
-  | "completed";
+  | "PENDING"
+  | "COMPLETED";
 
 export type TaskPriority =
-  | "low"
-  | "medium"
-  | "high";
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH";
 
 export interface PlannerTask {
   id: string;
 
-  customerId: string;
+  userId: string;
 
   title: string;
 
-  description: string;
+  description?: string;
 
-  dueDate: string;
+  date: string;
 
   priority: TaskPriority;
 

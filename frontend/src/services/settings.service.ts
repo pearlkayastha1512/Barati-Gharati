@@ -24,7 +24,21 @@ class SettingsService {
       return settings;
     }
 
-    return JSON.parse(data);
+    const settings =
+      JSON.parse(data) as AppSettings;
+
+    if (
+      settings.customerId !== customerId
+    ) {
+      const newSettings =
+        this.defaultSettings(customerId);
+
+      this.saveSettings(newSettings);
+
+      return newSettings;
+    }
+
+    return settings;
   }
 
   saveSettings(

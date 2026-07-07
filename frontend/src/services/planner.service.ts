@@ -1,79 +1,39 @@
-const STORAGE_KEY = "planner_tasks";
-
-
 import {
-  PlannerTask,
-  TaskStatus,
-} from "@/types/planner";
+  getTasksApi,
+  createTaskApi,
+  updateTaskApi,
+  updateTaskStatusApi,
+  deleteTaskApi,
+} from "@/services/api/planner.api";
 
 class PlannerService {
-  getTasks(): PlannerTask[] {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    const data = localStorage.getItem(STORAGE_KEY);
-
-    return data ? JSON.parse(data) : [];
+  async getTasks() {
+    return await getTasksApi();
   }
 
-  saveTasks(tasks: PlannerTask[]) {
-    if (typeof window === "undefined") {
-      return;
-    }
+  async addTask(task: any) {
+    return await createTaskApi(task);
+  }
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(tasks)
+  async updateTask(
+    id: string,
+    task: any
+  ) {
+    return await updateTaskApi(id, task);
+  }
+
+  async toggleTask(
+    id: string,
+    status: string
+  ) {
+    return await updateTaskStatusApi(
+      id,
+      status
     );
   }
 
-  addTask(task: PlannerTask) {
-    const tasks = this.getTasks();
-
-    tasks.push(task);
-
-    this.saveTasks(tasks);
-  }
-
-  updateTask(task: PlannerTask) {
-    const tasks = this.getTasks().map((item) =>
-      item.id === task.id ? task : item
-    );
-
-    this.saveTasks(tasks);
-  }
-
-  deleteTask(id: string) {
-    const tasks = this.getTasks().filter(
-      (item) => item.id !== id
-    );
-
-    this.saveTasks(tasks);
-  }
-
- toggleTask(id: string) {
-  const tasks: PlannerTask[] = this.getTasks().map((item) => {
-    if (item.id !== id) return item;
-
-    return {
-      ...item,
-      status:
-        item.status === "completed"
-          ? "pending"
-          : "completed",
-    };
-  });
-
-  this.saveTasks(tasks);
-}
-
-  clearTasks() {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    localStorage.removeItem(STORAGE_KEY);
+  async deleteTask(id: string) {
+    return await deleteTaskApi(id);
   }
 }
 

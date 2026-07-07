@@ -137,8 +137,6 @@ model Vendor {
 
   reviews Review[]
 
-  
-
   leads Lead[]
 
   conversations Conversation[]
@@ -258,8 +256,22 @@ model Booking {
 
   guests Int @default(0)
 
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
+
   brideName String?
   groomName String?
+
+  partnerName       String?
+  partnerEmail      String?
+  partnerPhone      String?
+  partnerOccupation String?
+
+  contactAddress String?
+  contactState   String?
+  contactCountry String?
+  weddingTheme   String?
 
   notes               String?
   specialRequirements String?
@@ -386,7 +398,13 @@ model Expense {
 
 enum TimelineStatus {
   PENDING
-  DONE
+  COMPLETED
+}
+
+enum TimelinePriority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 model Timeline {
@@ -395,12 +413,19 @@ model Timeline {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title       String
-  date        DateTime
+  title String
+
+  date DateTime
+
   description String?
-  status      TimelineStatus @default(PENDING)
+
+  priority TimelinePriority @default(MEDIUM)
+
+  status TimelineStatus @default(PENDING)
 
   createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
