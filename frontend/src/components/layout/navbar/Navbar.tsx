@@ -12,6 +12,8 @@ import { useAuthStore } from "@/store/authStore";
 
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
+import { getDashboardRoute } from "@/lib/auth";
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -21,6 +23,13 @@ export default function Navbar() {
     openLogin,
     logout,
   } = useAuthStore();
+
+  const dashboardLabel =
+    user?.role === "vendor"
+      ? "Vendor Dashboard"
+      : user?.role === "admin"
+      ? "Admin Dashboard"
+      : "Dashboard";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,15 +80,13 @@ export default function Navbar() {
   <NotificationBell />
     <Link
       href={
-        user?.role === "vendor"
-          ? "/vendor"
-          : "/customer"
+        user
+          ? getDashboardRoute(user.role)
+          : "/"
       }
       className="rounded-full border border-white/20 px-5 py-2 text-sm font-medium text-white transition hover:bg-white/10"
     >
-      {user?.role === "vendor"
-        ? "Vendor Dashboard"
-        : "Dashboard"}
+      {dashboardLabel}
     </Link>
 
     <button

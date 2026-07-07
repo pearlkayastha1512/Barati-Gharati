@@ -8,12 +8,16 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { getAllBookings } from "@/services/booking.service";
+import { Booking } from "@/types/booking";
 
-export default function BookingStats() {
+interface BookingStatsProps {
+  bookings: Booking[];
+}
+
+export default function BookingStats({
+  bookings,
+}: BookingStatsProps) {
   const stats = useMemo(() => {
-    const bookings = getAllBookings();
-
     return {
       total: bookings.length,
 
@@ -32,7 +36,7 @@ export default function BookingStats() {
           booking.bookingStatus === "cancelled"
       ).length,
     };
-  }, []);
+  }, [bookings]);
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

@@ -601,3 +601,26 @@ model Wishlist {
   @@index([userId])
   @@index([vendorId])
 }
+
+model EmailLog {
+  id        String   @id @default(uuid())
+  to        String
+  subject   String
+  message   String   @db.Text
+  status    String   @default("sent")
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([createdAt])
+}
+
+model PlatformSettings {
+  id                        String   @id @default("platform")
+  allowVendorRegistration   Boolean  @default(true)
+  allowCustomerRegistration Boolean  @default(true)
+  enableReviews             Boolean  @default(true)
+  enablePayments            Boolean  @default(true)
+  maintenanceMode           Boolean  @default(false)
+  updatedAt                 DateTime @updatedAt
+  createdAt                 DateTime @default(now())
+}

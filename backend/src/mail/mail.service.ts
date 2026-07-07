@@ -1,20 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  private async logEmail(
+    to: string,
+    subject: string,
+    message: string,
+    status = 'sent',
+  ) {
+    try {
+      await this.prisma.emailLog.create({
+        data: {
+          to,
+          subject,
+          message,
+          status,
+        },
+      });
+    } catch {
+      return;
+    }
+  }
 
   async sendTestEmail(to: string) {
-    await this.mailerService.sendMail({
-      to,
-      subject: 'Wedding Planner - Test Email',
-      text: 'Congratulations! Your email configuration is working.',
-      html: `
+    const subject = 'Wedding Planner - Test Email';
+    const html = `
         <h2>Wedding Planner</h2>
         <p>Congratulations! Your email configuration is working.</p>
-      `,
+      `;
+
+    await this.mailerService.sendMail({
+      to,
+      subject,
+      text: 'Congratulations! Your email configuration is working.',
+      html,
     });
+
+    await this.logEmail(to, subject, html);
 
     return {
       success: true,
@@ -29,11 +58,8 @@ export class MailService {
   ) {
     const verificationUrl =
       `http://localhost:3000/api/v1/auth/verify-email?token=${token}`;
-
-    await this.mailerService.sendMail({
-      to,
-      subject: 'Verify your Wedding Planner account',
-      html: `
+    const subject = 'Verify your Wedding Planner account';
+    const html = `
         <h2>Hello ${name},</h2>
 
         <p>Thank you for registering with Wedding Planner.</p>
@@ -53,8 +79,15 @@ export class MailService {
         </a>
 
         <p>This verification link will expire in 1 hour.</p>
-      `,
+      `;
+
+    await this.mailerService.sendMail({
+      to,
+      subject,
+      html,
     });
+
+    await this.logEmail(to, subject, html);
   }
   async sendPasswordResetEmail(
     to: string,
@@ -63,11 +96,8 @@ export class MailService {
   ) {
     const resetUrl =
       `http://localhost:3000/api/v1/auth/reset-password?token=${token}`;
-
-    await this.mailerService.sendMail({
-      to,
-      subject: 'Reset your Wedding Planner password',
-      html: `
+    const subject = 'Reset your Wedding Planner password';
+    const html = `
         <h2>Hello ${name},</h2>
 
         <p>You requested to reset your password.</p>
@@ -89,8 +119,15 @@ export class MailService {
         <p>This link will expire in 1 hour.</p>
 
         <p>If you didn't request this, you can ignore this email.</p>
-      `,
+      `;
+
+    await this.mailerService.sendMail({
+      to,
+      subject,
+      html,
     });
+
+    await this.logEmail(to, subject, html);
   
    return {
     success: true,
@@ -102,11 +139,8 @@ async sendBookingInvoice(
   name: string,
   pdfPath: string,
 ) {
-  await this.mailerService.sendMail({
-    to,
-    subject: 'Wedding Planner - Booking Invoice',
-
-    html: `
+  const subject = 'Wedding Planner - Booking Invoice';
+  const html = `
       <h2>Hello ${name},</h2>
 
       <p>Your booking has been confirmed successfully.</p>
@@ -116,7 +150,12 @@ async sendBookingInvoice(
       <br>
 
       <p>Thank you for choosing Wedding Planner ❤️</p>
-    `,
+    `;
+
+  await this.mailerService.sendMail({
+    to,
+    subject,
+    html,
 
     attachments: [
       {
@@ -125,6 +164,8 @@ async sendBookingInvoice(
       },
     ],
   });
+
+  await this.logEmail(to, subject, html);
 
   return {
     success: true,
@@ -137,11 +178,8 @@ async sendVendorApprovedEmail(
   to: string,
   name: string,
 ) {
-  await this.mailerService.sendMail({
-    to,
-    subject: 'Wedding Planner - Vendor Approved',
-
-    html: `
+  const subject = 'Wedding Planner - Vendor Approved';
+  const html = `
       <h2>Hello ${name},</h2>
 
       <p>Congratulations 🎉</p>
@@ -153,8 +191,15 @@ async sendVendorApprovedEmail(
       <br>
 
       <p>Thank you for joining Wedding Planner ❤️</p>
-    `,
+    `;
+
+  await this.mailerService.sendMail({
+    to,
+    subject,
+    html,
   });
+
+  await this.logEmail(to, subject, html);
 
   return {
     success: true,
@@ -166,11 +211,8 @@ async sendVendorRejectedEmail(
   to: string,
   name: string,
 ) {
-  await this.mailerService.sendMail({
-    to,
-    subject: 'Wedding Planner - Vendor Application',
-
-    html: `
+  const subject = 'Wedding Planner - Vendor Application';
+  const html = `
       <h2>Hello ${name},</h2>
 
       <p>We're sorry.</p>
@@ -182,8 +224,15 @@ async sendVendorRejectedEmail(
       <br>
 
       <p>Wedding Planner Team</p>
-    `,
+    `;
+
+  await this.mailerService.sendMail({
+    to,
+    subject,
+    html,
   });
+
+  await this.logEmail(to, subject, html);
 
   return {
     success: true,

@@ -52,11 +52,11 @@ const menuItems = [
     href: "/admin/reviews",
     icon: Star,
   },
-  {
-    title: "Email History",
-    href: "/admin/emails",
-    icon: Shapes,
-  },
+  // {
+  //   title: "Email History",
+  //   href: "/admin/emails",
+  //   icon: Shapes,
+  // },
   {
     title: "Notifications",
     href: "/admin/notifications",

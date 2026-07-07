@@ -68,7 +68,9 @@ export class AdminService {
       email: true,
       phone: true,
       role: true,
+      isVerified: true,
       createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -605,14 +607,20 @@ async getAllBookings() {
         select: {
           name: true,
           email: true,
+          phone: true,
         },
       },
       vendor: {
         select: {
           businessName: true,
+          frontendVendorId: true,
         },
       },
-      package: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -622,7 +630,9 @@ async getAllBookings() {
   return {
     success: true,
     count: bookings.length,
-    data: bookings,
+    data: bookings.map((booking) =>
+      this.mapBooking(booking),
+    ),
   };
 }
 
@@ -642,7 +652,7 @@ async getBookingById(id: string) {
 
   return {
     success: true,
-    data: booking,
+    data: this.mapBooking(booking),
   };
 }
 
@@ -670,6 +680,86 @@ async updateBookingStatus(
     message: 'Booking status updated successfully',
     data: updated,
   };
+}
+
+private mapBooking(booking: any) {
+  return {
+    id: booking.id,
+    bookingNumber: booking.bookingNumber,
+    customerId: booking.userId,
+    vendorId:
+      booking.vendor?.frontendVendorId ?? 0,
+    customerName:
+      booking.customerName ??
+      booking.user?.name ??
+      '',
+    customerEmail:
+      booking.customerEmail ??
+      booking.user?.email ??
+      '',
+    customerPhone:
+      booking.customerPhone ??
+      booking.user?.phone ??
+      '',
+    partnerName: booking.partnerName ?? '',
+    partnerEmail: booking.partnerEmail ?? '',
+    partnerPhone: booking.partnerPhone ?? '',
+    partnerOccupation:
+      booking.partnerOccupation ?? '',
+    vendorName:
+      booking.vendor?.businessName ?? '',
+    category:
+      booking.package?.category?.name ?? '',
+    packageName:
+      booking.package?.title ?? '',
+    eventType: booking.eventType ?? '',
+    eventDate: booking.eventDate,
+    eventTime: booking.eventTime ?? '',
+    venue: booking.venue ?? '',
+    city: booking.city ?? '',
+    contactAddress:
+      booking.contactAddress ?? '',
+    contactState:
+      booking.contactState ?? '',
+    contactCountry:
+      booking.contactCountry ?? '',
+    weddingTheme:
+      booking.weddingTheme ?? '',
+    guests: booking.guests ?? 0,
+    brideName: booking.brideName ?? '',
+    groomName: booking.groomName ?? '',
+    specialRequirements:
+      booking.specialRequirements ?? '',
+    amount: Number(booking.totalAmount),
+    advancePaid: Number(booking.amountPaid),
+    remainingAmount: Number(
+      booking.remainingAmount,
+    ),
+    paymentStatus: this.mapPaymentStatus(
+      booking.paymentStatus,
+    ),
+    bookingStatus: this.mapBookingStatus(
+      booking.status,
+    ),
+    createdAt: booking.createdAt,
+    updatedAt: booking.updatedAt,
+  };
+}
+
+private mapPaymentStatus(status: PaymentStatus) {
+  if (status === PaymentStatus.SUCCESS) {
+    return 'paid';
+  }
+
+  return status.toLowerCase();
+}
+
+private mapBookingStatus(status: BookingStatus) {
+  if (status === BookingStatus.CONFIRMED) {
+    return 'completed';
+  }
+
+  return status.toLowerCase();
 }
 
 async getAnalytics() {
@@ -701,6 +791,149 @@ async getAnalytics() {
       packages,
       categories,
     },
+  };
+}
+
+async getEmailLogs() {
+  const emails = await this.prisma.emailLog.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return {
+    success: true,
+    count: emails.length,
+    data: emails.map((email) => ({
+      id: email.id,
+      to: email.to,
+      subject: email.subject,
+      message: email.message,
+      status: email.status,
+      createdAt: email.createdAt,
+    })),
+  };
+}
+
+async getNotifications() {
+  const notifications =
+    await this.prisma.notification.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 100,
+    });
+
+  return {
+    success: true,
+    count: notifications.length,
+    data: notifications.map((notification) => ({
+      id: notification.id,
+      userId: notification.userId,
+      recipientName:
+        notification.user?.name ?? '',
+      recipientEmail:
+        notification.user?.email ?? '',
+      recipientRole:
+        notification.user?.role ?? '',
+      title: notification.title,
+      message: notification.message,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+    })),
+  };
+}
+
+async getPlatformSettings() {
+  const settings =
+    await this.prisma.platformSettings.upsert({
+      where: {
+        id: 'platform',
+      },
+      update: {},
+      create: {
+        id: 'platform',
+      },
+    });
+
+  return {
+    success: true,
+    data: settings,
+  };
+}
+
+async updatePlatformSettings(dto: {
+  allowVendorRegistration?: boolean;
+  allowCustomerRegistration?: boolean;
+  enableReviews?: boolean;
+  enablePayments?: boolean;
+  maintenanceMode?: boolean;
+}) {
+  const settings =
+    await this.prisma.platformSettings.upsert({
+      where: {
+        id: 'platform',
+      },
+      update: {
+        ...(typeof dto.allowVendorRegistration ===
+        'boolean'
+          ? {
+              allowVendorRegistration:
+                dto.allowVendorRegistration,
+            }
+          : {}),
+        ...(typeof dto.allowCustomerRegistration ===
+        'boolean'
+          ? {
+              allowCustomerRegistration:
+                dto.allowCustomerRegistration,
+            }
+          : {}),
+        ...(typeof dto.enableReviews === 'boolean'
+          ? {
+              enableReviews: dto.enableReviews,
+            }
+          : {}),
+        ...(typeof dto.enablePayments === 'boolean'
+          ? {
+              enablePayments: dto.enablePayments,
+            }
+          : {}),
+        ...(typeof dto.maintenanceMode === 'boolean'
+          ? {
+              maintenanceMode: dto.maintenanceMode,
+            }
+          : {}),
+      },
+      create: {
+        id: 'platform',
+        allowVendorRegistration:
+          dto.allowVendorRegistration ?? true,
+        allowCustomerRegistration:
+          dto.allowCustomerRegistration ?? true,
+        enableReviews:
+          dto.enableReviews ?? true,
+        enablePayments:
+          dto.enablePayments ?? true,
+        maintenanceMode:
+          dto.maintenanceMode ?? false,
+      },
+    });
+
+  return {
+    success: true,
+    message:
+      'Platform settings updated successfully',
+    data: settings,
   };
 }
 

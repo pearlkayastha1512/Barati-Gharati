@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import CustomerHero from "@/components/admin/customers/CustomerHero";
 import CustomerStats from "@/components/admin/customers/CustomerStats";
@@ -8,17 +12,82 @@ import CustomerFilters from "@/components/admin/customers/CustomerFilters";
 import CustomerTable from "@/components/admin/customers/CustomerTable";
 import CustomerDetailsModal from "@/components/admin/customers/CustomerDetailsModal";
 
-import { getUsers } from "@/services/auth.service";
 import { User } from "@/types/auth";
+import { getAllUsersApi } from "@/services/api/admin.api";
+
+type AdminUserResponse = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  role?: string;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type ApiUsersResponse = {
+  data?: AdminUserResponse[];
+};
+
+function mapAdminUser(
+  user: AdminUserResponse
+): User {
+  const role =
+    user.role?.toLowerCase() === "admin"
+      ? "admin"
+      : user.role?.toLowerCase() === "vendor"
+      ? "vendor"
+      : "customer";
+
+  return {
+    _id: user._id ?? user.id ?? "",
+    name: user.name ?? "",
+    email: user.email ?? "",
+    phone: user.phone ?? "",
+    avatar: "",
+    role,
+    isVerified: user.isVerified ?? false,
+    createdAt:
+      user.createdAt ??
+      new Date().toISOString(),
+    updatedAt:
+      user.updatedAt ??
+      user.createdAt ??
+      new Date().toISOString(),
+  };
+}
 
 export default function CustomerManagementPage() {
-  const customers = useMemo(
-    () =>
-      getUsers().filter(
-        (user) => user.role === "customer"
-      ),
-    []
-  );
+  const [customers, setCustomers] =
+    useState<User[]>([]);
+
+  useEffect(() => {
+    async function loadCustomers() {
+      const result = await getAllUsersApi();
+
+      if (!result.ok) {
+        setCustomers([]);
+        return;
+      }
+
+      const users =
+        (result.data as ApiUsersResponse)
+          ?.data ?? [];
+
+      setCustomers(
+        users
+          .map(mapAdminUser)
+          .filter(
+            (user) =>
+              user.role === "customer"
+          )
+      );
+    }
+
+    void loadCustomers();
+  }, []);
 
   const [search, setSearch] = useState("");
 
@@ -77,7 +146,7 @@ export default function CustomerManagementPage() {
     <div className="space-y-8">
       <CustomerHero />
 
-      <CustomerStats />
+      <CustomerStats customers={customers} />
 
       <CustomerFilters
         search={search}

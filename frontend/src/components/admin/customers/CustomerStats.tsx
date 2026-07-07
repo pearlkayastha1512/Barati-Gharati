@@ -8,14 +8,16 @@ import {
   UserX,
 } from "lucide-react";
 
-import { getUsers } from "@/services/auth.service";
+import { User } from "@/types/auth";
 
-export default function CustomerStats() {
+interface CustomerStatsProps {
+  customers: User[];
+}
+
+export default function CustomerStats({
+  customers,
+}: CustomerStatsProps) {
   const stats = useMemo(() => {
-    const customers = getUsers().filter(
-      (user) => user.role === "customer"
-    );
-
     return {
       total: customers.length,
 
@@ -27,7 +29,7 @@ export default function CustomerStats() {
         (customer) => !customer.isVerified
       ).length,
     };
-  }, []);
+  }, [customers]);
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

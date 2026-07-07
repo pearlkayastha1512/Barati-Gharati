@@ -28,6 +28,11 @@ export class ReviewsController {
     return this.reviewsService.create(userId, dto);
   }
 
+  @Get()
+  findAll() {
+    return this.reviewsService.findAll();
+  }
+
   @Get('vendor/:vendorId')
   findByVendor(@Param('vendorId') vendorId: string) {
     return this.reviewsService.findByVendor(vendorId);
