@@ -7,6 +7,7 @@ import {
   getBookingByIdApi,
   getCustomerBookingsApi,
   getVendorBookingsApi,
+  updateBookingPaymentApi,
   updateBookingStatusApi,
 } from "@/services/api/booking.api";
 
@@ -48,6 +49,11 @@ interface BookingStore {
   updateStatus: (
     bookingId: string,
     status: BookingStatus
+  ) => Promise<boolean>;
+
+  payAdvance: (
+    bookingId: string,
+    amount: number
   ) => Promise<boolean>;
 }
 
@@ -224,6 +230,43 @@ export const useBookingStore =
   return true;
 },
 
+    payAdvance: async (
+      bookingId,
+      amount
+    ) => {
+      const result =
+        await updateBookingPaymentApi(
+          bookingId,
+          amount
+        );
+
+      if (
+        !result.ok ||
+        !result.data?.success
+      ) {
+        return false;
+      }
+
+      const updatedBooking =
+        result.data.data as Booking;
+
+      set((state) => ({
+        bookings: state.bookings.map(
+          (booking) =>
+            booking.id === bookingId
+              ? updatedBooking
+              : booking
+        ),
+
+        selectedBooking:
+          state.selectedBooking?.id ===
+          bookingId
+            ? updatedBooking
+            : state.selectedBooking,
+      }));
+
+      return true;
+    },
 
 
 

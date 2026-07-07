@@ -8,12 +8,16 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { getVendors } from "@/services/vendor.service";
+import { StoredVendor } from "@/services/vendor.service";
 
-export default function VendorStats() {
+interface VendorStatsProps {
+  vendors: StoredVendor[];
+}
+
+export default function VendorStats({
+  vendors,
+}: VendorStatsProps) {
   const stats = useMemo(() => {
-    const vendors = getVendors();
-
     return {
       total: vendors.length,
 
@@ -32,7 +36,7 @@ export default function VendorStats() {
           vendor.approvalStatus === "rejected"
       ).length,
     };
-  }, []);
+  }, [vendors]);
 
   return (
     <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

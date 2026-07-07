@@ -4,7 +4,6 @@ import Image from "next/image";
 import { X } from "lucide-react";
 
 import { StoredVendor } from "@/services/vendor.service";
-import { getVendorById } from "@/services/vendor.service";
 
 interface Props {
   vendor: StoredVendor | null;

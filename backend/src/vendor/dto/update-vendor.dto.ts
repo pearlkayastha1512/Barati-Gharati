@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class UpdateVendorDto {
   @IsOptional()
@@ -72,5 +78,9 @@ export class UpdateVendorDto {
   @IsOptional()
   @IsString()
   coverImage?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 
 }

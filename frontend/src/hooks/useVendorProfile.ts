@@ -63,6 +63,7 @@ export function useVendorProfile() {
 
   return {
     vendor,
+    setVendor,
     isLoading,
     error,
   };

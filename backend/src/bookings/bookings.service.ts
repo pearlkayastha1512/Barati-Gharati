@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
 import { Role, BookingStatus } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
 import { VendorStatus } from '@prisma/client';
@@ -407,6 +408,87 @@ export class BookingsService {
     return this.mapBooking(updatedBooking);
   }
 
+  async updatePayment(
+    id: string,
+    userId: string,
+    dto: UpdateBookingPaymentDto,
+  ) {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw new BadRequestException(
+        'Cancelled bookings cannot receive payments',
+      );
+    }
+
+    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
+      throw new BadRequestException('Payment already completed');
+    }
+
+    const totalAmount = Number(booking.totalAmount);
+    const currentPaid = Number(booking.amountPaid);
+    const currentRemaining = Number(booking.remainingAmount);
+
+    if (dto.amount > currentRemaining) {
+      throw new BadRequestException(
+        'Amount exceeds remaining balance',
+      );
+    }
+
+    const amountPaid = currentPaid + dto.amount;
+    const remainingAmount = totalAmount - amountPaid;
+
+    const updatedBooking = await this.prisma.booking.update({
+      where: {
+        id,
+      },
+      data: {
+        amountPaid,
+        remainingAmount,
+        paymentStatus:
+          remainingAmount <= 0
+            ? PaymentStatus.SUCCESS
+            : PaymentStatus.PARTIAL,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Payment updated successfully',
+      data: this.mapBooking(updatedBooking),
+    };
+  }
+
   private async getVendorBooking(id: string, userId: string) {
     const vendor = await this.prisma.vendor.findUnique({
       where: {
@@ -564,13 +646,33 @@ export class BookingsService {
 
       remainingAmount: Number(booking.remainingAmount),
 
-      paymentStatus: booking.paymentStatus.toLowerCase(),
+      paymentStatus: this.mapPaymentStatus(
+        booking.paymentStatus,
+      ),
 
-      bookingStatus: booking.status.toLowerCase(),
+      bookingStatus: this.mapBookingStatus(
+        booking.status,
+      ),
 
       createdAt: booking.createdAt,
 
       updatedAt: booking.updatedAt,
     };
+  }
+
+  private mapPaymentStatus(status: PaymentStatus) {
+    if (status === PaymentStatus.SUCCESS) {
+      return 'paid';
+    }
+
+    return status.toLowerCase();
+  }
+
+  private mapBookingStatus(status: BookingStatus) {
+    if (status === BookingStatus.CONFIRMED) {
+      return 'completed';
+    }
+
+    return status.toLowerCase();
   }
 }

@@ -268,6 +268,7 @@ export default function WriteReviewModal({
     if (!open) return;
 
     if (selectedReview) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRating(selectedReview.rating);
       setComment(selectedReview.comment);
     } else {
@@ -290,7 +291,7 @@ export default function WriteReviewModal({
     }
 
     if (selectedReview) {
-      const success =
+      const result =
         await updateExistingReview({
           ...selectedReview,
 
@@ -302,9 +303,10 @@ export default function WriteReviewModal({
             new Date().toISOString(),
         });
 
-      if (!success) {
+      if (!result.ok) {
         toast.error(
-          "Unable to update review."
+          result.error ??
+            "Unable to update review."
         );
         return;
       }
@@ -313,7 +315,14 @@ export default function WriteReviewModal({
 
       toast.success("Review updated.");
     } else {
-      const success =
+      if (!bookingId) {
+        toast.error(
+          "You can review after your booking is accepted."
+        );
+        return;
+      }
+
+      const result =
         await addReview({
           id: "",
 
@@ -338,9 +347,10 @@ export default function WriteReviewModal({
           updatedAt: "",
         });
 
-      if (!success) {
+      if (!result.ok) {
         toast.error(
-          "Unable to submit review."
+          result.error ??
+            "Unable to submit review."
         );
         return;
       }

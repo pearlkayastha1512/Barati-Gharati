@@ -1,5 +1,24 @@
 import api from "@/lib/axios";
+import { AxiosError } from "axios";
 import { Review } from "@/types/review";
+
+type ApiErrorResponse = {
+  message?: string;
+};
+
+function getErrorMessage(
+  error: unknown,
+  fallback: string
+) {
+  if (error instanceof AxiosError) {
+    const data = error.response
+      ?.data as ApiErrorResponse | undefined;
+
+    return data?.message ?? fallback;
+  }
+
+  return fallback;
+}
 
 /**
  * Load all reviews
@@ -12,12 +31,13 @@ export async function getReviewsApi() {
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load reviews.",
+      error: getErrorMessage(
+        error,
+        "Unable to load reviews."
+      ),
     };
   }
 }
@@ -37,12 +57,13 @@ export async function getVendorReviewsApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load vendor reviews.",
+      error: getErrorMessage(
+        error,
+        "Unable to load vendor reviews."
+      ),
     };
   }
 }
@@ -64,12 +85,13 @@ export async function getCustomerReviewsApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load customer reviews.",
+      error: getErrorMessage(
+        error,
+        "Unable to load customer reviews."
+      ),
     };
   }
 }
@@ -94,12 +116,13 @@ export async function createReviewApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to create review.",
+      error: getErrorMessage(
+        error,
+        "Unable to create review."
+      ),
     };
   }
 }
@@ -123,12 +146,13 @@ export async function updateReviewApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to update review.",
+      error: getErrorMessage(
+        error,
+        "Unable to update review."
+      ),
     };
   }
 }
@@ -152,12 +176,13 @@ export async function replyReviewApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to reply to review.",
+      error: getErrorMessage(
+        error,
+        "Unable to reply to review."
+      ),
     };
   }
 }
@@ -174,12 +199,13 @@ export async function deleteReviewApi(
     return {
       ok: true,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to delete review.",
+      error: getErrorMessage(
+        error,
+        "Unable to delete review."
+      ),
     };
   }
 }

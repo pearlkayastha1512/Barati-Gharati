@@ -103,6 +103,7 @@ export async function updateMyVendorProfileApi(
       gstNumber: vendor.gstNumber,
       logoUrl: vendor.profileImage,
       coverImage: vendor.coverImage,
+      isActive: vendor.isActive,
     };
 
     const { data } = await api.patch(

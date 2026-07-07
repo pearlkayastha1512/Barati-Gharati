@@ -73,7 +73,88 @@ export interface StoredVendor {
 
   updatedAt: string;
 
-  settings?: VendorSettings;
+  settings: VendorSettings;
+}
+
+export const defaultVendorSettings: VendorSettings = {
+  business: {
+    acceptNewBookings: true,
+    displayPricingPublicly: true,
+    showAvailabilityCalendar: true,
+  },
+  notifications: {
+    newBookingNotifications: true,
+    paymentAlerts: true,
+    customerMessages: true,
+    marketingEmails: true,
+  },
+  security: {
+    loginAlerts: true,
+    twoFactorAuthentication: false,
+  },
+};
+
+const VENDOR_SETTINGS_KEY =
+  "vendor_settings";
+
+function getStoredVendorSettings(
+  vendorId: string
+) {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const raw = localStorage.getItem(
+    VENDOR_SETTINGS_KEY
+  );
+
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const settings = JSON.parse(raw) as Record<
+      string,
+      Partial<VendorSettings>
+    >;
+
+    return settings[vendorId];
+  } catch {
+    return undefined;
+  }
+}
+
+function saveStoredVendorSettings(
+  vendorId: string,
+  settings: VendorSettings
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const raw = localStorage.getItem(
+    VENDOR_SETTINGS_KEY
+  );
+
+  let allSettings: Record<
+    string,
+    VendorSettings
+  > = {};
+
+  if (raw) {
+    try {
+      allSettings = JSON.parse(raw);
+    } catch {
+      allSettings = {};
+    }
+  }
+
+  allSettings[vendorId] = settings;
+
+  localStorage.setItem(
+    VENDOR_SETTINGS_KEY,
+    JSON.stringify(allSettings)
+  );
 }
 
 type ApiVendorProfile = {
@@ -108,11 +189,15 @@ type ApiVendorProfile = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  settings?: Partial<VendorSettings> | null;
 };
 
 function mapStoredVendor(
   vendor: ApiVendorProfile
 ): StoredVendor {
+  const savedSettings =
+    getStoredVendorSettings(vendor.userId);
+
   return {
     id: vendor.frontendVendorId,
 
@@ -171,6 +256,24 @@ function mapStoredVendor(
     createdAt: vendor.createdAt,
 
     updatedAt: vendor.updatedAt,
+
+    settings: {
+      business: {
+        ...defaultVendorSettings.business,
+        ...vendor.settings?.business,
+        ...savedSettings?.business,
+      },
+      notifications: {
+        ...defaultVendorSettings.notifications,
+        ...vendor.settings?.notifications,
+        ...savedSettings?.notifications,
+      },
+      security: {
+        ...defaultVendorSettings.security,
+        ...vendor.settings?.security,
+        ...savedSettings?.security,
+      },
+    },
   };
 }
 
@@ -247,6 +350,11 @@ export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
 export async function updateVendor(
   updatedVendor: StoredVendor
 ): Promise<StoredVendor | undefined> {
+  saveStoredVendorSettings(
+    updatedVendor.userId,
+    updatedVendor.settings
+  );
+
   const result =
     await updateMyVendorProfileApi(
       updatedVendor
@@ -276,6 +384,8 @@ export function saveVendors(): void {
 export function registerVendor(
   _data: VendorRegistrationForm
 ): never {
+  void _data;
+
   throw new Error(
     "Vendor registration has been migrated to backend Auth API."
   );

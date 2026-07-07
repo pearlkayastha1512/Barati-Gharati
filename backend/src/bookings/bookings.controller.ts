@@ -18,6 +18,7 @@ import { Role } from '@prisma/client';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -126,6 +127,26 @@ export class BookingsController {
     @CurrentUser('sub') userId: string,
   ) {
     return this.bookingsService.confirm(id, userId);
+  }
+
+  // ===========================
+  // USER
+  // Update Payment
+  // ===========================
+
+  @Patch(':id/payment')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  updatePayment(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: UpdateBookingPaymentDto,
+  ) {
+    return this.bookingsService.updatePayment(
+      id,
+      userId,
+      dto,
+    );
   }
 
   // ===========================

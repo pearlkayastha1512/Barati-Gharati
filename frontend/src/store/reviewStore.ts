@@ -181,11 +181,17 @@ interface ReviewStore {
 
   addReview: (
     review: Review
-  ) => Promise<boolean>;
+  ) => Promise<{
+    ok: boolean;
+    error?: string;
+  }>;
 
   updateExistingReview: (
     review: Review
-  ) => Promise<boolean>;
+  ) => Promise<{
+    ok: boolean;
+    error?: string;
+  }>;
 
   replyToReview: (
     reviewId: string,
@@ -267,13 +273,13 @@ export const useReviewStore =
     addReview: async (
       review
     ) => {
-      const success =
+      const result =
         await createReview(
           review
         );
 
-      if (!success) {
-        return false;
+      if (!result.ok) {
+        return result;
       }
 
       const reviews =
@@ -285,18 +291,20 @@ export const useReviewStore =
         reviews,
       });
 
-      return true;
+      return {
+        ok: true,
+      };
     },
 
     updateExistingReview:
       async (review) => {
-        const success =
+        const result =
           await updateReview(
             review
           );
 
-        if (!success) {
-          return false;
+        if (!result.ok) {
+          return result;
         }
 
         const reviews =
@@ -308,7 +316,9 @@ export const useReviewStore =
           reviews,
         });
 
-        return true;
+        return {
+          ok: true,
+        };
       },
 
     replyToReview: async (

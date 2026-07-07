@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
 import {
   updateVendor,
-  StoredVendor,
 } from "@/services/vendor.service";
 
 export default function NotificationSettings() {
-  const { vendor, isLoading } = useVendorProfile();
+  const {
+    vendor,
+    setVendor,
+    isLoading,
+  } = useVendorProfile();
 
   const [loading, setLoading] =
     useState(false);
@@ -24,7 +27,7 @@ export default function NotificationSettings() {
       | "customerMessages"
       | "marketingEmails"
   ) => {
-    setVendor({
+    const updatedVendor = {
       ...vendor,
 
       settings: {
@@ -37,19 +40,35 @@ export default function NotificationSettings() {
             !vendor.settings.notifications[field],
         },
       },
-    });
+    };
+
+    setVendor(updatedVendor);
+    void updateVendor(updatedVendor);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLoading(true);
 
-    updateVendor(vendor);
+    const updatedVendor =
+      await updateVendor(vendor);
+
+    setLoading(false);
+
+    if (!updatedVendor) {
+      toast.error(
+        "Unable to update notification settings."
+      );
+      return;
+    }
+
+    setVendor(updatedVendor);
+    window.dispatchEvent(
+      new Event("vendor-profile-updated")
+    );
 
     toast.success(
       "Notification settings updated successfully."
     );
-
-    setLoading(false);
   };
 
   return (
