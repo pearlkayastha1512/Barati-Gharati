@@ -1,6 +1,3 @@
--- CreateEnum
-CREATE TYPE "AvailabilityStatus" AS ENUM ('AVAILABLE', 'BLOCKED');
-
 -- CreateTable
 CREATE TABLE "Availability" (
     "id" TEXT NOT NULL,

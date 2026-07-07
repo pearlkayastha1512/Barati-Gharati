@@ -29,6 +29,7 @@ export class TimelineService {
         title: dto.title,
         date: new Date(dto.date),
         description: dto.description,
+        priority: dto.priority,
       },
     });
 
@@ -110,11 +111,23 @@ export class TimelineService {
           id,
         },
         data: {
-          ...dto,
-          ...(dto.date && {
-            date: new Date(dto.date),
-          }),
-        },
+  ...(dto.title && {
+    title: dto.title,
+  }),
+
+  ...(dto.description !==
+    undefined && {
+    description: dto.description,
+  }),
+
+  ...(dto.priority && {
+    priority: dto.priority,
+  }),
+
+  ...(dto.date && {
+    date: new Date(dto.date),
+  }),
+},
       });
 
     return {

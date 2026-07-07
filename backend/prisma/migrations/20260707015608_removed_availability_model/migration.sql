@@ -9,6 +9,3 @@ ALTER TABLE "Availability" DROP CONSTRAINT "Availability_vendorId_fkey";
 
 -- DropTable
 DROP TABLE "Availability";
-
--- DropEnum
-DROP TYPE "AvailabilityStatus";
