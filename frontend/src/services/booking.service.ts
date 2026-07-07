@@ -195,6 +195,10 @@ export async function getVendorBookings() {
   return result.data.data;
 }
 
+export function getAllBookings(): Booking[] {
+  return [];
+}
+
 export async function getBookingById(
   id: string
 ) {

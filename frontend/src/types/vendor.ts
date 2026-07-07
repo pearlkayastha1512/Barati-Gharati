@@ -3,6 +3,8 @@
 export interface Vendor {
   id: number;
 
+  backendId?: string;
+
   userId: string;   // ✅ add this
 
   name: string;
