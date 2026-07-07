@@ -23,6 +23,7 @@ export default function EditVendorProfileModal({
     null as typeof vendor
   );
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!open || isLoading || !vendor) return;
 
@@ -90,7 +91,7 @@ export default function EditVendorProfileModal({
     setBusinessName(localVendor.businessName);
     setCategory(localVendor.category);
     setCity(localVendor.city);
-    // setAddress(localVendor.address);
+    setAddress(localVendor.address ?? "");
     setDescription(localVendor.description ?? "");
     setWebsite(localVendor.website ?? "");
     setInstagram(localVendor.instagram ?? "");
@@ -101,6 +102,7 @@ export default function EditVendorProfileModal({
     setProfileImage(localVendor.profileImage ?? "");
     setCoverImage(localVendor.coverImage ?? "");
   }, [open, localVendor]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleProfileImage = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -126,7 +128,7 @@ export default function EditVendorProfileModal({
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!vendor) return;
 
     if (
@@ -142,16 +144,8 @@ export default function EditVendorProfileModal({
       return;
     }
 
-     console.log({
-  website,
-  instagram,
-  facebook,
-  linkedin,
-  youtube,
-  experience,
-  gstNumber,
-});
-    updateVendor({
+    const updatedVendor =
+      await updateVendor({
       ...vendor,
 
       ownerName,
@@ -190,6 +184,17 @@ export default function EditVendorProfileModal({
       updatedAt:
         new Date().toISOString(),
     });
+
+    if (!updatedVendor) {
+      toast.error(
+        "Unable to update vendor profile."
+      );
+      return;
+    }
+
+    window.dispatchEvent(
+      new Event("vendor-profile-updated")
+    );
 
    toast.success("Profile updated successfully.");
 

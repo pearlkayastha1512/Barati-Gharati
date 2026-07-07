@@ -43,8 +43,21 @@ export function useVendorProfile() {
 
     void loadVendor();
 
+    const reloadVendor = () => {
+      void loadVendor();
+    };
+
+    window.addEventListener(
+      "vendor-profile-updated",
+      reloadVendor
+    );
+
     return () => {
       active = false;
+      window.removeEventListener(
+        "vendor-profile-updated",
+        reloadVendor
+      );
     };
   }, [user]);
 

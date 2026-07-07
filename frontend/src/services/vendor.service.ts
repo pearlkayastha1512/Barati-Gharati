@@ -5,6 +5,7 @@ import { Vendor } from "@/types/vendor";
 import {
   getVendorsApi,
   getVendorByIdApi,
+  updateMyVendorProfileApi,
 } from "@/services/api/vendor.api";
 
 import {
@@ -75,6 +76,104 @@ export interface StoredVendor {
   settings?: VendorSettings;
 }
 
+type ApiVendorProfile = {
+  frontendVendorId: number;
+  userId: string;
+  user?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  businessName: string;
+  description?: string | null;
+  category?: {
+    name?: string;
+  } | null;
+  city?: string | null;
+  address?: string | null;
+  logoUrl?: string | null;
+  coverImage?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  linkedin?: string | null;
+  experience?: string | null;
+  gstNumber?: string | null;
+  businessVerified: boolean;
+  gstVerified: boolean;
+  bankVerified: boolean;
+  documentsUploaded: boolean;
+  status: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function mapStoredVendor(
+  vendor: ApiVendorProfile
+): StoredVendor {
+  return {
+    id: vendor.frontendVendorId,
+
+    userId: vendor.userId,
+
+    ownerName: vendor.user?.name ?? "",
+
+    email: vendor.user?.email ?? "",
+
+    phone: vendor.user?.phone ?? "",
+
+    businessName: vendor.businessName,
+
+    description: vendor.description ?? "",
+
+    category:
+      vendor.category?.name ?? "",
+
+    city: vendor.city ?? "",
+
+    address: vendor.address ?? "",
+
+    profileImage: vendor.logoUrl ?? "",
+
+    coverImage: vendor.coverImage ?? "",
+
+    portfolioImages: [],
+
+    website: vendor.website ?? "",
+
+    instagram: vendor.instagram ?? "",
+
+    facebook: vendor.facebook ?? "",
+
+    youtube: vendor.youtube ?? "",
+
+    linkedin: vendor.linkedin ?? "",
+
+    experience: vendor.experience ?? "",
+
+    gstNumber: vendor.gstNumber ?? "",
+
+    businessVerified: vendor.businessVerified,
+
+    gstVerified: vendor.gstVerified,
+
+    bankVerified: vendor.bankVerified,
+
+    documentsUploaded: vendor.documentsUploaded,
+
+    approvalStatus:
+      vendor.status.toLowerCase(),
+
+    isActive: vendor.isActive,
+
+    createdAt: vendor.createdAt,
+
+    updatedAt: vendor.updatedAt,
+  };
+}
+
 /**
  * Public vendors (Marketplace)
  */
@@ -133,65 +232,10 @@ export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
     return undefined;
   }
 
-  const vendor = result.data;
+  const vendor =
+    result.data as ApiVendorProfile;
 
-  return {
-    id: vendor.frontendVendorId,
-
-    userId: vendor.userId,
-
-    ownerName: vendor.user?.name ?? "",
-
-    email: vendor.user?.email ?? "",
-
-    phone: vendor.user?.phone ?? "",
-
-    businessName: vendor.businessName,
-
-    description: vendor.description ?? "",
-
-    category: vendor.category ?? "",
-
-    city: vendor.city ?? "",
-
-    address: vendor.address ?? "",
-
-    profileImage: vendor.logoUrl ?? "",
-
-    coverImage: vendor.coverImage ?? "",
-
-    portfolioImages: [],
-
-    website: vendor.website ?? "",
-
-    instagram: vendor.instagram ?? "",
-
-    facebook: vendor.facebook ?? "",
-
-    youtube: vendor.youtube ?? "",
-
-    linkedin: vendor.linkedin ?? "",
-
-    experience: vendor.experience ?? "",
-
-    gstNumber: vendor.gstNumber ?? "",
-
-    businessVerified: vendor.businessVerified,
-
-    gstVerified: vendor.gstVerified,
-
-    bankVerified: vendor.bankVerified,
-
-    documentsUploaded: vendor.documentsUploaded,
-
-    approvalStatus: vendor.status.toLowerCase(),
-
-    isActive: vendor.isActive,
-
-    createdAt: vendor.createdAt,
-
-    updatedAt: vendor.updatedAt,
-  };
+  return mapStoredVendor(vendor);
 }
 
 /**
@@ -202,13 +246,19 @@ export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
  */
 export async function updateVendor(
   updatedVendor: StoredVendor
-): Promise<boolean> {
-  console.warn(
-    "updateVendor() not migrated yet.",
-    updatedVendor
-  );
+): Promise<StoredVendor | undefined> {
+  const result =
+    await updateMyVendorProfileApi(
+      updatedVendor
+    );
 
-  return true;
+  if (!result.ok || !result.data) {
+    return undefined;
+  }
+
+  return mapStoredVendor(
+    result.data as ApiVendorProfile
+  );
 }
 
 /**
