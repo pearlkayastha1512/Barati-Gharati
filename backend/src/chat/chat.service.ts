@@ -3,6 +3,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 
+import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateConversationDto } from './dto/create-conversation.dto';
@@ -88,6 +89,55 @@ this.chatGateway.sendMessageToConversation(
 return newMessage;
 }
 async getConversations(userId: string) {
+  const customerBookings = await this.prisma.booking.findMany({
+    where: {
+      userId,
+      status: {
+        in: [BookingStatus.ACCEPTED, BookingStatus.CONFIRMED],
+      },
+    },
+    select: {
+      vendorId: true,
+    },
+  });
+
+  if (customerBookings.length > 0) {
+    const bookedVendorIds = customerBookings.map(
+      (booking) => booking.vendorId,
+    );
+
+    const existingConversations =
+      await this.prisma.conversation.findMany({
+        where: {
+          customerId: userId,
+          vendorId: {
+            in: bookedVendorIds,
+          },
+        },
+        select: {
+          vendorId: true,
+        },
+      });
+
+    const existingVendorIds = existingConversations.map(
+      (conversation) => conversation.vendorId,
+    );
+
+    const missingVendorIds = bookedVendorIds.filter(
+      (vendorId) => !existingVendorIds.includes(vendorId),
+    );
+
+    if (missingVendorIds.length > 0) {
+      await this.prisma.conversation.createMany({
+        data: missingVendorIds.map((vendorId) => ({
+          customerId: userId,
+          vendorId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
   return this.prisma.conversation.findMany({
     where: {
       OR: [
@@ -123,7 +173,7 @@ async getConversations(userId: string) {
 
       messages: {
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
 
         take: 1,
@@ -131,7 +181,7 @@ async getConversations(userId: string) {
     },
 
     orderBy: {
-      updatedAt: "desc",
+      updatedAt: 'desc',
     },
   });
 }

@@ -38,10 +38,10 @@ export default function VendorAbout({
       </p>
 
       <div className="mt-10">
-
+{/* 
         <h3 className="mb-6 text-2xl font-semibold text-gray-900">
           Amenities
-        </h3>
+        </h3> */}
 
         <div className="grid gap-5 sm:grid-cols-2">
 

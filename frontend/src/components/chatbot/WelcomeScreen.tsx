@@ -51,17 +51,16 @@ export default function WelcomeScreen() {
 
     setTyping(true);
 
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        sender: "bot",
-        text:
-          "Great! Once the chatbot backend is connected, I'll answer this instantly 😊",
-        createdAt: new Date().toISOString(),
-      });
+   setTimeout(() => {
+  addMessage({
+    id: crypto.randomUUID(),
+    sender: "bot",
+    text: "Hey! 😊 I'm here to help with your wedding planning. To get started, can I ask you a few quick questions?",
+    createdAt: new Date().toISOString(),
+  });
 
-      setTyping(false);
-    }, 1200);
+  setTyping(false);
+}, 1200);
   };
 
   return (

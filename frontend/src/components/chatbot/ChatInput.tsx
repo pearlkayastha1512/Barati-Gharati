@@ -6,7 +6,7 @@ import { Send, Smile } from "lucide-react";
 
 import VoiceButton from "./VoiceButton";
 import { useChatbotStore } from "@/store/chatbotStore";
-
+import { sendChatMessage } from "@/services/chatbot.service";
 
 
 export default function ChatInput() {
@@ -14,107 +14,92 @@ export default function ChatInput() {
 
   const { addMessage, setTyping } = useChatbotStore();
 
-  const sendMessage = () => {
+//   const sendMessage = () => {
 
-    if (!text.trim()) return;
+//     if (!text.trim()) return;
+
+//     addMessage({
+//       id: crypto.randomUUID(),
+//       sender: "user",
+//       text,
+//       createdAt: new Date().toISOString(),
+//     });
+
+//     const message = text;
+//     setText("");
+//     setTyping(true);
+
+//     setTimeout(() => {
+//       addMessage({
+//         id: crypto.randomUUID(),
+//         sender: "bot",
+//         text: `You said: "${message}"
+
+// Once we connect your chatbot backend, I'll answer this intelligently.`,
+//         createdAt: new Date().toISOString(),
+//       });
+
+//       setTyping(false);
+//     }, 1200);
+//   };
+
+
+
+const sendMessage = async () => {
+  if (!text.trim()) {
+    return;
+  }
+
+  const message = text.trim();
+
+  addMessage({
+    id: crypto.randomUUID(),
+    sender: "user",
+    text: message,
+    createdAt: new Date().toISOString(),
+  });
+
+  setText("");
+
+  setTyping(true);
+
+  try {
+    const response =
+      await sendChatMessage(message);
 
     addMessage({
       id: crypto.randomUUID(),
-      sender: "user",
-      text,
-      createdAt: new Date().toISOString(),
+      sender: "bot",
+      text:
+        response?.reply ??
+        response?.message ??
+        "No response received.",
+      createdAt:
+        new Date().toISOString(),
     });
-
-    const message = text;
-    setText("");
-    setTyping(true);
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        sender: "bot",
-        text: `You said: "${message}"
-
-Once we connect your chatbot backend, I'll answer this intelligently.`,
-        createdAt: new Date().toISOString(),
-      });
-
-      setTyping(false);
-    }, 1200);
-  };
+  } catch {
+    addMessage({
+      id: crypto.randomUUID(),
+      sender: "bot",
+      text:
+        "Sorry, something went wrong.",
+      createdAt:
+        new Date().toISOString(),
+    });
+  } finally {
+    setTyping(false);
+  }
+};
 
 
-// const sendMessage = async () => {
-//   if (!text.trim()) {
-//     return;
-//   }
+  // const handleKeyDown = (
+  //   e: KeyboardEvent<HTMLInputElement>
+  // ) => {
+  //   if (e.key === "Enter") {
+  //     sendMessage();
+  //   }
+  // };
 
-//   const message = text.trim();
-
-//   // Show user message instantly
-//   addMessage({
-//     id: crypto.randomUUID(),
-//     sender: "user",
-//     text: message,
-//     createdAt: new Date().toISOString(),
-//   });
-
-//   setText("");
-
-//   setTyping(true);
-
-//   try {
-//     const response = await fetch(
-//       "http://localhost:8000/api/v1/chatbot/message",
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           message,
-//         }),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error("Failed to get AI response");
-//     }
-
-//     const data = await response.json();
-
-//     addMessage({
-//       id: crypto.randomUUID(),
-//       sender: "bot",
-//       text: data.reply,
-//       createdAt: new Date().toISOString(),
-//     });
-//   } catch (error) {
-//     console.error(error);
-
-//     addMessage({
-//       id: crypto.randomUUID(),
-//       sender: "bot",
-//       text:
-//         "Sorry, I'm unable to respond right now. Please try again later.",
-//       createdAt: new Date().toISOString(),
-//     });
-//   } finally {
-//     setTyping(false);
-//   }
-// };
-
-
-
-
-  const handleKeyDown = (
-    e: KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  };
-// const handleKeyDown = async (
 //   e: KeyboardEvent<HTMLInputElement>
 // ) => {
 //   if (e.key === "Enter") {
@@ -122,7 +107,13 @@ Once we connect your chatbot backend, I'll answer this intelligently.`,
 //   }
 // };
 
-
+const handleKeyDown = async (
+  e: KeyboardEvent<HTMLInputElement>
+) => {
+  if (e.key === "Enter") {
+    await sendMessage();
+  }
+};
   return (
     <div
       className="

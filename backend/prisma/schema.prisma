@@ -137,6 +137,8 @@ model Vendor {
 
   reviews Review[]
 
+  
+
   leads Lead[]
 
   conversations Conversation[]
@@ -285,6 +287,25 @@ model Booking {
   @@index([packageId])
   @@index([status])
 }
+
+// model Availability {
+//   id String @id @default(uuid())
+
+//   vendorId String
+//   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+//   date DateTime
+
+//   status AvailabilityStatus @default(BLOCKED)
+
+//   reason String?
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@unique([vendorId, date])
+//   @@index([vendorId])
+// }
 
 model Review {
   id          String   @id @default(uuid())
