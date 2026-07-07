@@ -52,7 +52,7 @@ export default function TopServices() {
         };
 
       current.revenue +=
-        booking.amount;
+        booking.advancePaid;
 
       current.bookings += 1;
 

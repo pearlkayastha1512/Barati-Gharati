@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -10,14 +10,18 @@ import {
 } from "@/services/vendor.service";
 
 export default function DangerZone() {
-  const { vendor, isLoading } = useVendorProfile();
+  const {
+    vendor,
+    setVendor,
+    isLoading,
+  } = useVendorProfile();
 
   const [loading, setLoading] =
     useState(false);
 
   if (isLoading || !vendor) return null;
 
-  const handleToggleBusiness = () => {
+  const handleToggleBusiness = async () => {
     setLoading(true);
 
     const updatedVendor: StoredVendor = {
@@ -28,17 +32,28 @@ export default function DangerZone() {
       updatedAt: new Date().toISOString(),
     };
 
-    updateVendor(updatedVendor);
+    const savedVendor =
+      await updateVendor(updatedVendor);
 
-    setVendor(updatedVendor);
+    setLoading(false);
+
+    if (!savedVendor) {
+      toast.error(
+        "Unable to update business status."
+      );
+      return;
+    }
+
+    setVendor(savedVendor);
+    window.dispatchEvent(
+      new Event("vendor-profile-updated")
+    );
 
     toast.success(
       updatedVendor.isActive
         ? "Business activated successfully."
         : "Business deactivated successfully."
     );
-
-    setLoading(false);
   };
 
   return (

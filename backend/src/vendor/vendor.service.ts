@@ -104,19 +104,77 @@ async updateVendorProfile(
       'Vendor profile not found',
     );
   }
-  if (vendor.status !== VendorStatus.APPROVED) {
+if (vendor.status !== VendorStatus.APPROVED) {
   throw new BadRequestException(
     'Your vendor account is waiting for admin approval.',
   );
 }
-  const updatedVendor = await this.prisma.vendor.update({
-    where: {
-      userId,
-    },
-    data: {
-      ...updateVendorDto,
-    },
-  });
+
+  const {
+    ownerName,
+    email,
+    phone,
+    category,
+    categoryId,
+    ...vendorDto
+  } = updateVendorDto;
+
+  let resolvedCategoryId = categoryId;
+
+  if (!resolvedCategoryId && category) {
+    const categoryRecord =
+      await this.prisma.category.findFirst({
+        where: {
+          name: {
+            equals: category,
+            mode: 'insensitive',
+          },
+        },
+      });
+
+    resolvedCategoryId = categoryRecord?.id;
+  }
+
+  const updatedVendor =
+    await this.prisma.$transaction(async (tx) => {
+      if (ownerName || email || phone) {
+        await tx.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            ...(ownerName ? { name: ownerName } : {}),
+            ...(email ? { email } : {}),
+            ...(phone ? { phone } : {}),
+          },
+        });
+      }
+
+      return tx.vendor.update({
+        where: {
+          userId,
+        },
+        data: {
+          ...vendorDto,
+          ...(resolvedCategoryId
+            ? {
+                categoryId: resolvedCategoryId,
+              }
+            : {}),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+          category: true,
+        },
+      });
+    });
 
   return {
     success: true,

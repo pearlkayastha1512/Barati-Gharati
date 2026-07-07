@@ -25,9 +25,6 @@ export default function SettingsHero() {
   const pending =
     vendor.approvalStatus === "pending";
 
-  const rejected =
-    vendor.approvalStatus === "rejected";
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}

@@ -25,6 +25,11 @@ interface VendorReviewsProps {
   vendorName: string;
 }
 
+const REVIEWABLE_BOOKING_STATUSES = [
+  "accepted",
+  "completed",
+];
+
 export default function VendorReviews({
   vendorId,
   vendorName,
@@ -41,7 +46,9 @@ export default function VendorReviews({
       .filter(
         (booking) =>
           booking.vendorId === vendorId &&
-          booking.bookingStatus !== "cancelled"
+          REVIEWABLE_BOOKING_STATUSES.includes(
+            booking.bookingStatus
+          )
       )
       .sort(
         (a, b) =>
@@ -104,6 +111,9 @@ export default function VendorReviews({
     );
   }, [bookings, vendorId, user]);
 
+  const hasReviewableBooking =
+    Boolean(reviewBooking);
+
   return (
     <>
       <section className="rounded-3xl bg-white p-8 shadow-sm">
@@ -121,6 +131,13 @@ export default function VendorReviews({
           {hasBookedVendor && (
             <button
               onClick={() => {
+                if (!hasReviewableBooking) {
+                  toast.error(
+                    "You can review after your booking is accepted."
+                  );
+                  return;
+                }
+
                 setSelectedReview(null);
                 setOpen(true);
               }}

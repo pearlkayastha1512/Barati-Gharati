@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
 import { getUsers } from "@/services/auth.service";
-import { getVendors, StoredVendor } from "@/services/vendor.service";
+import { StoredVendor } from "@/services/vendor.service";
 import { getAllBookings } from "@/services/booking.service";
 
 import {
   getAllVendorsApi,
+  getDashboardApi,
 } from "@/services/api/admin.api";
 
 interface DashboardStats {
@@ -26,6 +27,31 @@ interface AdminStore {
   loadVendors: () => Promise<void>;
 }
 
+type ApiListResponse<T> = {
+  data?: T[];
+};
+
+type ApiDashboardResponse = {
+  data?: Partial<DashboardStats> & {
+    totalUsers?: number;
+  };
+};
+
+function getArrayData<T>(
+  value: unknown
+): T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+
+  const response =
+    value as ApiListResponse<T>;
+
+  return Array.isArray(response?.data)
+    ? response.data
+    : [];
+}
+
 export const useAdminStore = create<AdminStore>((set) => ({
   stats: {
     totalVendors: 0,
@@ -37,16 +63,25 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
   vendors: [],
 
-  // -----------------------------
-  // TEMPORARY
-  // Dashboard is still using localStorage
-  // We'll migrate it after Bookings,
-  // Users and Analytics are connected.
-  // -----------------------------
   loadDashboard: async () => {
     const users = getUsers();
 
-    const vendors = getVendors();
+    const [dashboardResult, vendorsResult] =
+      await Promise.all([
+        getDashboardApi(),
+        getAllVendorsApi(),
+      ]);
+
+    const dashboard =
+      (dashboardResult.data as ApiDashboardResponse)
+        ?.data ?? {};
+
+    const vendors =
+      vendorsResult.ok
+        ? getArrayData<StoredVendor>(
+            vendorsResult.data
+          )
+        : [];
 
     const bookings = getAllBookings();
 
@@ -57,15 +92,24 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
     set({
       stats: {
-        totalVendors: vendors.length,
+        totalVendors:
+          dashboard.totalVendors ??
+          vendors.length,
 
-        totalCustomers: users.filter(
-          (user) => user.role === "customer"
-        ).length,
+        totalCustomers:
+          dashboard.totalCustomers ??
+          dashboard.totalUsers ??
+          users.filter(
+            (user) => user.role === "customer"
+          ).length,
 
-        totalBookings: bookings.length,
+        totalBookings:
+          dashboard.totalBookings ??
+          bookings.length,
 
-        totalRevenue,
+        totalRevenue:
+          dashboard.totalRevenue ??
+          totalRevenue,
 
         pendingVendorApprovals: vendors.filter(
           (vendor) =>
@@ -83,11 +127,16 @@ export const useAdminStore = create<AdminStore>((set) => ({
     const result = await getAllVendorsApi();
 
     if (!result.ok) {
+      set({
+        vendors: [],
+      });
       return;
     }
 
     set({
-      vendors: result.data.data,
+      vendors: getArrayData<StoredVendor>(
+        result.data
+      ),
     });
   },
 }));

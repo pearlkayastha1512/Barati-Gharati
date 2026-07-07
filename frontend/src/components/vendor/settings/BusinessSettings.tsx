@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
 import {
   updateVendor,
-  StoredVendor,
 } from "@/services/vendor.service";
 
 export default function BusinessSettings() {
-  const { vendor, isLoading } = useVendorProfile();
+  const {
+    vendor,
+    setVendor,
+    isLoading,
+  } = useVendorProfile();
 
   const [loading, setLoading] =
     useState(false);
@@ -23,7 +26,7 @@ export default function BusinessSettings() {
       | "displayPricingPublicly"
       | "showAvailabilityCalendar"
   ) => {
-    setVendor({
+    const updatedVendor = {
       ...vendor,
 
       settings: {
@@ -36,29 +39,49 @@ export default function BusinessSettings() {
             !vendor.settings.business[field],
         },
       },
-    });
+    };
+
+    setVendor(updatedVendor);
+    void updateVendor(updatedVendor);
   };
 
   const toggleVisibility = () => {
-    setVendor({
+    const updatedVendor = {
       ...vendor,
 
       isActive: !vendor.isActive,
-    });
+      updatedAt: new Date().toISOString(),
+    };
+
+    setVendor(updatedVendor);
+    void updateVendor(updatedVendor);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!vendor) return;
 
     setLoading(true);
 
-    updateVendor(vendor);
+    const updatedVendor =
+      await updateVendor(vendor);
+
+    setLoading(false);
+
+    if (!updatedVendor) {
+      toast.error(
+        "Unable to update business settings."
+      );
+      return;
+    }
+
+    setVendor(updatedVendor);
+    window.dispatchEvent(
+      new Event("vendor-profile-updated")
+    );
 
     toast.success(
       "Business settings updated successfully."
     );
-
-    setLoading(false);
   };
 
   return (

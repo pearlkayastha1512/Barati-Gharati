@@ -223,3 +223,30 @@ export async function updateBookingStatusApi(
     };
   }
 }
+
+export async function updateBookingPaymentApi(
+  id: string,
+  amount: number
+) {
+  try {
+    const { data } = await api.patch(
+      `/bookings/${id}/payment`,
+      {
+        amount,
+      }
+    );
+
+    return {
+      ok: true,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to update payment."
+      ),
+    };
+  }
+}

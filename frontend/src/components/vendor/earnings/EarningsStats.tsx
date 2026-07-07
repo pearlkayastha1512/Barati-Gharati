@@ -35,7 +35,8 @@ export default function EarningsStats() {
         return;
       }
 
-      totalRevenue += booking.amount;
+      totalRevenue +=
+        booking.advancePaid;
 
       pendingAmount +=
         booking.remainingAmount;

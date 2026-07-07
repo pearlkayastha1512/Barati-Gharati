@@ -97,6 +97,11 @@ import {
   replyReviewApi,
 } from "@/services/api/review.api";
 
+type ReviewMutationResult = {
+  ok: boolean;
+  error?: string;
+};
+
 /**
  * Load all reviews
  */
@@ -147,11 +152,14 @@ export async function getCustomerReviews(
  */
 export async function createReview(
   review: Review
-): Promise<boolean> {
+): Promise<ReviewMutationResult> {
   const result =
     await createReviewApi(review);
 
-  return result.ok;
+  return {
+    ok: result.ok,
+    error: result.error,
+  };
 }
 
 /**
@@ -159,11 +167,14 @@ export async function createReview(
  */
 export async function updateReview(
   review: Review
-): Promise<boolean> {
+): Promise<ReviewMutationResult> {
   const result =
     await updateReviewApi(review);
 
-  return result.ok;
+  return {
+    ok: result.ok,
+    error: result.error,
+  };
 }
 
 /**

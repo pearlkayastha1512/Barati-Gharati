@@ -31,7 +31,8 @@ export default function EarningsHero() {
     let pendingAmount = 0;
 
     bookings.forEach((booking) => {
-      totalRevenue += booking.amount;
+      totalRevenue +=
+        booking.advancePaid;
 
       pendingAmount +=
         booking.remainingAmount;

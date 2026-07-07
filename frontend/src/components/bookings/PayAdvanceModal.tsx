@@ -33,7 +33,7 @@ export default function PayAdvanceModal({
     return null;
   }
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     const value = Number(amount);
 
     if (
@@ -54,10 +54,17 @@ export default function PayAdvanceModal({
       return;
     }
 
-    payAdvance(
+    const success = await payAdvance(
       booking.id,
       value
     );
+
+    if (!success) {
+      toast.error(
+        "Unable to update payment."
+      );
+      return;
+    }
 
     toast.success(
       "Advance payment updated."

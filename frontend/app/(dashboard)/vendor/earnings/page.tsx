@@ -1,10 +1,32 @@
+"use client";
+
+import { useEffect } from "react";
+
 import EarningsHero from "@/components/vendor/earnings/EarningsHero";
 import EarningsStats from "@/components/vendor/earnings/EarningsStats";
 import RevenueChart from "@/components/vendor/earnings/RevenueChart";
 import TransactionsTable from "@/components/vendor/earnings/TransactionsTable";
 import PayoutCard from "@/components/vendor/earnings/PayoutCard";
+import { useAuthStore } from "@/store/authStore";
+import { useBookingStore } from "@/store/bookingStore";
 
 export default function VendorEarningsPage() {
+  const user = useAuthStore(
+    (state) => state.user
+  );
+  const loadVendorBookings =
+    useBookingStore(
+      (state) => state.loadVendorBookings
+    );
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    void loadVendorBookings(0);
+  }, [loadVendorBookings, user]);
+
   return (
     <div className="space-y-8">
 

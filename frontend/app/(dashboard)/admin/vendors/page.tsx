@@ -11,8 +11,10 @@ import VendorDetailsModal from "@/components/admin/vendors/VendorDetailsModal";
 
 import { useAdminStore } from "@/store/adminStore";
 import { StoredVendor } from "@/services/vendor.service";
-import { adminService } from "@/services/admin.service";
-import { getVendorById } from "@/services/vendor.service";
+import {
+  approveVendorApi,
+  rejectVendorApi,
+} from "@/services/api/admin.api";
 
 export default function VendorManagementPage() {
   const {
@@ -41,24 +43,22 @@ export default function VendorManagementPage() {
   const handleViewVendor = (
   vendor: StoredVendor
 ) => {
-  const latestVendor = getVendorById(
-    vendor.id
-  );
-
   setSelectedVendor(
-    latestVendor ?? vendor
+    vendor
   );
 
   setIsModalOpen(true);
 };
 
-  const handleApproveVendor = (
+  const handleApproveVendor = async (
     vendorId: number
   ) => {
-    const success =
-      adminService.approveVendor(vendorId);
+    const result =
+      await approveVendorApi(
+        String(vendorId)
+      );
 
-    if (!success) {
+    if (!result.ok) {
       toast.error("Unable to approve vendor.");
       return;
     }
@@ -74,13 +74,15 @@ export default function VendorManagementPage() {
     );
   };
 
-  const handleRejectVendor = (
+  const handleRejectVendor = async (
     vendorId: number
   ) => {
-    const success =
-      adminService.rejectVendor(vendorId);
+    const result =
+      await rejectVendorApi(
+        String(vendorId)
+      );
 
-    if (!success) {
+    if (!result.ok) {
       toast.error("Unable to reject vendor.");
       return;
     }
@@ -157,7 +159,7 @@ export default function VendorManagementPage() {
     <div className="space-y-8">
       <VendorHero />
 
-      <VendorStats />
+      <VendorStats vendors={vendors} />
 
       <VendorFilters
         search={search}
