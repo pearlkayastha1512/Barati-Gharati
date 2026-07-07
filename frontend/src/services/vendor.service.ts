@@ -123,11 +123,11 @@ export async function getVendorById(
 export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
   const result = await getMyVendorProfileApi();
 
-  if (!result.ok || !result.data?.success) {
+  if (!result.ok || !result.data) {
     return undefined;
   }
 
-  const vendor = result.data.data;
+  const vendor = result.data;
 
   return {
     id: vendor.frontendVendorId,

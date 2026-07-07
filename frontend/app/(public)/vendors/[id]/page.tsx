@@ -44,6 +44,7 @@ export default function VendorDetailsPage() {
 
   const vendor = allVendors.find(
     (vendor) =>
+      vendor.id != null &&
       vendor.id.toString() === id
   );
 

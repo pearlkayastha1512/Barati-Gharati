@@ -239,10 +239,7 @@ import "react-calendar/dist/Calendar.css";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/store/authStore";
 import { useAvailabilityStore } from "@/store/availabilityStore";
-
-import { getVendorByUserId } from "@/services/vendor.service";
 
 interface Props {
   open: boolean;
@@ -253,19 +250,13 @@ export default function ManageAvailabilityModal({
   open,
   onClose,
 }: Props) {
-  const { user } = useAuthStore();
-
-  const vendorId = user
-    ? getVendorByUserId(user._id)?.id
-    : undefined;
-
   const availability = useAvailabilityStore(
     (state) => state.availability
   );
 
-  const loadVendorAvailability =
+  const loadAvailability =
     useAvailabilityStore(
-      (state) => state.loadVendorAvailability
+      (state) => state.loadAvailability
     );
 
   const addAvailability =
@@ -286,16 +277,12 @@ export default function ManageAvailabilityModal({
     useState("");
 
   useEffect(() => {
-    if (!open || !vendorId) return;
+    if (!open) return;
 
-    loadVendorAvailability(vendorId);
-  }, [
-    open,
-    vendorId,
-    loadVendorAvailability,
-  ]);
+    void loadAvailability();
+  }, [open, loadAvailability]);
 
-  if (!open || !vendorId) {
+  if (!open) {
     return null;
   }
 
@@ -316,31 +303,53 @@ export default function ManageAvailabilityModal({
 
   const blocked = availability.find(
     (item) =>
-      item.vendorId === vendorId &&
-      item.date === formattedDate
+      item.date === formattedDate &&
+      item.status === "blocked"
   );
 
-  const handleSave = () => {
-    if (blocked) {
-      deleteExistingAvailability(
-        blocked.id
+  const booked = availability.some(
+    (item) =>
+      item.date === formattedDate &&
+      item.status === "booked"
+  );
+
+  const handleSave = async () => {
+    if (booked) {
+      toast.error(
+        "This date already has a booking."
       );
+      return;
+    }
+
+    if (blocked) {
+      const success =
+        await deleteExistingAvailability(
+          blocked.id
+        );
+
+      if (!success) {
+        toast.error(
+          "Unable to unblock date."
+        );
+        return;
+      }
 
       toast.success(
         "Date unblocked successfully."
       );
     } else {
-      addAvailability({
-        id: crypto.randomUUID(),
-        vendorId,
-        date: formattedDate,
-        status: "blocked",
-        reason,
-        createdAt:
-          new Date().toISOString(),
-        updatedAt:
-          new Date().toISOString(),
-      });
+      const success =
+        await addAvailability({
+          date: formattedDate,
+          reason,
+        });
+
+      if (!success) {
+        toast.error(
+          "Unable to block date."
+        );
+        return;
+      }
 
       toast.success(
         "Date blocked successfully."
@@ -418,13 +427,18 @@ export default function ManageAvailabilityModal({
 
           <button
             onClick={handleSave}
+            disabled={booked}
             className={`rounded-xl px-6 py-3 font-semibold text-white transition ${
-              blocked
+              booked
+                ? "cursor-not-allowed bg-blue-400"
+                : blocked
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-green-600 hover:bg-green-700"
             }`}
           >
-            {blocked
+            {booked
+              ? "Booked"
+              : blocked
               ? "Unblock Date"
               : "Block Date"}
           </button>

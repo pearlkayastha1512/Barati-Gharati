@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect } from "react";
+
 import BudgetHero from "@/components/budget/BudgetHero";
 import BudgetSummary from "@/components/budget/BudgetSummary";
 import BudgetActions from "@/components/budget/BudgetActions";
@@ -6,8 +10,21 @@ import ExpenseCategories from "@/components/budget/ExpenseCategories";
 import RecentExpenses from "@/components/budget/RecentExpenses";
 import BudgetInsights from "@/components/budget/BudgetInsights";
 import ExpenseTable from "@/components/budget/ExpenseTable";
+import { useAuthStore } from "@/store/authStore";
+import { useExpenseStore } from "@/store/expenseStore";
 
 export default function BudgetPage() {
+  const { user } = useAuthStore();
+  const loadExpenses = useExpenseStore(
+    (state) => state.loadExpenses
+  );
+
+  useEffect(() => {
+    if (!user?._id) return;
+
+    loadExpenses();
+  }, [user?._id, loadExpenses]);
+
   return (
     <div className="space-y-8">
       <BudgetHero />

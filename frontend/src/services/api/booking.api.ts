@@ -1,5 +1,24 @@
 import api from "@/lib/axios";
+import { AxiosError } from "axios";
 import { Booking, BookingStatus } from "@/types/booking";
+
+type ApiErrorResponse = {
+  message?: string;
+};
+
+function getErrorMessage(
+  error: unknown,
+  fallback: string
+) {
+  if (error instanceof AxiosError) {
+    const data = error.response
+      ?.data as ApiErrorResponse | undefined;
+
+    return data?.message ?? fallback;
+  }
+
+  return fallback;
+}
 
 export async function createBookingApi(
   booking: Booking
@@ -53,14 +72,20 @@ export async function createBookingApi(
 
     return {
       ok: true,
-      data,
+      data: data?.success
+        ? data
+        : {
+            success: true,
+            data,
+          },
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to create booking.",
+      error: getErrorMessage(
+        error,
+        "Unable to create booking."
+      ),
     };
   }
 }
@@ -75,12 +100,13 @@ export async function getCustomerBookingsApi() {
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load bookings.",
+      error: getErrorMessage(
+        error,
+        "Unable to load bookings."
+      ),
     };
   }
 }
@@ -95,12 +121,13 @@ export async function getVendorBookingsApi() {
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load vendor bookings.",
+      error: getErrorMessage(
+        error,
+        "Unable to load vendor bookings."
+      ),
     };
   }
 }
@@ -117,12 +144,13 @@ export async function getBookingByIdApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load booking.",
+      error: getErrorMessage(
+        error,
+        "Unable to load booking."
+      ),
     };
   }
 }
@@ -172,12 +200,13 @@ export async function updateBookingStatusApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to update booking.",
+      error: getErrorMessage(
+        error,
+        "Unable to update booking."
+      ),
     };
   }
 }

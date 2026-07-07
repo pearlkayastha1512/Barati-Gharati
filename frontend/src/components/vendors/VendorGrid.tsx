@@ -35,7 +35,9 @@ useEffect(() => {
 }, []);
 
 
- const allVendors = registeredVendors;
+ const allVendors = registeredVendors.filter(
+   (vendor) => vendor.id != null
+ );
 
   const filteredVendors = allVendors.filter((vendor) => {
     const matchesSearch =

@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import BookingSuccess from "./BookingSuccess";
 import { useAuthStore } from "@/store/authStore";
@@ -16,10 +16,6 @@ import { toast } from "sonner";
 
 
 // import { useNotificationStore } from "@/store/notificationStore";
-import { getVendorById } from "@/services/vendor.service";
-
-
-import PaymentModal from "@/components/payment/PaymentModal";
 // import { paymentService } from "@/services/payment.service";
 
 // import { emailService } from "@/services/email.service";
@@ -61,6 +57,10 @@ interface BookingModalProps {
   date: string;
 }
 
+function createBookingNumber() {
+  return `WD${new Date().getFullYear()}${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+}
+
 export default function BookingModal({
   open,
   onClose,
@@ -76,8 +76,6 @@ export default function BookingModal({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const [paymentOpen, setPaymentOpen] =
-  useState(false);
   const [bookingId, setBookingId] = useState("");
 
   const { user } = useAuthStore();
@@ -99,12 +97,14 @@ export default function BookingModal({
       window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!open) {
       setLoading(false);
       setSuccess(false);
     }
   }, [open]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
 const handleBooking = async () => {
   if (!user) return;
@@ -116,19 +116,14 @@ const handleBooking = async () => {
 
   setLoading(true);
 
-  const bookingNumber =
-    "WD" +
-    new Date().getFullYear() +
-    Math.floor(
-      100000 + Math.random() * 900000
-    );
+  const bookingNumber = createBookingNumber();
 
   const booking: Booking = {
     id: "",
 
     bookingNumber,
 
- customerId: "",
+	 customerId: user._id,
 
     vendorId,
 
@@ -169,23 +164,24 @@ const handleBooking = async () => {
 
     remainingAmount: price,
 
-    paymentStatus: "PENDING",
+    paymentStatus: "pending",
 
-      bookingStatus: "PENDING",
+      bookingStatus: "pending",
 
     createdAt: "",
 
     updatedAt: "",
   };
 
-  const success =
+  const result =
     await createBooking(booking);
 
   setLoading(false);
 
-  if (!success) {
+  if (!result.ok) {
     toast.error(
-      "Unable to create booking."
+      result.error ??
+        "Unable to create booking."
     );
 
     return;

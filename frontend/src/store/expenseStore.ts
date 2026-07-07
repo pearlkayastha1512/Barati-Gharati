@@ -5,109 +5,98 @@ import { Expense } from "@/types/expense";
 import {
   getCustomerExpenses,
   createExpense,
-  updateExpense,
-  deleteExpense,
-  clearCustomerExpenses,
+  updateExpense as saveExpense,
+  deleteExpense as removeExpense,
 } from "@/services/expense.service";
 
 interface ExpenseStore {
   expenses: Expense[];
+  isLoading: boolean;
 
-  loadExpenses: (
-    customerId: string
-  ) => void;
+  loadExpenses: () => Promise<void>;
 
   addExpense: (
     expense: Expense
-  ) => void;
+  ) => Promise<boolean>;
 
   updateExpense: (
     expense: Expense
-  ) => void;
+  ) => Promise<boolean>;
 
   deleteExpense: (
     expenseId: string
-  ) => void;
+  ) => Promise<boolean>;
 
-  clearExpenses: (
-    customerId: string
-  ) => void;
+  clearExpenses: () => void;
 }
 
 export const useExpenseStore =
   create<ExpenseStore>((set) => ({
     expenses: [],
+    isLoading: false,
 
-    loadExpenses: (
-      customerId
-    ) => {
-      set({
-        expenses:
-          getCustomerExpenses(
-            customerId
-          ),
-      });
+    loadExpenses: async () => {
+      set({ isLoading: true });
+
+      try {
+        const expenses =
+          await getCustomerExpenses();
+
+        set({ expenses });
+      } finally {
+        set({ isLoading: false });
+      }
     },
 
-    addExpense: (
-      expense
-    ) => {
-      createExpense(expense);
+    addExpense: async (expense) => {
+      const created =
+        await createExpense(expense);
 
-      set({
-        expenses:
-          getCustomerExpenses(
-            expense.customerId
-          ),
-      });
+      if (!created) {
+        return false;
+      }
+
+      const expenses =
+        await getCustomerExpenses();
+
+      set({ expenses });
+
+      return true;
     },
 
-    updateExpense: (
-      expense
-    ) => {
-      updateExpense(expense);
+    updateExpense: async (expense) => {
+      const updated =
+        await saveExpense(expense);
 
-      set({
-        expenses:
-          getCustomerExpenses(
-            expense.customerId
-          ),
-      });
+      if (!updated) {
+        return false;
+      }
+
+      const expenses =
+        await getCustomerExpenses();
+
+      set({ expenses });
+
+      return true;
     },
 
-    deleteExpense: (
-      expenseId
-    ) =>
-      set((state) => {
-        const expense =
-          state.expenses.find(
-            (item) =>
-              item.id === expenseId
-          );
+    deleteExpense: async (expenseId) => {
+      const deleted =
+        await removeExpense(expenseId);
 
-        if (!expense) {
-          return state;
-        }
+      if (!deleted) {
+        return false;
+      }
 
-        deleteExpense(expenseId);
+      const expenses =
+        await getCustomerExpenses();
 
-        return {
-          expenses:
-            getCustomerExpenses(
-              expense.customerId
-            ),
-        };
-      }),
+      set({ expenses });
 
-    clearExpenses: (
-      customerId
-    ) => {
-      clearCustomerExpenses(
-        customerId
-      );
+      return true;
+    },
 
-      set({
-        expenses: [],
-      });
+    clearExpenses: () => {
+      set({ expenses: [] });
     },
   }));

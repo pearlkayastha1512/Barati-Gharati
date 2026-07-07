@@ -7,13 +7,18 @@ import "react-calendar/dist/Calendar.css";
 import { useAuthStore } from "@/store/authStore";
 import { useAvailabilityStore } from "@/store/availabilityStore";
 
-import { getVendorByUserId } from "@/services/vendor.service";
+import {
+  getVendorByUserId,
+  StoredVendor,
+} from "@/services/vendor.service";
 
 type Value = Date | null;
 
 export default function CalendarView() {
   const [selectedDate, setSelectedDate] =
     useState<Value>(new Date());
+  const [vendor, setVendor] =
+    useState<StoredVendor | null>(null);
 
   const { user } = useAuthStore();
 const availability = useAvailabilityStore(
@@ -25,19 +30,29 @@ const loadVendorAvailability =
     (state) => state.loadVendorAvailability
   );
 
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
-
  useEffect(() => {
-  if (!vendor) {
-    return;
+  if (!user) return;
+
+  let active = true;
+
+  async function loadVendor() {
+    const data = await getVendorByUserId();
+
+    if (!active) return;
+
+    setVendor(data ?? null);
+
+    if (data) {
+      await loadVendorAvailability(data.id);
+    }
   }
 
-  loadVendorAvailability(vendor.id);
+  void loadVendor();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [vendor?.id]);
+  return () => {
+    active = false;
+  };
+}, [user, loadVendorAvailability]);
 
   if (!vendor) {
     return null;

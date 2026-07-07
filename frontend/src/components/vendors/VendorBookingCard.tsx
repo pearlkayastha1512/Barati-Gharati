@@ -13,6 +13,7 @@ import { Vendor } from "@/types/vendor";
 
 import { useRouter } from "next/navigation";
 import { useMessageStore } from "@/store/messageStore";
+import { messageService } from "@/services/message.service";
 import { toast } from "sonner";
 import { getVendorById } from "@/services/vendor.service";
 import { useEffect, useState } from "react";
@@ -33,8 +34,9 @@ export default function VendorBookingCard({
   const router = useRouter();
 
 const {
-  messages,
-  sendMessage,
+  conversations,
+  loadConversations,
+  sendNewMessage,
   setSelectedConversation,
 } = useMessageStore();
 
@@ -88,7 +90,7 @@ if (!selectedPackage)  {
       </h2>
 
       <p className="mt-3 text-slate-500">
-        This vendor hasn't added any services yet.
+        This vendor has not added any services yet.
       </p>
 
     </aside>
@@ -309,7 +311,7 @@ if (!storedVendor) {
 )}
 
      <button
- onClick={() => {
+ onClick={async () => {
   if (!isAuthenticated) {
     openLogin();
     return;
@@ -323,36 +325,40 @@ if (!storedVendor) {
     return;
   }
 
-  const exists = messages.some(
-    (message) =>
-      (message.senderId === user._id &&
-        message.receiverId === vendor.userId) ||
-      (message.receiverId === user._id &&
-        message.senderId === vendor.userId)
-  );
+  const existingConversation =
+    conversations.find(
+      (conversation) =>
+        conversation.vendorId ===
+          (vendor.backendId ?? vendor.id.toString()) ||
+        conversation.vendor?.user?.id === vendor.userId
+    );
 
-  if (!exists) {
-    sendMessage({
-      id: crypto.randomUUID(),
+  const conversation =
+    existingConversation ??
+    (
+      await messageService.createConversation(
+        vendor.backendId ?? vendor.id.toString()
+      )
+    ).data;
 
-      senderId: user._id,
-
-      senderName: user.name,
-
-      receiverId: vendor.userId,
-
-      receiverName: vendor.name,
-
-      message:
-        "Hello! I'm interested in your services.",
-
-      sentAt: new Date().toISOString(),
-
-      status: "sent",
-    });
+  if (!conversation?.id) {
+    toast.error(
+      "Unable to start conversation."
+    );
+    return;
   }
 
- setSelectedConversation(vendor.userId);
+  if (!existingConversation) {
+    await sendNewMessage(
+      conversation.id,
+      vendor.userId,
+      "Hello! I'm interested in your services."
+    );
+
+    await loadConversations();
+  }
+
+ setSelectedConversation(conversation.id);
 
   router.push("/customer/messages");
 }}

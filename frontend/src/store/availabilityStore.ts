@@ -3,95 +3,110 @@ import { create } from "zustand";
 import { Availability } from "@/types/availability";
 
 import {
-  getAvailability,
   createAvailability,
-  updateAvailability,
   deleteAvailability,
+  getAvailability,
   getVendorAvailability,
 } from "@/services/availability.service";
 
 interface AvailabilityStore {
   availability: Availability[];
-
   selectedAvailability: Availability | null;
+  isLoading: boolean;
 
-  loadAvailability: () => void;
+  loadAvailability: () => Promise<void>;
 
   loadVendorAvailability: (
     vendorId: number
-  ) => void;
+  ) => Promise<void>;
 
   setSelectedAvailability: (
     item: Availability | null
   ) => void;
 
-  addAvailability: (
-    item: Availability
-  ) => void;
-
-  updateExistingAvailability: (
-    item: Availability
-  ) => void;
+  addAvailability: (item: {
+    date: string;
+    reason?: string;
+  }) => Promise<boolean>;
 
   deleteExistingAvailability: (
     id: string
-  ) => void;
+  ) => Promise<boolean>;
 }
 
 export const useAvailabilityStore =
   create<AvailabilityStore>((set) => ({
     availability: [],
-
     selectedAvailability: null,
+    isLoading: false,
 
-    loadAvailability: () => {
-      set({
-        availability: getAvailability(),
-      });
+    loadAvailability: async () => {
+      set({ isLoading: true });
+
+      try {
+        const availability =
+          await getAvailability();
+
+        set({ availability });
+      } finally {
+        set({ isLoading: false });
+      }
     },
 
-    loadVendorAvailability: (
+    loadVendorAvailability: async (
       vendorId
     ) => {
-      set({
-        availability:
-          getVendorAvailability(vendorId),
-      });
+      set({ isLoading: true });
+
+      try {
+        const availability =
+          await getVendorAvailability(
+            vendorId
+          );
+
+        set({ availability });
+      } finally {
+        set({ isLoading: false });
+      }
     },
 
-    setSelectedAvailability: (
-      item
-    ) => {
+    setSelectedAvailability: (item) => {
       set({
         selectedAvailability: item,
       });
     },
 
-    addAvailability: (item) => {
-      createAvailability(item);
+    addAvailability: async (item) => {
+      const created =
+        await createAvailability(item);
 
-      set({
-        availability: getAvailability(),
-      });
+      if (!created) {
+        return false;
+      }
+
+      const availability =
+        await getAvailability();
+
+      set({ availability });
+
+      return true;
     },
 
-    updateExistingAvailability: (
-      item
-    ) => {
-      updateAvailability(item);
-
-      set({
-        availability: getAvailability(),
-      });
-    },
-
-    deleteExistingAvailability: (
+    deleteExistingAvailability: async (
       id
     ) => {
-      deleteAvailability(id);
+      const deleted =
+        await deleteAvailability(id);
 
-      set({
-        availability: getAvailability(),
-      });
+      if (!deleted) {
+        return false;
+      }
+
+      const availability =
+        await getAvailability();
+
+      set({ availability });
+
+      return true;
     },
   }));

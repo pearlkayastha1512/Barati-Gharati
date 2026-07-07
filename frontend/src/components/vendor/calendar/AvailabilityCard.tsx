@@ -12,40 +12,24 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { useBookingStore } from "@/store/bookingStore";
-import { useAuthStore } from "@/store/authStore";
-
-import { getVendorByUserId } from "@/services/vendor.service";
-
-import { Availability } from "@/types/availability";
+import { useAvailabilityStore } from "@/store/availabilityStore";
 import ManageAvailabilityModal from "./ManageAvailabilityModal";
 
 export default function AvailabilityCard() {
-  const bookings = useBookingStore(
-    (state) => state.bookings
-  );
-
-  const { user } = useAuthStore();
    const [openModal, setOpenModal] =
   useState(false);
 
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
-
-  const [blockedDates, setBlockedDates] =
-    useState<Availability[]>([]);
+  const availability = useAvailabilityStore(
+    (state) => state.availability
+  );
+  const loadAvailability =
+    useAvailabilityStore(
+      (state) => state.loadAvailability
+    );
 
   useEffect(() => {
-    const data =
-      localStorage.getItem("availability");
-
-    if (data) {
-      setBlockedDates(
-        JSON.parse(data)
-      );
-    }
-  }, []);
+    void loadAvailability();
+  }, [loadAvailability]);
 
   const currentDate = new Date();
 
@@ -56,15 +40,12 @@ export default function AvailabilityCard() {
     currentDate.getFullYear();
 
   const stats = useMemo(() => {
-    const bookedDays = bookings.filter(
-      (booking) => {
-        const date = new Date(
-          booking.eventDate
-        );
+    const bookedDays = availability.filter(
+      (item) => {
+        const date = new Date(item.date);
 
         return (
-          booking.bookingStatus !==
-            "cancelled" &&
+          item.status === "booked" &&
           date.getMonth() ===
             currentMonth &&
           date.getFullYear() ===
@@ -73,11 +54,18 @@ export default function AvailabilityCard() {
       }
     ).length;
 
-    const blocked = blockedDates.filter(
-      (item) =>
-        vendor &&
-        item.vendorId === vendor.id &&
-        item.status === "blocked"
+    const blocked = availability.filter(
+      (item) => {
+        const date = new Date(item.date);
+
+        return (
+          item.status === "blocked" &&
+          date.getMonth() ===
+            currentMonth &&
+          date.getFullYear() ===
+            currentYear
+        );
+      }
     ).length;
 
     const daysInMonth = new Date(
@@ -105,24 +93,10 @@ export default function AvailabilityCard() {
       percentage,
     };
   }, [
-    bookings,
-    blockedDates,
-    vendor,
+    availability,
     currentMonth,
     currentYear,
   ]);
-
-  const handleManageAvailability =
-    () => {
-      document
-        .getElementById(
-          "calendar-view"
-        )
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-    };
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -132,7 +106,7 @@ export default function AvailabilityCard() {
       </h2>
 
       <p className="mt-2 text-sm text-slate-500">
-        Current month's availability
+        Current month availability
       </p>
 
       <div className="mt-6">

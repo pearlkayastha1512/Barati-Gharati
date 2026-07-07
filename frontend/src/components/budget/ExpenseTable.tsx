@@ -137,11 +137,11 @@ export default function ExpenseTable() {
                     </button>
 
                     <button
-                      onClick={() =>
-                        deleteExpense(
+                      onClick={() => {
+                        void deleteExpense(
                           expense.id
-                        )
-                      }
+                        );
+                      }}
                       className="rounded-xl border border-red-200 p-3 text-red-500 transition hover:bg-red-50"
                     >
                       <Trash2
