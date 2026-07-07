@@ -249,7 +249,7 @@ function mapStoredVendor(
     documentsUploaded: vendor.documentsUploaded,
 
     approvalStatus:
-      vendor.status.toLowerCase(),
+  vendor.status.toLowerCase() as StoredVendor["approvalStatus"],
 
     isActive: vendor.isActive,
 

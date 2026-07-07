@@ -31,7 +31,7 @@ export default function ProgressOverview() {
 
     const completedTasks = tasks.filter(
       (task) =>
-        task.status === "completed"
+        task.status === "COMPLETED"
     ).length;
 
     const pendingTasks =

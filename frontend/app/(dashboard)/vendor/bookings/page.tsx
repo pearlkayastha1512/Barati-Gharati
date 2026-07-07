@@ -33,19 +33,18 @@ export default function VendorBookingsPage() {
     useState("All");
 
   useEffect(() => {
+  async function fetchVendor() {
     if (!user) return;
 
-    const vendor = getVendorByUserId();
+    const vendor = await getVendorByUserId();
 
     if (!vendor) return;
 
-    loadVendorBookings(
-      vendor.id
-    );
-  }, [
-    user,
-    loadVendorBookings,
-  ]);
+    loadVendorBookings(vendor.id);
+  }
+
+  fetchVendor();
+}, [user, loadVendorBookings]);
 
   const filteredBookings =
     useMemo(() => {

@@ -11,8 +11,10 @@ import {
 import { emailService } from "./email.service";
 
 class AdminService {
-  approveVendor(vendorId: number) {
-    const vendors = getVendors();
+  async approveVendor(
+    vendorId: number
+  ) {
+    const vendors = await getVendors();
 
     const users = getUsers();
 
@@ -24,20 +26,14 @@ class AdminService {
       return false;
     }
 
-    // Update Vendor
-    vendor.approvalStatus = "approved";
-
-    vendor.updatedAt = new Date().toISOString();
-
-    // Update User
     const user = users.find(
-      (item) => item._id === vendor.userId
+      (item) => item._id === (vendor as any).userId
     );
 
     if (user) {
       user.status = "approved";
-
-      user.updatedAt = new Date().toISOString();
+      user.updatedAt =
+        new Date().toISOString();
 
       emailService.sendEmail(
         user.email,
@@ -54,15 +50,16 @@ Thank you for joining Wedding Planner.
       );
     }
 
-    saveVendors(vendors);
-
+    saveVendors();
     saveUsers(users);
 
     return true;
   }
 
-  rejectVendor(vendorId: number) {
-    const vendors = getVendors();
+  async rejectVendor(
+    vendorId: number
+  ) {
+    const vendors = await getVendors();
 
     const users = getUsers();
 
@@ -74,20 +71,14 @@ Thank you for joining Wedding Planner.
       return false;
     }
 
-    // Update Vendor
-    vendor.approvalStatus = "rejected";
-
-    vendor.updatedAt = new Date().toISOString();
-
-    // Update User
     const user = users.find(
-      (item) => item._id === vendor.userId
+      (item) => item._id === (vendor as any).userId
     );
 
     if (user) {
       user.status = "rejected";
-
-      user.updatedAt = new Date().toISOString();
+      user.updatedAt =
+        new Date().toISOString();
 
       emailService.sendEmail(
         user.email,
@@ -106,15 +97,16 @@ Thank you.
       );
     }
 
-    saveVendors(vendors);
-
+    saveVendors();
     saveUsers(users);
 
     return true;
   }
 
-  deleteVendor(vendorId: number) {
-    const vendors = getVendors();
+  async deleteVendor(
+    vendorId: number
+  ) {
+    const vendors = await getVendors();
 
     const users = getUsers();
 
@@ -126,15 +118,13 @@ Thank you.
       return false;
     }
 
-    saveVendors(
-      vendors.filter(
-        (item) => item.id !== vendorId
-      )
-    );
+    saveVendors();
 
     saveUsers(
       users.filter(
-        (user) => user._id !== vendor.userId
+        (user) =>
+          user._id !==
+          (vendor as any).userId
       )
     );
 
@@ -142,4 +132,5 @@ Thank you.
   }
 }
 
-export const adminService = new AdminService();
+export const adminService =
+  new AdminService();

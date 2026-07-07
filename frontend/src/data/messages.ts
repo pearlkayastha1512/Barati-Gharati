@@ -2,58 +2,52 @@ import { Message } from "@/types/message";
 
 export const messages: Message[] = [
   {
-    id: "MSG001",
+  id: "MSG001",
 
-    senderId: "CUS001",
+  conversationId: "CONV001",
 
-    receiverId: "VEN001",
+  senderId: "CUS001",
 
-    senderName: "Rahul Sharma",
+  receiverId: "VEN001",
 
-    receiverName: "Royal Photography",
+  message: "Hi, is your wedding package available?",
 
-    message: "Hi, is your wedding package available?",
+  createdAt: "2026-08-01T10:30:00Z",
 
-    sentAt: "2026-08-01 10:30 AM",
-
-    status: "read",
-  },
+  status: "READ",
+},
 
   {
-    id: "MSG002",
+  id: "MSG002",
 
-    senderId: "VEN001",
+  conversationId: "CONV001",
 
-    receiverId: "CUS001",
+  senderId: "VEN001",
 
-    senderName: "Royal Photography",
+  receiverId: "CUS001",
 
-    receiverName: "Rahul Sharma",
+  message: "Yes, it's available for your date.",
 
-    message: "Yes, it's available for your date.",
+  createdAt: "2026-08-01T10:35:00Z",
 
-    sentAt: "2026-08-01 10:35 AM",
-
-    status: "read",
-  },
+  status: "READ",
+},
 
   {
-    id: "MSG003",
+  id: "MSG003",
 
-    senderId: "CUS002",
+  conversationId: "CONV002",
 
-    receiverId: "VEN001",
+  senderId: "CUS002",
 
-    senderName: "Priya Singh",
+  receiverId: "VEN001",
 
-    receiverName: "Royal Photography",
+  message: "Can you share your pricing details?",
 
-    message: "Can you share your pricing details?",
+  createdAt: "2026-08-02T16:15:00Z",
 
-    sentAt: "2026-08-02 04:15 PM",
-
-    status: "delivered",
-  },
+  status: "DELIVERED",
+},
 ];
 
 
