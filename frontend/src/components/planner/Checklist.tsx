@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -39,7 +37,7 @@ export default function Checklist() {
   }, [loadTasks]);
 
   const completedTasks = tasks.filter(
-    (task) => task.status === "completed"
+    (task) => task.status === "COMPLETED"
   ).length;
 
   return (
@@ -96,8 +94,18 @@ export default function Checklist() {
               >
                 <PlannerTaskCard
                   task={task}
-                  onToggle={toggleTask}
-                  onDelete={deleteTask}
+                  onToggle={async (
+                    id,
+                    status
+                  ) => {
+                    await toggleTask(
+                      id,
+                      status
+                    );
+                  }}
+                  onDelete={async (id) => {
+                    await deleteTask(id);
+                  }}
                   onEdit={(task) => {
                     setSelectedTask(task);
                     setOpenEditModal(true);

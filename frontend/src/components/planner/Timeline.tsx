@@ -27,8 +27,8 @@ export default function Timeline() {
   const timeline = useMemo(() => {
     return [...tasks].sort(
       (a, b) =>
-        new Date(a.dueDate).getTime() -
-        new Date(b.dueDate).getTime()
+        new Date(a.date).getTime() -
+        new Date(b.date).getTime()
     );
   }, [tasks]);
 
@@ -46,7 +46,6 @@ export default function Timeline() {
       "
     >
       <div className="mb-8">
-
         <h2 className="text-2xl font-bold text-gray-900">
           Planning Timeline
         </h2>
@@ -54,7 +53,6 @@ export default function Timeline() {
         <p className="mt-1 text-gray-500">
           Upcoming planner milestones.
         </p>
-
       </div>
 
       {timeline.length === 0 ? (
@@ -63,20 +61,17 @@ export default function Timeline() {
         </div>
       ) : (
         <div className="relative">
-
           {timeline.map((task, index) => (
-
             <div
               key={task.id}
               className="relative flex gap-5 pb-8 last:pb-0"
             >
-
               {index !==
                 timeline.length - 1 && (
                 <div
                   className={`absolute left-[17px] top-10 h-full w-[2px] ${
                     task.status ===
-                    "completed"
+                    "COMPLETED"
                       ? "bg-green-400"
                       : "bg-gray-200"
                   }`}
@@ -86,13 +81,13 @@ export default function Timeline() {
               <div
                 className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full ${
                   task.status ===
-                  "completed"
+                  "COMPLETED"
                     ? "bg-green-100"
                     : "bg-rose-100"
                 }`}
               >
                 {task.status ===
-                "completed" ? (
+                "COMPLETED" ? (
                   <CheckCircle2
                     size={20}
                     className="text-green-600"
@@ -106,11 +101,8 @@ export default function Timeline() {
               </div>
 
               <div className="flex-1 rounded-2xl border border-gray-100 p-4 transition hover:border-rose-200 hover:bg-rose-50/30">
-
                 <div className="flex items-center justify-between">
-
                   <div>
-
                     <h3 className="font-semibold text-gray-900">
                       {task.title}
                     </h3>
@@ -120,26 +112,23 @@ export default function Timeline() {
                         {task.description}
                       </p>
                     )}
-
                   </div>
 
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                       task.status ===
-                      "completed"
+                      "COMPLETED"
                         ? "bg-green-100 text-green-700"
                         : "bg-rose-100 text-rose-600"
                     }`}
                   >
-                    {task.status}
+                    {task.status.toLowerCase()}
                   </span>
-
                 </div>
 
                 <p className="mt-3 text-sm text-gray-500">
-
                   {new Date(
-                    task.dueDate
+                    task.date
                   ).toLocaleDateString(
                     "en-GB",
                     {
@@ -148,15 +137,10 @@ export default function Timeline() {
                       year: "numeric",
                     }
                   )}
-
                 </p>
-
               </div>
-
             </div>
-
           ))}
-
         </div>
       )}
     </motion.section>

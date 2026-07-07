@@ -182,9 +182,19 @@ import { PlannerTask } from "@/types/planner";
 
 interface Props {
   task: PlannerTask;
-  onEdit: (task: PlannerTask) => void;
-  onDelete: (id: string) => void;
-  onToggle: (id: string) => void;
+
+  onEdit: (
+    task: PlannerTask
+  ) => void;
+
+  onDelete: (
+    id: string
+  ) => Promise<void>;
+
+  onToggle: (
+    id: string,
+    status: "PENDING" | "COMPLETED"
+  ) => Promise<void>;
 }
 
 export default function PlannerTaskCard({
@@ -213,7 +223,14 @@ export default function PlannerTaskCard({
           {/* Toggle Button */}
           <button
             type="button"
-            onClick={() => onToggle(task.id)}
+            onClick={() =>
+  onToggle(
+    task.id,
+    task.status === "COMPLETED"
+      ? "PENDING"
+      : "COMPLETED"
+  )
+}
             className="
               mt-1
               flex
@@ -228,7 +245,7 @@ export default function PlannerTaskCard({
               active:scale-95
             "
           >
-            {task.status === "completed" ? (
+            {task.status === "COMPLETED" ? (
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-500 transition-all duration-300">
                 <Check
                   size={16}
@@ -245,7 +262,7 @@ export default function PlannerTaskCard({
           <div>
             <h3
               className={`text-lg font-semibold transition-all duration-300 ${
-                task.status === "completed"
+                task.status === "COMPLETED"
                   ? "text-gray-400 line-through"
                   : "text-gray-700"
               }`}
@@ -255,7 +272,7 @@ export default function PlannerTaskCard({
 
             <p
               className={`mt-2 transition ${
-                task.status === "completed"
+                task.status === "COMPLETED"
                   ? "text-gray-400"
                   : "text-gray-500"
               }`}
@@ -301,12 +318,12 @@ export default function PlannerTaskCard({
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
         <span className="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold capitalize text-rose-600">
-          {task.priority}
+          {String(task.priority).toLowerCase()}
         </span>
 
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${
-            task.status === "completed"
+            task.status === "COMPLETED"
               ? "bg-green-100 text-green-700"
               : "bg-yellow-100 text-yellow-700"
           }`}
@@ -317,7 +334,7 @@ export default function PlannerTaskCard({
         <span className="flex items-center gap-2 text-sm text-gray-500">
           <CalendarDays size={16} />
 
-          {new Date(task.dueDate).toLocaleDateString(
+          {new Date(task.date).toLocaleDateString(
             "en-GB",
             {
               day: "2-digit",
