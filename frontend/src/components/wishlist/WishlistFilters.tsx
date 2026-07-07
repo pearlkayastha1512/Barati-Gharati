@@ -29,7 +29,7 @@ export default function WishlistFilters() {
   action: {
     label: "Yes, Clear",
     onClick: () => {
-      clearCustomerWishlist(user._id);
+      clearCustomerWishlist();
       toast.success("Wishlist cleared successfully.");
     },
   },

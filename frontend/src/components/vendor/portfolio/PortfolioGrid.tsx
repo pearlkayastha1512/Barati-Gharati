@@ -18,7 +18,7 @@ export default function PortfolioGrid({
 }: PortfolioGridProps) {
   const {
     setSelectedPortfolio,
-    deletePortfolio,
+    deleteExistingPortfolio,
   } = usePortfolioStore();
 
   if (portfolio.length === 0) {
@@ -52,7 +52,7 @@ export default function PortfolioGrid({
             onEdit();
           }}
           onDelete={() =>
-            deletePortfolio(item.id)
+            deleteExistingPortfolio(item.id)
           }
         />
       ))}
