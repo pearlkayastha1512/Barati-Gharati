@@ -17,6 +17,12 @@ export interface StoredVendor {
 
   userId: string;
 
+  ownerName: string;
+
+  email: string;
+
+  phone: string;
+
   businessName: string;
 
   description?: string;
@@ -133,6 +139,12 @@ export async function getVendorByUserId(): Promise<StoredVendor | undefined> {
     id: vendor.frontendVendorId,
 
     userId: vendor.userId,
+
+    ownerName: vendor.user?.name ?? "",
+
+    email: vendor.user?.email ?? "",
+
+    phone: vendor.user?.phone ?? "",
 
     businessName: vendor.businessName,
 

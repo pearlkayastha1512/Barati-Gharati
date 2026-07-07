@@ -3,34 +3,19 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/store/authStore";
-
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 import {
-  getVendorByUserId,
   updateVendor,
   StoredVendor,
 } from "@/services/vendor.service";
 
 export default function BusinessSettings() {
-  const { user } = useAuthStore();
-
-  const [vendor, setVendor] =
-    useState<StoredVendor | null>(null);
+  const { vendor, isLoading } = useVendorProfile();
 
   const [loading, setLoading] =
     useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const data = getVendorByUserId(user._id);
-
-    if (data) {
-      setVendor(data);
-    }
-  }, [user]);
-
-  if (!vendor) return null;
+  if (isLoading || !vendor) return null;
 
   const toggleBusinessSetting = (
     field:

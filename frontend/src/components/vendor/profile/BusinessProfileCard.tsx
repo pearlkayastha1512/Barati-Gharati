@@ -4,18 +4,18 @@ import { useState } from "react";
 
 import EditVendorProfileModal from "./EditVendorProfileModal";
 
-import { useAuthStore } from "@/store/authStore";
-import { getVendorByUserId } from "@/services/vendor.service";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
+
 import { ShieldCheck } from "lucide-react";
 
 export default function BusinessProfileCard() {
-  const { user } = useAuthStore();
-
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
+  const { vendor, isLoading } = useVendorProfile();
 
   const [open, setOpen] = useState(false);
+
+  if (isLoading || !vendor) {
+    return null;
+  }
 
   if (!vendor) return null;
 

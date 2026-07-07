@@ -14,12 +14,14 @@ export default function VendorProfilePage() {
       <BusinessProfileCard />
 
       <section className="grid gap-6 xl:grid-cols-2">
-
+ 
         <OwnerInformation />
+        <BusinessDetails /> 
 
-        <BusinessDetails />
+        
 
       </section>
+
 
       <section className="grid gap-6 xl:grid-cols-2">
 

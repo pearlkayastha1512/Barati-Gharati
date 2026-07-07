@@ -8,17 +8,12 @@ import {
   Star,
 } from "lucide-react";
 
-import { useAuthStore } from "@/store/authStore";
-import { getVendorByUserId } from "@/services/vendor.service";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 
 export default function ProfileHero() {
-  const { user } = useAuthStore();
+  const { vendor, isLoading } = useVendorProfile();
 
-  const vendor = user
-    ? getVendorByUserId(user._id)
-    : null;
-
-  if (!vendor) {
+  if (isLoading || !vendor) {
     return null;
   }
 

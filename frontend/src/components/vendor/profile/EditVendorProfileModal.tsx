@@ -5,12 +5,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/store/authStore";
-
-import {
-  getVendorByUserId,
-  updateVendor,
-} from "@/services/vendor.service";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { updateVendor } from "@/services/vendor.service";
 
 interface Props {
   open: boolean;
@@ -21,17 +17,17 @@ export default function EditVendorProfileModal({
   open,
   onClose,
 }: Props) {
-  const { user } = useAuthStore();
+  const { vendor, isLoading } = useVendorProfile();
 
-const [vendor, setVendor] = useState(
-  () => (user ? getVendorByUserId(user._id) : null)
-);
+  const [localVendor, setLocalVendor] = useState(
+    null as typeof vendor
+  );
 
-useEffect(() => {
-  if (open && user) {
-    setVendor(getVendorByUserId(user._id) ?? null);
-  }
-}, [open, user?._id]);
+  useEffect(() => {
+    if (!open || isLoading || !vendor) return;
+
+    setLocalVendor(vendor);
+  }, [open, isLoading, vendor]);
 
   const [ownerName, setOwnerName] =
     useState("");
@@ -85,42 +81,26 @@ useEffect(() => {
     useState("");
 
   useEffect(() => {
-    if (!open || !vendor) return;
+    if (!open || !localVendor) return;
 
-    setOwnerName(vendor.ownerName);
-
-    setEmail(vendor.email);
-
-    setPhone(vendor.phone);
-
-setGstNumber(vendor.gstNumber ?? "");
-
-setBusinessName(vendor.businessName);
-
-setCategory(vendor.category);
-
-setCity(vendor.city);
-
-setAddress(vendor.address);
-
-setDescription(vendor.description ?? "");
-
-setWebsite(vendor.website ?? "");
-
-setInstagram(vendor.instagram ?? "");
-
-setFacebook(vendor.facebook ?? "");
-
-setYoutube(vendor.youtube ?? "");
-
-setLinkedin(vendor.linkedin ?? "");
-
-setExperience(vendor.experience ?? "");
-
-setProfileImage(vendor.profileImage ?? "");
-
-setCoverImage(vendor.coverImage ?? "");
-  }, [open, vendor?.id]);
+    setOwnerName(localVendor.ownerName);
+    setEmail(localVendor.email);
+    setPhone(localVendor.phone);
+    setGstNumber(localVendor.gstNumber ?? "");
+    setBusinessName(localVendor.businessName);
+    setCategory(localVendor.category);
+    setCity(localVendor.city);
+    // setAddress(localVendor.address);
+    setDescription(localVendor.description ?? "");
+    setWebsite(localVendor.website ?? "");
+    setInstagram(localVendor.instagram ?? "");
+    setFacebook(localVendor.facebook ?? "");
+    setYoutube(localVendor.youtube ?? "");
+    setLinkedin(localVendor.linkedin ?? "");
+    setExperience(localVendor.experience ?? "");
+    setProfileImage(localVendor.profileImage ?? "");
+    setCoverImage(localVendor.coverImage ?? "");
+  }, [open, localVendor]);
 
   const handleProfileImage = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -216,7 +196,7 @@ setCoverImage(vendor.coverImage ?? "");
 onClose();
   };
 
-  if (!open || !vendor) {
+  if (!open || isLoading || !localVendor) {
     return null;
   }
 
