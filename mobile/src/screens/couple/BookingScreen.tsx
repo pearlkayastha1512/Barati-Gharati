@@ -1,200 +1,142 @@
-import { View, StyleSheet, ScrollView } from "react-native";
-import { Card, Text, Button, Divider } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { useBookingStore } from "../../store/bookingStore";
+import { BookingStatCard } from "../../components/users/booking/BookingStatCard";
+import { BookingFilterTabs, FilterKey } from "../../components/users/booking/BookingFilterTabs";
+import { BookingListItem } from "../../components/users/booking/BookingListItem";
+import { styles } from "./styles/BookingScreen.styles";
+
+// TODO: import API functions once backend is connected
+// import { getBookings } from "../../api/booking.api";
 
 export default function BookingScreen() {
   const navigation = useNavigation<any>();
+  const bookings = useBookingStore((state) => state.bookings);
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
+
+  const totalCount = bookings.length;
+  const upcomingCount = bookings.filter((b) => b.status === "upcoming").length;
+  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+  const completedCount = bookings.filter((b) => b.status === "completed").length;
+  const cancelledCount = bookings.filter((b) => b.status === "cancelled").length;
+
+  const counts: Record<FilterKey, number> = {
+    All: totalCount,
+    Upcoming: upcomingCount,
+    Pending: pendingCount,
+    Completed: completedCount,
+    Cancelled: cancelledCount,
+  };
+
+  const filteredBookings =
+    activeFilter === "All"
+      ? bookings
+      : bookings.filter((b) => b.status === activeFilter.toLowerCase());
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text variant="headlineMedium" style={styles.heading}>
-        Booking Summary
-      </Text>
-      <Text style={styles.subheading}>Review your details before confirming</Text>
-
-      <Card style={styles.card} elevation={3}>
-        {/* Vendor header strip */}
-        <LinearGradient
-          colors={["#C2185B", "#E91E63"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.vendorStrip}
-        >
-          <Text variant="titleLarge" style={styles.vendor}>
-            Royal Palace Banquet
-          </Text>
-          <View style={styles.locationRow}>
-            <MaterialCommunityIcons name="map-marker-outline" size={15} color="#FFF" />
-            <Text style={styles.location}>Ghaziabad</Text>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Hero */}
+        <LinearGradient colors={["#6366F1", "#8B5CF6"]} style={styles.heroCard}>
+          <View style={styles.heroBadge}>
+            <MaterialIcons name="auto-awesome" size={14} color="#fff" />
+            <Text style={styles.heroBadgeText}>Booking Management</Text>
           </View>
+
+          <Text style={styles.heroTitle}>Manage all your{"\n"}wedding bookings.</Text>
+          <Text style={styles.heroSubtitle}>
+            Track every vendor booking, monitor payment status, view upcoming events and manage your wedding schedule from one place.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.bookMoreButton}
+            onPress={() => navigation.navigate("Vendors", { screen: "VendorList" })}
+          >
+            <Text style={styles.bookMoreButtonText}>Book More Vendors</Text>
+            <MaterialIcons name="arrow-forward" size={16} color="#6366F1" />
+          </TouchableOpacity>
         </LinearGradient>
 
-        <Card.Content style={styles.content}>
-          <DetailRow icon="crown-outline" label="Package" value="Gold Wedding Package" />
-          <DetailRow icon="account-group-outline" label="Guests" value="400 Guests" />
-          <DetailRow icon="calendar-heart" label="Wedding Date" value="25 December 2026" />
-          <DetailRow icon="clock-outline" label="Time" value="7:00 PM" />
+        {/* Stat cards */}
+        <View style={styles.statsGrid}>
+          <BookingStatCard
+            icon="event"
+            iconBg="#E3ECFF"
+            iconColor="#6366F1"
+            label="Total Bookings"
+            value={totalCount}
+            sublabel="All vendor bookings"
+          />
+          <BookingStatCard
+            icon="schedule"
+            iconBg="#FEF6E0"
+            iconColor="#D9A404"
+            label="Upcoming"
+            value={upcomingCount}
+            sublabel="Scheduled bookings"
+          />
+          <BookingStatCard
+            icon="check-circle"
+            iconBg="#E8F8F0"
+            iconColor="#22B07D"
+            label="Completed"
+            value={completedCount}
+            sublabel="Successfully completed"
+          />
+          <BookingStatCard
+            icon="cancel"
+            iconBg="#FDECEC"
+            iconColor="#E53935"
+            label="Cancelled"
+            value={cancelledCount}
+            sublabel="Cancelled bookings"
+          />
+        </View>
 
-          <Divider style={styles.dashedDivider} />
+        {/* Filter tabs */}
+        <BookingFilterTabs activeFilter={activeFilter} onSelect={setActiveFilter} counts={counts} />
 
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹90,000</Text>
+        {/* Manage Bookings */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionTopRow}>
+            <View>
+              <Text style={styles.sectionTitle}>Manage Bookings</Text>
+              <Text style={styles.sectionSubtitle}>Organize and track all your vendor bookings.</Text>
+            </View>
+            <TouchableOpacity style={styles.sortPill}>
+              <MaterialIcons name="tune" size={14} color="#666" />
+              <Text style={styles.sortPillText}>Sort: Latest</Text>
+              <MaterialIcons name="arrow-drop-down" size={16} color="#666" />
+            </TouchableOpacity>
           </View>
-        </Card.Content>
-      </Card>
+        </View>
 
-      <Button
-        mode="contained"
-        buttonColor="#C2185B"
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-        icon="check-decagram-outline"
-        onPress={() => navigation.navigate("BookingSuccess")}
-      >
-        Confirm Booking
-      </Button>
-    </ScrollView>
+        {filteredBookings.length === 0 ? (
+          <View style={styles.sectionCard}>
+            <View style={styles.emptyState}>
+              <MaterialIcons name="event-busy" size={44} color="#ddd" />
+              <Text style={styles.emptyStateText}>No Bookings Found</Text>
+              <Text style={styles.emptyStateSubtext}>
+                There are no bookings in the {activeFilter} category.
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={{ paddingHorizontal: 20 }}>
+            {filteredBookings.map((booking) => (
+              <BookingListItem
+                key={booking.id}
+                booking={booking}
+                onPress={() => navigation.navigate("BookingDetails", { bookingId: booking.id })}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={styles.row}>
-      <View style={styles.iconWrap}>
-        <MaterialCommunityIcons name={icon} size={18} color="#C2185B" />
-      </View>
-      <View style={styles.rowText}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowValue}>{value}</Text>
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#FFF8F5",
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-
-  heading: {
-    color: "#C2185B",
-    fontWeight: "700",
-  },
-  subheading: {
-    color: "#9E9E9E",
-    fontSize: 13,
-    marginTop: 2,
-    marginBottom: 20,
-  },
-
-  card: {
-    borderRadius: 20,
-    overflow: "hidden",
-    backgroundColor: "#FFFFFF",
-  },
-
-  vendorStrip: {
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  vendor: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 6,
-    gap: 4,
-  },
-  location: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 13,
-  },
-
-  content: {
-    paddingTop: 20,
-    paddingBottom: 8,
-  },
-
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#FCE4EC",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  rowText: {
-    flex: 1,
-  },
-  rowLabel: {
-    fontSize: 12,
-    color: "#9E9E9E",
-    marginBottom: 2,
-  },
-  rowValue: {
-    fontSize: 15,
-    color: "#3A3A3A",
-    fontWeight: "500",
-  },
-
-  dashedDivider: {
-    marginVertical: 10,
-    borderStyle: "dashed",
-    borderWidth: 0.6,
-    borderColor: "#F0BFCE",
-    backgroundColor: "transparent",
-  },
-
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  totalLabel: {
-    fontSize: 15,
-    color: "#666",
-    fontWeight: "600",
-  },
-  totalValue: {
-    fontSize: 22,
-    color: "#C2185B",
-    fontWeight: "800",
-  },
-
-  button: {
-    marginTop: 26,
-    borderRadius: 14,
-  },
-  buttonContent: {
-    paddingVertical: 6,
-  },
-});

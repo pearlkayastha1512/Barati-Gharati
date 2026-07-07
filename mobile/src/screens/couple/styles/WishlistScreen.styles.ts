@@ -1,0 +1,129 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#FAFAFA" },
+  scrollContent: { paddingBottom: 100 },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    marginBottom: 4,
+  },
+  backButton: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "#fff",
+    justifyContent: "center", alignItems: "center", elevation: 1, marginRight: 12,
+  },
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#333" },
+
+  // Hero
+  heroCard: {
+    backgroundColor: "#C2185B",
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 20,
+    borderRadius: 24,
+    padding: 20,
+  },
+  heroBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    marginBottom: 14,
+  },
+  heroBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600", marginLeft: 6 },
+  heroTitle: { color: "#fff", fontSize: 24, fontWeight: "800", lineHeight: 30 },
+  heroSubtitle: { color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 10, lineHeight: 18 },
+
+  heroSummaryBox: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 18,
+  },
+  heroSummaryHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  heroSummaryTitle: { color: "#fff", fontSize: 14, fontWeight: "700", marginLeft: 6 },
+  heroSummaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  heroSummaryLabel: { color: "rgba(255,255,255,0.85)", fontSize: 12 },
+  heroSummaryValue: { color: "#fff", fontSize: 13, fontWeight: "700" },
+
+  exploreButton: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 18,
+  },
+  exploreButtonText: { color: "#C2185B", fontWeight: "700", fontSize: 14, marginRight: 6 },
+
+  // Stat cards
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 8,
+  },
+  statCard: {
+    width: "31%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    elevation: 1,
+  },
+  statIconCircle: {
+    width: 32, height: 32, borderRadius: 16,
+    justifyContent: "center", alignItems: "center", marginBottom: 8,
+  },
+  statValue: { fontSize: 18, fontWeight: "800", color: "#222" },
+  statLabel: { fontSize: 11, color: "#666", marginTop: 4, fontWeight: "600" },
+  statSublabel: { fontSize: 10, color: "#bbb", marginTop: 2 },
+
+  // Saved Vendors section
+  sectionCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+    elevation: 1,
+  },
+  sectionTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#333" },
+  sectionSubtitle: { fontSize: 12, color: "#999", marginTop: 4 },
+  sectionActionsRow: { flexDirection: "row", alignItems: "center", marginTop: 14, gap: 10 },
+  sortPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  sortPillText: { fontSize: 12, color: "#333", fontWeight: "500", marginRight: 4 },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  clearButtonText: { fontSize: 12, color: "#ccc", fontWeight: "600", marginLeft: 4 },
+  clearButtonActive: { borderColor: "#E53935" },
+  clearButtonTextActive: { color: "#E53935" },
+
+  emptyState: { alignItems: "center", paddingVertical: 50 },
+  emptyStateText: { fontSize: 15, fontWeight: "700", color: "#333", marginTop: 14 },
+  emptyStateSubtext: { fontSize: 12, color: "#999", marginTop: 6, textAlign: "center" },
+});

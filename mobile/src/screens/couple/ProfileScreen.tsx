@@ -1,111 +1,184 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import React from "react";
+import { View, ScrollView } from "react-native";
 import { Avatar, Button, Card, Divider, Text } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { ProfileStatTile } from "../../components/users/profile/ProfileStatTile";
+import { ProfileInfoSection } from "../../components/users/profile/ProfileInfoSection";
+import { ProfileQuickActionRow } from "../../components/users/profile/ProfileQuickActionRow";
+import { styles } from "./styles/ProfileScreen.styles";
+
+// TODO: import API functions once backend is connected
+// import { getProfile } from "../../api/user.api";
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
 
+  // TODO: replace with real user data from useAuthStore / getProfile() once connected
+  const user = {
+    name: "Pearl Kayastha",
+    initials: "PK",
+    email: "pearl@example.com",
+    phone: "8527636888",
+    gender: undefined as string | undefined,
+    occupation: undefined as string | undefined,
+    weddingDate: undefined as string | undefined,
+    venue: undefined as string | undefined,
+    guests: undefined as string | undefined,
+    theme: undefined as string | undefined,
+    address: undefined as string | undefined,
+    city: undefined as string | undefined,
+    state: undefined as string | undefined,
+    country: undefined as string | undefined,
+    profileCompletion: 19,
+    partnerStatus: "Pending",
+    budget: "₹10.0L",
+  };
+
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Hero card */}
       <LinearGradient
-        colors={["#4C6FE0", "#5B8DEF", "#7FB6F0"]}
+        colors={["#3AB6E8", "#3A6FE8"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.header}
+        style={styles.heroCard}
       >
-        <View style={styles.headerTop}>
+        <View style={styles.heroTopRow}>
           <Avatar.Text
             size={64}
-            label="PK"
+            label={user.initials}
             style={styles.avatar}
-            labelStyle={styles.avatarLabel}
+            labelStyle={{ color: "#3A6FE8", fontWeight: "700" }}
           />
-          <View style={styles.headerText}>
-            <Text style={styles.name}>Pearl Kayastha</Text>
-            <Text style={styles.role}>Customer</Text>
+          <View style={{ marginLeft: 14 }}>
+            <Text style={styles.heroName}>{user.name}</Text>
+            <Text style={styles.heroRole}>Customer</Text>
           </View>
         </View>
 
-        <View style={styles.headerFooter}>
-          <View style={styles.headerFooterRow}>
-            <MaterialCommunityIcons name="check-decagram" size={16} color="#FFFFFF" />
-            <Text style={styles.headerFooterText}>Profile Verified</Text>
-          </View>
-          <View style={styles.headerFooterRow}>
-            <MaterialCommunityIcons name="calendar-outline" size={16} color="#FFFFFF" />
-            <Text style={styles.headerFooterText}>Wedding date not set</Text>
-          </View>
-          <Button
-            mode="contained"
-            buttonColor="#FFFFFF"
-            textColor="#4C6FE0"
-            style={styles.editButton}
-            contentStyle={styles.editButtonContent}
-            labelStyle={styles.editButtonLabel}
-            icon="pencil-outline"
-            onPress={() => navigation.navigate("EditProfile")}
-          >
-            Edit Profile
-          </Button>
+        <View style={styles.heroInfoRow}>
+          <MaterialIcons name="verified-user" size={16} color="#fff" />
+          <Text style={styles.heroInfoText}>Profile Verified</Text>
         </View>
+        <View style={styles.heroInfoRow}>
+          <MaterialIcons name="event" size={16} color="#fff" />
+          <Text style={styles.heroInfoText}>
+            {user.weddingDate ? user.weddingDate : "Wedding date not set"}
+          </Text>
+        </View>
+
+        <Button
+          mode="contained"
+          style={styles.editButton}
+          labelStyle={styles.editButtonLabel}
+          icon="pencil"
+          onPress={() => navigation.navigate("EditProfile")}
+        >
+          Edit Profile
+        </Button>
       </LinearGradient>
 
-      {/* Stat cards */}
-      <View style={styles.statsRow}>
-        <StatCard icon="account-outline" iconBg="#E3ECFF" iconColor="#4C6FE0" label="Completed" value="19%" caption="Profile" />
-        <StatCard icon="heart-outline" iconBg="#FCE4EC" iconColor="#C2185B" label="Information" value="Pending" caption="Partner" />
+      {/* Stat tiles */}
+      <View style={styles.statsGrid}>
+        <ProfileStatTile
+          icon="person"
+          iconBg="#E3ECFF"
+          iconColor="#3A6FE8"
+          label="Profile"
+          value={`${user.profileCompletion}%`}
+          sublabel="Completed"
+        />
+        <ProfileStatTile
+          icon="favorite"
+          iconBg="#FDEEF3"
+          iconColor="#C2185B"
+          label="Partner"
+          value={user.partnerStatus}
+          sublabel="Information"
+        />
+        <ProfileStatTile
+          icon="event-available"
+          iconBg="#E8F8F0"
+          iconColor="#22B07D"
+          label="Wedding"
+          value={user.weddingDate ? user.weddingDate : "--"}
+          sublabel="Not Set"
+        />
+        <ProfileStatTile
+          icon="account-balance-wallet"
+          iconBg="#FEF6E0"
+          iconColor="#D9A404"
+          label="Budget"
+          value={user.budget}
+          sublabel="Planning"
+        />
       </View>
-      <View style={styles.statsRow}>
-        <StatCard icon="calendar-heart" iconBg="#E3F6EA" iconColor="#2E9E5B" label="Not Set" value="--" caption="Wedding" />
-        <StatCard icon="wallet-outline" iconBg="#FFF6DD" iconColor="#C79100" label="Planning" value="₹10.0L" caption="Budget" />
+
+      {/* Info sections */}
+      <View style={styles.sectionRow}>
+        <ProfileInfoSection
+          title="Personal Information"
+          rows={[
+            { label: "Full Name", value: user.name },
+            { label: "Email", value: user.email },
+            { label: "Phone", value: user.phone },
+            { label: "Gender", value: user.gender },
+          ]}
+        />
       </View>
 
-      {/* Personal Information */}
-      <SectionCard title="Personal Information" icon="account-circle-outline">
-        <DetailRow icon="badge-account-outline" label="Full Name" value="Pearl Kayastha" />
-        <DetailRow icon="email-outline" label="Email" value="pearl.gkp@gmail.com" />
-        <DetailRow icon="phone-outline" label="Phone" value="6393609526" />
-        <DetailRow icon="gender-male-female" label="Gender" value="Not Provided" muted />
-      </SectionCard>
+      <View style={styles.sectionRow}>
+        <ProfileInfoSection
+          title="Partner Information"
+          rows={[
+            { label: "Partner Name", value: undefined },
+            { label: "Email", value: undefined },
+            { label: "Phone", value: undefined },
+            { label: "Occupation", value: user.occupation },
+          ]}
+        />
+      </View>
 
-      {/* Partner Information */}
-      <SectionCard title="Partner Information" icon="heart-outline">
-        <DetailRow icon="account-heart-outline" label="Partner Name" value="Not Provided" muted />
-        <DetailRow icon="email-outline" label="Email" value="Not Provided" muted />
-        <DetailRow icon="phone-outline" label="Phone" value="Not Provided" muted />
-        <DetailRow icon="briefcase-outline" label="Occupation" value="Not Provided" muted />
-      </SectionCard>
+      <View style={styles.sectionRow}>
+        <ProfileInfoSection
+          title="Wedding Information"
+          rows={[
+            { label: "Wedding Date", value: user.weddingDate },
+            { label: "Venue", value: user.venue },
+            { label: "Guests", value: user.guests },
+            { label: "Theme", value: user.theme },
+          ]}
+        />
+      </View>
 
-      {/* Wedding Information */}
-      <SectionCard title="Wedding Information" icon="calendar-heart">
-        <DetailRow icon="calendar-outline" label="Wedding Date" value="Not Provided" muted />
-        <DetailRow icon="map-marker-outline" label="Venue" value="Not Provided" muted />
-        <DetailRow icon="account-group-outline" label="Guests" value="Not Provided" muted />
-        <DetailRow icon="palette-outline" label="Theme" value="Not Provided" muted />
-      </SectionCard>
+      <View style={styles.sectionRow}>
+        <ProfileInfoSection
+          title="Contact Information"
+          rows={[
+            { label: "Address", value: user.address },
+            { label: "City", value: user.city },
+            { label: "State", value: user.state },
+            { label: "Country", value: user.country },
+          ]}
+        />
+      </View>
 
-      {/* Contact Information */}
-      <SectionCard title="Contact Information" icon="map-marker-radius-outline">
-        <DetailRow icon="home-outline" label="Address" value="Not Provided" muted />
-        <DetailRow icon="city-variant-outline" label="City" value="Not Provided" muted />
-        <DetailRow icon="map-outline" label="State" value="Not Provided" muted />
-        <DetailRow icon="earth" label="Country" value="Not Provided" muted />
-      </SectionCard>
+      {/* Quick actions */}
+      <View style={styles.sectionRow}>
+        <Card style={styles.quickActionsCard}>
+          <ProfileQuickActionRow icon="favorite-border" label="Wishlist" onPress={() => navigation.navigate("Wishlist")} />
+          <Divider />
+          <ProfileQuickActionRow icon="chat-bubble-outline" label="Messages" onPress={() => {}} />
+          <Divider />
+          <ProfileQuickActionRow icon="settings" label="Settings" onPress={() => navigation.navigate("Settings")} />
+        </Card>
+      </View>
 
-      {/* Actions */}
       <Button
         mode="contained"
-        buttonColor="#C2185B"
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-        icon="store-plus-outline"
+        style={styles.becomeVendorButton}
         onPress={() => navigation.navigate("BecomeVendor")}
       >
         Become a Vendor
@@ -113,271 +186,14 @@ export default function ProfileScreen() {
 
       <Button
         mode="outlined"
-        textColor="#C2185B"
-        style={styles.logout}
-        contentStyle={styles.buttonContent}
-        icon="logout"
+        style={styles.logoutButton}
+        textColor="#E53935"
         onPress={() => {}}
       >
         Logout
       </Button>
+
+      <View style={{ height: 30 }} />
     </ScrollView>
   );
 }
-
-function StatCard({
-  icon,
-  iconBg,
-  iconColor,
-  label,
-  value,
-  caption,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  iconBg: string;
-  iconColor: string;
-  label: string;
-  value: string;
-  caption: string;
-}) {
-  return (
-    <Card style={styles.statCard} elevation={2}>
-      <Card.Content style={styles.statCardContent}>
-        <View style={[styles.statIconWrap, { backgroundColor: iconBg }]}>
-          <MaterialCommunityIcons name={icon} size={18} color={iconColor} />
-        </View>
-        <Text style={styles.statCaption}>{caption}</Text>
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statLabel}>{label}</Text>
-      </Card.Content>
-    </Card>
-  );
-}
-
-function SectionCard({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card style={styles.sectionCard} elevation={2}>
-      <Card.Content>
-        <View style={styles.sectionHeader}>
-          <MaterialCommunityIcons name={icon} size={18} color="#C2185B" />
-          <Text style={styles.sectionTitle}>{title}</Text>
-        </View>
-        <Divider style={styles.sectionDivider} />
-        {children}
-      </Card.Content>
-    </Card>
-  );
-}
-
-function DetailRow({
-  icon,
-  label,
-  value,
-  muted = false,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  value: string;
-  muted?: boolean;
-}) {
-  return (
-    <View style={styles.row}>
-      <View style={styles.iconWrap}>
-        <MaterialCommunityIcons name={icon} size={17} color="#C2185B" />
-      </View>
-      <View style={styles.rowText}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={[styles.rowValue, muted && styles.rowValueMuted]}>{value}</Text>
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#FFF8F5",
-  },
-  container: {
-    paddingBottom: 40,
-  },
-
-  /* Header */
-  header: {
-    paddingTop: 48,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    marginBottom: 20,
-  },
-  headerTop: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar: {
-    backgroundColor: "#FFFFFF",
-  },
-  avatarLabel: {
-    color: "#4C6FE0",
-    fontWeight: "700",
-  },
-  headerText: {
-    marginLeft: 14,
-  },
-  name: {
-    fontSize: 19,
-    color: "#FFFFFF",
-    fontWeight: "700",
-  },
-  role: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 13,
-    marginTop: 2,
-  },
-  headerFooter: {
-    marginTop: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 16,
-    padding: 14,
-  },
-  headerFooterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  headerFooterText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-  },
-  editButton: {
-    borderRadius: 10,
-    marginTop: 4,
-  },
-  editButtonContent: {
-    paddingVertical: 2,
-  },
-  editButtonLabel: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  /* Stat cards */
-  statsRow: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 12,
-  },
-  statCard: {
-    flex: 1,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-  },
-  statCardContent: {
-    paddingVertical: 14,
-  },
-  statIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  statCaption: {
-    fontSize: 12,
-    color: "#9E9E9E",
-    marginBottom: 2,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#3A3A3A",
-  },
-  statLabel: {
-    fontSize: 11,
-    color: "#B0B0B0",
-    marginTop: 2,
-  },
-
-  /* Section cards */
-  sectionCard: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 18,
-    backgroundColor: "#FFFFFF",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#C2185B",
-  },
-  sectionDivider: {
-    marginTop: 12,
-    marginBottom: 14,
-    backgroundColor: "#F5E2E8",
-  },
-
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  iconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "#FCE4EC",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  rowText: {
-    flex: 1,
-  },
-  rowLabel: {
-    fontSize: 12,
-    color: "#9E9E9E",
-    marginBottom: 2,
-  },
-  rowValue: {
-    fontSize: 14.5,
-    color: "#3A3A3A",
-    fontWeight: "600",
-  },
-  rowValueMuted: {
-    color: "#B0B0B0",
-    fontWeight: "500",
-  },
-
-  /* Actions */
-  button: {
-    marginTop: 8,
-    marginHorizontal: 20,
-    borderRadius: 14,
-  },
-  logout: {
-    marginTop: 12,
-    marginHorizontal: 20,
-    borderRadius: 14,
-    borderColor: "#C2185B",
-  },
-  buttonContent: {
-    paddingVertical: 6,
-  },
-});

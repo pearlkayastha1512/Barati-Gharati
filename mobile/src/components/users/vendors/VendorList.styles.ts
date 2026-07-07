@@ -28,12 +28,24 @@ export const styles = StyleSheet.create({
   },
   cityPillText: { fontSize: 12, color: "#333", fontWeight: "500", marginHorizontal: 4 },
 
-  // FIX: explicit height stops the chip row from being clipped/overlapped
-  chipsRow: { height: 44, marginBottom: 14, flexGrow: 0 },
+  chipsRow: {
+    flexGrow: 0,
+    marginBottom: 14,
+  },
+  chipsRowContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
   chip: {
-    backgroundColor: "#fff", paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, marginRight: 10, elevation: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 10,
+    elevation: 2,
     justifyContent: "center",
+    minHeight: 38,
   },
   chipActive: { backgroundColor: "#C2185B" },
   chipText: { fontSize: 13, color: "#555", fontWeight: "500" },
@@ -94,7 +106,6 @@ export const styles = StyleSheet.create({
   emptyStateText: { fontSize: 15, fontWeight: "600", color: "#666", marginTop: 12 },
   emptyStateSubtext: { fontSize: 12, color: "#999", marginTop: 4 },
 
-  // City picker modal
   modalOverlay: {
     flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end",
   },

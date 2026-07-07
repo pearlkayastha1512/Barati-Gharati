@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import VendorListScreen from "../screens/couple/VendorListScreen";
-import VendorDetailsScreen from "../screens/vendor/VendorDetailsScreen";
+import VendorDetailsScreen from "../screens/couple/VendorDetailsScreen";
 import PackageDetailsScreen from "../screens/vendor/PackageDetailsScreen";
 //import BecomeVendorScreen from "../screens/vendor/BecomeVendorScreen";
 

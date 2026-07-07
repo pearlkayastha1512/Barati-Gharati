@@ -1,190 +1,156 @@
-import { useState } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
-import {
-  Text,
-  TextInput,
-  IconButton,
-  Checkbox,
-  Divider,
-} from "react-native-paper";
+import React, { useState } from "react";
+import { View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, IconButton, Checkbox } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { useChecklistStore, ChecklistItem } from "../../store/checklistStore";
+import { AddPlannerTaskModal } from "../../components/users/checklist/AddPlannerTaskModal";
+import { ChecklistStatCard } from "../../components/users/checklist/ChecklistStatCard";
+import { BudgetPreviewCard } from "../../components/users/checklist/BudgetPreviewCard";
+import { VendorsPreviewCard } from "../../components/users/checklist/VendorsPreviewCard";
+import { styles } from "./styles/ChecklistScreen.styles";
 
-// TODO: import API functions once backend is connected
-// import { getChecklist, createChecklistItem, toggleChecklistItem, deleteChecklistItem } from "../../api/checklist.api";
-
-type ChecklistItem = {
-  id: string;
-  task: string;
-  isDone: boolean;
+const PRIORITY_COLORS: Record<ChecklistItem["priority"], { bg: string; text: string }> = {
+  High: { bg: "#FDECEC", text: "#E53935" },
+  Medium: { bg: "#FEF6E0", text: "#D9A404" },
+  Low: { bg: "#E8F8F0", text: "#22B07D" },
 };
 
-// Some sample tasks so the screen isn't empty when you preview it
-const initialItems: ChecklistItem[] = [
-  { id: "1", task: "Book the venue", isDone: true },
-  { id: "2", task: "Send invitations", isDone: false },
-  { id: "3", task: "Finalize the guest list", isDone: false },
-  { id: "4", task: "Book photographer", isDone: true },
-];
-
-export default function ChecklistScreen() {
-  const [items, setItems] = useState<ChecklistItem[]>(initialItems);
-  const [newTask, setNewTask] = useState("");
-
-  // TODO: fetch checklist from backend on mount
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const response = await getChecklist();
-  //       setItems(response.data);
-  //     } catch (error) {
-  //       console.log("Failed to load checklist:", error);
-  //     }
-  //   };
-  //   fetchItems();
-  // }, []);
-
-  const handleAdd = () => {
-    if (!newTask.trim()) return;
-
-    // TODO: replace local add with API call
-    // const response = await createChecklistItem(newTask.trim());
-    // setItems((prev) => [response.data, ...prev]);
-
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      task: newTask.trim(),
-      isDone: false,
-    };
-
-    setItems((prev) => [newItem, ...prev]);
-    setNewTask("");
-  };
-
-  const handleToggle = (id: string) => {
-    // TODO: replace local toggle with API call
-    // await toggleChecklistItem(id, !item.isDone);
-
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isDone: !item.isDone } : item
-      )
-    );
-  };
-
-  const handleDelete = (id: string) => {
-    // TODO: replace local delete with API call
-    // await deleteChecklistItem(id);
-
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const doneCount = items.filter((item) => item.isDone).length;
-
+function TaskCard({
+  item,
+  onToggle,
+  onDelete,
+}: {
+  item: ChecklistItem;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const priorityStyle = PRIORITY_COLORS[item.priority];
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Wedding Checklist ✅
-      </Text>
-
-      <Text variant="bodyMedium" style={styles.subtitle}>
-        {doneCount} of {items.length} tasks done
-      </Text>
-
-      <View style={styles.inputRow}>
-        <TextInput
-          mode="outlined"
-          placeholder="Add a task..."
-          value={newTask}
-          onChangeText={setNewTask}
-          style={styles.input}
-          onSubmitEditing={handleAdd}
-          returnKeyType="done"
-        />
-        <IconButton
-          icon="plus-circle"
-          size={32}
-          iconColor="#C2185B"
-          onPress={handleAdd}
-          disabled={!newTask.trim()}
-        />
-      </View>
-
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => <Divider />}
-        ListEmptyComponent={
-          <Text style={styles.empty}>
-            No tasks yet. Add your first one above!
-          </Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.itemRow}>
-            <Checkbox
-              status={item.isDone ? "checked" : "unchecked"}
-              onPress={() => handleToggle(item.id)}
-              color="#C2185B"
-            />
-            <Text
-              style={[
-                styles.taskText,
-                item.isDone && styles.taskDone,
-              ]}
-            >
-              {item.task}
-            </Text>
-            <IconButton
-              icon="trash-can-outline"
-              size={20}
-              iconColor="#999"
-              onPress={() => handleDelete(item.id)}
-            />
+    <View style={[styles.taskCard, item.isDone && styles.taskCardDone]}>
+      <Checkbox status={item.isDone ? "checked" : "unchecked"} onPress={onToggle} color="#C2185B" />
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.taskText, item.isDone && styles.taskTextDone]}>{item.task}</Text>
+        {item.description ? <Text style={styles.taskDescription}>{item.description}</Text> : null}
+        <View style={styles.taskMetaRow}>
+          <View style={[styles.priorityPill, { backgroundColor: priorityStyle.bg }]}>
+            <Text style={[styles.priorityPillText, { color: priorityStyle.text }]}>{item.priority}</Text>
           </View>
-        )}
-      />
+          {item.dueDate ? (
+            <View style={styles.dueDateRow}>
+              <MaterialIcons name="event" size={12} color="#999" />
+              <Text style={styles.dueDateText}>{item.dueDate}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+      <IconButton icon="trash-can-outline" size={18} iconColor="#bbb" onPress={onDelete} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#FFF8F8",
-  },
-  title: {
-    color: "#C2185B",
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: "#666",
-    marginBottom: 20,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  input: {
-    flex: 1,
-  },
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  taskText: {
-    flex: 1,
-    fontSize: 15,
-    color: "#333",
-  },
-  taskDone: {
-    textDecorationLine: "line-through",
-    color: "#aaa",
-  },
-  empty: {
-    textAlign: "center",
-    color: "#999",
-    marginTop: 40,
-  },
-});
+export default function ChecklistScreen() {
+  const navigation = useNavigation<any>();
+  const { items, addItem, toggleItem, removeItem } = useChecklistStore();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const pendingTasks = items.filter((item) => !item.isDone);
+  const completedTasks = items.filter((item) => item.isDone);
+  const percent = items.length > 0 ? Math.round((completedTasks.length / items.length) * 100) : 0;
+
+  const upcomingTasks = pendingTasks
+    .filter((item) => item.dueDate)
+    .sort((a, b) => (a.dueDate! > b.dueDate! ? 1 : -1));
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <LinearGradient colors={["#EC407A", "#C2185B"]} style={styles.heroCard}>
+          <View style={styles.heroBadge}>
+            <MaterialIcons name="auto-awesome" size={14} color="#fff" />
+            <Text style={styles.heroBadgeText}>Wedding Planner</Text>
+          </View>
+
+          <Text style={styles.heroTitle}>Plan your dream{"\n"}wedding.</Text>
+          <Text style={styles.heroSubtitle}>
+            Organize vendors, manage tasks, track your wedding preparation and never miss an important milestone.
+          </Text>
+
+          <TouchableOpacity style={styles.addTaskButton} onPress={() => setModalVisible(true)}>
+            <Text style={styles.addTaskButtonText}>+ Add Planner Task</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        <View style={styles.statsGrid}>
+          <ChecklistStatCard icon="checklist" label="Total Tasks" value={items.length} sublabel="Wedding checklist" />
+          <ChecklistStatCard icon="check-circle" label="Completed" value={completedTasks.length} sublabel="Finished tasks" />
+          <ChecklistStatCard icon="schedule" label="Pending" value={pendingTasks.length} sublabel="Still remaining" />
+          <ChecklistStatCard icon="track-changes" label="Progress" value={`${percent}%`} sublabel="Overall completion" />
+        </View>
+
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionTopRow}>
+            <View>
+              <Text style={styles.sectionTitle}>Wedding Checklist</Text>
+              <Text style={styles.sectionSubtitle}>Stay on top of every important task.</Text>
+            </View>
+            <View style={styles.countPill}>
+              <Text style={styles.countPillText}>{completedTasks.length} / {items.length} Completed</Text>
+            </View>
+          </View>
+
+          {items.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyBoxText}>No planner tasks yet.</Text>
+            </View>
+          ) : (
+            <View style={{ marginTop: 12 }}>
+              {pendingTasks.map((item) => (
+                <TaskCard key={item.id} item={item} onToggle={() => toggleItem(item.id)} onDelete={() => removeItem(item.id)} />
+              ))}
+              {completedTasks.map((item) => (
+                <TaskCard key={item.id} item={item} onToggle={() => toggleItem(item.id)} onDelete={() => removeItem(item.id)} />
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Planning Timeline</Text>
+          <Text style={styles.sectionSubtitle}>Upcoming planner milestones.</Text>
+
+          {upcomingTasks.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyBoxText}>No planner tasks available.</Text>
+            </View>
+          ) : (
+            <View style={{ marginTop: 12 }}>
+              {upcomingTasks.map((item) => (
+                <View key={item.id} style={styles.timelineRow}>
+                  <View style={styles.timelineDot} />
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={styles.timelineTask}>{item.task}</Text>
+                    <Text style={styles.timelineDate}>{item.dueDate}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.previewRow}>
+          <BudgetPreviewCard />
+          <VendorsPreviewCard />
+        </View>
+      </ScrollView>
+
+      <AddPlannerTaskModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={(data) => addItem(data)}
+      />
+    </SafeAreaView>
+  );
+}

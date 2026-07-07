@@ -137,8 +137,6 @@ model Vendor {
 
   reviews Review[]
 
-  
-
   leads Lead[]
 
   conversations Conversation[]

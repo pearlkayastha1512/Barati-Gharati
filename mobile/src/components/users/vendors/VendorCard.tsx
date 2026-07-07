@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Vendor } from "../../constants/vendorData";
+import { Vendor } from "../../../constants/vendorData";
+import { useFavoritesStore } from "../../../store/favoritesStore";
 import { styles } from "./VendorList.styles";
 
 type Props = {
@@ -11,13 +12,22 @@ type Props = {
 };
 
 export function VendorCard({ vendor, onViewProfile, onBookNow }: Props) {
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const favorited = isFavorite(vendor.id);
+
   return (
     <View style={styles.card}>
       <View>
         <Image source={{ uri: vendor.image }} style={styles.cardImage} />
-        <TouchableOpacity style={styles.heartButton}>
-          {/* TODO: wire up favorite toggle — POST/DELETE /favorites */}
-          <MaterialIcons name="favorite-border" size={16} color="#C2185B" />
+        <TouchableOpacity
+          style={styles.heartButton}
+          onPress={() => toggleFavorite(vendor.id)}
+        >
+          <MaterialIcons
+            name={favorited ? "favorite" : "favorite-border"}
+            size={16}
+            color="#C2185B"
+          />
         </TouchableOpacity>
         {vendor.featured && (
           <View style={styles.featuredBadge}>
