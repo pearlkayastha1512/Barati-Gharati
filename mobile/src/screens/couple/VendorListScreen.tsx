@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { VendorCard } from "../../components/vendors/VendorCard";
-import { CategoryChips } from "../../components/vendors/CategoryChips";
-import { CityPicker } from "../../components/vendors/CityPicker";
+import { VendorCard } from "../../components/users/vendors/VendorCard";
+import { CategoryChips } from "../../components/users/vendors/CategoryChips";
+import { CityPicker } from "../../components/users/vendors/CityPicker";
+import { SortPicker, SortOption } from "../../components/users/vendors/SortPicker";
 import { DUMMY_VENDORS } from "../../constants/vendorData";
-import { styles } from "../../components/vendors/VendorList.styles";
+import { styles } from "../../components/users/vendors/VendorList.styles";
 
 // TODO: import API functions once backend is connected
 // import { searchVendors, getAllVendors } from "../../api/vendor.api";
@@ -21,6 +22,7 @@ export default function VendorListScreen() {
   );
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [searchText, setSearchText] = useState(route?.params?.search ?? "");
+  const [sortBy, setSortBy] = useState<SortOption>("Popularity");
 
   // TODO: replace DUMMY_VENDORS with API-backed state:
   // const [vendors, setVendors] = useState([]);
@@ -30,11 +32,12 @@ export default function VendorListScreen() {
   //       category: activeCategory,
   //       city: selectedCity === "All Cities" ? undefined : selectedCity,
   //       search: searchText,
+  //       sort: sortBy,
   //     });
   //     setVendors(response.data);
   //   };
   //   fetchVendors();
-  // }, [activeCategory, selectedCity, searchText]);
+  // }, [activeCategory, selectedCity, searchText, sortBy]);
 
   const filteredVendors = DUMMY_VENDORS.filter((vendor) => {
     const matchesCategory = !activeCategory || vendor.category === activeCategory;
@@ -44,6 +47,22 @@ export default function VendorListScreen() {
       vendor.name.toLowerCase().includes(searchText.toLowerCase()) ||
       vendor.location.toLowerCase().includes(searchText.toLowerCase());
     return matchesCategory && matchesCity && matchesSearch;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case "Highest Rated":
+        return parseFloat(b.rating) - parseFloat(a.rating);
+      case "Price: Low to High":
+        return a.priceValue - b.priceValue;
+      case "Price: High to Low":
+        return b.priceValue - a.priceValue;
+      case "Newest":
+        // TODO: once backend-connected, sort by vendor.createdAt descending instead
+        return 0;
+      case "Popularity":
+      default:
+        // TODO: "Popularity" ideally sorts by a backend-computed score; using review count as a proxy for now
+        return parseInt(b.reviews) - parseInt(a.reviews);
+    }
   });
 
   return (
@@ -72,21 +91,14 @@ export default function VendorListScreen() {
         </View>
       </View>
 
-      {/* FIX: now a real, working city picker instead of a static button */}
       <CityPicker selectedCity={selectedCity} onSelect={setSelectedCity} />
 
-      {/* FIX: extracted + given explicit height so it isn't clipped */}
       <CategoryChips activeCategory={activeCategory} onSelect={setActiveCategory} />
 
       {/* Result count + sort */}
       <View style={styles.resultRow}>
         <Text style={styles.resultCount}>{filteredVendors.length} Vendors Found</Text>
-        <TouchableOpacity style={styles.sortPill}>
-          {/* TODO: wire up sort options — Popularity / Price Low-High / Rating */}
-          <MaterialIcons name="swap-vert" size={16} color="#333" />
-          <Text style={styles.sortPillText}>Popularity</Text>
-          <MaterialIcons name="arrow-drop-down" size={18} color="#333" />
-        </TouchableOpacity>
+        <SortPicker selectedSort={sortBy} onSelect={setSortBy} />
       </View>
 
       {/* Vendor cards */}
@@ -107,8 +119,6 @@ export default function VendorListScreen() {
             onViewProfile={() =>
               navigation.navigate("VendorDetails", { vendorId: item.id })
             }
-            // FIX: nested navigate into the Bookings tab, matching the pattern
-            // already used successfully for category navigation on HomeScreen
             onBookNow={() =>
               navigation.navigate("Bookings", {
                 screen: "BookingScreen", // TODO: confirm this matches your actual screen name inside the Bookings tab

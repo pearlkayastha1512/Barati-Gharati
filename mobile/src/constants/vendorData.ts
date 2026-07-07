@@ -8,6 +8,7 @@ export type Vendor = {
   price: string;
   image: string;
   featured?: boolean;
+   priceValue: number;
 };
 
 export const CATEGORIES = [
@@ -22,7 +23,19 @@ export const CATEGORIES = [
 ];
 
 // TODO: replace with a real API call — getCities() or derive from getAllVendors()
-export const CITIES = ["All Cities", "Jaipur", "Delhi", "Mumbai", "Bengaluru", "Pune"];
+export const CITIES = [ "All Cities",
+  "Delhi",
+  "Mumbai",
+  "Bengaluru",
+  "Jaipur",
+  "Pune",
+  "Hyderabad",
+  "Chennai",
+  "Kolkata",
+  "Ahmedabad",
+  "Chandigarh",
+  "Lucknow",
+  "Goa",];
 
 // TODO: remove once getFeaturedVendors() / getAllVendors() is wired up
 export const DUMMY_VENDORS: Vendor[] = [
@@ -34,6 +47,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "250",
     location: "Jaipur",
     price: "₹2,50,000",
+    priceValue: 250000,
     image: "https://picsum.photos/400/300?1",
   },
   {
@@ -44,6 +58,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "210",
     location: "Delhi",
     price: "₹75,000",
+    priceValue: 75000,
     image: "https://picsum.photos/400/300?2",
   },
   {
@@ -54,6 +69,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "180",
     location: "Delhi",
     price: "₹75,000",
+    priceValue: 75000,
     image: "https://picsum.photos/400/300?3",
     featured: true,
   },
@@ -65,6 +81,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "145",
     location: "Mumbai",
     price: "₹1,20,000",
+    priceValue: 180000,
     image: "https://picsum.photos/400/300?4",
   },
   {
@@ -75,6 +92,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "320",
     location: "Bengaluru",
     price: "₹1,80,000",
+    priceValue: 40000,
     image: "https://picsum.photos/400/300?5",
     featured: true,
   },
@@ -86,6 +104,7 @@ export const DUMMY_VENDORS: Vendor[] = [
     reviews: "130",
     location: "Pune",
     price: "₹40,000",
+    priceValue: 50000,
     image: "https://picsum.photos/400/300?6",
   },
 ];

@@ -229,6 +229,65 @@ import { BookingStatus, VendorStatus } from '@prisma/client';
 @Injectable()
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
+  //added this
+  private mapReview(review: any) {
+  return {
+    id: review.id,
+    bookingId: review.bookingId,
+
+    customerId: review.userId,
+
+    vendorId: review.vendor.frontendVendorId ?? 0,
+
+    customerName: review.user?.name ?? "",
+
+    customerImage: null,
+
+    vendorName: review.vendor?.businessName ?? "",
+
+    rating: review.rating,
+
+    comment: review.comment ?? "",
+
+    reply: review.vendorReply ?? undefined,
+
+    repliedAt: review.vendorReply
+      ? review.updatedAt
+      : undefined,
+
+    createdAt: review.createdAt,
+
+    updatedAt: review.updatedAt,
+  };
+}
+//added this
+async findByCustomer(customerId: string) {
+  const reviews = await this.prisma.review.findMany({
+    where: {
+      userId: customerId,
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      vendor: {
+        select: {
+          businessName: true,
+          frontendVendorId: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return reviews.map((review) =>
+    this.mapReview(review),
+  );
+}
 
   async create(userId: string, dto: CreateReviewDto) {
     const booking = await this.prisma.booking.findUnique({
@@ -281,6 +340,7 @@ export class ReviewsService {
       );
     }
 
+<<<<<<< Updated upstream
     const review = await this.prisma.review.create({
       data: {
         userId,
@@ -289,6 +349,53 @@ export class ReviewsService {
         vendorId: booking.vendorId,
         rating: dto.rating,
         comment: dto.comment,
+=======
+    
+    const review = await this.prisma.review.create({
+  data: {
+    userId,
+    bookingId: booking.id,
+    packageId: booking.packageId,
+    vendorId: booking.vendorId,
+    rating: dto.rating,
+    comment: dto.comment,
+  },
+  include: {
+    user: {
+      select: {
+        name: true,
+      },
+    },
+    vendor: {
+      select: {
+        businessName: true,
+        frontendVendorId: true,
+      },
+    },
+  },
+});
+
+return this.mapReview(review);
+  }
+
+  async findByVendor(frontendVendorId: string) {
+  const vendor = await this.prisma.vendor.findUnique({
+    where: {
+      frontendVendorId: Number(frontendVendorId),
+    },
+  });
+
+  if (!vendor) {
+    throw new NotFoundException(
+      'Vendor not found',
+    );
+  }
+
+  const reviews =
+    await this.prisma.review.findMany({
+      where: {
+        vendorId: vendor.id,
+>>>>>>> Stashed changes
       },
       include: {
         user: {
@@ -296,17 +403,21 @@ export class ReviewsService {
             name: true,
           },
         },
+<<<<<<< Updated upstream
         package: {
           select: {
             title: true,
           },
         },
+=======
+>>>>>>> Stashed changes
         vendor: {
           select: {
             businessName: true,
             frontendVendorId: true,
           },
         },
+<<<<<<< Updated upstream
       },
     });
 
@@ -444,19 +555,66 @@ export class ReviewsService {
       _count: {
         rating: true,
       },
+=======
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
-    return {
-      averageRating: result._avg.rating ?? 0,
-      totalReviews: result._count.rating,
-    };
+  return reviews.map((review) =>
+    this.mapReview(review),
+  );
+}
+  async getVendorAverageRating(
+  frontendVendorId: string,
+) {
+  const vendor =
+    await this.prisma.vendor.findUnique({
+      where: {
+        frontendVendorId: Number(
+          frontendVendorId,
+        ),
+      },
+>>>>>>> Stashed changes
+    });
+
+  if (!vendor) {
+    throw new NotFoundException(
+      'Vendor not found',
+    );
   }
 
+<<<<<<< Updated upstream
   async update(
     userId: string,
     reviewId: string,
     dto: UpdateReviewDto,
   ) {
+=======
+  const result =
+    await this.prisma.review.aggregate({
+      where: {
+        vendorId: vendor.id,
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        rating: true,
+      },
+    });
+
+  return {
+    averageRating:
+      result._avg.rating ?? 0,
+    totalReviews:
+      result._count.rating,
+  };
+}
+
+  async update(userId: string, reviewId: string, dto: UpdateReviewDto) {
+>>>>>>> Stashed changes
     const review = await this.prisma.review.findUnique({
       where: {
         id: reviewId,
@@ -473,6 +631,7 @@ export class ReviewsService {
       );
     }
 
+<<<<<<< Updated upstream
     return this.prisma.review.update({
       where: {
         id: reviewId,
@@ -482,6 +641,31 @@ export class ReviewsService {
         comment: dto.comment,
       },
     });
+=======
+    const updatedReview =
+  await this.prisma.review.update({
+    where: { id: reviewId },
+    data: {
+      rating: dto.rating,
+      comment: dto.comment,
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      vendor: {
+        select: {
+          businessName: true,
+          frontendVendorId: true,
+        },
+      },
+    },
+  });
+
+return this.mapReview(updatedReview);
+>>>>>>> Stashed changes
   }
 
   async remove(userId: string, reviewId: string) {
@@ -511,6 +695,31 @@ export class ReviewsService {
       message: 'Review deleted successfully',
     };
   }
+  //added this to make backend compatible
+  async findAll() {
+  const reviews = await this.prisma.review.findMany({
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      vendor: {
+        select: {
+          businessName: true,
+          frontendVendorId: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return reviews.map((review) =>
+    this.mapReview(review),
+  );
+}
 
   async vendorReply(
     vendorUserId: string,
@@ -536,6 +745,7 @@ export class ReviewsService {
       );
     }
 
+<<<<<<< Updated upstream
     return this.prisma.review.update({
       where: {
         id: reviewId,
@@ -544,5 +754,29 @@ export class ReviewsService {
         vendorReply: dto.reply,
       },
     });
+=======
+    const updatedReview =
+  await this.prisma.review.update({
+    where: { id: reviewId },
+    data: {
+      vendorReply: dto.reply,
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      vendor: {
+        select: {
+          businessName: true,
+          frontendVendorId: true,
+        },
+      },
+    },
+  });
+
+return this.mapReview(updatedReview);
+>>>>>>> Stashed changes
   }
 }

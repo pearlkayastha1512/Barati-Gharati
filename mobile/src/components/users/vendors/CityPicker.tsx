@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TouchableOpacity, Text, Modal, View, FlatList, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { CITIES } from "../../constants/vendorData";
+import { CITIES } from "../../../constants/vendorData";
 import { styles } from "./VendorList.styles";
 
 type Props = {

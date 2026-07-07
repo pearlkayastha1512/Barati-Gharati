@@ -1,6 +1,6 @@
 import React from "react";
 import { ScrollView, TouchableOpacity, Text } from "react-native";
-import { CATEGORIES } from "../../constants/vendorData";
+import { CATEGORIES } from "../../../constants/vendorData";
 import { styles } from "./VendorList.styles";
 
 type Props = {
@@ -14,7 +14,7 @@ export function CategoryChips({ activeCategory, onSelect }: Props) {
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.chipsRow}
-      contentContainerStyle={{ paddingHorizontal: 20, alignItems: "center" }}
+      contentContainerStyle={styles.chipsRowContent}
     >
       {CATEGORIES.map((cat) => {
         const isActive = cat === activeCategory;

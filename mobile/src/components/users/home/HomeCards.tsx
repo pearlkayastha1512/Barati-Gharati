@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { styles } from "../../screens/couple/HomeScreen.styles";
+import { useFavoritesStore } from "../../../store/favoritesStore";
+import { styles } from "../../../screens/couple/styles/HomeScreen.styles";
 
 type CategoryProps = {
   icon: any;
@@ -19,6 +20,7 @@ export function Category({ icon, label, onPress }: CategoryProps) {
 }
 
 type VendorCardProps = {
+  id: string; // NEW — needed to look up/toggle favorite state
   title: string;
   category: string;
   rating?: string;
@@ -27,18 +29,25 @@ type VendorCardProps = {
 };
 
 export function VendorCard({
+  id,
   title,
   category,
   rating = "4.8",
   price = "₹50,000 onwards",
   imageUrl = "https://picsum.photos/300/200",
 }: VendorCardProps) {
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const favorited = isFavorite(id);
+
   return (
     <View style={styles.vendorCard}>
       <Image source={{ uri: imageUrl }} style={styles.vendorImage} />
-      <TouchableOpacity style={styles.vendorHeart}>
-        {/* TODO: wire up "favorite" — POST /favorites or similar, toggle icon fill state */}
-        <MaterialIcons name="favorite-border" size={18} color="#C2185B" />
+      <TouchableOpacity style={styles.vendorHeart} onPress={() => toggleFavorite(id)}>
+        <MaterialIcons
+          name={favorited ? "favorite" : "favorite-border"}
+          size={18}
+          color="#C2185B"
+        />
       </TouchableOpacity>
       <View style={{ paddingHorizontal: 15, paddingTop: 12, paddingBottom: 15 }}>
         <Text style={styles.vendorTitle}>{title}</Text>
