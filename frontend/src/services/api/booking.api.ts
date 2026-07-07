@@ -38,12 +38,25 @@ export async function createBookingApi(
       customerEmail: booking.customerEmail,
       customerPhone: booking.customerPhone,
 
+      partnerName: booking.partnerName,
+      partnerEmail: booking.partnerEmail,
+      partnerPhone: booking.partnerPhone,
+      partnerOccupation:
+        booking.partnerOccupation,
+
       eventType: booking.eventType,
       eventDate: booking.eventDate,
       eventTime: booking.eventTime,
 
       venue: booking.venue,
       city: booking.city,
+
+      contactAddress:
+        booking.contactAddress,
+      contactState: booking.contactState,
+      contactCountry:
+        booking.contactCountry,
+      weddingTheme: booking.weddingTheme,
 
       guests: booking.guests,
 

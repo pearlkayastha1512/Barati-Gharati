@@ -183,6 +183,7 @@ if (pkg) {
         <input
           type="date"
           value={date}
+          min={new Date().toISOString().slice(0, 10)}
           onChange={(e) => setDate(e.target.value)}
           className="
             h-12
@@ -267,6 +268,11 @@ if (pkg) {
 
 if (!storedVendor) {
   toast.error("Vendor not found.");
+  return;
+}
+
+if (!date) {
+  toast.error("Please select a wedding date.");
   return;
 }
 

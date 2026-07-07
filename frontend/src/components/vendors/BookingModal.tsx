@@ -109,6 +109,16 @@ export default function BookingModal({
 const handleBooking = async () => {
   if (!user) return;
 
+  const eventDate =
+    getIsoEventDate(date);
+
+  if (!eventDate) {
+    toast.error(
+      "Please select a valid wedding date."
+    );
+    return;
+  }
+
   if (!isFormValid) {
     toast.error("Please fill all required fields.");
     return;
@@ -133,6 +143,15 @@ const handleBooking = async () => {
 
     customerPhone: formData.phone,
 
+    partnerName: getPartnerName(),
+
+    partnerEmail: formData.partnerEmail,
+
+    partnerPhone: formData.partnerPhone,
+
+    partnerOccupation:
+      formData.partnerOccupation,
+
     vendorName,
 
     category,
@@ -141,13 +160,24 @@ const handleBooking = async () => {
 
     eventType: "Wedding",
 
-    eventDate: date,
+    eventDate,
 
     eventTime: "",
 
     venue: vendorName,
 
     city,
+
+    contactAddress:
+      formData.address,
+
+    contactState: formData.state,
+
+    contactCountry:
+      formData.country,
+
+    weddingTheme:
+      formData.weddingTheme,
 
     guests,
 
@@ -369,9 +399,60 @@ const [formData, setFormData] = useState({
   groomName: "",
   phone: "",
   email: "",
+  partnerEmail: "",
+  partnerPhone: "",
+  partnerOccupation: "",
+  address: "",
+  state: "",
+  country: "",
+  weddingTheme: "",
   requirements: "",
 });
 
+const getPartnerName = () => {
+  const customerName =
+    user?.name.trim().toLowerCase();
+  const brideName =
+    formData.brideName.trim();
+  const groomName =
+    formData.groomName.trim();
+
+  if (
+    customerName &&
+    brideName.toLowerCase() ===
+      customerName
+  ) {
+    return groomName;
+  }
+
+  if (
+    customerName &&
+    groomName.toLowerCase() ===
+      customerName
+  ) {
+    return brideName;
+  }
+
+  return groomName || brideName;
+};
+
+const getIsoEventDate = (
+  value: string
+) => {
+  if (!value) {
+    return "";
+  }
+
+  const dateValue = new Date(
+    `${value}T00:00:00.000Z`
+  );
+
+  if (Number.isNaN(dateValue.getTime())) {
+    return "";
+  }
+
+  return dateValue.toISOString();
+};
 
 const handleChange = (
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -521,6 +602,66 @@ const isFormValid =
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Partner Email
+                    </label>
+
+                    <input
+                      type="email"
+                      placeholder="Partner Email"
+                      name="partnerEmail"
+                      value={formData.partnerEmail}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Partner Phone
+                    </label>
+
+                    <input
+                      type="tel"
+                      placeholder="Partner Phone"
+                      name="partnerPhone"
+                      value={formData.partnerPhone}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Partner Occupation
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Partner Occupation"
+                      name="partnerOccupation"
+                      value={formData.partnerOccupation}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Wedding Theme
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Traditional, Royal, Minimal..."
+                      name="weddingTheme"
+                      value={formData.weddingTheme}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
                       📅 Wedding Date
                     </label>
 
@@ -564,6 +705,51 @@ const isFormValid =
                       value={vendorName}
                       readOnly
                       className="h-11 w-full rounded-xl border bg-gray-100 px-4 text-gray-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Address
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      State
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="State"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Country
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
                     />
                   </div>
 

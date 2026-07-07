@@ -1,14 +1,12 @@
 "use client";
 
-import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 
 export default function ContactInformation() {
-  const profile =
-    useCustomerProfileStore(
-      (state) => state.profile
-    );
+  const { user, contact } =
+    useCustomerProfileData();
 
-  if (!profile) {
+  if (!user) {
     return null;
   }
 
@@ -24,7 +22,7 @@ export default function ContactInformation() {
         <Info
           label="Address"
           value={
-            profile.address ||
+            contact.address ||
             "Not Provided"
           }
         />
@@ -32,7 +30,7 @@ export default function ContactInformation() {
         <Info
           label="City"
           value={
-            profile.city ||
+            contact.city ||
             "Not Provided"
           }
         />
@@ -40,7 +38,7 @@ export default function ContactInformation() {
         <Info
           label="State"
           value={
-            profile.state ||
+            contact.state ||
             "Not Provided"
           }
         />
@@ -48,7 +46,7 @@ export default function ContactInformation() {
         <Info
           label="Country"
           value={
-            profile.country ||
+            contact.country ||
             "Not Provided"
           }
         />

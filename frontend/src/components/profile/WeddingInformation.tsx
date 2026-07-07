@@ -1,13 +1,12 @@
 "use client";
 
-import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 
 export default function WeddingInformation() {
-  const profile = useCustomerProfileStore(
-    (state) => state.profile
-  );
+  const { user, wedding } =
+    useCustomerProfileData();
 
-  if (!profile) {
+  if (!user) {
     return null;
   }
 
@@ -23,22 +22,15 @@ export default function WeddingInformation() {
         <Info
           label="Wedding Date"
           value={
-            profile.weddingDate
-              ? new Date(
-                  profile.weddingDate
-                ).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "Not Provided"
+            wedding.formattedDate ||
+            "Not Provided"
           }
         />
 
         <Info
           label="Venue"
           value={
-            profile.weddingVenue ||
+            wedding.venue ||
             "Not Provided"
           }
         />
@@ -46,8 +38,8 @@ export default function WeddingInformation() {
         <Info
           label="Guests"
           value={
-            profile.guestCount > 0
-              ? profile.guestCount.toString()
+            wedding.guests > 0
+              ? wedding.guests.toString()
               : "Not Provided"
           }
         />
@@ -55,7 +47,7 @@ export default function WeddingInformation() {
         <Info
           label="Theme"
           value={
-            profile.weddingTheme ||
+            wedding.theme ||
             "Not Provided"
           }
         />

@@ -1,19 +1,12 @@
 "use client";
 
-import { useAuthStore } from "@/store/authStore";
-import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 
 export default function PersonalInformation() {
-  const user = useAuthStore(
-    (state) => state.user
-  );
+  const { user, personal } =
+    useCustomerProfileData();
 
-  const profile =
-    useCustomerProfileStore(
-      (state) => state.profile
-    );
-
-  if (!user || !profile) {
+  if (!user) {
     return null;
   }
 
@@ -28,23 +21,23 @@ export default function PersonalInformation() {
 
         <Info
           label="Full Name"
-          value={user.name}
+          value={personal.fullName}
         />
 
         <Info
           label="Email"
-          value={user.email}
+          value={personal.email}
         />
 
         <Info
           label="Phone"
-          value={user.phone}
+          value={personal.phone}
         />
 
         <Info
           label="Gender"
           value={
-            profile.gender ||
+            personal.gender ||
             "Not Provided"
           }
         />

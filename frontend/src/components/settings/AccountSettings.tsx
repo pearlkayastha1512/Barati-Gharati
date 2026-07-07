@@ -11,6 +11,7 @@ import {
 
 import { useAuthStore } from "@/store/authStore";
 import { useCustomerProfileStore } from "@/store/customerProfileStore";
+import { useCustomerProfileData } from "@/hooks/useCustomerProfileData";
 
 import ProfileModal from "../profile/ProfileModal";
 
@@ -22,6 +23,8 @@ export default function AccountSettings() {
     user,
     updateUser,
   } = useAuthStore();
+  const { personal } =
+    useCustomerProfileData();
 
   const {
     profile,
@@ -62,19 +65,22 @@ export default function AccountSettings() {
           <Item
             icon={<User size={18} />}
             label="Full Name"
-            value={user.name}
+            value={personal.fullName}
           />
 
           <Item
             icon={<Mail size={18} />}
             label="Email"
-            value={user.email}
+            value={personal.email}
           />
 
           <Item
             icon={<Phone size={18} />}
             label="Phone"
-            value={user.phone}
+            value={
+              personal.phone ||
+              "Not Provided"
+            }
           />
 
         </div>
