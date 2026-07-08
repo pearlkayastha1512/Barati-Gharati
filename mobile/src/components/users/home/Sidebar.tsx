@@ -32,6 +32,7 @@ type NavItem = {
 // (Home, Vendors, Bookings, Budget, Profile live in the tab bar — no need to duplicate here)
 const NAV_ITEMS: NavItem[] = [
   { icon: "check-circle-outline", label: "Wedding Planner", route: "Checklist" },
+   { icon: "chat-bubble-outline", label: "Messages", route: "Messages" },
   { icon: "notifications-none", label: "Notifications", route: "Notifications" },
   { icon: "settings", label: "Settings", route: "Settings" },
   { icon: "help-outline", label: "Help & Support", route: "HelpSupport" },

@@ -13,71 +13,46 @@ import { useNavigation } from "@react-navigation/native";
 // import { useAppStore } from "../../store/appStore";
 
 export default function SplashScreen() {
-  console.log("🔥 Splash component rendered");
   const navigation = useNavigation<any>();
-  // const { restoreSession, isAuthenticated, user } = useAuthStore();
-  // const { isFirstLaunch, loadApp } = useAppStore();
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.8)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    console.log("Splash mounted");
-  Animated.sequence([
-    Animated.parallel([
-      Animated.timing(logoOpacity, {
+    console.log("🔥 Splash mounted");
+
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(logoOpacity, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(logoScale, {
+          toValue: 1,
+          friction: 5,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(textOpacity, {
         toValue: 1,
-        duration: 1200,
+        duration: 700,
+        easing: Easing.ease,
         useNativeDriver: true,
       }),
-      Animated.spring(logoScale, {
-        toValue: 1,
-        friction: 5,
-        useNativeDriver: true,
-      }),
-    ]),
-    Animated.timing(textOpacity, {
-      toValue: 1,
-      duration: 700,
-      easing: Easing.ease,
-      useNativeDriver: true,
-    }),
-  ]).start();
+    ]).start();
 
-  // const checkApp = async () => {
-  //   await loadApp();
-  //   await restoreSession();
+    // TODO:
+    // Later restore session and navigate to:
+    // Auth / Couple / Vendor
 
-  //   const appState = useAppStore.getState();
-  //   const authState = useAuthStore.getState();
+    const timer = setTimeout(() => {
+      navigation.replace("Onboarding");
+    }, 2500);
 
-  //   setTimeout(() => {
-  //     if (appState.isFirstLaunch) {
-  //       navigation.replace("Onboarding");
-  //     } else if (!authState.isAuthenticated) {
-  //       //navigation.replace("Auth");
-  //       navigation.replace("Couple");
-  //     } else if (authState.user?.role === "VENDOR") {
-  //       navigation.replace("Vendor");
-  //     } else {
-  //       navigation.replace("Couple");
-  //     }
-  //   }, 2000);
-  // };
-
-  // checkApp();
-  const checkApp = async () => {
-  // UI Development Mode
-  // TODO(API): Restore authentication flow later
-
-  setTimeout(() => {
-    navigation.replace("Couple");
-  }, 2000);
-};
-
-checkApp();
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -87,18 +62,39 @@ checkApp();
         source={require("../../../assets/Barati Gharati Logo new.png")}
         style={[
           styles.logo,
-          { opacity: logoOpacity, transform: [{ scale: logoScale }] },
+          {
+            opacity: logoOpacity,
+            transform: [{ scale: logoScale }],
+          },
         ]}
       />
 
-      <Animated.Text style={[styles.subtitle, { opacity: textOpacity }]}>
+      <Animated.Text
+        style={[
+          styles.subtitle,
+          {
+            opacity: textOpacity,
+          },
+        ]}
+      >
         Plan Your Dream Wedding
       </Animated.Text>
 
       <View style={styles.divider} />
-      <ActivityIndicator size="large" color="#C2185B" />
 
-      <Animated.Text style={[styles.loading, { opacity: textOpacity }]}>
+      <ActivityIndicator
+        size="large"
+        color="#C2185B"
+      />
+
+      <Animated.Text
+        style={[
+          styles.loading,
+          {
+            opacity: textOpacity,
+          },
+        ]}
+      >
         Loading...
       </Animated.Text>
     </View>
@@ -113,8 +109,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 25,
   },
-  logo: { width: 280, height: 180, resizeMode: "contain" },
-  subtitle: { marginTop: 15, fontSize: 18, color: "#C2185B", fontWeight: "500" },
-  divider: { marginTop: 18, width: 180, height: 2, backgroundColor: "#F3A6C7", borderRadius: 10 },
-  loading: { marginTop: 15, fontSize: 16, color: "#C2185B" },
-}); 
+  logo: {
+    width: 280,
+    height: 180,
+    resizeMode: "contain",
+  },
+  subtitle: {
+    marginTop: 15,
+    fontSize: 18,
+    color: "#C2185B",
+    fontWeight: "500",
+  },
+  divider: {
+    marginTop: 18,
+    width: 180,
+    height: 2,
+    backgroundColor: "#F3A6C7",
+    borderRadius: 10,
+  },
+  loading: {
+    marginTop: 15,
+    fontSize: 16,
+    color: "#C2185B",
+  },
+});
