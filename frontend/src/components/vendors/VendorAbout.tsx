@@ -27,13 +27,13 @@ export default function VendorAbout({
   amenities,
 }: VendorAboutProps) {
   return (
-    <section className="rounded-3xl bg-white p-8 shadow-sm">
+    <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-xl shadow-black/20 backdrop-blur">
 
-      <h2 className="text-3xl font-bold text-gray-900">
+      <h2 className="text-3xl font-bold text-white">
         About
       </h2>
 
-      <p className="mt-5 leading-8 text-gray-600">
+      <p className="mt-5 leading-8 text-rose-100/75">
         {description}
       </p>
 
@@ -48,13 +48,13 @@ export default function VendorAbout({
           {amenities.map((item) => (
             <div
               key={item}
-              className="flex items-center gap-3 rounded-2xl bg-rose-50 p-4"
+              className="flex items-center gap-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 p-4"
             >
-              <div className="text-rose-500">
+              <div className="text-rose-300">
                 {iconMap[item] ?? <CheckCircle2 size={20} />}
               </div>
 
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-rose-50">
                 {item}
               </span>
             </div>

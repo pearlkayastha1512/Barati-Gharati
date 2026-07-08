@@ -78,7 +78,7 @@ export default function ChatHeader() {
             <div className="flex items-center gap-2">
 
               <h2 className="text-lg font-bold">
-                WedPlan AI
+                Barati Gharati AI
               </h2>
 
               <Sparkles

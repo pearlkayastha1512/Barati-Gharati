@@ -121,7 +121,7 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="flex items-center gap-3 border-t border-slate-200 p-5">
+    <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 bg-white p-5">
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}

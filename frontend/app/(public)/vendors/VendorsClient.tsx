@@ -49,18 +49,19 @@ export default function VendorsPage() {
 ]);
 
   return (
-    <main className="min-h-screen bg-rose-50 pt-32">
+    <main className="min-h-screen bg-[#261017] pt-32 text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.16),transparent_32%),linear-gradient(135deg,rgba(64,24,34,0.92),rgba(35,16,25,0.96)_55%,rgba(72,25,38,0.88))]" />
 
-      <section className="mx-auto max-w-7xl px-6">
+      <section className="relative mx-auto max-w-7xl px-6">
 
         <div className="mb-12">
 
-          <h1 className="text-5xl font-bold text-gray-900">
+          <h1 className="text-5xl font-bold text-white">
             Wedding Vendors
           </h1>
 
-          <p className="mt-3 text-lg text-gray-600">
-            Discover India's best wedding professionals.
+          <p className="mt-3 text-lg text-rose-100/75">
+            Discover India&apos;s best wedding professionals.
           </p>
 
         </div>

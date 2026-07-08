@@ -88,9 +88,9 @@ useEffect(() => {
   return () => {
     disconnectSocket();
   };
-}, []);
+}, [disconnectSocket, initializeSocket]);
   return (
-    <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 p-8">
+    <main className="flex h-[calc(100vh-9rem)] min-h-0 flex-col overflow-hidden bg-gradient-to-br from-rose-50 via-white to-pink-50">
 
       {/* Header */}
 
@@ -127,7 +127,8 @@ useEffect(() => {
       <section
         className="
           grid
-          h-[82vh]
+          min-h-0
+          flex-1
           grid-cols-[360px_1fr]
           overflow-hidden
           rounded-[32px]
@@ -140,7 +141,7 @@ useEffect(() => {
 
         {/* Sidebar */}
 
-        <aside className="border-r border-slate-200 bg-slate-50">
+        <aside className="min-h-0 border-r border-slate-200 bg-slate-50">
 
           <ChatList />
 
@@ -148,9 +149,9 @@ useEffect(() => {
 
         {/* Chat */}
 
-        <div className="flex flex-col">
+        <div className="flex min-h-0 flex-col">
 
-          <div className="flex-1">
+          <div className="min-h-0 flex-1 overflow-hidden">
 
             <ChatWindow />
 

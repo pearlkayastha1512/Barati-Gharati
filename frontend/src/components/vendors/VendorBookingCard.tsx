@@ -83,13 +83,13 @@ useEffect(() => {
 
 if (!selectedPackage)  {
   return (
-    <aside className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+    <aside className="rounded-3xl border border-white/10 bg-[#1b1017] p-8 shadow-2xl shadow-black/30">
 
-      <h2 className="text-2xl font-bold text-slate-900">
+      <h2 className="text-2xl font-bold text-white">
         No Services Available
       </h2>
 
-      <p className="mt-3 text-slate-500">
+      <p className="mt-3 text-rose-100/70">
         This vendor has not added any services yet.
       </p>
 
@@ -111,19 +111,21 @@ const canBook =
         top-28
         rounded-3xl
         border
-        border-gray-200
-        bg-white
+        border-white/10
+        bg-[#1b1017]/95
         p-7
-        shadow-xl
+        shadow-2xl
+        shadow-black/30
+        backdrop-blur
       "
     >
       {/* Header */}
 
-      <p className="text-sm font-medium text-gray-500">
+      <p className="text-sm font-medium text-rose-100/65">
         Starting From
       </p>
 
-      <h2 className="mt-2 text-4xl font-bold text-rose-600">
+      <h2 className="mt-2 text-4xl font-bold text-rose-300">
         ₹{selectedPackage.price.toLocaleString("en-IN")}
       </h2>
 
@@ -131,7 +133,7 @@ const canBook =
 
       <div className="mt-8">
 
-        <label className="mb-2 block text-sm font-semibold text-gray-700">
+        <label className="mb-2 block text-sm font-semibold text-rose-50">
           Select Package
         </label>
 
@@ -151,13 +153,13 @@ if (pkg) {
             w-full
             rounded-xl
             border
-            border-gray-300
-            bg-white
+            border-white/15
+            bg-[#12070d]
             px-4
-            text-gray-700
+            text-rose-50
             outline-none
             transition
-            focus:border-rose-500
+            focus:border-rose-300
           "
         >
           {packages.map((pkg) => (
@@ -176,7 +178,7 @@ if (pkg) {
 
       <div className="mt-6">
 
-        <label className="mb-2 block text-sm font-semibold text-gray-700">
+        <label className="mb-2 block text-sm font-semibold text-rose-50">
           Wedding Date
         </label>
 
@@ -190,12 +192,13 @@ if (pkg) {
             w-full
             rounded-xl
             border
-            border-gray-300
+            border-white/15
+            bg-[#12070d]
             px-4
-            text-gray-700
+            text-rose-50
             outline-none
             transition
-            focus:border-rose-500
+            focus:border-rose-300
           "
         />
 
@@ -205,7 +208,7 @@ if (pkg) {
 
       <div className="mt-6">
 
-        <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+        <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-rose-50">
 
           <Users size={16} />
 
@@ -213,22 +216,22 @@ if (pkg) {
 
         </label>
 
-        <div className="flex items-center justify-between rounded-xl border border-gray-300 px-4 py-3">
+        <div className="flex items-center justify-between rounded-xl border border-white/15 bg-[#12070d] px-4 py-3">
 
           <button
             onClick={() => setGuests((g) => Math.max(50, g - 50))}
-            className="text-2xl font-bold text-gray-700 transition hover:text-rose-500"
+            className="text-2xl font-bold text-rose-100 transition hover:text-rose-300"
           >
             −
           </button>
 
-          <span className="text-lg font-semibold text-gray-900">
+          <span className="text-lg font-semibold text-white">
             {guests}
           </span>
 
           <button
             onClick={() => setGuests((g) => g + 50)}
-            className="text-2xl font-bold text-gray-700 transition hover:text-rose-500"
+            className="text-2xl font-bold text-rose-100 transition hover:text-rose-300"
           >
             +
           </button>
@@ -239,17 +242,17 @@ if (pkg) {
 
       {/* Estimated Price */}
 
-      <div className="mt-8 rounded-2xl bg-rose-50 p-5">
+      <div className="mt-8 rounded-2xl border border-rose-300/15 bg-rose-400/10 p-5">
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-rose-100/65">
           Estimated Price
         </p>
 
-        <h3 className="mt-2 text-3xl font-bold text-rose-600">
+        <h3 className="mt-2 text-3xl font-bold text-rose-300">
           ₹{selectedPackage.price.toLocaleString("en-IN")}
         </h3>
 
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-rose-100/65">
           *Final quotation may vary based on guest count and custom requirements.
         </p>
 
@@ -296,12 +299,13 @@ if (!date) {
       gap-2
       rounded-xl
       bg-gradient-to-r
-      from-rose-500
-      to-pink-500
+      from-rose-600
+      to-pink-600
       py-4
       font-semibold
       text-white
       shadow-lg
+      shadow-rose-950/50
       transition-all
       duration-300
       hover:scale-[1.02]
@@ -377,13 +381,13 @@ if (!date) {
     gap-2
     rounded-xl
     border
-    border-gray-300
+    border-white/15
     py-4
     font-semibold
-    text-gray-700
+    text-rose-50
     transition
-    hover:border-rose-500
-    hover:text-rose-500
+    hover:border-rose-300
+    hover:text-rose-200
   "
 >
   <MessageCircle size={20} />
@@ -401,13 +405,13 @@ if (!date) {
 
       {/* Why Book */}
 
-      <div className="mt-8 rounded-2xl bg-rose-50 p-5">
+      <div className="mt-8 rounded-2xl border border-rose-300/15 bg-white/[0.05] p-5">
 
-        <h3 className="font-semibold text-gray-900">
+        <h3 className="font-semibold text-white">
           Why Book Here?
         </h3>
 
-        <ul className="mt-4 space-y-3 text-sm text-gray-600">
+        <ul className="mt-4 space-y-3 text-sm text-rose-100/70">
 
           <li>✅ Verified Vendor</li>
 

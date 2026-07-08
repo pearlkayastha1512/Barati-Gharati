@@ -1,17 +1,6 @@
 "use client";
 
 import { useVendorStore } from "@/store/vendorStore";
-import {
-  Building2,
-  Camera,
-  Sparkles,
-  Flower2,
-  UtensilsCrossed,
-  Music2,
-  HeartHandshake,
-  
-} from "lucide-react";
-
 import { RotateCcw } from "lucide-react";
 import { CATEGORY_CARDS } from "@/constants/categories";
 
@@ -36,10 +25,12 @@ export default function FilterSidebar() {
     overflow-y-auto
     rounded-3xl
     border
-    border-gray-200
-    bg-white
+    border-white/10
+    bg-white/[0.08]
     p-6
-    shadow-lg
+    shadow-xl
+    shadow-black/20
+    backdrop-blur-xl
     scrollbar-thin
     scrollbar-thumb-rose-300
     scrollbar-track-transparent
@@ -48,13 +39,13 @@ export default function FilterSidebar() {
 
       <div className="mb-8 flex items-center justify-between">
 
-        <h2 className="text-xl font-bold text-gray-700">
+        <h2 className="text-xl font-bold text-white">
           Filters
         </h2>
 
         <button
   onClick={resetFilters}
-  className="flex items-center gap-2 text-sm font-medium text-rose-500 transition hover:text-rose-600"
+  className="flex items-center gap-2 text-sm font-medium text-rose-300 transition hover:text-rose-100"
 >
   <RotateCcw size={16} />
   Reset
@@ -66,7 +57,7 @@ export default function FilterSidebar() {
 
       <div className="mb-8">
 
-        <h3 className="mb-4 font-semibold  text-rose-500 hover:text-rose-600">
+        <h3 className="mb-4 font-semibold text-rose-300 hover:text-rose-100">
           Categories
         </h3>
 
@@ -77,8 +68,8 @@ export default function FilterSidebar() {
     key={title}
     className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition ${
       categories.includes(title)
-        ? "border border-rose-300 bg-rose-100"
-        : "hover:bg-rose-50"
+        ? "border border-rose-300/35 bg-rose-400/15"
+        : "hover:bg-white/[0.06]"
     }`}
   >
     <input
@@ -90,10 +81,10 @@ export default function FilterSidebar() {
 
     <Icon
       size={18}
-      className="text-rose-500"
+      className="text-rose-300"
     />
 
-    <span className="text-gray-700">
+    <span className="text-rose-50/85">
       {title}
     </span>
   </label>
@@ -106,7 +97,7 @@ export default function FilterSidebar() {
       {/* Rating */}
 
       <div className="mb-8">
-  <h3 className="mb-4 font-semibold text-rose-500">
+  <h3 className="mb-4 font-semibold text-rose-300">
     Minimum Rating
   </h3>
 
@@ -114,7 +105,7 @@ export default function FilterSidebar() {
     {[5, 4.5, 4, 3.5, 3].map((star) => (
       <label
         key={star}
-        className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-rose-50"
+        className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-white/[0.06]"
       >
         <input
           type="radio"
@@ -128,7 +119,7 @@ export default function FilterSidebar() {
           {"⭐".repeat(star)}
         </span>
 
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-rose-100/60">
           & Up
         </span>
       </label>
@@ -140,7 +131,7 @@ export default function FilterSidebar() {
 
       <div className="mb-8">
 
-        <h3 className="mb-4 font-semibold text-rose-500 hover:text-rose-600">
+        <h3 className="mb-4 font-semibold text-rose-300 hover:text-rose-100">
           Budget
         </h3>
 
@@ -154,11 +145,11 @@ export default function FilterSidebar() {
   className="w-full accent-rose-500"
 />
 
- <p className="mt-3 text-center text-sm font-medium text-rose-600">
+ <p className="mt-3 text-center text-sm font-medium text-rose-200">
     Up to ₹{budget.toLocaleString("en-IN")}
   </p>
 
-        <div className="mt-2 flex justify-between text-sm text-gray-500">
+        <div className="mt-2 flex justify-between text-sm text-rose-100/55">
 
           <span>₹20K</span>
 
@@ -172,7 +163,7 @@ export default function FilterSidebar() {
 
       <div>
 
-        <h3 className="mb-4 font-semibold text-rose-500 hover:text-rose-600">
+        <h3 className="mb-4 font-semibold text-rose-300 hover:text-rose-100">
           Cities
         </h3>
 
@@ -183,8 +174,8 @@ export default function FilterSidebar() {
     key={city}
     className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition ${
       cities.includes(city)
-        ? "border border-rose-300 bg-rose-100"
-        : "hover:bg-rose-50"
+        ? "border border-rose-300/35 bg-rose-400/15"
+        : "hover:bg-white/[0.06]"
     }`}
   >
     <input
@@ -194,7 +185,7 @@ export default function FilterSidebar() {
       className="accent-rose-500"
     />
 
-    <span className="text-gray-700">
+    <span className="text-rose-50/85">
       {city}
     </span>
   </label>

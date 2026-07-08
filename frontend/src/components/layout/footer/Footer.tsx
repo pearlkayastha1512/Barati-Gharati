@@ -19,6 +19,7 @@ import {
 import FooterColumn from "./FooterColumn";
 
 import { FOOTER_LINKS } from "@/constants/footer";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 export default function Footer() {
   const socialIcons = [
@@ -44,12 +45,10 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <Link
               href="/"
-              className="text-4xl font-bold tracking-wide"
+              className="inline-flex rounded-2xl bg-white p-3"
+              aria-label="Barati Gharati home"
             >
-              Wed
-              <span className="text-rose-500">
-                Plan
-              </span>
+              <BrandLogo className="h-20 w-64" />
             </Link>
 
             <p className="mt-6 max-w-md leading-8 text-gray-400">
@@ -136,7 +135,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col items-center justify-between gap-4 text-center text-sm text-gray-400 md:flex-row">
           <p>
-            © {new Date().getFullYear()} WedPlan. All
+            © {new Date().getFullYear()} Barati Gharati. All
             rights reserved.
           </p>
 

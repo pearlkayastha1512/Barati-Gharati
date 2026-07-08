@@ -10,14 +10,12 @@ import {
   CalendarCheck2,
   Wallet,
   Star,
-  Shapes,
   Bell,
-  BarChart3,
   Settings,
   LogOut,
   ChevronRight,
-  ShieldCheck,
 } from "lucide-react";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 import { useAuthStore } from "@/store/authStore";
 
@@ -92,22 +90,8 @@ export default function AdminSidebar() {
       <div className="flex h-full w-full flex-col">
         <Link href="/">
           <div className="border-b border-slate-100 p-6">
-            <div className="rounded-3xl bg-gradient-to-br from-slate-800 to-blue-700 p-5 text-white shadow-xl">
-              <div className="flex items-center gap-4">
-                <div className="rounded-2xl bg-white/20 p-3">
-                  <ShieldCheck size={24} />
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold">
-                    Admin Hub
-                  </h2>
-
-                  <p className="text-sm text-slate-200">
-                    Platform Management
-                  </p>
-                </div>
-              </div>
+            <div className="rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-100">
+              <BrandLogo className="h-24 w-full" />
             </div>
           </div>
         </Link>
