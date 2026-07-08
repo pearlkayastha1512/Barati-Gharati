@@ -80,11 +80,20 @@ await this.prisma.verificationToken.create({
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
   },
 });
-await this.mailService.sendVerificationEmail(
-  user.email,
-  user.name,
-  verificationToken,
-);
+// await this.mailService.sendVerificationEmail(
+//   user.email,
+//   user.name,
+//   verificationToken,
+// );
+try {
+  await this.mailService.sendVerificationEmail(
+    user.email,
+    user.name,
+    verificationToken,
+  );
+} catch (error) {
+  console.error('Email failed:', error);
+}
   await this.notificationsService.create(
   user.id,
   {
