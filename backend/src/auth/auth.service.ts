@@ -85,15 +85,13 @@ await this.prisma.verificationToken.create({
 //   user.name,
 //   verificationToken,
 // );
-try {
-  await this.mailService.sendVerificationEmail(
+    this.mailService
+  .sendVerificationEmail(
     user.email,
     user.name,
     verificationToken,
-  );
-} catch (error) {
-  console.error('Email failed:', error);
-}
+  )
+  .catch(err => console.error(err));
   await this.notificationsService.create(
   user.id,
   {
