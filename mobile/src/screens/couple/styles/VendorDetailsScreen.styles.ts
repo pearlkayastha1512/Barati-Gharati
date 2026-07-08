@@ -4,12 +4,23 @@ export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF8F8" },
   scrollContent: { paddingBottom: 100 },
 
-  heroImage: { width: "100%", height: 320, justifyContent: "flex-end" },
+  heroImage: {
+    width: "100%",
+    height: 320, // keep your existing height if different
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: "hidden",
+  },
   heroOverlay: {
-    backgroundColor: "rgba(0,0,0,0.35)",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 20,
     paddingTop: 60,
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
+  safeArea: { flex: 1, backgroundColor: "#FAFAFA" },
   backButton: {
     position: "absolute",
     top: 50,
@@ -115,7 +126,24 @@ export const styles = StyleSheet.create({
   ratingBarLabel: { fontSize: 11, color: "#999", width: 26 },
   ratingBarTrack: { flex: 1, height: 6, backgroundColor: "#eee", borderRadius: 3, marginHorizontal: 8 },
   ratingBarFill: { height: 6, backgroundColor: "#F5A623", borderRadius: 3 },
+  reviewsHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  writeReviewButton: { backgroundColor: "#C2185B", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  writeReviewButtonText: { fontSize: 12, fontWeight: "700", color: "#fff" },
+myReviewCard: {
+    backgroundColor: "#FDEEF3", borderRadius: 14, padding: 14, marginTop: 14,
+  },
+  myReviewHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  myReviewLabel: { fontSize: 12, fontWeight: "700", color: "#C2185B" },
+  myReviewActions: { flexDirection: "row" },
+  myReviewIconButton: { marginLeft: 12 },
+  myReviewText: { fontSize: 13, color: "#333", marginTop: 4, lineHeight: 19 },
 
+  sendInquiryButton: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: "#C2185B", borderRadius: 14,
+    marginHorizontal: 20, marginTop: 16, paddingVertical: 13,
+  },
+  sendInquiryButtonText: { fontSize: 14, fontWeight: "700", color: "#C2185B", marginLeft: 8 },
   bookNowFixed: {
     backgroundColor: "#C2185B",
     marginHorizontal: 20,
