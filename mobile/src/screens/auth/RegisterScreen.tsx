@@ -8,7 +8,7 @@ import {
 } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
-import { register } from "../../api/auth.api";
+// import { register } from "../../api/auth.api";
 
 type RegisterForm = {
   name: string;
@@ -43,27 +43,27 @@ export default function RegisterScreen() {
   const password = watch("password");
 
   const onSubmit = async (data: RegisterForm) => {
-    try {
-      await register({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-      });
+  // TODO:
+  // Call Register API here.
+  // Example:
+  // await register({
+  //   name: data.name,
+  //   email: data.email,
+  //   phone: data.phone,
+  //   password: data.password,
+  // });
 
-      Alert.alert(
-        "Registration Successful",
-        "Please verify your email before logging in."
-      );
-
-      navigation.replace("Login");
-    } catch (error: any) {
-      Alert.alert(
-        "Registration Failed",
-        error.response?.data?.message || "Something went wrong"
-      );
-    }
-  };
+  Alert.alert(
+    "Registration Successful",
+    "Account created successfully.",
+    [
+      {
+        text: "OK",
+        onPress: () => navigation.replace("Login"),
+      },
+    ]
+  );
+};
 
   return (
     <View style={styles.container}>

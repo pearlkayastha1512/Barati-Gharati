@@ -8,8 +8,8 @@ import {
 } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
-import { login } from "../../api/auth.api";
-import { useAuthStore } from "../../store/authStore";
+// import { login } from "../../api/auth.api";
+// import { useAuthStore } from "../../store/authStore";
 import { Alert } from "react-native";
 
 type LoginForm = {
@@ -19,7 +19,7 @@ type LoginForm = {
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
-  const { login: saveAuth } = useAuthStore();
+  // const { login: saveAuth } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,24 +33,18 @@ export default function LoginScreen() {
       password: "",
     },
   });
+const onSubmit = (data: LoginForm) => {
+  // ==============================
+  // TODO:
+  // Call Login API here
+  //
+  // const response = await login(data);
+  // await saveAuth(response.data.accessToken, response.data.user);
+  // ==============================
 
-  const onSubmit = async (data: LoginForm) => {
-  try {
-    const response = await login(data);
+  Alert.alert("Success", "Login Successful");
 
-    const { accessToken, user } = response.data;
-
-    await saveAuth(accessToken, user);
-
-    Alert.alert("Success", "Login Successful");
-
-    navigation.replace("Couple");
-  } catch (error: any) {
-    Alert.alert(
-      "Login Failed",
-      error.response?.data?.message || "Something went wrong"
-    );
-  }
+  navigation.replace("Couple");
 };
 
   return (
@@ -132,11 +126,13 @@ export default function LoginScreen() {
         </Text>
       )}
 
-      <TouchableRipple onPress={() => {}}>
-        <Text style={styles.forgot}>
-          Forgot Password?
-        </Text>
-      </TouchableRipple>
+      <TouchableRipple
+  onPress={() => navigation.navigate("ForgotPassword")}
+>
+  <Text style={styles.forgot}>
+    Forgot Password?
+  </Text>
+</TouchableRipple>
 
       <Button
         mode="contained"

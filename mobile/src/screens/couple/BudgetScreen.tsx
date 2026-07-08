@@ -11,14 +11,16 @@ import { AddExpenseModal } from "../../components/users/budget/AddExpenseModal";
 import { BudgetInsights } from "../../components/users/budget/BudgetInsights";
 import { styles } from "./styles/BudgetScreen.styles";
 import { MonthlyExpenseChart } from "../../components/users/budget/MonthlyExpenseChart";
+import { EditBudgetModal } from "../../components/users/budget/EditBudgetModal";
 
 // TODO: import API functions once backend is connected
 // import { getBudgetSummary, createOrUpdateBudget, createExpense, deleteExpense } from "../../api/budget.api";
 
 export default function BudgetScreen() {
   const navigation = useNavigation<any>();
-  const { totalBudget, expenses, addExpense, removeExpense } = useBudgetStore();
+  const { totalBudget, expenses, addExpense, removeExpense, setTotalBudget } = useBudgetStore();
   const [modalVisible, setModalVisible] = useState(false);
+  const [editBudgetModalVisible, setEditBudgetModalVisible] = useState(false);
 
   // TODO: fetch on mount once backend connected
   // useEffect(() => {
@@ -53,8 +55,7 @@ export default function BudgetScreen() {
           totalBudget={totalBudget}
           totalSpent={totalSpent}
           transactionCount={expenses.length}
-          // TODO: open an "Edit Budget" modal/prompt to call setTotalBudget with a new value
-          onEditBudget={() => {}}
+          onEditBudget={() => setEditBudgetModalVisible(true)}
         />
 
         <View style={styles.statsGrid}>
@@ -148,7 +149,8 @@ export default function BudgetScreen() {
             ))
           )}
         </View>
-         {/* Monthly Expense Analytics — NEW */}
+
+        {/* Monthly Expense Analytics */}
         <MonthlyExpenseChart expenses={expenses} />
 
         {/* Budget Insights */}
@@ -159,6 +161,13 @@ export default function BudgetScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={(data) => addExpense(data)}
+      />
+
+      <EditBudgetModal
+        visible={editBudgetModalVisible}
+        onClose={() => setEditBudgetModalVisible(false)}
+        currentBudget={totalBudget}
+        onSubmit={(amount) => setTotalBudget(amount)}
       />
     </SafeAreaView>
   );

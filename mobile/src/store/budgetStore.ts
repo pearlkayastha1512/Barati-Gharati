@@ -23,7 +23,7 @@ interface BudgetState {
 // - addExpense should call createExpense(expense), then append the returned item
 // - removeExpense should call deleteExpense(id) — optimistic update with rollback on failure
 export const useBudgetStore = create<BudgetState>((set) => ({
-  totalBudget: 1000000, // ₹10,00,000 — matches your website's default/demo value
+  totalBudget: 0,
   expenses: [],
 
   setTotalBudget: (amount) => set({ totalBudget: amount }),
