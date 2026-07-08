@@ -1,4 +1,21 @@
 import api from "@/lib/axios";
+import axios from "axios";
+
+function getApiErrorMessage(
+  error: unknown,
+  fallback: string
+) {
+  if (axios.isAxiosError(error)) {
+    const message =
+      error.response?.data?.message;
+
+    return typeof message === "string"
+      ? message
+      : fallback;
+  }
+
+  return fallback;
+}
 
 export async function getWishlistApi() {
   try {
@@ -8,12 +25,13 @@ export async function getWishlistApi() {
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to load wishlist.",
+      error: getApiErrorMessage(
+        error,
+        "Unable to load wishlist."
+      ),
     };
   }
 }
@@ -33,12 +51,13 @@ export async function addWishlistApi(
       ok: true,
       data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to add wishlist.",
+      error: getApiErrorMessage(
+        error,
+        "Unable to add wishlist."
+      ),
     };
   }
 }
@@ -54,12 +73,13 @@ export async function removeWishlistApi(
     return {
       ok: true,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to remove wishlist.",
+      error: getApiErrorMessage(
+        error,
+        "Unable to remove wishlist."
+      ),
     };
   }
 }
