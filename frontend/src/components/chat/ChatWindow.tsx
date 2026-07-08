@@ -47,10 +47,10 @@ export default function ChatWindow() {
         "Customer";
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
 
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-pink-100">
             <MessageCircle
@@ -89,7 +89,7 @@ export default function ChatWindow() {
 
       {/* Chat Area */}
 
-      <div className="hide-scrollbar flex-1 overflow-y-auto bg-gradient-to-br from-white via-rose-50 to-pink-50 p-8">
+      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-br from-white via-rose-50 to-pink-50 p-8">
         <div className="mb-8 flex justify-center">
           <span className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-slate-500 shadow">
             Today
@@ -117,7 +117,7 @@ export default function ChatWindow() {
                       : "border border-slate-200 bg-white text-slate-700"
                   }`}
                 >
-                  <p className="leading-7">
+                  <p className="whitespace-pre-wrap break-words leading-7">
                     {message.message}
                   </p>
 

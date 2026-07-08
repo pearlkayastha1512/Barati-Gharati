@@ -47,7 +47,7 @@ export default function VendorGallery({
 
   if (loading) {
     return (
-      <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-12 text-center">
+      <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.06] p-12 text-center text-rose-100 shadow-xl shadow-black/20">
         Loading gallery...
       </section>
     );
@@ -55,13 +55,13 @@ export default function VendorGallery({
 
   if (images.length === 0) {
     return (
-      <section className="mt-10 rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center">
-        <h2 className="text-3xl font-bold text-slate-900">
+      <section className="mt-10 rounded-3xl border border-dashed border-rose-300/25 bg-white/[0.06] p-12 text-center shadow-xl shadow-black/20">
+        <h2 className="text-3xl font-bold text-white">
           Gallery
         </h2>
 
-        <p className="mt-4 text-slate-500">
-          This vendor hasn't uploaded any portfolio yet.
+        <p className="mt-4 text-rose-100/70">
+          This vendor hasn&apos;t uploaded any portfolio yet.
         </p>
       </section>
     );
@@ -70,11 +70,11 @@ export default function VendorGallery({
   return (
     <section className="mt-10">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">
+        <h2 className="text-3xl font-bold text-white">
           Gallery
         </h2>
 
-        <p className="mt-2 text-gray-500">
+        <p className="mt-2 text-rose-100/70">
           Explore our beautiful wedding moments.
         </p>
       </div>

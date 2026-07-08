@@ -22,16 +22,17 @@ useEffect(() => {
   return () => {
     disconnectSocket();
   };
-}, []);
+}, [disconnectSocket, initializeSocket]);
   return (
-    <main className="space-y-6">
+    <main className="flex h-[calc(100vh-9rem)] min-h-0 flex-col space-y-6 overflow-hidden">
 
       <MessagesHero />
 
       <section
         className="
           grid
-          h-[82vh]
+          min-h-0
+          flex-1
           grid-cols-[360px_1fr]
           gap-6
         "
@@ -39,7 +40,7 @@ useEffect(() => {
 
         {/* Conversations */}
 
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-lg">
+        <div className="min-h-0 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-lg">
 
           <ChatList />
 
@@ -47,9 +48,9 @@ useEffect(() => {
 
         {/* Chat */}
 
-        <div className="flex flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-lg">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-lg">
 
-          <div className="flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden">
 
             <ChatWindow />
 

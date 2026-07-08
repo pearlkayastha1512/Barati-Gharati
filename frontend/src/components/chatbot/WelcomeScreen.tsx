@@ -89,7 +89,7 @@ export default function WelcomeScreen() {
       {/* Description */}
 
       <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
-        I'm your WedPlan AI Assistant.
+        I&apos;m your Barati Gharati AI Assistant.
         Ask me anything about vendors,
         bookings, wedding planning,
         payments or support.
@@ -149,7 +149,7 @@ export default function WelcomeScreen() {
       {/* Footer */}
 
       <p className="mt-4 text-center text-xs text-slate-400">
-        Powered by WedPlan AI
+        Powered by Barati Gharati AI
       </p>
     </div>
   );

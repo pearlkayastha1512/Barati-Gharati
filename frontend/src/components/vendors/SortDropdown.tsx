@@ -12,7 +12,7 @@ export default function SortDropdown() {
 
         <ArrowUpDown
           size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-100/50"
         />
 
         <select
@@ -22,16 +22,17 @@ export default function SortDropdown() {
             h-12
             rounded-xl
             border
-            border-gray-200
-            bg-white
-            text-gray-700
+            border-white/10
+            bg-white/[0.08]
+            text-rose-50
             pl-10
             pr-10
             text-sm
             font-medium
             outline-none
             transition
-            focus:border-rose-500
+            backdrop-blur
+            focus:border-rose-300
           "
         >
           <option value="Popularity">Popularity</option>

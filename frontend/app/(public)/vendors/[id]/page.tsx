@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 
-import { vendors as demoVendors } from "@/components/home/featured-vendors/vendor-data";
 import { getVendors } from "@/services/vendor.service";
 import { Vendor } from "@/types/vendor";
 
@@ -60,8 +59,10 @@ export default function VendorDetailsPage() {
   }
 
   return (
-    <main className="bg-rose-50 pb-20 pt-32">
-      <div className="mx-auto max-w-7xl px-6">
+    <main className="min-h-screen bg-[#12070d] pb-20 pt-32 text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(225,29,72,0.22),transparent_34%),linear-gradient(135deg,rgba(46,10,26,0.95),rgba(12,10,18,0.98)_58%,rgba(42,8,22,0.95))]" />
+
+      <div className="relative mx-auto max-w-7xl px-6">
 
         <VendorHero vendor={vendor} />
 
@@ -90,7 +91,7 @@ export default function VendorDetailsPage() {
 
         </div>
 
-        <div className="space-y-10 lg:col-span-2">
+        <div className="mt-12 space-y-10 lg:col-span-2">
 
           <VendorReviews
             vendorId={vendor.id}
