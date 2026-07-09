@@ -8,18 +8,18 @@ import {
 
 import { Server, Socket } from 'socket.io';
 
-// @WebSocketGateway({
-//   cors: {
-//     origin: 'http://localhost:3000',
-//     credentials: true,
-//   },
-// })
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: 'http://localhost:3000',
     credentials: true,
   },
 })
+// @WebSocketGateway({
+//   cors: {
+//     origin: process.env.FRONTEND_URL,
+//     credentials: true,
+//   },
+// })
 export class ChatGateway {
   @WebSocketServer()
   server!: Server;
