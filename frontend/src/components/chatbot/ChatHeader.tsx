@@ -11,7 +11,7 @@ import {
 import { useChatbotStore } from "@/store/chatbotStore";
 
 export default function ChatHeader() {
-  const { close } = useChatbotStore();
+  const { close, clearMessages } = useChatbotStore();
 
   return (
     <div
@@ -58,7 +58,7 @@ export default function ChatHeader() {
 
         <div className="flex items-center gap-3">
 
-          <div
+          {/* <div
             className="
               flex
               h-12
@@ -71,9 +71,34 @@ export default function ChatHeader() {
             "
           >
             <Bot size={24} />
-          </div>
+          </div> */}
 
-          <div>
+  <button
+  onClick={clearMessages}
+  title="Back to Home"
+  className="
+    flex
+    h-12
+    w-12
+    items-center
+    justify-center
+    rounded-2xl
+    bg-white/20
+    backdrop-blur
+    transition
+    hover:scale-105
+    hover:bg-white/30
+    active:scale-95
+  "
+>
+  <Bot size={24} />
+</button>
+
+
+          <div
+  onClick={clearMessages}
+  className="cursor-pointer"
+>
 
             <div className="flex items-center gap-2">
 
