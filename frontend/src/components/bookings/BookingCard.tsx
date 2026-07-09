@@ -44,6 +44,9 @@ export default function BookingCard({
 
     cancelled:
       "bg-red-100 text-red-700",
+
+    rejected:
+      "bg-red-100 text-red-700",
   };
 
   return (

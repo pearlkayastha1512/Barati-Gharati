@@ -19,7 +19,14 @@ export default function NotificationBell() {
   const {
     notifications,
     markAsRead,
+    refreshNotifications,
   } = useNotificationStore();
+
+  useEffect(() => {
+    if (user) {
+      refreshNotifications();
+    }
+  }, [refreshNotifications, user]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -45,9 +52,11 @@ export default function NotificationBell() {
       );
   }, []);
 
-  if (!user) return null;
-
   const userNotifications = useMemo(() => {
+    if (!user) {
+      return [];
+    }
+
     return notifications
       .filter(
         (notification) =>
@@ -59,6 +68,8 @@ export default function NotificationBell() {
           new Date(a.createdAt).getTime()
       );
   }, [notifications, user]);
+
+  if (!user) return null;
 
   const unreadCount = userNotifications.filter(
     (notification) => !notification.isRead
@@ -127,7 +138,15 @@ export default function NotificationBell() {
 
 
       <button
-  onClick={() => setOpen(!open)}
+  onClick={() => {
+    const nextOpen = !open;
+
+    setOpen(nextOpen);
+
+    if (nextOpen) {
+      refreshNotifications();
+    }
+  }}
   className="
     relative
     flex h-11 w-11
@@ -240,19 +259,29 @@ z-[999]
                 (notification) => (
                   <button
                     key={notification.id}
-                    onClick={() => {
-                      markAsRead(
+                    onClick={async () => {
+                      await markAsRead(
                         notification.id
                       );
 
                       setOpen(false);
 
-                      if (
-                        notification.link
-                      ) {
-                        router.push(
-                          notification.link
-                        );
+                      const roleBase =
+                        user.role === "vendor"
+                          ? "/vendor"
+                          : user.role === "admin"
+                          ? "/admin"
+                          : "/customer";
+
+                      const link =
+                        notification.type === "message"
+                          ? `${roleBase}/messages`
+                          : notification.type === "booking"
+                          ? `${roleBase}/bookings`
+                          : notification.link;
+
+                      if (link) {
+                        router.push(link);
                       }
                     }}
                     className={`

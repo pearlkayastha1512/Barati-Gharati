@@ -70,7 +70,7 @@ export default function ChatWindow() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        {/* <div className="flex gap-3">
           <button className="rounded-full bg-slate-100 p-3 transition hover:bg-rose-100">
             <Phone
               size={18}
@@ -84,7 +84,7 @@ export default function ChatWindow() {
               className="text-slate-600"
             />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Chat Area */}

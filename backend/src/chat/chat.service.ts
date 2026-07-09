@@ -5,6 +5,7 @@ import {
 
 import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -16,6 +17,7 @@ export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatGateway: ChatGateway,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createConversation(
@@ -79,6 +81,20 @@ export class ChatService {
       receiverId: dto.receiverId,
       message: dto.message,
     },
+  });
+
+  const sender = await this.prisma.user.findUnique({
+    where: {
+      id: senderId,
+    },
+    select: {
+      name: true,
+    },
+  });
+
+  await this.notificationsService.create(dto.receiverId, {
+    title: 'New Message',
+    message: `${sender?.name ?? 'Someone'} sent you a message.`,
   });
 
 this.chatGateway.sendMessageToConversation(
