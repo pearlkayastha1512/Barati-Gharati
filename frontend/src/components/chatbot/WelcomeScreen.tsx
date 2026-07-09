@@ -10,6 +10,8 @@ import {
 
 import { useChatbotStore } from "@/store/chatbotStore";
 
+import { sendChatMessage } from "@/services/chatbot.service";
+
 const actions = [
   {
     title: "Find Vendors",
@@ -41,27 +43,53 @@ export default function WelcomeScreen() {
   const addMessage = useChatbotStore((state) => state.addMessage);
   const setTyping = useChatbotStore((state) => state.setTyping);
 
-  const handleClick = (message: string) => {
-    addMessage({
-      id: crypto.randomUUID(),
-      sender: "user",
-      text: message,
-      createdAt: new Date().toISOString(),
-    });
 
-    setTyping(true);
 
-   setTimeout(() => {
+
+const handleClick = async (message: string) => {
   addMessage({
     id: crypto.randomUUID(),
-    sender: "bot",
-    text: "Hey! 😊 I'm here to help with your wedding planning. To get started, can I ask you a few quick questions?",
+    sender: "user",
+    text: message,
     createdAt: new Date().toISOString(),
   });
 
-  setTyping(false);
-}, 1200);
-  };
+  setTyping(true);
+
+  try {
+    const response = await sendChatMessage(message);
+
+    addMessage({
+      id: crypto.randomUUID(),
+      sender: "bot",
+      text:
+        response?.reply ??
+        response?.message ??
+        "Sorry, I couldn't generate a response.",
+      createdAt: new Date().toISOString(),
+    });
+  } catch {
+    addMessage({
+      id: crypto.randomUUID(),
+      sender: "bot",
+      text:
+        "Sorry, something went wrong.",
+      createdAt: new Date().toISOString(),
+    });
+  } finally {
+    setTyping(false);
+  }
+};
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div
@@ -89,7 +117,7 @@ export default function WelcomeScreen() {
       {/* Description */}
 
       <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
-        I'm your WedPlan AI Assistant.
+        I&apos;m your Barati Gharati AI Assistant.
         Ask me anything about vendors,
         bookings, wedding planning,
         payments or support.
@@ -149,7 +177,7 @@ export default function WelcomeScreen() {
       {/* Footer */}
 
       <p className="mt-4 text-center text-xs text-slate-400">
-        Powered by WedPlan AI
+        Powered by Barati Gharati AI
       </p>
     </div>
   );

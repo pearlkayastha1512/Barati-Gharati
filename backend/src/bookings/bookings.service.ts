@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
@@ -14,7 +15,10 @@ import { VendorStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreateBookingDto) {
     // Find vendor using frontend numeric ID
@@ -123,6 +127,11 @@ export class BookingsService {
           },
         },
       },
+    });
+
+    await this.notificationsService.create(vendor.userId, {
+      title: 'New Booking Request',
+      message: `${booking.customerName ?? booking.user.name} requested ${booking.package.title} for ${booking.eventType ?? 'an event'}.`,
     });
 
     return this.mapBooking(booking);
@@ -280,6 +289,11 @@ export class BookingsService {
       },
     });
 
+    await this.notificationsService.create(updatedBooking.userId, {
+      title: 'Booking Accepted',
+      message: `${updatedBooking.vendor.businessName} accepted your booking for ${updatedBooking.package.title}.`,
+    });
+
     return this.mapBooking(updatedBooking);
   }
 
@@ -304,6 +318,11 @@ export class BookingsService {
           },
         },
       },
+    });
+
+    await this.notificationsService.create(updatedBooking.userId, {
+      title: 'Booking Rejected',
+      message: `${updatedBooking.vendor.businessName} rejected your booking for ${updatedBooking.package.title}.`,
     });
 
     return this.mapBooking(updatedBooking);
@@ -363,6 +382,11 @@ export class BookingsService {
       },
     });
 
+    await this.notificationsService.create(updatedBooking.vendor.userId, {
+      title: 'Booking Confirmed',
+      message: `${updatedBooking.customerName ?? updatedBooking.user.name} confirmed the booking for ${updatedBooking.package.title}.`,
+    });
+
     return this.mapBooking(updatedBooking);
   }
 
@@ -403,6 +427,11 @@ export class BookingsService {
           },
         },
       },
+    });
+
+    await this.notificationsService.create(updatedBooking.vendor.userId, {
+      title: 'Booking Cancelled',
+      message: `${updatedBooking.customerName ?? updatedBooking.user.name} cancelled the booking for ${updatedBooking.package.title}.`,
     });
 
     return this.mapBooking(updatedBooking);
@@ -480,6 +509,11 @@ export class BookingsService {
           },
         },
       },
+    });
+
+    await this.notificationsService.create(updatedBooking.vendor.userId, {
+      title: 'Payment Updated',
+      message: `${updatedBooking.customerName ?? updatedBooking.user.name} paid ₹${dto.amount.toLocaleString('en-IN')} for ${updatedBooking.package.title}.`,
     });
 
     return {

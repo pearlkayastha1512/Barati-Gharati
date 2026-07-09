@@ -17,7 +17,7 @@ interface VendorHeroProps {
 
 export default function VendorHero({ vendor }: VendorHeroProps) {
   return (
-    <section className="relative overflow-hidden rounded-3xl">
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-rose-950/40">
 
       {/* Cover Image */}
       <div className="relative h-[500px] w-full">
@@ -32,7 +32,7 @@ export default function VendorHero({ vendor }: VendorHeroProps) {
         />
 
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
 
         {/* Content */}
         <div className="absolute inset-0 flex items-end">
@@ -41,7 +41,7 @@ export default function VendorHero({ vendor }: VendorHeroProps) {
 
             <div className="flex flex-wrap items-center gap-3">
 
-              <span className="flex items-center gap-1 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
+              <span className="flex items-center gap-1 rounded-full border border-white/15 bg-black/35 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
 
                 <Star
                   size={16}
@@ -56,7 +56,7 @@ export default function VendorHero({ vendor }: VendorHeroProps) {
 
               </span>
 
-              <span className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white">
+              <span className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-950/40">
                 {vendor.category}
               </span>
 
@@ -81,12 +81,12 @@ export default function VendorHero({ vendor }: VendorHeroProps) {
 
             <div className="mt-8 flex gap-4">
 
-              <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-gray-900 transition hover:bg-gray-100">
+              <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-gray-950 transition hover:bg-rose-50">
                 <Heart size={18} />
                 Save
               </button>
 
-              <button className="flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-md transition hover:bg-white/20">
+              <button className="flex items-center gap-2 rounded-xl border border-white/25 bg-black/30 px-6 py-3 font-semibold text-white backdrop-blur-md transition hover:bg-white/15">
                 <Share2 size={18} />
                 Share
               </button>

@@ -3,6 +3,7 @@ export type BookingStatus =
   | "pending"
   | "accepted"
   | "completed"
+  | "rejected"
   | "cancelled";
 
 export type PaymentStatus =

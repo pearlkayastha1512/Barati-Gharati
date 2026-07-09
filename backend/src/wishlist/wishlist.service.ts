@@ -116,13 +116,20 @@ export class WishlistService {
           userId,
           vendorId: vendor.id,
         },
+
+        include: {
+          vendor: {
+            include: {
+              category: true,
+              packages: true,
+              reviews: true,
+            },
+          },
+        },
       });
 
     if (exists) {
-      return this.mapWishlist({
-        ...exists,
-        vendor,
-      });
+      return this.mapWishlist(exists);
     }
 
     const wishlist =

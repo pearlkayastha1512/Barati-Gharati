@@ -116,14 +116,14 @@ export default function VendorReviews({
 
   return (
     <>
-      <section className="rounded-3xl bg-white p-8 shadow-sm">
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-xl shadow-black/20 backdrop-blur">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-white">
               Customer Reviews
             </h2>
 
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-rose-100/70">
               Hear what couples say about this vendor.
             </p>
           </div>
@@ -141,7 +141,7 @@ export default function VendorReviews({
                 setSelectedReview(null);
                 setOpen(true);
               }}
-              className="rounded-xl bg-rose-500 px-5 py-3 font-semibold text-white transition hover:bg-rose-600"
+              className="rounded-xl bg-rose-600 px-5 py-3 font-semibold text-white shadow-lg shadow-rose-950/40 transition hover:bg-rose-500"
             >
               Write Review
             </button>
@@ -149,9 +149,9 @@ export default function VendorReviews({
         </div>
 
         {/* Rating Summary */}
-        <div className="mt-10 flex flex-col gap-6 rounded-2xl bg-rose-50 p-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-6 rounded-2xl border border-rose-300/15 bg-rose-400/10 p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-5xl font-bold text-gray-900">
+            <h3 className="text-5xl font-bold text-white">
               {averageRating || "0.0"}
             </h3>
 
@@ -172,7 +172,7 @@ export default function VendorReviews({
               ))}
             </div>
 
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-rose-100/65">
               Based on {reviews.length} Reviews
             </p>
           </div>
@@ -195,11 +195,11 @@ export default function VendorReviews({
                     key={star}
                     className="flex items-center gap-4"
                   >
-                    <span className="w-8 text-sm font-medium">
+                    <span className="w-8 text-sm font-medium text-rose-100">
                       {star}★
                     </span>
 
-                    <div className="h-2 w-48 overflow-hidden rounded-full bg-gray-200">
+                    <div className="h-2 w-48 overflow-hidden rounded-full bg-white/15">
                       <div
                         className="h-full rounded-full bg-yellow-400"
                         style={{
@@ -217,22 +217,22 @@ export default function VendorReviews({
         {/* Reviews */}
         <div className="mt-10 space-y-6">
           {reviews.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+            <div className="rounded-2xl border border-dashed border-rose-300/25 p-10 text-center text-rose-100/65">
               No reviews yet.
             </div>
           ) : (
             reviews.map((review) => (
               <div
                 key={review.id}
-                className="rounded-2xl border border-gray-200 p-6"
+                className="rounded-2xl border border-white/10 bg-[#12070d]/50 p-6"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-semibold text-gray-900">
+                    <h4 className="font-semibold text-white">
                       {review.customerName}
                     </h4>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-rose-100/60">
                       {new Date(
                         review.createdAt
                       ).toLocaleDateString()}
@@ -258,7 +258,7 @@ export default function VendorReviews({
                 </div>
 
                 <div className="mt-4">
-                  <p className="leading-7 text-gray-600">
+                  <p className="leading-7 text-rose-100/75">
                     {review.comment}
                   </p>
 
@@ -266,9 +266,9 @@ export default function VendorReviews({
                   {/* Vendor Reply */}
 
 {review.reply && (
-  <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-5">
+  <div className="mt-6 rounded-2xl border border-orange-300/20 bg-orange-400/10 p-5">
 
-    <div className="flex items-center gap-2 font-semibold text-orange-700">
+    <div className="flex items-center gap-2 font-semibold text-orange-200">
       <Star
         size={18}
         className="fill-orange-500 text-orange-500"
@@ -277,12 +277,12 @@ export default function VendorReviews({
       Vendor Reply
     </div>
 
-    <p className="mt-3 leading-7 text-slate-700">
+    <p className="mt-3 leading-7 text-orange-50/80">
       {review.reply}
     </p>
 
     {review.repliedAt && (
-      <p className="mt-4 text-xs text-slate-500">
+      <p className="mt-4 text-xs text-orange-100/55">
         Replied on{" "}
         {new Date(
           review.repliedAt

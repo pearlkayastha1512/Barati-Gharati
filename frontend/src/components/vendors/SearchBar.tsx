@@ -18,13 +18,13 @@ export default function SearchBar() {
   } = useVendorStore();
 
   return (
-    <div className="sticky top-24 z-30 mb-10 rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-lg backdrop-blur-xl">
+    <div className="sticky top-24 z-30 mb-10 rounded-3xl border border-white/10 bg-white/[0.08] p-5 shadow-xl shadow-black/20 backdrop-blur-xl">
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Search */}
         <div className="relative flex-1">
           <Search
             size={20}
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-rose-100/50"
           />
 
           <input
@@ -39,15 +39,16 @@ export default function SearchBar() {
               w-full
               rounded-2xl
               border
-              border-gray-200
-              bg-gray-50
+              border-white/10
+              bg-[#1f0d14]/85
               pl-14
               pr-4
-              text-gray-700
+              text-rose-50
               outline-none
               transition
-              focus:border-rose-500
-              focus:bg-white
+              placeholder:text-rose-100/40
+              focus:border-rose-300
+              focus:bg-[#2a121b]
             "
           />
         </div>
@@ -56,7 +57,7 @@ export default function SearchBar() {
         <div className="relative w-full lg:w-64">
           <MapPin
             size={20}
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-rose-100/50"
           />
 
           <select
@@ -69,14 +70,14 @@ export default function SearchBar() {
               w-full
               rounded-2xl
               border
-              border-gray-200
-              bg-gray-50
+              border-white/10
+              bg-[#1f0d14]/85
               pl-14
               pr-4
-              text-gray-700
+              text-rose-50
               outline-none
               transition
-              focus:border-rose-500
+              focus:border-rose-300
             "
           >
             <option value="">
@@ -104,11 +105,11 @@ export default function SearchBar() {
             gap-2
             rounded-2xl
             border
-            border-gray-200
+            border-white/10
             px-6
-            text-gray-700
+            text-rose-50
             transition
-            hover:bg-rose-500
+            hover:bg-rose-600
             hover:text-white
             lg:hidden
           "

@@ -23,8 +23,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Wedding Planner",
-    template: "%s | Wedding Planner",
+    default: "Barati Gharati",
+    template: "%s | Barati Gharati",
   },
   description:
     "Luxury wedding planning platform for couples and vendors.",

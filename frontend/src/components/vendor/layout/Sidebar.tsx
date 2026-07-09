@@ -16,8 +16,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Building2,
 } from "lucide-react";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -99,38 +99,11 @@ const handleLogout = () => {
 
       <div className="flex h-full w-full flex-col">
 
-        {/* Logo */}
-
-
 <Link href="/">
         <div className="border-b border-slate-100 p-6">
-
-          <div className="rounded-3xl bg-gradient-to-br from-slate-800 to-blue-700 p-5 text-white shadow-xl">
-
-            <div className="flex items-center gap-4">
-
-              <div className="rounded-2xl bg-white/20 p-3">
-
-                <Building2 size={24} />
-
-              </div>
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-                  Vendor Hub
-                </h2>
-
-                <p className="text-sm text-slate-200">
-                  Business Dashboard
-                </p>
-
-              </div>
-
-            </div>
-
+          <div className="rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-100">
+            <BrandLogo className="h-24 w-full" />
           </div>
-
         </div>
 
         </Link>
@@ -204,12 +177,14 @@ const handleLogout = () => {
             <p className="mt-2 text-sm text-slate-500">
               Need help managing your business?
             </p>
-
-            <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">
+            <Link href={"/contact"}>
+              <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">
 
               Contact Support
 
             </button>
+            </Link>
+            
 
           </div>
 

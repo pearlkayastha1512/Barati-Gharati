@@ -14,9 +14,9 @@ import {
   MessageCircle,
   Settings,
   LogOut,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 const menuItems = [
   {
@@ -80,33 +80,14 @@ const handleLogout = () => {
       <div className="flex h-full w-full flex-col">
       
 
-        {/* Logo */}
-
         <div className="border-b border-gray-100 p-6">
-
-          <div className="rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 p-5 text-white shadow-xl">
-
-            <div className="flex items-center gap-4">
-
-              <div className="rounded-2xl bg-white/20 p-3">
-                <Sparkles size={24} />
-              </div>
-      <Link href="/">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  WedPlanner
-                </h2>
-
-                <p className="text-sm text-rose-100">
-                  Customer Dashboard
-                </p>
-              </div>
-              </Link>
-  
-            </div>
-
-          </div>
-
+          <Link
+            href="/"
+            className="block rounded-3xl bg-white p-4 shadow-xl ring-1 ring-gray-100"
+            aria-label="Barati Gharati home"
+          >
+            <BrandLogo className="h-24 w-full" />
+          </Link>
         </div>
 
         {/* Navigation */}

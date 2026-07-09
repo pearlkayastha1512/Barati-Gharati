@@ -9,7 +9,6 @@ import {
 
 import { Booking } from "@/types/booking";
 import { useBookingStore } from "@/store/bookingStore";
-import { useNotificationStore } from "@/store/notificationStore";
 
 
 interface Props {
@@ -24,6 +23,8 @@ function badge(status: string) {
       return "bg-green-100 text-green-700";
     case "completed":
       return "bg-blue-100 text-blue-700";
+    case "rejected":
+      return "bg-red-100 text-red-700";
     default:
       return "bg-red-100 text-red-700";
   }
@@ -35,12 +36,9 @@ export default function BookingTable({ bookings }: Props) {
   selectBooking,
 } = useBookingStore();
 
-const { addNotification } =
-  useNotificationStore();
-
  const handleStatusChange = async (
   booking: Booking,
-  status: "accepted" | "cancelled"
+  status: "accepted" | "rejected"
 ) => {
   const success = await updateStatus(
     booking.id,
@@ -48,23 +46,6 @@ const { addNotification } =
   );
 
   if (!success) return;
-
-  addNotification({
-    id: crypto.randomUUID(),
-    userId: booking.customerId,
-    title:
-      status === "accepted"
-        ? "Booking Accepted"
-        : "Booking Rejected",
-    message:
-      status === "accepted"
-        ? `${booking.vendorName} accepted your booking.`
-        : `${booking.vendorName} rejected your booking.`,
-    type: "booking",
-    link: "/customer/bookings",
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  });
 };
 
   return (
@@ -169,7 +150,7 @@ const { addNotification } =
                           onClick={() =>
                             handleStatusChange(
                               booking,
-                              "cancelled"
+                              "rejected"
                             )
                           }
                           className="rounded-lg bg-red-600 px-3 py-2 text-white transition hover:bg-red-700"
