@@ -43,27 +43,7 @@ export default function WelcomeScreen() {
   const addMessage = useChatbotStore((state) => state.addMessage);
   const setTyping = useChatbotStore((state) => state.setTyping);
 
-//   const handleClick = (message: string) => {
-//     addMessage({
-//       id: crypto.randomUUID(),
-//       sender: "user",
-//       text: message,
-//       createdAt: new Date().toISOString(),
-//     });
 
-//     setTyping(true);
-
-//    setTimeout(() => {
-//   addMessage({
-//     id: crypto.randomUUID(),
-//     sender: "bot",
-//     text: "Hey! 😊 I'm here to help with your wedding planning. To get started, can I ask you a few quick questions?",
-//     createdAt: new Date().toISOString(),
-//   });
-
-//   setTyping(false);
-// }, 1200);
-//   };
 
 
 const handleClick = async (message: string) => {
