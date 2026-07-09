@@ -182,7 +182,7 @@ export default function HomeScreen() {
             title="Become a Vendor"
             subtitle="Start growing your business."
             // TODO: navigate to your vendor-registration screen/flow once built
-            onPress={() => navigation.navigate("BecomeVendor")}
+           onPress={() => navigation.navigate("BecomeVendor")}
           />
         </View>
 
