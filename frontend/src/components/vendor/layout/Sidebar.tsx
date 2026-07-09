@@ -177,12 +177,14 @@ const handleLogout = () => {
             <p className="mt-2 text-sm text-slate-500">
               Need help managing your business?
             </p>
-
-            <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">
+            <Link href={"/contact"}>
+              <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">
 
               Contact Support
 
             </button>
+            </Link>
+            
 
           </div>
 

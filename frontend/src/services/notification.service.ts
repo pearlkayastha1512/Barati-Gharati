@@ -1,101 +1,113 @@
 import { Notification } from "@/types/notification";
 
-const STORAGE_KEY = "notifications";
+import {
+  createNotificationApi,
+  deleteNotificationApi,
+  getNotificationsApi,
+  markNotificationAsReadApi,
+} from "@/services/api/notification.api";
 
-export function getNotifications(): Notification[] {
-  if (typeof window === "undefined") {
+type ApiNotification = {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+function getNotificationMeta(
+  title: string,
+  message: string
+): Pick<Notification, "type" | "link"> {
+  const text = `${title} ${message}`.toLowerCase();
+
+  if (text.includes("message")) {
+    return {
+      type: "message",
+      link: "/customer/messages",
+    };
+  }
+
+  if (
+    text.includes("booking") ||
+    text.includes("payment")
+  ) {
+    return {
+      type: "booking",
+      link: "/customer/bookings",
+    };
+  }
+
+  return {
+    type: "system",
+  };
+}
+
+function mapNotification(
+  notification: ApiNotification
+): Notification {
+  return {
+    ...notification,
+    ...getNotificationMeta(
+      notification.title,
+      notification.message
+    ),
+  };
+}
+
+export async function getNotifications(): Promise<
+  Notification[]
+> {
+  const result = await getNotificationsApi();
+
+  if (!result.ok || !result.data) {
     return [];
   }
 
-  const data = localStorage.getItem(STORAGE_KEY);
+  const data = result.data?.data ?? result.data;
 
-  if (!data) {
-    return [];
-  }
-
-  return JSON.parse(data);
+  return Array.isArray(data)
+    ? data.map(mapNotification)
+    : [];
 }
 
-export function saveNotifications(
-  notifications: Notification[]
-): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(notifications)
-  );
-}
-
-export function createNotification(
+export async function createNotification(
   notification: Notification
-): void {
-  const notifications = getNotifications();
-
-  notifications.unshift(notification);
-
-  saveNotifications(notifications);
-}
-
-export function getUserNotifications(
-  userId: string
-): Notification[] {
-  return getNotifications().filter(
-    (notification) =>
-      notification.userId === userId
+): Promise<boolean> {
+  const result = await createNotificationApi(
+    notification.title,
+    notification.message
   );
+
+  return result.ok;
 }
 
-export function markNotificationAsRead(
+export async function markNotificationAsRead(
   id: string
-): void {
-  const notifications = getNotifications();
+): Promise<boolean> {
+  const result =
+    await markNotificationAsReadApi(id);
 
-  saveNotifications(
-    notifications.map((notification) =>
-      notification.id === id
-        ? {
-            ...notification,
-            isRead: true,
-          }
-        : notification
-    )
+  return result.ok;
+}
+
+export async function markAllNotificationsAsRead(
+  notifications: Notification[]
+): Promise<void> {
+  await Promise.all(
+    notifications
+      .filter((notification) => !notification.isRead)
+      .map((notification) =>
+        markNotificationAsRead(notification.id)
+      )
   );
 }
 
-export function markAllNotificationsAsRead(
-  userId: string
-): void {
-  const notifications = getNotifications();
-
-  saveNotifications(
-    notifications.map((notification) =>
-      notification.userId === userId
-        ? {
-            ...notification,
-            isRead: true,
-          }
-        : notification
-    )
-  );
-}
-
-export function deleteNotification(
+export async function deleteNotification(
   id: string
-): void {
-  saveNotifications(
-    getNotifications().filter(
-      (notification) =>
-        notification.id !== id
-    )
-  );
-}
+): Promise<boolean> {
+  const result = await deleteNotificationApi(id);
 
-export function clearUserNotifications(
-  userId: string
-): void {
-  saveNotifications(
-    getNotifications().filter(
-      (notification) =>
-        notification.userId !== userId
-    )
-  );
+  return result.ok;
 }

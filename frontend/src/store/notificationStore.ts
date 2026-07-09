@@ -13,73 +13,123 @@ import {
 interface NotificationStore {
   notifications: Notification[];
 
+  isLoading: boolean;
+
   setNotifications: (
     notifications: Notification[]
   ) => void;
 
-  refreshNotifications: () => void;
+  refreshNotifications: () => Promise<void>;
 
   addNotification: (
     notification: Notification
-  ) => void;
+  ) => Promise<void>;
 
   markAsRead: (
     id: string
-  ) => void;
+  ) => Promise<void>;
 
   markAllAsRead: (
     userId: string
-  ) => void;
+  ) => Promise<void>;
 
   removeNotification: (
     id: string
-  ) => void;
+  ) => Promise<void>;
 }
 
 export const useNotificationStore =
-  create<NotificationStore>((set) => ({
+  create<NotificationStore>((set, get) => ({
+    notifications: [],
 
-    notifications: getNotifications(),
+    isLoading: false,
 
     setNotifications: (notifications) =>
       set({
         notifications,
       }),
 
-    refreshNotifications: () =>
+    refreshNotifications: async () => {
       set({
-        notifications: getNotifications(),
-      }),
+        isLoading: true,
+      });
 
-    addNotification: (notification) => {
-      createNotification(notification);
+      try {
+        const notifications =
+          await getNotifications();
+
+        set({
+          notifications,
+        });
+      } finally {
+        set({
+          isLoading: false,
+        });
+      }
+    },
+
+    addNotification: async (notification) => {
+      await createNotification(notification);
+
+      const notifications =
+        await getNotifications();
 
       set({
-        notifications: getNotifications(),
+        notifications,
       });
     },
 
-    markAsRead: (id) => {
-      markNotificationAsRead(id);
+    markAsRead: async (id) => {
+      set({
+        notifications: get().notifications.map(
+          (notification) =>
+            notification.id === id
+              ? {
+                  ...notification,
+                  isRead: true,
+                }
+              : notification
+        ),
+      });
+
+      await markNotificationAsRead(id);
+    },
+
+    markAllAsRead: async (userId) => {
+      const notifications = get().notifications;
+
+      await markAllNotificationsAsRead(
+        notifications.filter(
+          (notification) =>
+            notification.userId === userId
+        )
+      );
 
       set({
-        notifications: getNotifications(),
+        notifications: notifications.map(
+          (notification) =>
+            notification.userId === userId
+              ? {
+                  ...notification,
+                  isRead: true,
+                }
+              : notification
+        ),
       });
     },
 
-    markAllAsRead: (userId) => {
-      markAllNotificationsAsRead(userId);
+    removeNotification: async (id) => {
+      const success = await deleteNotification(id);
+
+      if (!success) {
+        return;
+      }
 
       set({
-        notifications: getNotifications(),
-      });
-    },
-
-    removeNotification: (id) => {
-      deleteNotification(id);
-
-      set({
-        notifications: getNotifications(),
+        notifications: get().notifications.filter(
+          (notification) =>
+            notification.id !== id
+        ),
       });
     },
   }));

@@ -44,7 +44,7 @@ export default function Header() {
       <div className="flex items-center gap-4">
 
        
-        <button
+        {/* <button
   className="flex h-14 w-10 items-center justify-center rounded-2xl
              bg-gray-300 text-gray-700
              transition-all duration-300
@@ -53,7 +53,7 @@ export default function Header() {
              hover:text-rose-500"
 >
   <MessageCircle className="h-7 w-7" />
-</button>
+</button> */}
 
         
 
