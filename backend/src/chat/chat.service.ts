@@ -10,6 +10,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatGateway } from "./chat.gateway";
+import { validateMessage } from './utils/message-filter.util';
 
 
 @Injectable()
@@ -56,7 +57,60 @@ export class ChatService {
     });
   }
 
-  async sendMessage(
+//   async sendMessage(
+//   senderId: string,
+//   dto: SendMessageDto,
+// ) {
+//   const conversation =
+//     await this.prisma.conversation.findUnique({
+//       where: {
+//         id: dto.conversationId,
+//       },
+//     });
+
+//   if (!conversation) {
+//     throw new ForbiddenException(
+//       'Conversation not found',
+//     );
+//   }
+
+//   const newMessage =
+//   await this.prisma.message.create({
+//     data: {
+//       conversationId: dto.conversationId,
+//       senderId,
+//       receiverId: dto.receiverId,
+//       message: dto.message,
+//     },
+//   });
+
+//   const sender = await this.prisma.user.findUnique({
+//     where: {
+//       id: senderId,
+//     },
+//     select: {
+//       name: true,
+//     },
+//   });
+
+//   await this.notificationsService.create(dto.receiverId, {
+//     title: 'New Message',
+//     message: `${sender?.name ?? 'Someone'} sent you a message.`,
+//   });
+
+// this.chatGateway.sendMessageToConversation(
+//   dto.conversationId,
+//   newMessage,
+// );
+
+// return newMessage;
+// }
+
+
+
+
+
+async sendMessage(
   senderId: string,
   dto: SendMessageDto,
 ) {
@@ -65,45 +119,77 @@ export class ChatService {
       where: {
         id: dto.conversationId,
       },
+      include: {
+        vendor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
     });
 
   if (!conversation) {
     throw new ForbiddenException(
-      'Conversation not found',
+      'Conversation not found.',
     );
   }
 
+  const isCustomer =
+    conversation.customerId === senderId;
+
+  const isVendor =
+    conversation.vendor.userId === senderId;
+
+  if (!isCustomer && !isVendor) {
+    throw new ForbiddenException(
+      'You are not allowed to send messages in this conversation.',
+    );
+  }
+
+  const cleanMessage = dto.message.trim();
+
+  validateMessage(cleanMessage);
+
   const newMessage =
-  await this.prisma.message.create({
-    data: {
-      conversationId: dto.conversationId,
-      senderId,
-      receiverId: dto.receiverId,
-      message: dto.message,
+    await this.prisma.message.create({
+      data: {
+        conversationId: dto.conversationId,
+        senderId,
+        receiverId: dto.receiverId,
+        message: cleanMessage,
+      },
+    });
+
+  const sender =
+    await this.prisma.user.findUnique({
+      where: {
+        id: senderId,
+      },
+      select: {
+        name: true,
+      },
+    });
+
+  await this.notificationsService.create(
+    dto.receiverId,
+    {
+      title: 'New Message',
+      message: `${
+        sender?.name ?? 'Someone'
+      } sent you a message.`,
     },
-  });
+  );
 
-  const sender = await this.prisma.user.findUnique({
-    where: {
-      id: senderId,
-    },
-    select: {
-      name: true,
-    },
-  });
+  this.chatGateway.sendMessageToConversation(
+    dto.conversationId,
+    newMessage,
+  );
 
-  await this.notificationsService.create(dto.receiverId, {
-    title: 'New Message',
-    message: `${sender?.name ?? 'Someone'} sent you a message.`,
-  });
-
-this.chatGateway.sendMessageToConversation(
-  dto.conversationId,
-  newMessage,
-);
-
-return newMessage;
+  return newMessage;
 }
+
+
+
 async getConversations(userId: string) {
   const customerBookings = await this.prisma.booking.findMany({
     where: {
