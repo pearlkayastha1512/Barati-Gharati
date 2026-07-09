@@ -34,15 +34,13 @@ export default function LoginScreen() {
     },
   });
 const onSubmit = (data: LoginForm) => {
-  // ==============================
-  // TODO:
-  // Call Login API here
-  //
-  // const response = await login(data);
-  // await saveAuth(response.data.accessToken, response.data.user);
-  // ==============================
-
   Alert.alert("Success", "Login Successful");
+
+  // TEMPORARY hardcoded vendor check — replace with real role from API later
+  if (data.email.trim().toLowerCase() === "vendor@test.com") {
+    navigation.replace("Vendor");
+    return;
+  }
 
   navigation.replace("Couple");
 };
@@ -208,3 +206,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+//we have to replace it later on if (response.data.user.role === "vendor") {
+  //    navigation.replace("Vendor");
+  //  } else {
+  //    navigation.replace("Couple");
+  //  }
