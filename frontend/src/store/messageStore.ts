@@ -7,6 +7,7 @@ import {
 
 import { messageService } from "@/services/message.service";
 import { socket } from "@/lib/socket";
+import { toast } from "sonner";
 
 interface MessageStore {
   conversations: Conversation[];
@@ -83,23 +84,47 @@ export const useMessageStore =
         selectedConversation: id,
       }),
 
+    // sendNewMessage: async (
+
+    //   conversationId,
+    //   receiverId,
+    //   message
+    // ) => {
+    //   const result =
+    //     await messageService.sendMessage(
+    //       conversationId,
+    //       receiverId,
+    //       message
+    //     );
+
+    //   if (!result.ok) return;
+
+    //   // Socket automatically new message receive karega.
+    //   // Yahan dubara getMessages() call nahi karenge.
+    // },
     sendNewMessage: async (
+  conversationId,
+  receiverId,
+  message
+) => {
+  const result =
+    await messageService.sendMessage(
       conversationId,
       receiverId,
       message
-    ) => {
-      const result =
-        await messageService.sendMessage(
-          conversationId,
-          receiverId,
-          message
-        );
+    );
 
-      if (!result.ok) return;
-
-      // Socket automatically new message receive karega.
-      // Yahan dubara getMessages() call nahi karenge.
-    },
+  if (!result.ok) {
+    toast.error(
+      result.error ??
+        "Unable to send message.",
+      {
+        duration: 4000,
+      }
+    );
+    return;
+  }
+},
 
     initializeSocket: () => {
       socket.off("newMessage");

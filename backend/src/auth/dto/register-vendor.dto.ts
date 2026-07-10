@@ -12,6 +12,8 @@ import {
 } from '@nestjs/swagger';
 
 export class RegisterVendorDto {
+
+  
   // Account
 
   @ApiProperty({

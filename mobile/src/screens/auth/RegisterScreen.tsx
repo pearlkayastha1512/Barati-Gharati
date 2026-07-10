@@ -8,7 +8,7 @@ import {
 } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
-// import { register } from "../../api/auth.api";
+import { register } from "../../api/auth.api";
 
 type RegisterForm = {
   name: string;
@@ -24,7 +24,7 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
-
+const [loading, setLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -42,29 +42,68 @@ export default function RegisterScreen() {
 
   const password = watch("password");
 
+//   const onSubmit = async (data: RegisterForm) => {
+//   // TODO:
+//   // Call Register API here.
+//   // Example:
+//   // await register({
+//   //   name: data.name,
+//   //   email: data.email,
+//   //   phone: data.phone,
+//   //   password: data.password,
+//   // });
+
+//   Alert.alert(
+//     "Registration Successful",
+//     "Account created successfully.",
+//     [
+//       {
+//         text: "OK",
+//         onPress: () => navigation.replace("Login"),
+//       },
+//     ]
+//   );
+// };
   const onSubmit = async (data: RegisterForm) => {
-  // TODO:
-  // Call Register API here.
-  // Example:
-  // await register({
-  //   name: data.name,
-  //   email: data.email,
-  //   phone: data.phone,
-  //   password: data.password,
-  // });
+  try {
+    setLoading(true);
+
+    const response = await register({
+      name: data.name.trim(),
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone.trim(),
+      password: data.password,
+    });
+
+    Alert.alert(
+      "Registration Successful",
+      response.message,
+      [
+        {
+          text: "OK",
+          onPress: () =>
+            navigation.navigate("Login"),
+        },
+      ]
+    );
+  }catch (error: any) {
+  console.log("FULL ERROR:", error);
+
+console.log("MESSAGE:", error?.message);
+
+console.log("RESPONSE:", error?.response);
+
+console.log("DATA:", error?.response?.data);
 
   Alert.alert(
-    "Registration Successful",
-    "Account created successfully.",
-    [
-      {
-        text: "OK",
-        onPress: () => navigation.replace("Login"),
-      },
-    ]
+    "Error",
+    error?.response?.data?.message ??
+      "Something went wrong."
   );
+} finally {
+    setLoading(false);
+  }
 };
-
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>
@@ -243,13 +282,23 @@ export default function RegisterScreen() {
         </Text>
       )}
 
-      <Button
+      {/* <Button
         mode="contained"
         style={styles.button}
         onPress={handleSubmit(onSubmit)}
       >
         Register
-      </Button>
+      </Button> */}
+
+      <Button
+  mode="contained"
+  style={styles.button}
+  loading={loading}
+  disabled={loading}
+  onPress={handleSubmit(onSubmit)}
+>
+  Register
+</Button>
 
       <View style={styles.footer}>
         <Text>Already have an account? </Text>

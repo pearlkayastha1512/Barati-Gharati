@@ -124,6 +124,7 @@ await this.prisma.verificationToken.create({
 
 
  async registerVendor(
+  
   registerVendorDto: RegisterVendorDto,
 ) {
 

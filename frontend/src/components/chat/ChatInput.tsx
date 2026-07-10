@@ -44,19 +44,11 @@ export default function ChatInput() {
       return;
     }
 
-const validation = validateMessage(text);
-
-if (!validation.valid) {
-  toast.error(validation.error, {
-    duration: 3000,
-  });
-  return;
-}
-    await sendNewMessage(
-      selectedConversation,
-      receiverId,
-      text
-    );
+await sendNewMessage(
+  selectedConversation,
+  receiverId,
+  text
+);
 
     setText("");
   };

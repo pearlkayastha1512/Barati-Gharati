@@ -9,6 +9,8 @@ import { useSettingsStore } from "../../store/settingsStore";
 import { ProfileStatTile } from "../../components/users/profile/ProfileStatTile";
 import { ProfileInfoSection } from "../../components/users/profile/ProfileInfoSection";
 import { ProfileQuickActionRow } from "../../components/users/profile/ProfileQuickActionRow";
+import { Alert } from "react-native";
+import { useAuthStore } from "../../store/authStore";
 import { styles } from "./styles/ProfileScreen.styles";
 
 
@@ -16,7 +18,10 @@ import { styles } from "./styles/ProfileScreen.styles";
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
-  const { profile } = useSettingsStore();
+
+const { profile } = useSettingsStore();
+
+const { logout } = useAuthStore();
 
   const initials =
     profile.fullName
@@ -25,6 +30,42 @@ export default function ProfileScreen() {
       .join("")
       .slice(0, 2)
       .toUpperCase() || "U";
+
+      const handleLogout = () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: "Auth",
+                },
+              ],
+            });
+          } catch (error) {
+            Alert.alert(
+              "Error",
+              "Unable to logout."
+            );
+          }
+        },
+      },
+    ]
+  );
+};
 
   const sections = [
     {
@@ -224,14 +265,14 @@ export default function ProfileScreen() {
         Become a Vendor
       </Button>
 
-      <Button
-        mode="outlined"
-        style={styles.logoutButton}
-        textColor="#E53935"
-        onPress={() => {}}
-      >
-        Logout
-      </Button>
+     <Button
+  mode="outlined"
+  style={styles.logoutButton}
+  textColor="#E53935"
+  onPress={handleLogout}
+>
+  Logout
+</Button>
 
       
     </ScrollView>

@@ -67,16 +67,20 @@ export function Sidebar({ visible, onClose }: Props) {
     navigation.navigate(item.route);
   };
 
-  const handleLogout = async () => {
+ const handleLogout = async () => {
+  try {
     onClose();
+
     await logout();
-    // TODO: confirm this matches your actual auth stack's initial route name
+
     navigation.reset({
       index: 0,
-      routes: [{ name: "Login" }],
+      routes: [{ name: "Auth" }],
     });
-  };
-
+  } catch (error) {
+    console.log("Logout failed:", error);
+  }
+};
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>

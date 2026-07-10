@@ -56,10 +56,10 @@ export class MailService {
     name: string,
     token: string,
   ) {
-    // const verificationUrl =
-    //   `http://localhost:3000/api/v1/auth/verify-email?token=${token}`;
     const verificationUrl =
-  `${process.env.FRONTEND_URL}/api/v1/auth/verify-email?token=${token}`;
+      `http://localhost:3000/api/v1/auth/verify-email?token=${token}`;
+  //   const verificationUrl =
+  // `${process.env.FRONTEND_URL}/api/v1/auth/verify-email?token=${token}`;
     const subject = 'Verify your Wedding Planner account';
     const html = `
         <h2>Hello ${name},</h2>
@@ -96,10 +96,10 @@ export class MailService {
     name: string,
     token: string,
   ) {
-    // const resetUrl =
-    //   `http://localhost:3000/api/v1/auth/reset-password?token=${token}`;
     const resetUrl =
-  `${process.env.FRONTEND_URL}/api/v1/auth/reset-password?token=${token}`;
+      `http://localhost:3000/api/v1/auth/reset-password?token=${token}`;
+  //   const resetUrl =
+  // `${process.env.FRONTEND_URL}/api/v1/auth/reset-password?token=${token}`;
     const subject = 'Reset your Wedding Planner password';
     const html = `
         <h2>Hello ${name},</h2>
