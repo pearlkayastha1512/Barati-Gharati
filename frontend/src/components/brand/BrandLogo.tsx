@@ -1,5 +1,8 @@
 import Image from "next/image";
 
+const BRAND_LOGO_SRC =
+  "/brand/barati-gharati-logo.png?v=20260710";
+
 type BrandLogoProps = {
   className?: string;
   imageClassName?: string;
@@ -14,12 +17,13 @@ export default function BrandLogo({
   return (
     <div className={`relative ${className}`}>
       <Image
-        src="/brand/barati-gharati-logo.png"
+        src={BRAND_LOGO_SRC}
         alt="Barati Gharati"
         fill
         sizes="(max-width: 768px) 180px, 240px"
         className={imageClassName}
         priority={priority}
+        unoptimized
       />
     </div>
   );

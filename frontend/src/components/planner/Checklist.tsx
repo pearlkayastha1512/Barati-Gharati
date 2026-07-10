@@ -48,31 +48,31 @@ export default function Checklist() {
         className="
           rounded-3xl
           border
-          border-gray-200
+          border-[#ffb3bf]
           bg-white
           p-7
           shadow-sm
-          text-gray-700
+          text-[#6c2d45]
         "
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-700">
+            <h2 className="text-2xl font-bold text-[#6c2d45]">
               Wedding Checklist
             </h2>
 
-            <p className="mt-1 text-gray-500">
+            <p className="mt-1 text-[#8d6171]">
               Stay on top of every important task.
             </p>
           </div>
 
-          <span className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+          <span className="rounded-full bg-[#fff8d8] px-4 py-2 text-sm font-semibold text-[#6c2d45]">
             {completedTasks} / {tasks.length} Completed
           </span>
         </div>
 
         {tasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-gray-500">
+          <div className="rounded-2xl border border-dashed border-[#ffb3bf] py-12 text-center text-[#8d6171]">
             No planner tasks yet.
           </div>
         ) : (

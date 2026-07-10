@@ -35,8 +35,8 @@ export default function ConversationCard({
         hover:shadow-lg
         ${
           active
-            ? "border-rose-400 bg-gradient-to-r from-rose-50 to-pink-50"
-            : "border-slate-200 bg-white hover:border-rose-300"
+            ? "border-[#ff8fa1] bg-gradient-to-r from-[#ffe6eb] to-[#fff8d8]"
+            : "border-[#ffb3bf] bg-[#fffdf0] hover:border-[#ff8fa1]"
         }
       `}
     >
@@ -54,13 +54,13 @@ export default function ConversationCard({
             justify-center
             rounded-full
             bg-gradient-to-br
-            from-rose-100
-            to-pink-100
+            from-[#ffe6eb]
+            to-[#fff8d8]
           "
         >
           <MessageCircle
             size={24}
-            className="text-rose-500"
+            className="text-[#ff4d6d]"
           />
         </div>
 
@@ -70,12 +70,12 @@ export default function ConversationCard({
 
           <div className="flex items-center justify-between">
 
-            <h3 className="truncate text-lg font-bold text-slate-900">
+            <h3 className="truncate text-lg font-bold text-[#3f1d2f]">
               {name}
             </h3>
 
             {time && (
-              <span className="ml-3 text-xs text-slate-400">
+              <span className="ml-3 text-xs text-[#ff8fa1]">
                 {new Date(time).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -85,7 +85,7 @@ export default function ConversationCard({
 
           </div>
 
-          <p className="mt-1 truncate text-sm text-slate-500">
+          <p className="mt-1 truncate text-sm text-[#8d6171]">
             {lastMessage}
           </p>
 

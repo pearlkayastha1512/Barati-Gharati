@@ -34,22 +34,24 @@ export default function QuickActionCard({
           flex-col
           rounded-3xl
           border
-          border-gray-200
-          bg-white
+          border-[#ffb3bf]
+          bg-white/90
           p-6
           shadow-sm
+          shadow-[#ff4d6d]/5
           transition-all
-          hover:border-rose-200
+          hover:border-[#ff8fa1]
           hover:shadow-xl
+          hover:shadow-[#ff4d6d]/10
         "
       >
         {/* Icon */}
 
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 transition group-hover:bg-rose-500">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#ffe6eb] transition group-hover:bg-[#ff4d6d]">
 
           <Icon
             size={26}
-            className="text-rose-500 transition group-hover:text-white"
+            className="text-[#ff4d6d] transition group-hover:text-white"
           />
 
         </div>
@@ -58,11 +60,11 @@ export default function QuickActionCard({
 
         <div className="mt-6 flex-1">
 
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-xl font-semibold text-[#3f1d2f]">
             {title}
           </h3>
 
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-[#8d6171]">
             {description}
           </p>
 
@@ -72,7 +74,7 @@ export default function QuickActionCard({
 
 
            
-        <div className="mt-6 flex items-center gap-2 font-semibold text-rose-500">
+        <div className="mt-6 flex items-center gap-2 font-semibold text-[#ff4d6d]">
            
           Open
 

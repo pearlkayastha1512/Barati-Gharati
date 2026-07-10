@@ -41,20 +41,20 @@ export default function ExpenseCategories() {
   };
 
   const colorMap: Record<string, string> = {
-    Venue: "bg-indigo-500",
+    Venue: "bg-[#ff4d6d]",
 
-    Photographer: "bg-blue-500",
-    Photography: "bg-blue-500",
-    Videographer: "bg-blue-500",
+    Photographer: "bg-[#fff8d8]0",
+    Photography: "bg-[#fff8d8]0",
+    Videographer: "bg-[#fff8d8]0",
 
-    Caterer: "bg-green-500",
-    Catering: "bg-green-500",
+    Caterer: "bg-[#fff8d8]0",
+    Catering: "bg-[#fff8d8]0",
 
-    Decorator: "bg-pink-500",
-    Decoration: "bg-pink-500",
+    Decorator: "bg-[#ff4d6d]",
+    Decoration: "bg-[#ff4d6d]",
 
-    DJ: "bg-yellow-500",
-    Entertainment: "bg-yellow-500",
+    DJ: "bg-[#fff8d8]0",
+    Entertainment: "bg-[#fff8d8]0",
   };
 
   const categories = useMemo(() => {
@@ -100,24 +100,24 @@ export default function ExpenseCategories() {
 
         color:
           colorMap[category] ??
-          "bg-gray-500",
+          "bg-[#ff8fa1]",
       }))
       .sort((a, b) => b.amount - a.amount);
   }, [expenses, weddingBudget]);
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-bold text-gray-900">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-[#3f1d2f]">
         Expense Categories
       </h2>
 
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-[#8d6171]">
         Spending distribution by category.
       </p>
 
       <div className="mt-6 space-y-6">
         {categories.length === 0 ? (
-          <div className="py-10 text-center text-gray-500">
+          <div className="py-10 text-center text-[#8d6171]">
             No expenses added yet.
           </div>
         ) : (
@@ -128,19 +128,19 @@ export default function ExpenseCategories() {
               <div key={item.title}>
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-gray-100 p-2">
+                    <div className="rounded-xl bg-[#fff8d8] p-2">
                       <Icon
                         size={18}
-                        className="text-gray-700"
+                        className="text-[#6c2d45]"
                       />
                     </div>
 
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-[#6c2d45]">
                       {item.title}
                     </span>
                   </div>
 
-                  <span className="font-semibold text-rose-500">
+                  <span className="font-semibold text-[#ff4d6d]">
                     ₹
                     {item.amount.toLocaleString(
                       "en-IN"
@@ -148,7 +148,7 @@ export default function ExpenseCategories() {
                   </span>
                 </div>
 
-                <div className="h-2 rounded-full bg-gray-100">
+                <div className="h-2 rounded-full bg-[#fff8d8]">
                   <div
                     style={{
                       width: `${item.progress}%`,
@@ -157,7 +157,7 @@ export default function ExpenseCategories() {
                   />
                 </div>
 
-                <div className="mt-2 flex justify-between text-xs text-gray-500">
+                <div className="mt-2 flex justify-between text-xs text-[#8d6171]">
                   <span>
                     {item.progress}% of budget
                   </span>

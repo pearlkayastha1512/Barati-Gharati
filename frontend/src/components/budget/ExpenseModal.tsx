@@ -160,7 +160,7 @@
 //   return (
 //     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5">
 
-//       <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl">
+//       <div className="w-full max-w-xl rounded-3xl bg-[#fffdf0] shadow-2xl">
 
 //         {/* Header */}
 
@@ -199,7 +199,7 @@
 //                   e.target.value
 //                 )
 //               }
-//               className="w-full rounded-xl border p-3 outline-none focus:border-rose-500"
+//               className="w-full rounded-xl border p-3 outline-none focus:border-[#ff4d6d]"
 //               placeholder="Invitation Cards"
 //             />
 
@@ -218,7 +218,7 @@
 //                   e.target.value
 //                 )
 //               }
-//               className="w-full rounded-xl border p-3 outline-none focus:border-rose-500"
+//               className="w-full rounded-xl border p-3 outline-none focus:border-[#ff4d6d]"
 //             >
 //               {categories.map(
 //                 (item) => (
@@ -249,7 +249,7 @@
 //                     e.target.value
 //                   )
 //                 }
-//                 className="w-full rounded-xl border p-3 outline-none focus:border-rose-500"
+//                 className="w-full rounded-xl border p-3 outline-none focus:border-[#ff4d6d]"
 //               />
 
 //             </div>
@@ -268,7 +268,7 @@
 //                     e.target.value
 //                   )
 //                 }
-//                 className="w-full rounded-xl border p-3 outline-none focus:border-rose-500"
+//                 className="w-full rounded-xl border p-3 outline-none focus:border-[#ff4d6d]"
 //               />
 
 //             </div>
@@ -289,7 +289,7 @@
 //                   e.target.value
 //                 )
 //               }
-//               className="w-full rounded-xl border p-3 outline-none focus:border-rose-500"
+//               className="w-full rounded-xl border p-3 outline-none focus:border-[#ff4d6d]"
 //             />
 
 //           </div>
@@ -309,7 +309,7 @@
 
 //           <button
 //             onClick={handleSubmit}
-//             className="rounded-xl bg-rose-500 px-6 py-3 font-semibold text-white hover:bg-rose-600"
+//             className="rounded-xl bg-[#ff4d6d] px-6 py-3 font-semibold text-white hover:bg-[#e63b5f]"
 //           >
 //             {expense
 //               ? "Update Expense"
@@ -439,16 +439,16 @@ export default function ExpenseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5">
-      <div className="w-full max-w-xl rounded-3xl bg-white text-gray-700 shadow-2xl">
+      <div className="w-full max-w-xl rounded-3xl bg-[#fffdf0] text-[#6c2d45] shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-7 py-5">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
             {expense ? "Edit Expense" : "Add Expense"}
           </h2>
 
           <button
             onClick={onClose}
-            className="text-gray-500 transition hover:text-gray-700"
+            className="text-[#8d6171] transition hover:text-[#6c2d45]"
           >
             <X />
           </button>
@@ -457,7 +457,7 @@ export default function ExpenseModal({
         {/* Body */}
         <div className="space-y-5 p-7">
           <div>
-            <label className="mb-2 block font-medium text-gray-700">
+            <label className="mb-2 block font-medium text-[#6c2d45]">
               Expense Title
             </label>
 
@@ -465,19 +465,19 @@ export default function ExpenseModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Invitation Cards"
-              className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-rose-500"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1] outline-none transition focus:border-[#ff4d6d]"
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-medium text-gray-700">
+            <label className="mb-2 block font-medium text-[#6c2d45]">
               Category
             </label>
 
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none transition focus:border-[#ff4d6d]"
             >
               {categories.map((item) => (
                 <option key={item} value={item}>
@@ -489,7 +489,7 @@ export default function ExpenseModal({
 
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label className="mb-2 block font-medium text-gray-700">
+              <label className="mb-2 block font-medium text-[#6c2d45]">
                 Amount
               </label>
 
@@ -497,12 +497,12 @@ export default function ExpenseModal({
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500"
+                className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none transition focus:border-[#ff4d6d]"
               />
             </div>
 
             <div>
-              <label className="mb-2 block font-medium text-gray-700">
+              <label className="mb-2 block font-medium text-[#6c2d45]">
                 Expense Date
               </label>
 
@@ -510,13 +510,13 @@ export default function ExpenseModal({
                 type="date"
                 value={expenseDate}
                 onChange={(e) => setExpenseDate(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500"
+                className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none transition focus:border-[#ff4d6d]"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block font-medium text-gray-700">
+            <label className="mb-2 block font-medium text-[#6c2d45]">
               Notes
             </label>
 
@@ -525,7 +525,7 @@ export default function ExpenseModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Enter any additional notes..."
-              className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-rose-500"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1] outline-none transition focus:border-[#ff4d6d]"
             />
           </div>
         </div>
@@ -534,14 +534,14 @@ export default function ExpenseModal({
         <div className="flex justify-end gap-3 border-t px-7 py-5">
           <button
             onClick={onClose}
-            className="rounded-xl border border-gray-300 px-5 py-3 text-gray-700 transition hover:bg-gray-100"
+            className="rounded-xl border border-[#ffb3bf] px-5 py-3 text-[#6c2d45] transition hover:bg-[#fff8d8]"
           >
             Cancel
           </button>
 
           <button
             onClick={handleSubmit}
-            className="rounded-xl bg-rose-500 px-6 py-3 font-semibold text-white transition hover:bg-rose-600"
+            className="rounded-xl bg-[#ff4d6d] px-6 py-3 font-semibold text-white transition hover:bg-[#e63b5f]"
           >
             {expense ? "Update Expense" : "Add Expense"}
           </button>

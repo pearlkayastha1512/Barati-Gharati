@@ -39,24 +39,24 @@ export default function Timeline() {
       className="
         rounded-3xl
         border
-        border-gray-200
+        border-[#ffb3bf]
         bg-white
         p-7
         shadow-sm
       "
     >
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-[#3f1d2f]">
           Planning Timeline
         </h2>
 
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-[#8d6171]">
           Upcoming planner milestones.
         </p>
       </div>
 
       {timeline.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-gray-500">
+        <div className="rounded-2xl border border-dashed border-[#ffb3bf] py-12 text-center text-[#8d6171]">
           No planner tasks available.
         </div>
       ) : (
@@ -72,8 +72,8 @@ export default function Timeline() {
                   className={`absolute left-[17px] top-10 h-full w-[2px] ${
                     task.status ===
                     "COMPLETED"
-                      ? "bg-green-400"
-                      : "bg-gray-200"
+                      ? "bg-[#ff8fa1]"
+                      : "bg-[#ffe6eb]"
                   }`}
                 />
               )}
@@ -82,33 +82,33 @@ export default function Timeline() {
                 className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full ${
                   task.status ===
                   "COMPLETED"
-                    ? "bg-green-100"
-                    : "bg-rose-100"
+                    ? "bg-[#fff8d8]"
+                    : "bg-[#ffe6eb]"
                 }`}
               >
                 {task.status ===
                 "COMPLETED" ? (
                   <CheckCircle2
                     size={20}
-                    className="text-green-600"
+                    className="text-[#111111]"
                   />
                 ) : (
                   <CalendarDays
                     size={18}
-                    className="text-rose-500"
+                    className="text-[#ff4d6d]"
                   />
                 )}
               </div>
 
-              <div className="flex-1 rounded-2xl border border-gray-100 p-4 transition hover:border-rose-200 hover:bg-rose-50/30">
+              <div className="flex-1 rounded-2xl border border-[#fff3b0] p-4 transition hover:border-[#ff8fa1] hover:bg-[#ffe6eb]/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-[#3f1d2f]">
                       {task.title}
                     </h3>
 
                     {task.description && (
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-[#8d6171]">
                         {task.description}
                       </p>
                     )}
@@ -118,15 +118,15 @@ export default function Timeline() {
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                       task.status ===
                       "COMPLETED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-rose-100 text-rose-600"
+                        ? "bg-[#fff8d8] text-[#111111]"
+                        : "bg-[#ffe6eb] text-[#ff4d6d]"
                     }`}
                   >
                     {task.status.toLowerCase()}
                   </span>
                 </div>
 
-                <p className="mt-3 text-sm text-gray-500">
+                <p className="mt-3 text-sm text-[#8d6171]">
                   {new Date(
                     task.date
                   ).toLocaleDateString(

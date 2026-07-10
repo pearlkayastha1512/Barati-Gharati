@@ -75,15 +75,15 @@ const handleLogout = () => {
 };
   return (
     // <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white lg:flex">
-<aside className="sticky left-0 top-0 hidden h-screen w-72 border-r border-gray-200 bg-white lg:flex">
+<aside className="sticky left-0 top-0 hidden h-screen w-72 border-r border-[#ffb3bf] bg-[#fffef7] lg:flex">
 
       <div className="flex h-full w-full flex-col">
       
 
-        <div className="border-b border-gray-100 p-6">
+        <div className="border-b border-[#ffcad3] p-6">
           <Link
             href="/"
-            className="block rounded-3xl bg-white p-4 shadow-xl ring-1 ring-gray-100"
+            className="block rounded-3xl bg-white p-4 shadow-xl shadow-[#ff4d6d]/10 ring-1 ring-[#ff9aaa]/35"
             aria-label="Barati Gharati home"
           >
             <BrandLogo className="h-24 w-full" />
@@ -94,8 +94,8 @@ const handleLogout = () => {
 
         <nav className="flex-1 overflow-y-auto px-4 py-6">
 
-          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-            Main Menu
+          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#b85f7b]">
+            Wedding Plan
           </p>
 
           <div className="space-y-2">
@@ -115,8 +115,8 @@ const handleLogout = () => {
 
                   ${
                     active
-                      ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg"
-                      : "text-gray-600 hover:bg-rose-50 hover:text-rose-500"
+                      ? "bg-gradient-to-r from-[#ff4d6d] to-[#ff8fa1] text-[#3a1b2a] shadow-lg shadow-[#ff4d6d]/25"
+                      : "text-[#7a4a5c] hover:bg-[#ffe6eb] hover:text-[#ff4d6d]"
                   }`}
                 >
 
@@ -150,19 +150,19 @@ const handleLogout = () => {
 
         {/* Bottom */}
 
-        <div className="border-t border-gray-100 p-5">
+        <div className="border-t border-[#ffcad3] p-5">
 
-          <div className="rounded-3xl bg-rose-50 p-5">
+          <div className="rounded-3xl border border-[#ffb3bf] bg-[#ffe6eb] p-5 shadow-sm">
 
-            <h3 className="font-semibold text-gray-800">
-              Need Help?
+            <h3 className="font-semibold text-[#6c2d45]">
+              Planning Help
             </h3>
 
-            <p className="mt-2 text-sm text-gray-500">
-              Wedding experts are available 24×7.
+            <p className="mt-2 text-sm text-[#8d6171]">
+              Talk to us for venues, vendors, and budget guidance.
             </p>
         <Link href="/contact">
-            <button className="mt-5 w-full rounded-2xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-600">
+            <button className="mt-5 w-full rounded-2xl bg-[#ff4d6d] py-3 font-semibold text-white transition hover:bg-[#e63b5f]">
               Contact Support
             </button>
 </Link>

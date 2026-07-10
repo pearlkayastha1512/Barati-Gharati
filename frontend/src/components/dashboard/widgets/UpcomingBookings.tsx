@@ -16,24 +16,24 @@ export default function UpcomingBookings() {
   (state) => state.bookings
 );
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-3xl border border-[#ffb3bf] bg-white/90 shadow-sm shadow-[#ff4d6d]/5">
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-7 py-6">
+      <div className="flex items-center justify-between border-b border-[#ffcad3] px-7 py-6">
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Upcoming Bookings
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
+            Upcoming Wedding Stops
           </h2>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Your scheduled meetings & visits.
+          <p className="mt-1 text-sm text-[#8d6171]">
+            Your next vendor visits and celebration checkpoints.
           </p>
         </div>
 
         <Link
           href="/customer/bookings"
-          className="flex items-center gap-2 font-semibold text-rose-500 transition hover:text-rose-600"
+          className="flex items-center gap-2 font-semibold text-[#ff4d6d] transition hover:text-[#ff4d6d]"
         >
           View All
           <ArrowRight size={16} />
@@ -42,7 +42,7 @@ export default function UpcomingBookings() {
       </div>
 
       {/* Booking List */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-[#fff6c7]">
 
        {bookings
   .filter(
@@ -58,18 +58,18 @@ export default function UpcomingBookings() {
   .map((booking) => (
           <div
             key={booking.id}
-            className="flex items-center justify-between px-7 py-5 transition hover:bg-rose-50"
+            className="flex items-center justify-between px-7 py-5 transition hover:bg-[#ffe6eb]"
           >
             <div>
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-[#3f1d2f]">
                {booking.vendorName}
               </h3>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-[#8d6171]">
                {booking.packageName}
               </p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[#8d6171]">
 
                 <span className="flex items-center gap-1">
                   <CalendarDays size={15} />
@@ -97,7 +97,7 @@ export default function UpcomingBookings() {
 
            <Link
   href={`/customer/bookings/${booking.id}`}
-  className="rounded-xl bg-rose-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+  className="rounded-xl bg-[#ff4d6d] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#e63b5f]"
 >
   Details
 </Link>

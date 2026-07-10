@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 
 import {
   Heart,
-  Eye,
   CalendarDays,
   Star,
 } from "lucide-react";
@@ -42,28 +41,28 @@ export default function WishlistSummary() {
         value: wishlist.length.toString(),
         subtitle: "Currently saved",
         icon: Heart,
-        color: "bg-rose-100 text-rose-600",
+        color: "bg-[#ffe6eb] text-[#ff4d6d]",
       },
       // {
       //   title: "Viewed",
       //   value: "-",
       //   subtitle: "Coming Soon",
       //   icon: Eye,
-      //   color: "bg-blue-100 text-blue-600",
+      //   color: "bg-[#ffe6eb] text-[#ff4d6d]",
       // },
       {
         title: "Ready to Book",
         value: readyToBook.toString(),
         subtitle: "Not booked yet",
         icon: CalendarDays,
-        color: "bg-green-100 text-green-600",
+        color: "bg-[#fff8d8] text-[#111111]",
       },
       {
         title: "Favorites",
         value: favorites.toString(),
         subtitle: "Rated 4.5★ & above",
         icon: Star,
-        color: "bg-yellow-100 text-yellow-600",
+        color: "bg-[#fff3b0] text-[#111111]",
       },
     ];
   }, [wishlist, bookings]);
@@ -81,7 +80,7 @@ export default function WishlistSummary() {
             transition={{
               delay: index * 0.08,
             }}
-            className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+            className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
           >
             <div className="flex justify-between">
               <div className={`rounded-2xl p-3 ${item.color}`}>
@@ -89,15 +88,15 @@ export default function WishlistSummary() {
               </div>
             </div>
 
-            <h3 className="mt-6 text-sm text-gray-500">
+            <h3 className="mt-6 text-sm text-[#8d6171]">
               {item.title}
             </h3>
 
-            <p className="mt-2 text-4xl font-bold text-gray-900">
+            <p className="mt-2 text-4xl font-bold text-[#3f1d2f]">
               {item.value}
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               {item.subtitle}
             </p>
           </motion.div>

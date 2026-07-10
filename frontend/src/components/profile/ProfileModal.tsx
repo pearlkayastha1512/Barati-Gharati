@@ -52,15 +52,15 @@ export default function ProfileModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-8 text-gray-700">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-[#fffdf0] p-8 text-[#6c2d45]">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-3xl font-bold text-gray-800">
+          <h2 className="text-3xl font-bold text-[#3f1d2f]">
             Edit Profile
           </h2>
 
           <button
             onClick={onClose}
-            className="text-gray-500 transition hover:text-gray-700"
+            className="text-[#8d6171] transition hover:text-[#6c2d45]"
           >
             <X size={24} />
           </button>
@@ -69,7 +69,7 @@ export default function ProfileModal({
         <div className="grid gap-8 md:grid-cols-2">
           {/* Personal */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Personal Information
             </h3>
 
@@ -82,7 +82,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Full Name"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -94,7 +94,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Email"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -106,7 +106,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Phone"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -118,13 +118,13 @@ export default function ProfileModal({
                 })
               }
               placeholder="Gender"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
           </div>
 
           {/* Contact */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Contact Information
             </h3>
 
@@ -137,7 +137,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Address"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -149,7 +149,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="City"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -161,7 +161,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="State"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -173,13 +173,13 @@ export default function ProfileModal({
                 })
               }
               placeholder="Country"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
           </div>
 
           {/* Partner */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Partner Information
             </h3>
 
@@ -192,7 +192,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Partner Name"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -204,7 +204,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Partner Email"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -216,7 +216,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Partner Phone"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -228,13 +228,13 @@ export default function ProfileModal({
                 })
               }
               placeholder="Occupation"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
           </div>
 
           {/* Wedding */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Wedding Information
             </h3>
 
@@ -247,7 +247,7 @@ export default function ProfileModal({
                   weddingDate: e.target.value,
                 })
               }
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45]"
             />
 
             <input
@@ -259,7 +259,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Venue"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -272,7 +272,7 @@ export default function ProfileModal({
                 })
               }
               placeholder="Guests"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
 
             <input
@@ -284,14 +284,14 @@ export default function ProfileModal({
                 })
               }
               placeholder="Theme"
-              className="w-full rounded-xl border border-gray-200 p-3 text-gray-700 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1]"
             />
           </div>
         </div>
 
         <button
           onClick={save}
-          className="mt-8 w-full rounded-2xl bg-rose-500 py-4 font-semibold text-white transition hover:bg-rose-600"
+          className="mt-8 w-full rounded-2xl bg-[#ff4d6d] py-4 font-semibold text-white transition hover:bg-[#e63b5f]"
         >
           Save Changes
         </button>

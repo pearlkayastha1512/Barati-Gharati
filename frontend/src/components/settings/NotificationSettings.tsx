@@ -40,9 +40,9 @@ export default function NotificationSettings() {
   };
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
 
-      <h2 className="text-2xl font-bold text-rose-500">
+      <h2 className="text-2xl font-bold text-[#ff4d6d]">
         Notifications
       </h2>
 
@@ -117,7 +117,7 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between">
 
-      <span className="font-medium text-gray-700">
+      <span className="font-medium text-[#6c2d45]">
         {title}
       </span>
 
@@ -125,12 +125,12 @@ function ToggleRow({
         onClick={onChange}
         className={`relative h-7 w-12 rounded-full transition ${
           checked
-            ? "bg-rose-500"
-            : "bg-gray-300"
+            ? "bg-[#ff4d6d]"
+            : "bg-[#ffb3bf]"
         }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
+          className={`absolute top-1 h-5 w-5 rounded-full bg-[#fffdf0] transition ${
             checked
               ? "left-6"
               : "left-1"

@@ -103,23 +103,23 @@
 //   }, [expenses]);
 
 //   return (
-//     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+//     <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
 
 //       <div className="flex items-center justify-between">
 
 //         <div>
 
-//           <h2 className="text-2xl font-bold text-gray-900">
+//           <h2 className="text-2xl font-bold text-[#3f1d2f]">
 //             Expense Analytics
 //           </h2>
 
-//           <p className="mt-1 text-gray-500">
+//           <p className="mt-1 text-[#8d6171]">
 //             Monthly wedding spending.
 //           </p>
 
 //         </div>
 
-//         <div className="rounded-2xl bg-green-50 px-4 py-2 text-green-600">
+//         <div className="rounded-2xl bg-[#fff8d8] px-4 py-2 text-[#111111]">
 
 //           <div className="flex items-center gap-2">
 
@@ -150,15 +150,15 @@
 //           w-full
 //           rounded-t-2xl
 //           bg-gradient-to-t
-//           from-emerald-500
-//           to-green-300
+//           from-[#ff4d6d]
+//           to-[#fff3b0]
 //           transition-all
 //           duration-500
 //           hover:scale-105
 //         "
 //       />
 
-//       <span className="mt-3 text-sm text-gray-500">
+//       <span className="mt-3 text-sm text-[#8d6171]">
 //         {item.month}
 //       </span>
 //     </div>
@@ -167,31 +167,31 @@
 
 //       <div className="mt-8 grid gap-4 md:grid-cols-3">
 
-//         <div className="rounded-2xl bg-gray-50 p-4">
+//         <div className="rounded-2xl bg-[#fffdf0] p-4">
 
-//           <p className="text-sm text-gray-500">
+//           <p className="text-sm text-[#8d6171]">
 //             Highest Expense
 //           </p>
 
-//           <p className="mt-2 font-bold text-gray-900">
+//           <p className="mt-2 font-bold text-[#3f1d2f]">
 //             {highestCategory}
 //           </p>
 
 //         </div>
 
-//         <div className="rounded-2xl bg-gray-50 p-4">
+//         <div className="rounded-2xl bg-[#fffdf0] p-4">
 
-//           <p className="text-sm text-gray-500">
+//           <p className="text-sm text-[#8d6171]">
 //             Lowest Expense
 //           </p>
 
-//           <p className="mt-2 font-bold text-gray-900">
+//           <p className="mt-2 font-bold text-[#3f1d2f]">
 //             {lowestCategory}
 //           </p>
 
 //         </div>
 
-//         <div className="rounded-2xl bg-gray-50 p-4">
+//         <div className="rounded-2xl bg-[#fffdf0] p-4">
 
 //           <div className="flex items-center gap-2">
 
@@ -206,7 +206,7 @@
 
 //           </div>
 
-//           <p className="mt-2 text-sm text-gray-500">
+//           <p className="mt-2 text-sm text-[#8d6171]">
 //             Updated automatically with every expense.
 //           </p>
 
@@ -326,19 +326,19 @@ export default function ExpenseChart() {
   }, [expenses]);
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
             Expense Analytics
           </h2>
 
-          <p className="mt-1 text-gray-500">
+          <p className="mt-1 text-[#8d6171]">
             Monthly wedding spending.
           </p>
         </div>
 
-        <div className="rounded-2xl bg-green-50 px-4 py-2 text-green-600">
+        <div className="rounded-2xl bg-[#fff8d8] px-4 py-2 text-[#111111]">
           <div className="flex items-center gap-2">
             <TrendingUp size={18} />
 
@@ -364,15 +364,15 @@ export default function ExpenseChart() {
                 w-full
                 rounded-t-2xl
                 bg-gradient-to-t
-                from-emerald-500
-                to-green-300
+                from-[#ff4d6d]
+                to-[#fff3b0]
                 transition-all
                 duration-500
                 hover:scale-105
               "
             />
 
-            <span className="mt-3 text-sm text-gray-500">
+            <span className="mt-3 text-sm text-[#8d6171]">
               {item.month}
             </span>
           </div>
@@ -380,27 +380,27 @@ export default function ExpenseChart() {
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-gray-50 p-4">
-          <p className="text-sm text-gray-500">
+        <div className="rounded-2xl bg-[#fffdf0] p-4">
+          <p className="text-sm text-[#8d6171]">
             Highest Expense
           </p>
 
-          <p className="mt-2 font-bold text-gray-900">
+          <p className="mt-2 font-bold text-[#3f1d2f]">
             {highestCategory}
           </p>
         </div>
 
-        <div className="rounded-2xl bg-gray-50 p-4">
-          <p className="text-sm text-gray-500">
+        <div className="rounded-2xl bg-[#fffdf0] p-4">
+          <p className="text-sm text-[#8d6171]">
             Lowest Expense
           </p>
 
-          <p className="mt-2 font-bold text-gray-900">
+          <p className="mt-2 font-bold text-[#3f1d2f]">
             {lowestCategory}
           </p>
         </div>
 
-        <div className="rounded-2xl bg-gray-50 p-4">
+        <div className="rounded-2xl bg-[#fffdf0] p-4">
           <div className="flex items-center gap-2">
             <TrendingDown
               size={18}
@@ -412,7 +412,7 @@ export default function ExpenseChart() {
             </p>
           </div>
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-[#8d6171]">
             Updated automatically with every expense.
           </p>
         </div>

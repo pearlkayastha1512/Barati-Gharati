@@ -101,8 +101,8 @@ const handleLogout = () => {
 
 <Link href="/">
         <div className="border-b border-[#f7dcb8] p-6">
-          <div className="rounded-3xl bg-white p-4 shadow-xl shadow-[#e4005a]/10 ring-1 ring-[#ffc43d]/35">
-            <BrandLogo className="h-24 w-full" />
+          <div className="rounded-3xl bg-white px-3 py-4 shadow-xl shadow-[#e4005a]/10 ring-1 ring-[#ffc43d]/35">
+            <BrandLogo className="h-24 w-full min-w-[190px]" />
           </div>
         </div>
 

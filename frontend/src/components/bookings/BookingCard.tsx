@@ -32,19 +32,19 @@ export default function BookingCard({
 
   const statusColor = {
     pending:
-      "bg-yellow-100 text-yellow-700",
+      "bg-[#fff3b0] text-[#111111]",
 
     accepted:
-      "bg-green-100 text-green-700",
+      "bg-[#fff8d8] text-[#111111]",
 
     completed:
-      "bg-blue-100 text-blue-700",
+      "bg-[#ffe6eb] text-[#ff4d6d]",
 
     cancelled:
-      "bg-red-100 text-red-700",
+      "bg-[#ffe6eb] text-[#e63b5f]",
 
     rejected:
-      "bg-red-100 text-red-700",
+      "bg-[#ffe6eb] text-[#e63b5f]",
   };
 
   return (
@@ -53,8 +53,8 @@ export default function BookingCard({
         className="
           rounded-3xl
           border
-          border-gray-200
-          bg-white
+          border-[#ffb3bf]
+          bg-[#fffdf0]
           p-6
           shadow-sm
           transition-all
@@ -81,11 +81,11 @@ export default function BookingCard({
             <div>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-[#3f1d2f]">
                     {booking.vendorName}
                   </h2>
 
-                  <p className="mt-1 text-gray-500">
+                  <p className="mt-1 text-[#8d6171]">
                     {booking.category} · {booking.eventType}
                   </p>
                 </div>
@@ -101,10 +101,10 @@ export default function BookingCard({
                 <div className="flex items-center gap-3">
                   <CalendarDays
                     size={18}
-                    className="text-indigo-500"
+                    className="text-[#ff4d6d]"
                   />
 
-                  <span className="text-gray-700">
+                  <span className="text-[#6c2d45]">
                     {booking.eventDate}
                   </span>
                 </div>
@@ -112,10 +112,10 @@ export default function BookingCard({
                 <div className="flex items-center gap-3">
                   <Clock3
                     size={18}
-                    className="text-indigo-500"
+                    className="text-[#ff4d6d]"
                   />
 
-                  <span className="text-gray-700">
+                  <span className="text-[#6c2d45]">
                     {booking.eventTime || "--"}
                   </span>
                 </div>
@@ -123,10 +123,10 @@ export default function BookingCard({
                 <div className="flex items-center gap-3">
                   <MapPin
                     size={18}
-                    className="text-indigo-500"
+                    className="text-[#ff4d6d]"
                   />
 
-                  <span className="text-gray-700">
+                  <span className="text-[#6c2d45]">
                     {booking.city || "--"}
                   </span>
                 </div>
@@ -134,10 +134,10 @@ export default function BookingCard({
                 <div className="flex items-center gap-3">
                   <IndianRupee
                     size={18}
-                    className="text-indigo-500"
+                    className="text-[#ff4d6d]"
                   />
 
-                  <span className="text-gray-700">
+                  <span className="text-[#6c2d45]">
                     ₹{booking.amount.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -145,24 +145,24 @@ export default function BookingCard({
 
               {/* Payment Section */}
 
-              <div className="mt-6 rounded-2xl border border-gray-100 bg-gray-50 p-5">
+              <div className="mt-6 rounded-2xl border border-[#ffb3bf] bg-[#fff8d8] p-5">
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#8d6171]">
                       Total Amount
                     </p>
 
-                    <p className="mt-1 font-semibold text-gray-900">
+                    <p className="mt-1 font-semibold text-[#3f1d2f]">
                       ₹{booking.amount.toLocaleString("en-IN")}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#8d6171]">
                       Advance Paid
                     </p>
 
-                    <p className="mt-1 font-semibold text-green-600">
+                    <p className="mt-1 font-semibold text-[#111111]">
                       ₹
                       {booking.advancePaid.toLocaleString(
                         "en-IN"
@@ -171,11 +171,11 @@ export default function BookingCard({
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#8d6171]">
                       Remaining
                     </p>
 
-                    <p className="mt-1 font-semibold text-red-500">
+                    <p className="mt-1 font-semibold text-[#e63b5f]">
                       ₹
                       {booking.remainingAmount.toLocaleString(
                         "en-IN"
@@ -209,8 +209,8 @@ export default function BookingCard({
                     ${
                       booking.paymentStatus ===
                       "paid"
-                        ? "cursor-not-allowed bg-green-100 text-green-700"
-                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        ? "cursor-not-allowed bg-[#fff8d8] text-[#111111]"
+                        : "bg-[#ff4d6d] text-white hover:bg-[#e63b5f]"
                     }
                   `}
                 >
@@ -248,8 +248,8 @@ export default function BookingCard({
       booking.paymentStatus === "paid" ||
       booking.paymentStatus === "partial" ||
       booking.bookingStatus === "cancelled"
-        ? "cursor-not-allowed bg-gray-200 text-gray-500"
-        : "bg-indigo-600 text-white hover:bg-indigo-700"
+        ? "cursor-not-allowed bg-[#ffe6eb] text-[#8d6171]"
+        : "bg-[#ff4d6d] text-white hover:bg-[#e63b5f]"
     }
   `}
 >
@@ -281,7 +281,7 @@ export default function BookingCard({
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={`/customer/bookings/${booking.id}`}
-                className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700"
+                className="flex items-center gap-2 rounded-2xl bg-[#ff4d6d] px-5 py-3 font-semibold text-white transition hover:bg-[#e63b5f]"
               >
                 <Eye size={18} />
 
@@ -298,13 +298,13 @@ export default function BookingCard({
                     items-center
                     gap-2
                     rounded-2xl
-                    bg-amber-500
+                    bg-[#ff4d6d]
                     px-5
                     py-3
                     font-semibold
                     text-white
                     transition
-                    hover:bg-amber-600
+                    hover:bg-[#e63b5f]
                   "
                 >
                   <Star size={18} />

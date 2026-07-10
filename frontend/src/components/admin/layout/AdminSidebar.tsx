@@ -86,18 +86,18 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white lg:flex">
+    <aside className="hidden h-screen w-72 shrink-0 border-r border-[#ffb3bf] bg-[#fffef7] lg:flex">
       <div className="flex h-full w-full flex-col">
         <Link href="/">
-          <div className="border-b border-slate-100 p-6">
-            <div className="rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-100">
-              <BrandLogo className="h-24 w-full" />
+          <div className="border-b border-[#ffcad3] p-6">
+            <div className="rounded-3xl bg-white px-3 py-4 shadow-xl shadow-[#ff4d6d]/10 ring-1 ring-[#ff9aaa]/35">
+              <BrandLogo className="h-24 w-full min-w-[190px]" />
             </div>
           </div>
         </Link>
 
         <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#b85f7b]">
             Administration
           </p>
 
@@ -114,8 +114,8 @@ export default function AdminSidebar() {
                   href={item.href}
                   className={`group flex items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 ${
                     active
-                      ? "bg-gradient-to-r from-slate-800 to-blue-700 text-white shadow-lg"
-                      : "text-slate-600 hover:bg-slate-100"
+                      ? "bg-gradient-to-r from-[#ff4d6d] to-[#ffb703] text-[#3a1b2a] shadow-lg shadow-[#ff4d6d]/25"
+                      : "text-[#7a4a5c] hover:bg-[#ffe6eb] hover:text-[#ff4d6d]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -140,13 +140,13 @@ export default function AdminSidebar() {
           </div>
         </nav>
 
-        <div className="border-t border-slate-100 p-5">
-          <div className="rounded-3xl bg-slate-100 p-5">
-            <h3 className="font-semibold text-slate-800">
+        <div className="border-t border-[#ffcad3] p-5">
+          <div className="rounded-3xl border border-[#ffb3bf] bg-[#ffe6eb] p-5 shadow-sm">
+            <h3 className="font-semibold text-[#6c2d45]">
               Platform Status
             </h3>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               Monitor vendors, customers, bookings and payments.
             </p>
 

@@ -65,12 +65,12 @@
 //       <WishlistFilters />
 
 //       {sortedWishlist.length === 0 ? (
-//         <div className="rounded-3xl border border-dashed border-gray-300 bg-white py-20 text-center">
-//           <h3 className="text-2xl font-semibold text-gray-700">
+//         <div className="rounded-3xl border border-dashed border-[#ffb3bf] bg-[#fffdf0] py-20 text-center">
+//           <h3 className="text-2xl font-semibold text-[#6c2d45]">
 //             Your wishlist is empty
 //           </h3>
 
-//           <p className="mt-3 text-gray-500">
+//           <p className="mt-3 text-[#8d6171]">
 //             Start exploring vendors and save your favourites.
 //           </p>
 //         </div>
@@ -160,12 +160,12 @@ export default function WishlistPage() {
       <WishlistFilters />
 
       {sortedWishlist.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-gray-300 bg-white py-20 text-center">
-          <h3 className="text-2xl font-semibold text-gray-700">
+        <div className="rounded-3xl border border-dashed border-[#ffb3bf] bg-[#fffdf0] py-20 text-center">
+          <h3 className="text-2xl font-semibold text-[#6c2d45]">
             Your wishlist is empty
           </h3>
 
-          <p className="mt-3 text-gray-500">
+          <p className="mt-3 text-[#8d6171]">
             Start exploring vendors
             and save your favourites.
           </p>

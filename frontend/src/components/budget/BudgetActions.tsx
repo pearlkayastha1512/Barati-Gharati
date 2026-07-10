@@ -15,21 +15,21 @@ export default function BudgetActions() {
 
   return (
     <>
-      <section className="flex flex-col gap-5 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+      <section className="flex flex-col gap-5 rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-6 shadow-sm md:flex-row md:items-center md:justify-between">
 
         <div>
 
           <div className="flex items-center gap-3">
 
-            <Receipt className="text-emerald-500" />
+            <Receipt className="text-[#ff4d6d]" />
 
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-[#3f1d2f]">
               Expense Manager
             </h2>
 
           </div>
 
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-[#8d6171]">
             Add and manage your wedding expenses.
           </p>
 
@@ -44,13 +44,13 @@ export default function BudgetActions() {
             items-center
             gap-2
             rounded-2xl
-            bg-emerald-500
+            bg-[#ff4d6d]
             px-6
             py-3
             font-semibold
             text-white
             transition
-            hover:bg-emerald-600
+            hover:bg-[#e63b5f]
           "
         >
           <Plus size={18} />

@@ -47,7 +47,7 @@
 //   };
 
 //   return (
-//     <div className="flex items-center gap-3 border-t border-slate-200 p-5">
+//     <div className="flex items-center gap-3 border-t border-[#ffb3bf] p-5">
 
 //       <input
 //         value={text}
@@ -55,12 +55,12 @@
 //           setText(e.target.value)
 //         }
 //         placeholder="Type a message..."
-//         className="flex-1 rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-rose-500 text-gray-600"
+//         className="flex-1 rounded-xl border border-[#ffb3bf] px-4 py-3 outline-none focus:border-[#ff4d6d] text-[#6c2d45]"
 //       />
 
 //       <button
 //         onClick={handleSend}
-//         className="rounded-xl bg-rose-500 p-3 text-white transition hover:bg-rose-600"
+//         className="rounded-xl bg-[#ff4d6d] p-3 text-white transition hover:bg-[#e63b5f]"
 //       >
 //         <SendHorizonal size={20} />
 //       </button>
@@ -121,17 +121,17 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 bg-white p-5">
+    <div className="flex shrink-0 items-center gap-3 border-t border-[#ffb3bf] bg-[#fffdf0] p-5">
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type a message..."
-        className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-gray-700 outline-none focus:border-rose-500"
+        className="flex-1 rounded-xl border border-[#ffb3bf] px-4 py-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
       />
 
       <button
         onClick={handleSend}
-        className="rounded-xl bg-rose-500 p-3 text-white transition hover:bg-rose-600"
+        className="rounded-xl bg-[#ff4d6d] p-3 text-white transition hover:bg-[#e63b5f]"
       >
         <SendHorizonal size={20} />
       </button>

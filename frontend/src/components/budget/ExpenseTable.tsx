@@ -37,17 +37,17 @@ export default function ExpenseTable() {
 
   return (
     <>
-      <section className="rounded-3xl border border-gray-200 bg-white shadow-sm">
+      <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] shadow-sm">
 
         {/* Header */}
 
-        <div className="border-b border-gray-100 px-7 py-6">
+        <div className="border-b border-[#fff3b0] px-7 py-6">
 
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
             Expense History
           </h2>
 
-          <p className="mt-1 text-gray-500">
+          <p className="mt-1 text-[#8d6171]">
             Manage all your wedding expenses.
           </p>
 
@@ -56,27 +56,27 @@ export default function ExpenseTable() {
         {/* Empty */}
 
         {sortedExpenses.length === 0 ? (
-          <div className="py-20 text-center text-gray-500">
+          <div className="py-20 text-center text-[#8d6171]">
             No expenses added yet.
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[#fff3b0]">
 
             {sortedExpenses.map(
               (expense) => (
                 <div
                   key={expense.id}
-                  className="flex flex-col gap-5 p-6 transition hover:bg-gray-50 lg:flex-row lg:items-center lg:justify-between"
+                  className="flex flex-col gap-5 p-6 transition hover:bg-[#fffdf0] lg:flex-row lg:items-center lg:justify-between"
                 >
                   <div>
 
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-[#3f1d2f]">
                       {expense.title}
                     </h3>
 
-                    <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                    <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-[#8d6171]">
 
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-600">
+                      <span className="rounded-full bg-[#fff8d8] px-3 py-1 font-medium text-[#ff4d6d]">
                         {expense.category}
                       </span>
 
@@ -100,7 +100,7 @@ export default function ExpenseTable() {
                     </div>
 
                     {expense.notes && (
-                      <p className="mt-3 text-sm text-gray-500">
+                      <p className="mt-3 text-sm text-[#8d6171]">
                         {expense.notes}
                       </p>
                     )}
@@ -109,7 +109,7 @@ export default function ExpenseTable() {
 
                   <div className="flex items-center gap-4">
 
-                    <div className="flex items-center gap-1 rounded-xl bg-green-50 px-4 py-2 font-bold text-green-600">
+                    <div className="flex items-center gap-1 rounded-xl bg-[#fff8d8] px-4 py-2 font-bold text-[#111111]">
 
                       <IndianRupee size={18} />
 
@@ -129,7 +129,7 @@ export default function ExpenseTable() {
                           true
                         );
                       }}
-                      className="rounded-xl border p-3 transition hover:bg-gray-100 text-gray-700"
+                      className="rounded-xl border p-3 transition hover:bg-[#fff8d8] text-[#6c2d45]"
                     >
                       <Pencil
                         size={18}

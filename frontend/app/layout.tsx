@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   },
   description:
     "Luxury wedding planning platform for couples and vendors.",
+  icons: {
+    icon: "/brand/barati-gharati-logo.png",
+    apple: "/brand/barati-gharati-logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -22,8 +22,11 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
         <View style={styles.logoBox}>
-          <Text style={styles.logoText1}>Barati</Text>
-          <Text style={styles.logoText2}>Gharati</Text>
+          <Image
+            source={require('../../../assets/Barati Gharati Logo new.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
 
         <Text style={styles.sectionLabel}>ADMINISTRATION</Text>
@@ -67,14 +70,17 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
 const styles = StyleSheet.create({
   logoBox: {
     margin: 16,
-    padding: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 12,
     alignItems: 'center',
+    backgroundColor: colors.white,
   },
-  logoText1: { color: colors.logoRed, fontSize: 20, fontWeight: '800' },
-  logoText2: { color: colors.logoOrange, fontSize: 20, fontWeight: '800' },
+  logoImage: {
+    width: '100%',
+    height: 86,
+  },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1,

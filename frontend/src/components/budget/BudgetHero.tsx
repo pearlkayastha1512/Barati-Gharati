@@ -41,12 +41,6 @@ const loadWeddingBudget = useCustomerStore(
   loadWeddingBudget();
 }, [loadWeddingBudget]);
 
-useEffect(() => {
-  setBudgetInput(
-    weddingBudget.toString()
-  );
-}, [weddingBudget]);
-
 const {
   totalSpent,
   budgetRemaining,
@@ -122,18 +116,18 @@ const {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 p-8 text-white shadow-xl"
+      className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#ff4d6d] via-[#ff8fa1] to-[#fff3b0] p-8 text-white shadow-xl"
     >
-      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
-      <div className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-2">
 
         {/* Left */}
 
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#fffdf0]/15 px-4 py-2 backdrop-blur">
             <Wallet size={16} />
 
             <span className="text-sm font-medium">
@@ -147,7 +141,7 @@ const {
             expense under control.
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-green-100">
+          <p className="mt-6 max-w-xl text-lg text-[#111111]">
             Track spending, monitor your remaining budget,
             and make smarter wedding planning decisions.
           </p>
@@ -155,7 +149,7 @@ const {
 
         {/* Right */}
 
-        <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <div className="rounded-3xl border border-white/70 bg-[#fff8d8]/90 p-6 text-[#111111] shadow-lg shadow-[#ff4d6d]/10 backdrop-blur">
 
           <div className="flex items-center justify-between">
 
@@ -171,17 +165,20 @@ const {
 
             {!editing ? (
               <button
-                onClick={() =>
-                  setEditing(true)
-                }
-                className="rounded-xl bg-white/20 p-2 transition hover:bg-white/30"
+                onClick={() => {
+                  setBudgetInput(
+                    weddingBudget.toString()
+                  );
+                  setEditing(true);
+                }}
+                className="rounded-xl bg-white/70 p-2 text-[#111111] transition hover:bg-[#ffe6eb]"
               >
                 <Pencil size={18} />
               </button>
             ) : (
               <button
                 onClick={saveBudget}
-                className="rounded-xl bg-white/20 p-2 transition hover:bg-white/30"
+                className="rounded-xl bg-white/70 p-2 text-[#111111] transition hover:bg-[#ffe6eb]"
               >
                 <Check size={18} />
               </button>
@@ -256,13 +253,13 @@ const {
 
             </div>
 
-            <div className="h-3 rounded-full bg-white/20">
+            <div className="h-3 rounded-full bg-white/70">
 
               <div
                 style={{
                   width: `${Math.min(percentage,100)}%`,
                 }}
-                className="h-3 rounded-full bg-white"
+                className="h-3 rounded-full bg-[#ff4d6d]"
               />
 
             </div>

@@ -12,7 +12,7 @@ export default function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#fff5f7] text-[#3a1b2a]">
 
       {/* Sidebar */}
       <Sidebar />
@@ -24,7 +24,7 @@ export default function DashboardLayout({
         <Header />
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(255,77,109,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(255,77,109,0.1),transparent_30%),linear-gradient(135deg,#fffdf0_0%,#ffe6eb_46%,#fffef7_100%)]">
           <div className="mx-auto w-full max-w-[1600px] p-8">
             {children}
           </div>
@@ -35,4 +35,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-
