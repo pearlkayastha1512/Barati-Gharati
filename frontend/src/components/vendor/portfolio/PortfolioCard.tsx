@@ -64,7 +64,7 @@ export default function PortfolioCard({
           <div className="flex gap-2">
             <button
               onClick={onEdit}
-              className="rounded-xl bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
+              className="rounded-xl bg-[#fff8ef] p-2 text-[#e4005a] transition hover:bg-[#ffe1ec]"
             >
               <Pencil size={18} />
             </button>

@@ -4,10 +4,12 @@ import OwnerInformation from "@/components/vendor/profile/OwnerInformation";
 import BusinessDetails from "@/components/vendor/profile/BusinessDetails";
 import SocialLinks from "@/components/vendor/profile/SocialLinks";
 import VerificationCard from "@/components/vendor/profile/VerificationCard";
+import VendorProfileShell from "@/components/vendor/profile/VendorProfileShell";
 
 export default function VendorProfilePage() {
   return (
-    <div className="space-y-8">
+    <VendorProfileShell>
+      <div className="space-y-8">
 
       <ProfileHero />
 
@@ -31,6 +33,7 @@ export default function VendorProfilePage() {
 
       </section>
 
-    </div>
+      </div>
+    </VendorProfileShell>
   );
 }

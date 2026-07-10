@@ -1,6 +1,7 @@
 import { VendorRegistrationForm } from "@/types/vendorRegistration";
 import { VendorSettings } from "@/types/vendorSettings";
 import { Vendor } from "@/types/vendor";
+import { VendorBadge } from "@/constants/vendor-badges";
 
 import {
   getVendorsApi,
@@ -66,6 +67,14 @@ export interface StoredVendor {
     | "pending"
     | "approved"
     | "rejected";
+
+  badge: VendorBadge;
+
+  monthlyBookingLimit: number;
+
+  currentMonthBookings: number;
+
+  badgePurchasedAt?: string | null;
 
   isActive: boolean;
 
@@ -186,6 +195,10 @@ type ApiVendorProfile = {
   bankVerified: boolean;
   documentsUploaded: boolean;
   status: string;
+  badge?: string;
+  monthlyBookingLimit?: number;
+  currentMonthBookings?: number;
+  badgePurchasedAt?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -250,6 +263,19 @@ function mapStoredVendor(
 
     approvalStatus:
   vendor.status.toLowerCase() as StoredVendor["approvalStatus"],
+
+    badge:
+      (vendor.badge?.toLowerCase() ??
+        "bronze") as VendorBadge,
+
+    monthlyBookingLimit:
+      vendor.monthlyBookingLimit ?? 5,
+
+    currentMonthBookings:
+      vendor.currentMonthBookings ?? 0,
+
+    badgePurchasedAt:
+      vendor.badgePurchasedAt ?? null,
 
     isActive: vendor.isActive,
 

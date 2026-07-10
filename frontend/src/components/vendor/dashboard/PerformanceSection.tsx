@@ -62,13 +62,13 @@ export default function PerformanceSection() {
   }, [bookings]);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#f4c8a0] bg-white/90 p-7 shadow-sm shadow-[#e4005a]/5">
 
-      <h2 className="text-2xl font-bold text-slate-900">
+      <h2 className="text-2xl font-bold text-[#4d1730]">
         Business Performance
       </h2>
 
-      <p className="mt-2 text-slate-500">
+      <p className="mt-2 text-[#946176]">
         Live insights based on your
         bookings.
       </p>
@@ -78,13 +78,13 @@ export default function PerformanceSection() {
         {metrics.map((metric) => (
           <div
             key={metric.title}
-            className="rounded-2xl bg-slate-50 p-5 transition hover:bg-slate-100"
+            className="rounded-2xl border border-[#ffe0a3] bg-[#fff8ef] p-5 transition hover:bg-[#fff1cf]"
           >
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#946176]">
               {metric.title}
             </p>
 
-            <p className="mt-2 text-3xl font-bold text-slate-900">
+            <p className="mt-2 text-3xl font-bold text-[#4d1730]">
               {metric.value}
             </p>
           </div>

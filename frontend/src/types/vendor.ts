@@ -1,4 +1,4 @@
-
+import { VendorBadge } from "@/constants/vendor-badges";
 
 export interface Vendor {
   id: number;
@@ -24,6 +24,12 @@ export interface Vendor {
   images: string[];
 
   featured: boolean;
+
+  badge?: VendorBadge;
+
+  monthlyBookingLimit?: number;
+
+  currentMonthBookings?: number;
 
   description: string;
 

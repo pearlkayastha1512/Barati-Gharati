@@ -36,6 +36,8 @@ export class BookingsService {
       throw new ForbiddenException('Vendor is not approved by admin');
     }
 
+    await this.ensureVendorBookingCapacity(vendor);
+
     // Find package by vendor + package title
     const pkg = await this.prisma.package.findFirst({
       where: {
@@ -87,6 +89,14 @@ export class BookingsService {
 
         groomName: dto.groomName,
 
+        eventTitle: dto.eventTitle,
+
+        primaryPersonName: dto.primaryPersonName,
+
+        primaryPersonAge: dto.primaryPersonAge,
+
+        eventTheme: dto.eventTheme,
+
         partnerName: dto.partnerName,
 
         partnerEmail: dto.partnerEmail,
@@ -127,11 +137,6 @@ export class BookingsService {
           },
         },
       },
-    });
-
-    await this.notificationsService.create(vendor.userId, {
-      title: 'New Booking Request',
-      message: `${booking.customerName ?? booking.user.name} requested ${booking.package.title} for ${booking.eventType ?? 'an event'}.`,
     });
 
     return this.mapBooking(booking);
@@ -263,6 +268,12 @@ export class BookingsService {
 
   async accept(id: string, userId: string) {
     const booking = await this.getVendorBooking(id, userId);
+
+    if (!booking.adminApproved) {
+      throw new ForbiddenException(
+        'Admin approval is required before the vendor can accept this booking',
+      );
+    }
 
     if (booking.status !== BookingStatus.PENDING)
       throw new BadRequestException('Only PENDING bookings can be accepted');
@@ -605,6 +616,39 @@ export class BookingsService {
     }
   }
 
+  private async ensureVendorBookingCapacity(vendor: {
+    id: string;
+    badge: string;
+    monthlyBookingLimit: number;
+  }) {
+    const now = new Date();
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+    const currentMonthBookings =
+      await this.prisma.booking.count({
+        where: {
+          vendorId: vendor.id,
+          createdAt: {
+            gte: start,
+            lt: end,
+          },
+          status: {
+            notIn: [
+              BookingStatus.CANCELLED,
+              BookingStatus.REJECTED,
+            ],
+          },
+        },
+      });
+
+    if (currentMonthBookings >= vendor.monthlyBookingLimit) {
+      throw new BadRequestException(
+        `${vendor.badge} badge limit reached. Upgrade your plan for further bookings.`,
+      );
+    }
+  }
+
   private getDateRange(date: Date) {
     const start = new Date(date);
     start.setUTCHours(0, 0, 0, 0);
@@ -656,6 +700,14 @@ export class BookingsService {
 
       groomName: booking.groomName ?? '',
 
+      eventTitle: booking.eventTitle ?? '',
+
+      primaryPersonName: booking.primaryPersonName ?? '',
+
+      primaryPersonAge: booking.primaryPersonAge ?? null,
+
+      eventTheme: booking.eventTheme ?? booking.weddingTheme ?? '',
+
       partnerName: booking.partnerName ?? '',
 
       partnerEmail: booking.partnerEmail ?? '',
@@ -683,6 +735,10 @@ export class BookingsService {
       paymentStatus: this.mapPaymentStatus(
         booking.paymentStatus,
       ),
+
+      adminApproved: booking.adminApproved,
+
+      adminApprovedAt: booking.adminApprovedAt,
 
       bookingStatus: this.mapBookingStatus(
         booking.status,

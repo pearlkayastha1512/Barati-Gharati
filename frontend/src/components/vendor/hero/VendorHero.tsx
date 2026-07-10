@@ -113,17 +113,18 @@ export default function VendorHero() {
       transition={{
         duration: 0.5,
       }}
-      className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-slate-800 via-blue-800 to-indigo-900 p-10 text-white shadow-xl"
+      className="relative overflow-hidden rounded-[32px] border border-[#ffc43d]/40 bg-[linear-gradient(135deg,#e4005a_0%,#c90055_42%,#ffb703_100%)] p-10 text-white shadow-xl shadow-[#e4005a]/20"
     >
-      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-
-      <div className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-20 [background-image:linear-gradient(45deg,rgba(255,255,255,0.35)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:28px_28px]"
+      />
 
       <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:justify-between">
 
         <div>
 
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 shadow-sm backdrop-blur">
 
             <BriefcaseBusiness
               size={16}
@@ -139,11 +140,11 @@ export default function VendorHero() {
 
             <br />
 
-            {firstName} 👋
+            {firstName}
 
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-slate-300">
+          <p className="mt-6 max-w-xl text-lg text-white/85">
 
             Manage your bookings,
             earnings, services and
@@ -155,7 +156,7 @@ export default function VendorHero() {
 
             <Link
               href="/vendor/services"
-              className="flex items-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-slate-900 transition hover:-translate-y-1"
+              className="flex items-center gap-2 rounded-2xl bg-white px-6 py-4 font-semibold text-[#b00045] transition hover:-translate-y-1 hover:bg-[#fff8ef]"
             >
               Manage Services
 
@@ -166,7 +167,7 @@ export default function VendorHero() {
 
             <Link
               href="/vendor/calendar"
-              className="rounded-2xl border border-white/20 bg-white/10 px-6 py-4 font-semibold backdrop-blur hover:bg-white/20"
+              className="rounded-2xl border border-white/35 bg-white/15 px-6 py-4 font-semibold backdrop-blur hover:bg-white/25"
             >
               Open Calendar
             </Link>
@@ -175,7 +176,7 @@ export default function VendorHero() {
 
         </div>
 
-        <div className="w-full max-w-sm rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <div className="w-full max-w-sm rounded-3xl border border-white/30 bg-white/18 p-6 shadow-lg backdrop-blur">
 
           <div className="flex items-center gap-3">
 

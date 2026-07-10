@@ -244,7 +244,7 @@ onClose();
       onChange={(e) =>
         setBusinessName(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600 text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a] text-gray-600"
     />
   </div>
 
@@ -258,7 +258,7 @@ onClose();
       onChange={(e) =>
         setOwnerName(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -273,7 +273,7 @@ onClose();
       onChange={(e) =>
         setEmail(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -287,7 +287,7 @@ onClose();
       onChange={(e) =>
         setPhone(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -301,7 +301,7 @@ onClose();
       onChange={(e) =>
         setCategory(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     >
       <option value="">
         Select Category
@@ -330,7 +330,7 @@ onClose();
         setExperience(e.target.value)
       }
       placeholder="5 Years"
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -345,7 +345,7 @@ onClose();
       setGstNumber(e.target.value)
     }
     placeholder="GST Number"
-    className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600 text-gray-600"
+    className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a] text-gray-600"
   />
 </div>
 
@@ -359,7 +359,7 @@ onClose();
       onChange={(e) =>
         setCity(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -373,7 +373,7 @@ onClose();
       onChange={(e) =>
         setAddress(e.target.value)
       }
-      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+      className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
     />
   </div>
 
@@ -391,7 +391,7 @@ onClose();
     onChange={(e) =>
       setDescription(e.target.value)
     }
-    className="w-full rounded-xl border border-slate-300 p-4 outline-none focus:border-blue-600  text-gray-600"
+    className="w-full rounded-xl border border-slate-300 p-4 outline-none focus:border-[#e4005a]  text-gray-600"
   />
 
 </div>
@@ -407,7 +407,7 @@ onClose();
     setWebsite(e.target.value);
   }}
   placeholder="Website"
-  className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600 text-gray-600"
+  className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a] text-gray-600"
 />
 
   <input
@@ -416,7 +416,7 @@ onClose();
       setInstagram(e.target.value)
     }
     placeholder="Instagram"
-    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
   />
 
   <input
@@ -425,7 +425,7 @@ onClose();
       setFacebook(e.target.value)
     }
     placeholder="Facebook"
-    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
   />
 
   <input
@@ -434,7 +434,7 @@ onClose();
       setYoutube(e.target.value)
     }
     placeholder="YouTube"
-    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
   />
 
   <input
@@ -443,7 +443,7 @@ onClose();
       setLinkedin(e.target.value)
     }
     placeholder="LinkedIn"
-    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-blue-600  text-gray-600"
+    className="h-12 rounded-xl border border-slate-300 px-4 outline-none focus:border-[#e4005a]  text-gray-600"
   />
 
 </div>
@@ -530,7 +530,7 @@ onClose();
  <button
   type="button"
   onClick={handleSave}
-  className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
+  className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white transition hover:bg-[#c8004e]"
 >
   Save Changes
 </button>

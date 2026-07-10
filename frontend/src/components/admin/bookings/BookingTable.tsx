@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 
 import { Booking } from "@/types/booking";
 
@@ -8,11 +8,14 @@ interface Props {
   bookings: Booking[];
 
   onView: (booking: Booking) => void;
+
+  onApprove: (booking: Booking) => void;
 }
 
 export default function BookingTable({
   bookings,
   onView,
+  onApprove,
 }: Props) {
   if (bookings.length === 0) {
     return (
@@ -150,6 +153,21 @@ export default function BookingTable({
                 </td>
 
                 <td className="px-6 py-5">
+                  <div className="flex items-center gap-2">
+                    {booking.paymentStatus ===
+                      "partial" &&
+                      !booking.adminApproved && (
+                        <button
+                          onClick={() =>
+                            onApprove(booking)
+                          }
+                          className="rounded-xl bg-green-100 p-2 text-green-700 transition hover:bg-green-200"
+                          title="Approve booking"
+                        >
+                          <Check size={18} />
+                        </button>
+                      )}
+
                   <button
                     onClick={() =>
                       onView(booking)
@@ -158,6 +176,7 @@ export default function BookingTable({
                   >
                     <Eye size={18} />
                   </button>
+                  </div>
                 </td>
               </tr>
             ))}

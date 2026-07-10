@@ -5,11 +5,13 @@ import { AdminService } from './admin.service';
 
 import { PrismaModule } from '../prisma/prisma.module';
 import { MailModule } from '../mail/mail.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     PrismaModule,
     MailModule,
+    NotificationsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

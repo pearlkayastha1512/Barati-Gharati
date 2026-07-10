@@ -1,0 +1,6 @@
+CREATE TYPE "VendorBadge" AS ENUM ('BRONZE', 'SILVER', 'GOLD');
+
+ALTER TABLE "Vendor"
+ADD COLUMN "badge" "VendorBadge" NOT NULL DEFAULT 'BRONZE',
+ADD COLUMN "monthlyBookingLimit" INTEGER NOT NULL DEFAULT 5,
+ADD COLUMN "badgePurchasedAt" TIMESTAMP(3);

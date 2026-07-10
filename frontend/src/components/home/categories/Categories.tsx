@@ -14,12 +14,12 @@ export default function Categories() {
           </p>
 
           <h2 className="mt-4 text-5xl font-bold text-gray-900">
-            Browse Wedding Categories
+            Services for Every Celebration
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-lg text-gray-600">
-            Everything you need to plan your dream wedding,
-            all in one place.
+            From weddings and birthdays to kids&apos; parties and
+            milestone events, find trusted professionals in one place.
           </p>
 
         </div>

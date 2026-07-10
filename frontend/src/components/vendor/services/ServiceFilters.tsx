@@ -56,7 +56,7 @@ export default function ServiceFilters({
             }
             type="text"
             placeholder="Search service..."
-            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
           />
 
         </div>
@@ -70,7 +70,7 @@ export default function ServiceFilters({
               e.target.value
             )
           }
-          className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
         >
           <option value="All">
             All Categories
@@ -97,7 +97,7 @@ export default function ServiceFilters({
               e.target.value
             )
           }
-          className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
         >
           <option value="All">
             All Status

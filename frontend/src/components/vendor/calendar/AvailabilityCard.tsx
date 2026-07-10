@@ -153,7 +153,7 @@ export default function AvailabilityCard() {
           icon={
             <CalendarCheck2
               size={18}
-              className="text-blue-600"
+              className="text-[#e4005a]"
             />
           }
           label="Booked Days"

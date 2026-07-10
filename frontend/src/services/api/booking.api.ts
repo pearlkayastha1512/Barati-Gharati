@@ -63,6 +63,13 @@ export async function createBookingApi(
       brideName: booking.brideName,
       groomName: booking.groomName,
 
+      eventTitle: booking.eventTitle,
+      primaryPersonName:
+        booking.primaryPersonName,
+      primaryPersonAge:
+        booking.primaryPersonAge,
+      eventTheme: booking.eventTheme,
+
       specialRequirements:
         booking.specialRequirements,
 

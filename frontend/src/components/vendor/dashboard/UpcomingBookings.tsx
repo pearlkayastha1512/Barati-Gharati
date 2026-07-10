@@ -40,13 +40,13 @@ export default function UpcomingBookings() {
   }, [bookings]);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#f4c8a0] bg-white/90 p-7 shadow-sm shadow-[#e4005a]/5">
 
-      <h2 className="text-xl font-bold text-slate-900">
+      <h2 className="text-xl font-bold text-[#4d1730]">
         Upcoming Bookings
       </h2>
 
-      <p className="mt-2 text-slate-500">
+      <p className="mt-2 text-[#946176]">
         Your next scheduled wedding events.
       </p>
 
@@ -54,7 +54,7 @@ export default function UpcomingBookings() {
 
         {upcomingBookings.length ===
         0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 py-10 text-center text-slate-500">
+          <div className="rounded-2xl border border-dashed border-[#f3b973] bg-[#fff8ef] py-10 text-center text-[#946176]">
             No upcoming bookings.
           </div>
         ) : (
@@ -62,17 +62,17 @@ export default function UpcomingBookings() {
             (booking) => (
               <div
                 key={booking.id}
-                className="flex items-center justify-between rounded-2xl bg-slate-50 p-5 transition hover:bg-slate-100"
+                className="flex items-center justify-between rounded-2xl border border-[#ffe0a3] bg-[#fff8ef] p-5 transition hover:bg-[#fff1cf]"
               >
                 <div>
 
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-[#4d1730]">
                     {
                       booking.customerName
                     }
                   </h3>
 
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-[#946176]">
                     {
                       booking.category
                     }
@@ -82,7 +82,7 @@ export default function UpcomingBookings() {
                     }
                   </p>
 
-                  <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+                  <div className="mt-3 flex items-center gap-2 text-sm text-[#946176]">
 
                     <CalendarDays
                       size={15}
@@ -112,7 +112,7 @@ export default function UpcomingBookings() {
                       booking.bookingStatus ===
                         "completed"
                         ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                        : "bg-[#fff0bf] text-[#9a5c00]"
                     }`}
                   >
                     {booking.bookingStatus ===

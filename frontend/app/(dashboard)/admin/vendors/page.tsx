@@ -14,7 +14,9 @@ import { StoredVendor } from "@/services/vendor.service";
 import {
   approveVendorApi,
   rejectVendorApi,
+  updateVendorBadgeApi,
 } from "@/services/api/admin.api";
+import { VendorBadge } from "@/constants/vendor-badges";
 
 export default function VendorManagementPage() {
   const {
@@ -51,7 +53,7 @@ export default function VendorManagementPage() {
 };
 
   const handleApproveVendor = async (
-    vendorId: number
+    vendorId: string | number
   ) => {
     const result =
       await approveVendorApi(
@@ -75,7 +77,7 @@ export default function VendorManagementPage() {
   };
 
   const handleRejectVendor = async (
-    vendorId: number
+    vendorId: string | number
   ) => {
     const result =
       await rejectVendorApi(
@@ -95,6 +97,47 @@ export default function VendorManagementPage() {
 
     toast.success(
       "Vendor rejected successfully."
+    );
+  };
+
+  const handleBadgeChange = async (
+    vendorId: string | number,
+    badge: VendorBadge
+  ) => {
+    const result =
+      await updateVendorBadgeApi(
+        String(vendorId),
+        badge
+      );
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to update vendor badge."
+      );
+      return;
+    }
+
+    await loadVendors();
+    await loadDashboard();
+
+    setSelectedVendor((vendor) =>
+      vendor?.id === vendorId
+        ? {
+            ...vendor,
+            badge,
+            monthlyBookingLimit:
+              badge === "gold"
+                ? 50
+                : badge === "silver"
+                ? 15
+                : 5,
+          }
+        : vendor
+    );
+
+    toast.success(
+      "Vendor badge updated successfully."
     );
   };
 
@@ -184,6 +227,7 @@ export default function VendorManagementPage() {
         }}
         onApprove={handleApproveVendor}
         onReject={handleRejectVendor}
+        onBadgeChange={handleBadgeChange}
       />
     </div>
   );

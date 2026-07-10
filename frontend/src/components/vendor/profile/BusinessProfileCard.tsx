@@ -25,7 +25,7 @@ export default function BusinessProfileCard() {
 
         <div className="flex flex-col items-center gap-6 md:flex-row">
 
-          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-blue-700 to-indigo-700">
+          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#e4005a] to-[#ffb703]">
 
             {vendor.profileImage ? (
               <img
@@ -84,7 +84,7 @@ export default function BusinessProfileCard() {
 
           <button
             onClick={() => setOpen(true)}
-            className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
+            className="rounded-2xl bg-[#e4005a] px-6 py-3 font-semibold text-white transition hover:bg-[#c8004e]"
           >
             Edit Profile
           </button>

@@ -61,6 +61,20 @@ export default function BookingDetailsCard() {
         />
 
         <Item
+          icon={<Tag size={18} />}
+          label="Event Type"
+          value={selectedBooking.eventType}
+        />
+
+        {selectedBooking.primaryPersonName && (
+          <Item
+            icon={<User size={18} />}
+            label="Celebrant / Primary Person"
+            value={selectedBooking.primaryPersonName}
+          />
+        )}
+
+        <Item
           icon={<Phone size={18} />}
           label="Phone"
           value={selectedBooking.customerPhone}
@@ -68,7 +82,7 @@ export default function BookingDetailsCard() {
 
         <Item
           icon={<CalendarDays size={18} />}
-          label="Wedding Date"
+          label="Event Date"
           value={new Date(
             selectedBooking.eventDate
           ).toLocaleDateString(
@@ -120,7 +134,16 @@ export default function BookingDetailsCard() {
       </div>
 
       {selectedBooking.bookingStatus ===
-        "pending" && (
+        "pending" &&
+        !selectedBooking.adminApproved && (
+        <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+          This lead is awaiting admin approval. You can accept it after admin confirms the advance payment.
+        </div>
+      )}
+
+      {selectedBooking.bookingStatus ===
+        "pending" &&
+        selectedBooking.adminApproved && (
         <div className="mt-8 flex gap-4">
 
           <button
@@ -166,7 +189,7 @@ function Item({
   return (
     <div className="flex items-center gap-4">
 
-      <div className="rounded-xl bg-blue-100 p-3 text-blue-700">
+      <div className="rounded-xl bg-[#ffe1ec] p-3 text-[#e4005a]">
         {icon}
       </div>
 

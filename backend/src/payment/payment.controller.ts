@@ -12,7 +12,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { Role } from '@prisma/client';
+import { Role, VendorBadge } from '@prisma/client';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -44,6 +44,36 @@ export class PaymentController {
   ) {
     return this.paymentService.createOrder(
       userId,
+      dto,
+    );
+  }
+
+  @Post('vendor-badge/create-order')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  createVendorBadgeOrder(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: { badge: VendorBadge },
+  ) {
+    return this.paymentService.createVendorBadgeOrder(
+      userId,
+      dto.badge,
+    );
+  }
+
+  @Post('vendor-badge/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  verifyVendorBadgePayment(
+    @CurrentUser('sub') userId: string,
+    @Body()
+    dto: VerifyPaymentDto & {
+      badge: VendorBadge;
+    },
+  ) {
+    return this.paymentService.verifyVendorBadgePayment(
+      userId,
+      dto.badge,
       dto,
     );
   }

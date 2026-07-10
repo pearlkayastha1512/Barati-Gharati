@@ -11,11 +11,11 @@ export default function UploadPortfolioCard({
   onCreate,
 }: UploadPortfolioCardProps) {
   return (
-    <section className="rounded-3xl border-2 border-dashed border-violet-300 bg-violet-50 p-12 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-violet-100">
+    <section className="rounded-3xl border-2 border-dashed border-[#ffc43d] bg-[#fff8ef] p-12 text-center">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#ffe1ec]">
         <UploadCloud
           size={36}
-          className="text-violet-700"
+          className="text-[#e4005a]"
         />
       </div>
 
@@ -30,7 +30,7 @@ export default function UploadPortfolioCard({
 
       <button
         onClick={onCreate}
-        className="mt-8 rounded-2xl bg-violet-700 px-8 py-4 font-semibold text-white transition hover:bg-violet-800"
+        className="mt-8 rounded-2xl bg-[#e4005a] px-8 py-4 font-semibold text-white transition hover:bg-[#c8004e]"
       >
         Upload Portfolio
       </button>

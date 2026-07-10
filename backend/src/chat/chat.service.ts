@@ -36,6 +36,21 @@ export class ChatService {
       );
     }
 
+    const approvedBooking =
+      await this.prisma.booking.findFirst({
+        where: {
+          userId: customerId,
+          vendorId: dto.vendorId,
+          adminApproved: true,
+        },
+      });
+
+    if (!approvedBooking) {
+      throw new ForbiddenException(
+        'Conversation unlocks after advance payment and admin approval',
+      );
+    }
+
     const existing =
       await this.prisma.conversation.findFirst({
         where: {
@@ -65,11 +80,54 @@ export class ChatService {
       where: {
         id: dto.conversationId,
       },
+      include: {
+        vendor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
     });
 
   if (!conversation) {
     throw new ForbiddenException(
       'Conversation not found',
+    );
+  }
+
+  const isCustomer =
+    senderId === conversation.customerId;
+  const isVendor =
+    senderId === conversation.vendor.userId;
+
+  if (!isCustomer && !isVendor) {
+    throw new ForbiddenException(
+      'You are not part of this conversation',
+    );
+  }
+
+  const expectedReceiverId = isCustomer
+    ? conversation.vendor.userId
+    : conversation.customerId;
+
+  if (dto.receiverId !== expectedReceiverId) {
+    throw new ForbiddenException(
+      'Invalid message recipient',
+    );
+  }
+
+  const approvedBooking =
+    await this.prisma.booking.findFirst({
+      where: {
+        userId: conversation.customerId,
+        vendorId: conversation.vendorId,
+        adminApproved: true,
+      },
+    });
+
+  if (!approvedBooking) {
+    throw new ForbiddenException(
+      'This conversation is not approved',
     );
   }
 
@@ -108,63 +166,56 @@ async getConversations(userId: string) {
   const customerBookings = await this.prisma.booking.findMany({
     where: {
       userId,
-      status: {
-        in: [BookingStatus.ACCEPTED, BookingStatus.CONFIRMED],
-      },
+      adminApproved: true,
     },
     select: {
       vendorId: true,
     },
   });
 
-  if (customerBookings.length > 0) {
-    const bookedVendorIds = customerBookings.map(
-      (booking) => booking.vendorId,
-    );
+  const vendor = await this.prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
 
-    const existingConversations =
-      await this.prisma.conversation.findMany({
+  const vendorBookings = vendor
+    ? await this.prisma.booking.findMany({
         where: {
-          customerId: userId,
-          vendorId: {
-            in: bookedVendorIds,
-          },
+          vendorId: vendor.id,
+          adminApproved: true,
         },
         select: {
-          vendorId: true,
+          userId: true,
         },
-      });
+      })
+    : [];
 
-    const existingVendorIds = existingConversations.map(
-      (conversation) => conversation.vendorId,
-    );
-
-    const missingVendorIds = bookedVendorIds.filter(
-      (vendorId) => !existingVendorIds.includes(vendorId),
-    );
-
-    if (missingVendorIds.length > 0) {
-      await this.prisma.conversation.createMany({
-        data: missingVendorIds.map((vendorId) => ({
-          customerId: userId,
-          vendorId,
-        })),
-        skipDuplicates: true,
-      });
-    }
-  }
+  const approvedVendorIds = customerBookings.map(
+    (booking) => booking.vendorId,
+  );
+  const approvedCustomerIds = vendorBookings.map(
+    (booking) => booking.userId,
+  );
 
   return this.prisma.conversation.findMany({
     where: {
       OR: [
         {
           customerId: userId,
-        },
-        {
-          vendor: {
-            userId,
+          vendorId: {
+            in: approvedVendorIds,
           },
         },
+        ...(vendor
+          ? [{
+          vendor: {
+            id: vendor.id,
+          },
+          customerId: {
+            in: approvedCustomerIds,
+          },
+        }]
+          : []),
       ],
     },
 
@@ -204,7 +255,45 @@ async getConversations(userId: string) {
 
 async getMessages(
   conversationId: string,
+  userId: string,
 ) {
+  const conversation =
+    await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        vendor: {
+          select: { userId: true },
+        },
+      },
+    });
+
+  if (
+    !conversation ||
+    (
+      conversation.customerId !== userId &&
+      conversation.vendor.userId !== userId
+    )
+  ) {
+    throw new ForbiddenException(
+      'You are not part of this conversation',
+    );
+  }
+
+  const approvedBooking =
+    await this.prisma.booking.findFirst({
+      where: {
+        userId: conversation.customerId,
+        vendorId: conversation.vendorId,
+        adminApproved: true,
+      },
+    });
+
+  if (!approvedBooking) {
+    throw new ForbiddenException(
+      'This conversation is not approved',
+    );
+  }
+
   return this.prisma.message.findMany({
     where: {
       conversationId,

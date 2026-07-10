@@ -8,6 +8,7 @@ export type BookingStatus =
 
 export type PaymentStatus =
   | "pending"
+  | "processing"
   | "partial"
   | "paid"
   | "refunded";
@@ -52,9 +53,17 @@ export interface Booking {
 
   guests: number;
 
-  brideName: string;
+  brideName?: string;
 
-  groomName: string;
+  groomName?: string;
+
+  eventTitle?: string;
+
+  primaryPersonName?: string;
+
+  primaryPersonAge?: number;
+
+  eventTheme?: string;
 
   specialRequirements: string;
 
@@ -65,6 +74,10 @@ export interface Booking {
   remainingAmount: number;
 
   paymentStatus: PaymentStatus;
+
+  adminApproved?: boolean;
+
+  adminApprovedAt?: string;
 
   bookingStatus: BookingStatus;
 

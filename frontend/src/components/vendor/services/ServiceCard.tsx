@@ -81,7 +81,7 @@ export default function ServiceCard({
 
         </div>
 
-        <div className="mt-6 flex items-center gap-2 font-bold text-blue-700">
+        <div className="mt-6 flex items-center gap-2 font-bold text-[#e4005a]">
 
           <IndianRupee size={18} />
 
@@ -97,7 +97,7 @@ export default function ServiceCard({
 
         <button
           onClick={handleEdit}
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#e4005a]"
         >
           <Pencil size={18} />
 

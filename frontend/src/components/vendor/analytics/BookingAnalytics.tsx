@@ -90,7 +90,7 @@
 
 //         </div>
 
-//         <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+//         <div className="rounded-xl bg-[#fff8ef] px-4 py-2 text-sm font-semibold text-[#e4005a]">
 //           {bookings.length} Total
 //         </div>
 
@@ -133,7 +133,7 @@
 //                   </span>
 
 //                   <div
-//                     className="w-full rounded-t-2xl bg-gradient-to-t from-blue-700 via-blue-600 to-indigo-400 transition-all duration-500 hover:opacity-90"
+//                     className="w-full rounded-t-2xl bg-gradient-to-t from-[#e4005a] via-[#e4005a] to-[#ffb703] transition-all duration-500 hover:opacity-90"
 //                     style={{
 //                       height: `${Math.max(
 //                         height,
@@ -228,7 +228,7 @@ export default function BookingAnalytics() {
           </p>
         </div>
 
-        <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+        <div className="rounded-xl bg-[#fff8ef] px-4 py-2 text-sm font-semibold text-[#e4005a]">
           {bookings.length} Total
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function BookingAnalytics() {
                 {/* Fixed-height container */}
                 <div className="flex h-64 w-full items-end">
                   <div
-                    className="w-full rounded-t-2xl bg-gradient-to-t from-blue-700 via-blue-600 to-indigo-400 transition-all duration-700 hover:opacity-90"
+                    className="w-full rounded-t-2xl bg-gradient-to-t from-[#e4005a] via-[#e4005a] to-[#ffb703] transition-all duration-700 hover:opacity-90"
                     style={{
                       height:
                         item.total === 0

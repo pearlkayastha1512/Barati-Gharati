@@ -20,20 +20,69 @@ import QuickActionCard from "@/components/admin/cards/QuickActionCard";
 import { useAdminStore } from "@/store/adminStore";
 
 export default function AdminDashboardPage() {
-  const { stats, loadDashboard } =
+  const {
+    stats,
+    loadDashboard,
+    isDashboardLoading,
+    dashboardError,
+  } =
     useAdminStore();
 
   useEffect(() => {
     loadDashboard();
+
+    const refreshDashboard = () => {
+      if (document.visibilityState === "visible") {
+        loadDashboard();
+      }
+    };
+
+    window.addEventListener("focus", refreshDashboard);
+    document.addEventListener(
+      "visibilitychange",
+      refreshDashboard
+    );
+
+    return () => {
+      window.removeEventListener(
+        "focus",
+        refreshDashboard
+      );
+      document.removeEventListener(
+        "visibilitychange",
+        refreshDashboard
+      );
+    };
   }, [loadDashboard]);
 
   return (
     <div className="space-y-8">
       <AdminHero />
 
+      {dashboardError && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          <span>{dashboardError}</span>
+          <button
+            type="button"
+            onClick={loadDashboard}
+            className="font-semibold text-red-800 underline underline-offset-4"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
       {/* Stats */}
 
-      <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <section
+        aria-busy={isDashboardLoading}
+        className={`grid gap-6 transition-opacity sm:grid-cols-2 xl:grid-cols-4 ${
+          isDashboardLoading ? "opacity-60" : ""
+        }`}
+      >
         <StatsCard
           title="Vendors"
           value={stats.totalVendors.toString()}

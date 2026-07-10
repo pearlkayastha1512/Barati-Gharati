@@ -101,7 +101,7 @@ export default function SecuritySettings() {
               e.target.value
             )
           }
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-gray-600"
+          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec] text-gray-600"
         />
 
         <input
@@ -113,7 +113,7 @@ export default function SecuritySettings() {
               e.target.value
             )
           }
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-gray-600"
+          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec] text-gray-600"
         />
 
         <input
@@ -125,7 +125,7 @@ export default function SecuritySettings() {
               e.target.value
             )
           }
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-gray-600"
+          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec] text-gray-600"
         />
 
       </div>
@@ -133,7 +133,7 @@ export default function SecuritySettings() {
       <button
         onClick={handleSave}
         disabled={loading}
-        className="mt-8 w-full rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800 disabled:opacity-60"
+        className="mt-8 w-full rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c8004e] disabled:opacity-60"
       >
         {loading
           ? "Updating..."

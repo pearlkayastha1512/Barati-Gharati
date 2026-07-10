@@ -29,7 +29,7 @@ export default function SettingsHero() {
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="overflow-hidden rounded-[32px] bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-800 p-8 text-white shadow-xl"
+      className="overflow-hidden rounded-[32px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] p-8 text-white shadow-xl"
     >
       <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 

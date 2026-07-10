@@ -160,6 +160,7 @@ export async function createBooking(
   booking: Booking
 ): Promise<{
   ok: boolean;
+  data?: Booking;
   error?: string;
 }> {
   const result =
@@ -169,6 +170,7 @@ export async function createBooking(
     ok:
       result.ok &&
       Boolean(result.data?.success),
+    data: result.data?.data,
     error: result.error,
   };
 }

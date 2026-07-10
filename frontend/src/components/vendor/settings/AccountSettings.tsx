@@ -87,7 +87,7 @@ export default function AccountSettings() {
         <input
           type="text"
           placeholder="Business Name"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
           value={businessName}
           onChange={(event) =>
             setBusinessName(
@@ -99,7 +99,7 @@ export default function AccountSettings() {
         <input
           type="email"
           placeholder="Email"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
           value={email}
           onChange={(event) =>
             setEmail(event.target.value)
@@ -109,7 +109,7 @@ export default function AccountSettings() {
         <input
           type="tel"
           placeholder="Phone Number"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-gray-700 outline-none transition focus:border-[#e4005a] focus:ring-2 focus:ring-[#ffe1ec]"
           value={phone}
           onChange={(event) =>
             setPhone(event.target.value)
@@ -119,7 +119,7 @@ export default function AccountSettings() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className="w-full rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c8004e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading
             ? "Saving..."

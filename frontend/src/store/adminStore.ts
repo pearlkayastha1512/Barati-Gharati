@@ -1,8 +1,6 @@
 import { create } from "zustand";
 
-import { getUsers } from "@/services/auth.service";
 import { StoredVendor } from "@/services/vendor.service";
-import { getAllBookings } from "@/services/booking.service";
 
 import {
   getAllVendorsApi,
@@ -21,6 +19,10 @@ interface AdminStore {
   stats: DashboardStats;
 
   vendors: StoredVendor[];
+
+  isDashboardLoading: boolean;
+
+  dashboardError: string | null;
 
   loadDashboard: () => Promise<void>;
 
@@ -63,14 +65,31 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
   vendors: [],
 
+  isDashboardLoading: false,
+
+  dashboardError: null,
+
   loadDashboard: async () => {
-    const users = getUsers();
+    set({
+      isDashboardLoading: true,
+      dashboardError: null,
+    });
 
     const [dashboardResult, vendorsResult] =
       await Promise.all([
         getDashboardApi(),
         getAllVendorsApi(),
       ]);
+
+    if (!dashboardResult.ok) {
+      set({
+        isDashboardLoading: false,
+        dashboardError:
+          dashboardResult.error ??
+          "Unable to load dashboard data.",
+      });
+      return;
+    }
 
     const dashboard =
       (dashboardResult.data as ApiDashboardResponse)
@@ -83,13 +102,6 @@ export const useAdminStore = create<AdminStore>((set) => ({
           )
         : [];
 
-    const bookings = getAllBookings();
-
-    const totalRevenue = bookings.reduce(
-      (sum, booking) => sum + booking.advancePaid,
-      0
-    );
-
     set({
       stats: {
         totalVendors:
@@ -99,23 +111,25 @@ export const useAdminStore = create<AdminStore>((set) => ({
         totalCustomers:
           dashboard.totalCustomers ??
           dashboard.totalUsers ??
-          users.filter(
-            (user) => user.role === "customer"
-          ).length,
+          0,
 
         totalBookings:
           dashboard.totalBookings ??
-          bookings.length,
+          0,
 
         totalRevenue:
           dashboard.totalRevenue ??
-          totalRevenue,
+          0,
 
-        pendingVendorApprovals: vendors.filter(
-          (vendor) =>
-            vendor.approvalStatus === "pending"
-        ).length,
+        pendingVendorApprovals:
+          dashboard.pendingVendorApprovals ??
+          vendors.filter(
+            (vendor) =>
+              vendor.approvalStatus === "pending"
+          ).length,
       },
+      isDashboardLoading: false,
+      dashboardError: null,
     });
   },
 

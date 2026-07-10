@@ -85,6 +85,17 @@ export async function getAllBookingsApi() {
   return requestAdmin("/bookings");
 }
 
+export async function approveBookingApi(
+  id: string
+) {
+  return requestAdmin(
+    `/bookings/${id}/approve`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
 export async function getEmailLogsApi() {
   return requestAdmin("/emails");
 }
@@ -138,6 +149,21 @@ export async function rejectVendorApi(
     `/vendors/${id}/reject`,
     {
       method: "PATCH",
+    }
+  );
+}
+
+export async function updateVendorBadgeApi(
+  id: string,
+  badge: "bronze" | "silver" | "gold"
+) {
+  return requestAdmin(
+    `/vendors/${id}/badge`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        badge: badge.toUpperCase(),
+      }),
     }
   );
 }

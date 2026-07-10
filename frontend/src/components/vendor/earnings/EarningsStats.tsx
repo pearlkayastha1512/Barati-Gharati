@@ -112,11 +112,11 @@ export default function EarningsStats() {
             className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
           >
 
-            <div className="w-fit rounded-2xl bg-blue-100 p-3">
+            <div className="w-fit rounded-2xl bg-[#ffe1ec] p-3">
 
               <Icon
                 size={22}
-                className="text-blue-700"
+                className="text-[#e4005a]"
               />
 
             </div>

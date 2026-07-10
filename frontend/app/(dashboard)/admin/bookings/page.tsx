@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -13,7 +14,11 @@ import BookingTable from "@/components/admin/bookings/BookingTable";
 import BookingDetailsModal from "@/components/admin/bookings/BookingDetailsModal";
 
 import { Booking } from "@/types/booking";
-import { getAllBookingsApi } from "@/services/api/admin.api";
+import {
+  approveBookingApi,
+  getAllBookingsApi,
+} from "@/services/api/admin.api";
+import { toast } from "sonner";
 
 type ApiBookingsResponse = {
   data?: Booking[];
@@ -23,24 +28,26 @@ export default function BookingManagementPage() {
   const [bookings, setBookings] =
     useState<Booking[]>([]);
 
-  useEffect(() => {
-    async function loadBookings() {
-      const result =
-        await getAllBookingsApi();
+  const loadBookings = useCallback(async () => {
+    const result =
+      await getAllBookingsApi();
 
-      if (!result.ok) {
-        setBookings([]);
-        return;
-      }
-
-      setBookings(
-        (result.data as ApiBookingsResponse)
-          ?.data ?? []
-      );
+    if (!result.ok) {
+      setBookings([]);
+      return;
     }
 
-    void loadBookings();
+    setBookings(
+      (result.data as ApiBookingsResponse)
+        ?.data ?? []
+    );
   }, []);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    void loadBookings();
+  }, [loadBookings]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const [search, setSearch] = useState("");
 
@@ -100,6 +107,26 @@ export default function BookingManagementPage() {
     setIsModalOpen(true);
   };
 
+  const handleApproveBooking = async (
+    booking: Booking
+  ) => {
+    const result =
+      await approveBookingApi(booking.id);
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to approve booking."
+      );
+      return;
+    }
+
+    toast.success(
+      "Booking approved. Chat is now unlocked."
+    );
+    await loadBookings();
+  };
+
   return (
     <div className="space-y-8">
       <BookingHero />
@@ -122,6 +149,7 @@ export default function BookingManagementPage() {
       <BookingTable
         bookings={filteredBookings}
         onView={handleViewBooking}
+        onApprove={handleApproveBooking}
       />
 
       <BookingDetailsModal

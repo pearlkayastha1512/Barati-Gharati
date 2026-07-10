@@ -4,6 +4,10 @@ import Image from "next/image";
 import { Eye } from "lucide-react";
 
 import { StoredVendor } from "@/services/vendor.service";
+import {
+  VENDOR_BADGE_COLORS,
+  VENDOR_BADGE_LABELS,
+} from "@/constants/vendor-badges";
 
 interface Props {
   vendors: StoredVendor[];
@@ -49,6 +53,14 @@ export default function VendorTable({
 
               <th className="px-6 py-4 font-semibold text-slate-700">
                 Approval
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Badge
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Monthly Usage
               </th>
 
               <th className="px-6 py-4 font-semibold text-slate-700">
@@ -124,6 +136,23 @@ export default function VendorTable({
                       : vendor.approvalStatus === "rejected"
                       ? "Rejected"
                       : "Pending"}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${VENDOR_BADGE_COLORS[vendor.badge]}`}
+                  >
+                    {VENDOR_BADGE_LABELS[vendor.badge]}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5">
+                  <span className="font-semibold text-slate-800">
+                    {vendor.currentMonthBookings}
+                  </span>
+                  <span className="text-slate-500">
+                    /{vendor.monthlyBookingLimit}
                   </span>
                 </td>
 

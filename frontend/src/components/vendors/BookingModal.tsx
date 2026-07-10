@@ -6,11 +6,18 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import BookingSuccess from "./BookingSuccess";
+import AdvancePaymentStep from "./AdvancePaymentStep";
 import { useAuthStore } from "@/store/authStore";
 
 
 // import { useBookingStore } from "@/store/bookingStore";
 import { Booking } from "@/types/booking";
+import {
+  AGE_RELEVANT_EVENT_TYPES,
+  COUPLE_EVENT_TYPES,
+  EVENT_TYPES,
+  EventType,
+} from "@/constants/event-types";
 
 import { toast } from "sonner";
 
@@ -75,6 +82,8 @@ export default function BookingModal({
 }: BookingModalProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [paymentBooking, setPaymentBooking] =
+    useState<Booking | null>(null);
 
   const [bookingId, setBookingId] = useState("");
 
@@ -102,6 +111,7 @@ export default function BookingModal({
     if (!open) {
       setLoading(false);
       setSuccess(false);
+      setPaymentBooking(null);
     }
   }, [open]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -114,7 +124,7 @@ const handleBooking = async () => {
 
   if (!eventDate) {
     toast.error(
-      "Please select a valid wedding date."
+      "Please select a valid event date."
     );
     return;
   }
@@ -158,7 +168,7 @@ const handleBooking = async () => {
 
     packageName,
 
-    eventType: "Wedding",
+    eventType: formData.eventType,
 
     eventDate,
 
@@ -177,13 +187,25 @@ const handleBooking = async () => {
       formData.country,
 
     weddingTheme:
-      formData.weddingTheme,
+      formData.eventTheme,
 
     guests,
 
     brideName: formData.brideName,
 
     groomName: formData.groomName,
+
+    eventTitle: formData.eventTitle,
+
+    primaryPersonName:
+      formData.primaryPersonName,
+
+    primaryPersonAge:
+      formData.primaryPersonAge
+        ? Number(formData.primaryPersonAge)
+        : undefined,
+
+    eventTheme: formData.eventTheme,
 
     specialRequirements:
       formData.requirements,
@@ -219,10 +241,17 @@ const handleBooking = async () => {
 
   setBookingId(bookingNumber);
 
-  setSuccess(true);
+  if (!result.data?.id) {
+    toast.error(
+      "Booking created, but payment could not be started."
+    );
+    return;
+  }
+
+  setPaymentBooking(result.data);
 
   toast.success(
-    "Booking submitted successfully."
+    "Booking details saved. Please pay the 10% advance."
   );
 };
 
@@ -395,6 +424,10 @@ const handleBooking = async () => {
 //   setSuccess(true);
 // };
 const [formData, setFormData] = useState({
+  eventType: "Wedding" as EventType,
+  eventTitle: "",
+  primaryPersonName: "",
+  primaryPersonAge: "",
   brideName: "",
   groomName: "",
   phone: "",
@@ -405,9 +438,19 @@ const [formData, setFormData] = useState({
   address: "",
   state: "",
   country: "",
-  weddingTheme: "",
+  eventTheme: "",
   requirements: "",
 });
+
+const isCoupleEvent =
+  COUPLE_EVENT_TYPES.includes(
+    formData.eventType
+  );
+
+const showsAge =
+  AGE_RELEVANT_EVENT_TYPES.includes(
+    formData.eventType
+  );
 
 const getPartnerName = () => {
   const customerName =
@@ -455,7 +498,11 @@ const getIsoEventDate = (
 };
 
 const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  e: React.ChangeEvent<
+    HTMLInputElement |
+    HTMLTextAreaElement |
+    HTMLSelectElement
+  >
 ) => {
   const { name, value } = e.target;
 
@@ -467,8 +514,7 @@ const handleChange = (
 
 
 const isFormValid =
-  formData.brideName.trim() !== "" &&
-  formData.groomName.trim() !== "" &&
+  formData.primaryPersonName.trim() !== "" &&
   formData.phone.trim() !== "" &&
   formData.email.trim() !== "";
 
@@ -511,7 +557,18 @@ const isFormValid =
     bookingId={bookingId}
     vendorName={vendorName}
     date={date}
+    eventType={formData.eventType}
     onClose={onClose}
+  />
+) : paymentBooking ? (
+  <AdvancePaymentStep
+    bookingId={paymentBooking.id}
+    bookingNumber={paymentBooking.bookingNumber}
+    vendorName={vendorName}
+    customerName={paymentBooking.customerName}
+    customerEmail={paymentBooking.customerEmail}
+    customerPhone={paymentBooking.customerPhone}
+    onPaid={() => setSuccess(true)}
   />
 ) : (
               <>
@@ -540,35 +597,76 @@ const isFormValid =
 
                 {/* Body */}
                 <div className="grid gap-5 p-6 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Event Type
+                    </label>
+
+                    <select
+                      name="eventType"
+                      value={formData.eventType}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-300 bg-white px-4 text-gray-700 focus:border-rose-500 focus:outline-none"
+                    >
+                      {EVENT_TYPES.map((eventType) => (
+                        <option
+                          key={eventType}
+                          value={eventType}
+                        >
+                          {eventType}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      👰 Bride Name
+                      Celebrant / Primary Person
                     </label>
 
                     <input
                       type="text"
-                      placeholder="Bride Name"
-                       name="brideName"
-  value={formData.brideName}
-  onChange={handleChange}
+                      placeholder="Name of the person being celebrated"
+                      name="primaryPersonName"
+                      value={formData.primaryPersonName}
+                      onChange={handleChange}
                       className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
                     />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      🤵 Groom Name
+                      Event Title
                     </label>
 
                     <input
                       type="text"
-                      placeholder="Groom Name"
-                      name="groomName"
-  value={formData.groomName}
-  onChange={handleChange}
+                      placeholder="Aarav's Birthday, Office Annual Party..."
+                      name="eventTitle"
+                      value={formData.eventTitle}
+                      onChange={handleChange}
                       className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
                     />
                   </div>
+
+                  {showsAge && (
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-700">
+                        Age (Optional)
+                      </label>
+
+                      <input
+                        type="number"
+                        min="0"
+                        max="150"
+                        placeholder="Age"
+                        name="primaryPersonAge"
+                        value={formData.primaryPersonAge}
+                        onChange={handleChange}
+                        className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -600,46 +698,99 @@ const isFormValid =
                     />
                   </div>
 
+                  {isCoupleEvent && (
+                    <>
+                      <div className="md:col-span-2 border-t border-gray-200 pt-4">
+                        <p className="font-semibold text-gray-900">
+                          Couple Details
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Optional for this booking
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                          Bride Name (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Bride Name"
+                          name="brideName"
+                          value={formData.brideName}
+                          onChange={handleChange}
+                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                          Groom Name (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Groom Name"
+                          name="groomName"
+                          value={formData.groomName}
+                          onChange={handleChange}
+                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                          Partner Email (Optional)
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="Partner Email"
+                          name="partnerEmail"
+                          value={formData.partnerEmail}
+                          onChange={handleChange}
+                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                          Partner Phone (Optional)
+                        </label>
+                        <input
+                          type="tel"
+                          placeholder="Partner Phone"
+                          name="partnerPhone"
+                          value={formData.partnerPhone}
+                          onChange={handleChange}
+                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                          Partner Occupation (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Partner Occupation"
+                          name="partnerOccupation"
+                          value={formData.partnerOccupation}
+                          onChange={handleChange}
+                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+                    </>
+                  )}
+
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      Partner Email
-                    </label>
-
-                    <input
-                      type="email"
-                      placeholder="Partner Email"
-                      name="partnerEmail"
-                      value={formData.partnerEmail}
-                      onChange={handleChange}
-                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      Partner Phone
-                    </label>
-
-                    <input
-                      type="tel"
-                      placeholder="Partner Phone"
-                      name="partnerPhone"
-                      value={formData.partnerPhone}
-                      onChange={handleChange}
-                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      Partner Occupation
+                      Event Theme (Optional)
                     </label>
 
                     <input
                       type="text"
-                      placeholder="Partner Occupation"
-                      name="partnerOccupation"
-                      value={formData.partnerOccupation}
+                      placeholder="Traditional, superhero, floral, minimal..."
+                      name="eventTheme"
+                      value={formData.eventTheme}
                       onChange={handleChange}
                       className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
                     />
@@ -647,22 +798,7 @@ const isFormValid =
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      Wedding Theme
-                    </label>
-
-                    <input
-                      type="text"
-                      placeholder="Traditional, Royal, Minimal..."
-                      name="weddingTheme"
-                      value={formData.weddingTheme}
-                      onChange={handleChange}
-                      className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-500 focus:border-rose-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      📅 Wedding Date
+                      Event Date
                     </label>
 
                     <input
@@ -755,12 +891,12 @@ const isFormValid =
 
                   <div className="md:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      📝 Special Requirements
+                      Special Requirements
                     </label>
 
                     <textarea
                       rows={3}
-                      placeholder="Decoration, Catering, DJ, Photography..."
+                      placeholder="Decoration, catering, entertainment, accessibility..."
                        name="requirements"
   value={formData.requirements}
   onChange={handleChange}

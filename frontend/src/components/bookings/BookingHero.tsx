@@ -94,12 +94,12 @@ export default function BookingHero() {
           <h1 className="mt-6 text-5xl font-bold leading-tight">
             Manage all your
             <br />
-            wedding bookings.
+            event bookings.
           </h1>
 
           <p className="mt-6 max-w-xl text-lg text-indigo-100">
             Track every vendor booking, monitor payment status,
-            view upcoming events and manage your wedding schedule
+            view upcoming events and manage your celebration schedule
             from one place.
           </p>
 
