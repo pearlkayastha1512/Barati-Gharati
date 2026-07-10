@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -7,12 +7,16 @@ import { useNotificationsStore } from "../../store/notificationsStore";
 import { NotificationCard } from "../../components/users/notifications/NotificationCard";
 import { styles } from "./styles/NotificationsScreen.styles";
 
-// TODO: import API functions once backend is connected
-// import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification } from "../../api/notification.api";
+
 
 export default function NotificationsScreen() {
-  const navigation = useNavigation<any>();
-  const { notifications, markAsRead, markAllAsRead, removeNotification } = useNotificationsStore();
+   const navigation = useNavigation<any>(); 
+ 
+  const { notifications, fetchNotifications, markAsRead, markAllAsRead, removeNotification } = useNotificationsStore();
+
+useEffect(() => {
+  fetchNotifications();
+}, []);
 
   // TODO: fetch on mount once backend connected
   // useEffect(() => {

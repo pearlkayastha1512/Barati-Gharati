@@ -1,4 +1,13 @@
 import { create } from "zustand";
+import {
+  getConversations,
+  createConversation,
+  getMessages,
+  sendMessageApi,
+  BackendConversation,
+  BackendMessage,
+} from "../api/chat.api";
+import { useAuthStore } from "./authStore";
 
 export type ChatMessage = {
   id: string;
@@ -10,6 +19,7 @@ export type ChatMessage = {
 export type Conversation = {
   id: string;
   vendorId: string;
+  vendorUserId: string;
   vendorName: string;
   vendorAvatar: string;
   lastMessage: string;
@@ -17,49 +27,130 @@ export type Conversation = {
   messages: ChatMessage[];
 };
 
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+const mapMessage = (msg: BackendMessage, currentUserId: string): ChatMessage => ({
+  id: msg.id,
+  text: msg.message,
+  fromUser: msg.senderId === currentUserId,
+  timestamp: formatTime(msg.createdAt),
+});
+
+const mapConversation = (conv: BackendConversation): Conversation => {
+  const lastMsg = conv.messages?.[0];
+  return {
+    id: conv.id,
+    vendorId: conv.vendor.id,
+    vendorUserId: conv.vendor.user.id,
+    vendorName: conv.vendor.businessName || conv.vendor.user.name,
+    vendorAvatar: conv.vendor.logoUrl || "https://i.pravatar.cc/100",
+    lastMessage: lastMsg?.message ?? "",
+    lastMessageTime: lastMsg ? formatTime(lastMsg.createdAt) : "",
+    messages: [],
+  };
+};
+
 interface MessagesState {
   conversations: Conversation[];
-  sendMessage: (conversationId: string, text: string) => void;
-  startConversation: (vendorId: string, vendorName: string, vendorAvatar: string) => string;
+  isLoading: boolean;
+
+  fetchConversations: () => Promise<void>;
+  fetchMessages: (conversationId: string) => Promise<void>;
+  sendMessage: (conversationId: string, text: string) => Promise<void>;
+  addIncomingMessage: (conversationId: string, message: ChatMessage) => void;
+  startConversation: (vendorId: string, vendorName?: string, vendorImage?: string) => Promise<string>;
 }
 
-// TODO: once backend is connected, replace local state with API-backed state:
-// - on mount, fetch via getConversations() and populate `conversations`
-// - sendMessage should call sendMessage(conversationId, text) via socket/API
-// - startConversation should call getOrCreateConversation(vendorId) on the backend
 export const useMessagesStore = create<MessagesState>((set, get) => ({
   conversations: [],
+  isLoading: false,
 
-  sendMessage: (conversationId, text) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text,
-      fromUser: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+  fetchConversations: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await getConversations();
+      const mapped = data.map(mapConversation);
+      set({ conversations: mapped, isLoading: false });
+    } catch (error) {
+      console.log("FETCH CONVERSATIONS ERROR =>", error);
+      set({ isLoading: false });
+    }
+  },
+
+  fetchMessages: async (conversationId) => {
+    try {
+      const currentUserId = useAuthStore.getState().user?.id ?? "";
+      const data = await getMessages(conversationId);
+      const mappedMessages = data.map((m) => mapMessage(m, currentUserId));
+      set((state) => ({
+        conversations: state.conversations.map((c) =>
+          c.id === conversationId ? { ...c, messages: mappedMessages } : c
+        ),
+      }));
+    } catch (error) {
+      console.log("FETCH MESSAGES ERROR =>", error);
+    }
+  },
+
+  sendMessage: async (conversationId, text) => {
+    const conversation = get().conversations.find((c) => c.id === conversationId);
+    if (!conversation) return;
+
+    try {
+      await sendMessageApi({
+        conversationId,
+        receiverId: conversation.vendorUserId,
+        message: text,
+      });
+      // The real message comes back via the socket "newMessage" event,
+      // which ChatScreen listens for and appends via addIncomingMessage.
+    } catch (error) {
+      console.log("SEND MESSAGE ERROR =>", error);
+    }
+  },
+
+  addIncomingMessage: (conversationId, message) => {
     set((state) => ({
       conversations: state.conversations.map((c) =>
         c.id === conversationId
-          ? { ...c, messages: [...c.messages, newMessage], lastMessage: text, lastMessageTime: newMessage.timestamp }
+          ? {
+              ...c,
+              messages: [...c.messages, message],
+              lastMessage: message.text,
+              lastMessageTime: message.timestamp,
+            }
           : c
       ),
     }));
   },
 
-  startConversation: (vendorId, vendorName, vendorAvatar) => {
+  startConversation: async (vendorId, vendorName, vendorImage) => {
     const existing = get().conversations.find((c) => c.vendorId === vendorId);
-    if (existing) return existing.id;
+    if (existing) {
+      console.log("Found existing local conversation:", existing.id);
+      return existing.id;
+    }
 
-    const newConversation: Conversation = {
-      id: Date.now().toString(),
+    // TEMPORARY: create a conversation locally instead of hitting the backend,
+    // since real vendors don't exist in the DB yet. Remove this once vendor
+    // registration is live and swap back to the real createConversation() call.
+    const localConversation: Conversation = {
+      id: `local-${vendorId}-${Date.now()}`,
       vendorId,
-      vendorName,
-      vendorAvatar,
+      vendorUserId: vendorId,
+      vendorName: vendorName ?? "Vendor",
+      vendorAvatar: vendorImage ?? "https://i.pravatar.cc/100",
       lastMessage: "",
       lastMessageTime: "",
       messages: [],
     };
-    set((state) => ({ conversations: [newConversation, ...state.conversations] }));
-    return newConversation.id;
+
+    set((state) => ({
+      conversations: [...state.conversations, localConversation],
+    }));
+
+    console.log("Created LOCAL conversation:", localConversation.id);
+    return localConversation.id;
   },
 }));

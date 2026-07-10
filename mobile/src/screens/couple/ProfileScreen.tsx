@@ -13,67 +13,67 @@ import { Alert } from "react-native";
 import { useAuthStore } from "../../store/authStore";
 import { styles } from "./styles/ProfileScreen.styles";
 
-
 // TODO: Replace local Zustand data with getProfile() API response.
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
 
-const { profile } = useSettingsStore();
+  const { profile } = useSettingsStore();
+  const { logout, user } = useAuthStore();
 
-const { logout } = useAuthStore();
+  const displayName = user?.name || profile.fullName || "User";
 
   const initials =
-    profile.fullName
-      ?.split(" ")
+    displayName
+      .split(" ")
       .map((word) => word[0])
       .join("")
       .slice(0, 2)
       .toUpperCase() || "U";
 
-      const handleLogout = () => {
-  Alert.alert(
-    "Logout",
-    "Are you sure you want to logout?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await logout();
-
-            navigation.reset({
-              index: 0,
-              routes: [
-                {
-                  name: "Auth",
-                },
-              ],
-            });
-          } catch (error) {
-            Alert.alert(
-              "Error",
-              "Unable to logout."
-            );
-          }
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]
-  );
-};
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "Auth",
+                  },
+                ],
+              });
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Unable to logout."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const sections = [
     {
       title: "Personal Information",
       rows: [
-        { label: "Full Name", value: profile.fullName },
-        { label: "Email", value: profile.email },
-        { label: "Phone", value: profile.phone },
+        { label: "Full Name", value: user?.name || profile.fullName },
+        { label: "Email", value: user?.email || profile.email },
+        { label: "Phone", value: user?.phone || profile.phone },
         { label: "Gender", value: profile.gender },
       ],
     },
@@ -107,55 +107,55 @@ const { logout } = useAuthStore();
   ];
 
   const stats: {
-  icon: keyof typeof MaterialIcons.glyphMap;
-  iconBg: string;
-  iconColor: string;
-  label: string;
-  value: string;
-  sublabel: string;
-}[] = [
-  {
-    icon: "person",
-    iconBg: "#E3ECFF",
-    iconColor: "#3A6FE8",
-    label: "Profile",
-    value: "100%",
-    sublabel: "Completed",
-  },
-  {
-    icon: "favorite",
-    iconBg: "#FDEEF3",
-    iconColor: "#C2185B",
-    label: "Partner",
-    value: profile.partnerName ? "Added" : "Pending",
-    sublabel: "Information",
-  },
-  {
-    icon: "event-available",
-    iconBg: "#E8F8F0",
-    iconColor: "#22B07D",
-    label: "Wedding",
-    value: profile.weddingDate || "--",
-    sublabel: "Not Set",
-  },
-  {
-    icon: "account-balance-wallet",
-    iconBg: "#FEF6E0",
-    iconColor: "#D9A404",
-    label: "Budget",
-    value: "₹10.0L",
-    sublabel: "Planning",
-  },
-];
+    icon: keyof typeof MaterialIcons.glyphMap;
+    iconBg: string;
+    iconColor: string;
+    label: string;
+    value: string;
+    sublabel: string;
+  }[] = [
+    {
+      icon: "person",
+      iconBg: "#E3ECFF",
+      iconColor: "#3A6FE8",
+      label: "Profile",
+      value: "100%",
+      sublabel: "Completed",
+    },
+    {
+      icon: "favorite",
+      iconBg: "#FDEEF3",
+      iconColor: "#C2185B",
+      label: "Partner",
+      value: profile.partnerName ? "Added" : "Pending",
+      sublabel: "Information",
+    },
+    {
+      icon: "event-available",
+      iconBg: "#E8F8F0",
+      iconColor: "#22B07D",
+      label: "Wedding",
+      value: profile.weddingDate || "--",
+      sublabel: "Not Set",
+    },
+    {
+      icon: "account-balance-wallet",
+      iconBg: "#FEF6E0",
+      iconColor: "#D9A404",
+      label: "Budget",
+      value: "₹10.0L",
+      sublabel: "Planning",
+    },
+  ];
 
   return (
-  <ScrollView
-    style={styles.container}
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-      paddingBottom: 120,
-    }}
-  >
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingBottom: 120,
+      }}
+    >
       <LinearGradient
         colors={["#3AB6E8", "#3A6FE8"]}
         start={{ x: 0, y: 0 }}
@@ -172,7 +172,7 @@ const { logout } = useAuthStore();
 
           <View style={{ marginLeft: 14 }}>
             <Text style={styles.heroName}>
-              {profile.fullName || "User"}
+              {displayName}
             </Text>
 
             <Text style={styles.heroRole}>Customer</Text>
@@ -246,9 +246,6 @@ const { logout } = useAuthStore();
           />
           <Divider />
 
-          
-          
-
           <ProfileQuickActionRow
             icon="settings"
             label="Settings"
@@ -265,16 +262,14 @@ const { logout } = useAuthStore();
         Become a Vendor
       </Button>
 
-     <Button
-  mode="outlined"
-  style={styles.logoutButton}
-  textColor="#E53935"
-  onPress={handleLogout}
->
-  Logout
-</Button>
-
-      
+      <Button
+        mode="outlined"
+        style={styles.logoutButton}
+        textColor="#E53935"
+        onPress={handleLogout}
+      >
+        Logout
+      </Button>
     </ScrollView>
   );
 }

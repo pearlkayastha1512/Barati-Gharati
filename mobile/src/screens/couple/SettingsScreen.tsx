@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -13,12 +13,14 @@ import { DangerZone } from "../../components/users/setting/DangerZone";
 import { SecurityToggleItem } from "../../components/users/setting/SecurityToggleItem";
 import { styles } from "./styles/SettingsScreen.styles";
 import { useRoute } from "@react-navigation/native";
+import { ChangePasswordModal } from "../../components/users/setting/ChangePasswordModal";
 // TODO: import API functions once backend is connected
 // import { getUserSettings, updateUserProfile, updateNotificationPrefs, updatePrivacyPrefs, updateSecurityPrefs, deleteAccount } from "../../api/settings.api";
 
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const { logout } = useAuthStore();
   const {
     profile,
@@ -28,6 +30,7 @@ export default function SettingsScreen() {
     updateProfile,
     toggleNotification,
     togglePrivacy,
+    fetchProfile,
     toggleSecurity,
   } = useSettingsStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -36,6 +39,9 @@ export default function SettingsScreen() {
     setEditModalVisible(true);
   }
 }, [route.params?.openEditModal]);
+useEffect(() => {
+  fetchProfile();
+}, []);
 
   // const handleLogout = async () => {
 
@@ -174,15 +180,15 @@ export default function SettingsScreen() {
               value={security.loginAlerts}
               onToggle={() => toggleSecurity("loginAlerts")}
             />
-            <View style={styles.securityItem}>
-              <View style={styles.securityIconCircle}>
-                <MaterialIcons name="lock-outline" size={18} color="#ccc" />
-              </View>
-              <View style={{ marginLeft: 12, flex: 1 }}>
-                <Text style={[styles.securityTitle, { color: "#bbb" }]}>Change Password</Text>
-                <Text style={styles.comingSoonText}>Coming soon</Text>
-              </View>
-            </View>
+            <TouchableOpacity style={styles.securityItem} onPress={() => setPasswordModalVisible(true)}>
+  <View style={styles.securityIconCircle}>
+    <MaterialIcons name="lock-outline" size={18} color="#666" />
+  </View>
+  <View style={{ marginLeft: 12, flex: 1 }}>
+    <Text style={styles.securityTitle}>Change Password</Text>
+  </View>
+  <MaterialIcons name="chevron-right" size={20} color="#ccc" />
+</TouchableOpacity>
           </View>
         </View>
 
@@ -195,6 +201,12 @@ export default function SettingsScreen() {
         profile={profile}
         onSave={updateProfile}
       />
+
+      <ChangePasswordModal
+        visible={passwordModalVisible}
+        onClose={() => setPasswordModalVisible(false)}
+      />
+    
     </SafeAreaView>
   );
 }

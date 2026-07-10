@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, ScrollView, TouchableOpacity } from "react-native";
 import { Text, IconButton, Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -53,8 +53,12 @@ function TaskCard({
 
 export default function ChecklistScreen() {
   const navigation = useNavigation<any>();
-  const { items, addItem, toggleItem, removeItem } = useChecklistStore();
+  const { items, isLoading, fetchChecklist, addItem, toggleItem, removeItem } = useChecklistStore();
   const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    fetchChecklist();
+  }, []);
 
   const pendingTasks = items.filter((item) => !item.isDone);
   const completedTasks = items.filter((item) => item.isDone);
@@ -101,7 +105,11 @@ export default function ChecklistScreen() {
             </View>
           </View>
 
-          {items.length === 0 ? (
+          {isLoading ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyBoxText}>Loading...</Text>
+            </View>
+          ) : items.length === 0 ? (
             <View style={styles.emptyBox}>
               <Text style={styles.emptyBoxText}>No planner tasks yet.</Text>
             </View>

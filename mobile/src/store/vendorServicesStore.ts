@@ -1,5 +1,13 @@
 import { create } from "zustand";
 
+import {
+  getMyServices,
+  createService,
+  updateServiceApi,
+  deleteServiceApi,
+  BackendService,
+} from "../api/vendorServices.api";
+
 export type ServiceCategory =
   | "Photographer"
   | "Caterer"
@@ -34,70 +42,120 @@ export interface VendorServiceRecord {
 
 interface VendorServicesState {
   services: VendorServiceRecord[];
-  addService: (service: Omit<VendorServiceRecord, "id" | "rating" | "reviewsCount" | "status">) => void;
-  updateService: (id: string, updates: Partial<VendorServiceRecord>) => void;
-  deleteService: (id: string) => void;
+
+  fetchServices: () => Promise<void>;
+
+  addService: (
+    service: Omit<
+      VendorServiceRecord,
+      "id" | "rating" | "reviewsCount" | "status"
+    >
+  ) => Promise<void>;
+
+  updateService: (
+    id: string,
+    updates: Partial<VendorServiceRecord>
+  ) => Promise<void>;
+
+  deleteService: (id: string) => Promise<void>;
 }
 
-export const useVendorServicesStore = create<VendorServicesState>((set) => ({
-  // ==============================
-  // TODO: Fetch vendor's services from API on app load / screen mount
-  // instead of starting empty here. Something like:
-  //
-  // const response = await getVendorServices(vendorId);
-  // set({ services: response.data });
-  //
-  // For now, starts empty — vendor sees "No services found" until
-  // they create one via the Add Service form.
-  // ==============================
-  services: [],
+const mapCategory = (category: string): ServiceCategory => {
+  if (SERVICE_CATEGORIES.includes(category as ServiceCategory)) {
+    return category as ServiceCategory;
+  }
 
-  addService: (service) => {
-    // ==============================
-    // TODO: Call Create Service API here instead of mutating local state.
-    //
-    // const response = await createVendorService(service);
-    // set((state) => ({ services: [...state.services, response.data] }));
-    //
-    // Keep the local-state fallback below until the API is wired in.
-    // ==============================
-    set((state) => ({
-      services: [
-        ...state.services,
-        {
-          ...service,
-          id: Date.now().toString(),
-          status: "Active",
-          rating: 0,
-          reviewsCount: 0,
-        },
-      ],
-    }));
-  },
+  return "Other";
+};
 
-  updateService: (id, updates) => {
-    // ==============================
-    // TODO: Call Update Service API here instead of mutating local state.
-    //
-    // const response = await updateVendorService(id, updates);
-    // set((state) => ({
-    //   services: state.services.map((s) => (s.id === id ? response.data : s)),
-    // }));
-    // ==============================
-    set((state) => ({
-      services: state.services.map((s) => (s.id === id ? { ...s, ...updates } : s)),
-    }));
-  },
+const mapService = (
+  service: BackendService
+): VendorServiceRecord => ({
+  id: service.id,
 
-  deleteService: (id) => {
-    // ==============================
-    // TODO: Call Delete Service API here instead of mutating local state.
-    //
-    // await deleteVendorService(id);
-    // set((state) => ({ services: state.services.filter((s) => s.id !== id) }));
-    // ==============================
-    set((state) => ({
-      services: state.services.filter((s) => s.id !== id),
-    }));
-  },
-}));
+  serviceName: service.name,
+
+  category: mapCategory(service.category),
+
+  description: service.description ?? "",
+
+  duration: service.duration ?? "",
+
+  price: Number(service.price),
+
+  image: service.image ?? null,
+
+  rating: Number(service.rating ?? 0),
+
+  reviewsCount: Number(service.reviews ?? 0),
+
+  status: service.status === "active" ? "Active" : "Inactive",
+});
+
+export const useVendorServicesStore = create<VendorServicesState>(
+  (set, get) => ({
+    services: [],
+
+    fetchServices: async () => {
+      try {
+        console.log("Fetching services...");
+
+        const data = await getMyServices();
+
+        console.log("Fetched Services:", data);
+
+        set({
+          services: data.map(mapService),
+        });
+      } catch (error) {
+        console.log("FETCH SERVICES ERROR:", error);
+      }
+    },
+
+    addService: async (service) => {
+      try {
+        await createService({
+          name: service.serviceName,
+          category: service.category,
+          description: service.description,
+          duration: service.duration,
+          price: service.price,
+          image: service.image ?? "",
+          includes: [],
+        });
+
+        await get().fetchServices();
+      } catch (error) {
+        console.log("CREATE SERVICE ERROR:", error);
+      }
+    },
+
+    updateService: async (id, updates) => {
+      try {
+        await updateServiceApi(id, {
+          name: updates.serviceName,
+          category: updates.category,
+          description: updates.description,
+          duration: updates.duration,
+          price: updates.price,
+          image: updates.image ?? "",
+          includes: [],
+        });
+
+        await get().fetchServices();
+      } catch (error) {
+        console.log("UPDATE SERVICE ERROR:", error);
+      }
+    },
+
+    deleteService: async (id) => {
+      try {
+        await deleteServiceApi(id);
+
+        await get().fetchServices();
+      } catch (error) {
+        console.log("DELETE SERVICE ERROR:", error);
+      }
+    },
+  })
+);

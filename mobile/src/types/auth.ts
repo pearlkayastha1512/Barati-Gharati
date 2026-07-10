@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -42,4 +44,10 @@ export interface AuthResponse {
 export interface ApiResponse {
   success: boolean;
   message: string;
+}
+export interface LoginApiResponse {
+  success: boolean;
+  message: string;
+  accessToken: string;
+  user: User;
 }

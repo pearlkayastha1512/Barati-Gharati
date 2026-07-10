@@ -3,10 +3,34 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { COLORS, RADIUS, SPACING } from "../../../constants/theme";
 import { VendorBookingRecord } from "../../../store/vendorBookingsStore";
 
-const STATUS_COLORS: Record<VendorBookingRecord["status"], { bg: string; text: string }> = {
-  Pending: { bg: COLORS.warningLight, text: COLORS.warning },
-  Completed: { bg: COLORS.successLight, text: COLORS.success },
-  Cancelled: { bg: "#FDECEC", text: COLORS.danger },
+const STATUS_COLORS: Record<
+  VendorBookingRecord["status"],
+  { bg: string; text: string }
+> = {
+  Pending: {
+    bg: COLORS.warningLight,
+    text: COLORS.warning,
+  },
+
+  Accepted: {
+    bg: "#E6F4EA",
+    text: COLORS.success,
+  },
+
+  Completed: {
+    bg: COLORS.successLight,
+    text: COLORS.success,
+  },
+
+  Cancelled: {
+    bg: "#FDECEC",
+    text: COLORS.danger,
+  },
+
+  Rejected: {
+    bg: "#FDECEC",
+    text: COLORS.danger,
+  },
 };
 
 export function BookingRow({ booking, onPress }: { booking: VendorBookingRecord; onPress: () => void }) {

@@ -14,6 +14,9 @@ import { PortfolioCard } from "../../components/vendors/portfolio/PortfolioCard"
 import { PortfolioUploadModal } from "../../components/vendors/portfolio/PortfolioUploadModal";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
 
+// TODO: import API functions once connected
+// import { getMyPortfolio, createPortfolioItem, deletePortfolioItem } from "../../api/portfolio.api";
+
 export default function PortfolioScreen() {
   const navigation = useNavigation<any>();
   const items = useVendorPortfolioStore((state) => state.items);
@@ -22,6 +25,15 @@ export default function PortfolioScreen() {
 
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+
+  // TODO: fetch on mount once connected:
+  // useEffect(() => {
+  //   const load = async () => {
+  //     const res = await getMyPortfolio();
+  //     setItems(res.data); // already sorted newest-first by backend
+  //   };
+  //   load();
+  // }, []);
 
   const totalItems = items.length;
   const categoriesUsed = new Set(items.map((i) => i.category)).size;
@@ -119,6 +131,7 @@ export default function PortfolioScreen() {
           <View style={styles.grid}>
             {filteredItems.map((item) => (
               <PortfolioCard key={item.id} item={item} onDelete={() => deleteItem(item.id)} />
+              // TODO: onDelete should eventually call: await deletePortfolioItem(item.id); then deleteItem(item.id) locally
             ))}
           </View>
         )}
@@ -141,6 +154,10 @@ export default function PortfolioScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={addItem}
+        // TODO: onSubmit should eventually call createPortfolioItem(dto, file) with the picked
+        // image, then addItem(res.data) locally. Backend only allows ONE image per portfolio
+        // item (not multiple like the vendor gallery) — if your upload modal supports picking
+        // multiple images per entry, that won't match this endpoint as-is.
       />
     </SafeAreaView>
   );

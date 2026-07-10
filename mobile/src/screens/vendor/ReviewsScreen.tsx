@@ -19,11 +19,11 @@ export default function ReviewsScreen() {
   const submitReply = useVendorReviewsStore((state) => state.submitReply);
   const [selectedReview, setSelectedReview] = useState<VendorReviewRecord | null>(null);
 
-  // TODO: fetch on mount once vendorId is available from authStore:
+  // TODO: fetch on mount once vendorId is available (from vendor profile's frontendVendorId):
   // useEffect(() => {
   //   const load = async () => {
   //     const data = await getReviewsByVendor(vendorId);
-  //     setReviews(data);
+  //     setReviews(data); // already sorted newest-first by backend
   //   };
   //   load();
   // }, []);
