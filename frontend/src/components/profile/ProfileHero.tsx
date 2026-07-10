@@ -61,18 +61,16 @@ export default function ProfileHero() {
           relative
           overflow-hidden
           rounded-[32px]
-          bg-gradient-to-br
-          from-sky-500
-          via-cyan-500
-          to-blue-600
+          bg-[linear-gradient(135deg,#ff4d6d_0%,#ff7f96_46%,#fff3b0_100%)]
           p-8
-          text-white
+          text-[#111111]
           shadow-xl
+          shadow-[#ff4d6d]/20
         "
       >
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.34)_0_1px,transparent_1px)] bg-[length:34px_34px] opacity-45" />
 
-        <div className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#fff8d8]/55 to-transparent" />
 
         <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
@@ -86,16 +84,16 @@ export default function ProfileHero() {
               alt={user.name}
               width={110}
               height={110}
-              className="rounded-full border-4 border-white object-cover"
+              className="rounded-full border-4 border-[#fffdf0] object-cover shadow-xl shadow-[#ff4d6d]/30"
             />
 
             <div>
 
-              <h1 className="text-4xl font-bold">
+              <h1 className="text-4xl font-bold text-[#fffdf0] drop-shadow-sm">
                 {user.name}
               </h1>
 
-              <p className="mt-2 text-lg text-cyan-100 capitalize">
+              <p className="mt-2 inline-flex rounded-full bg-[#fff8d8]/90 px-4 py-1 text-sm font-bold capitalize text-[#111111] shadow-sm">
                 {user.role}
               </p>
 
@@ -103,13 +101,16 @@ export default function ProfileHero() {
 
           </div>
 
-          <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+          <div className="rounded-3xl border border-white/70 bg-[#fff8d8]/90 p-6 text-[#111111] shadow-lg shadow-[#ff4d6d]/10 backdrop-blur">
 
             <div className="space-y-4">
 
               <div className="flex items-center gap-3">
 
-                <User size={20} />
+                <User
+                  size={20}
+                  className="text-[#ff4d6d]"
+                />
 
                 <span>
                   Profile Verified
@@ -118,7 +119,7 @@ export default function ProfileHero() {
                 {user.isVerified && (
                   <CheckCircle2
                     size={18}
-                    className="text-green-300"
+                    className="text-[#ff4d6d]"
                   />
                 )}
 
@@ -128,6 +129,7 @@ export default function ProfileHero() {
 
                 <CalendarDays
                   size={20}
+                  className="text-[#ff4d6d]"
                 />
 
                 <span>
@@ -157,11 +159,15 @@ export default function ProfileHero() {
                   items-center
                   gap-2
                   rounded-xl
-                  bg-white
+                  bg-[#ff4d6d]
                   px-4
                   py-2
                   font-semibold
-                  text-sky-600
+                  text-white
+                  shadow-lg
+                  shadow-[#ff4d6d]/25
+                  transition
+                  hover:bg-[#e63b5f]
                 "
               >
                 <Pencil size={18} />

@@ -21,17 +21,17 @@ export default function ChatList() {
 
   useEffect(() => {
     loadConversations();
-  }, []);
+  }, [loadConversations]);
 
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
 
-      <div className="border-b border-slate-200 p-5">
+      <div className="border-b border-[#ffb3bf] p-5">
         <div className="relative">
           <Search
             size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ff8fa1]"
           />
 
           <input
@@ -42,17 +42,17 @@ export default function ChatList() {
               w-full
               rounded-2xl
               border
-              border-slate-200
-              bg-slate-50
+              border-[#ffb3bf]
+              bg-[#fffdf0]
               pl-12
               pr-4
               text-sm
-              text-slate-700
+              text-[#6c2d45]
               outline-none
               transition
-              placeholder:text-slate-400
-              focus:border-rose-400
-              focus:bg-white
+              placeholder:text-[#ff8fa1]
+              focus:border-[#ff8fa1]
+              focus:bg-[#fffdf0]
             "
           />
         </div>
@@ -63,7 +63,7 @@ export default function ChatList() {
       <div className="hide-scrollbar flex-1 space-y-3 overflow-y-auto p-4">
         {conversations.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[#ff8fa1]">
               No conversations yet
             </p>
           </div>

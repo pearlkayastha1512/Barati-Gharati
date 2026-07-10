@@ -31,7 +31,7 @@
 //       className="
 //         rounded-3xl
 //         border
-//         border-gray-200
+//         border-[#ffb3bf]
 //         bg-white
 //         p-6
 //         shadow-sm
@@ -61,12 +61,12 @@
 //             {task.status === "completed" ? (
 //               <CheckCircle2
 //                 size={24}
-//                 className="text-green-500"
+//                 className="text-[#ff4d6d]"
 //               />
 //             ) : (
 //               <Circle
 //                 size={24}
-//                 className="text-gray-300 transition hover:text-rose-500"
+//                 className="text-gray-300 transition hover:text-[#ff4d6d]"
 //               />
 //             )}
 //           </button>
@@ -76,8 +76,8 @@
 //             <h3
 //               className={`text-lg font-semibold transition-all duration-300 ${
 //                 task.status === "completed"
-//                   ? "text-gray-400 line-through"
-//                   : "text-gray-900"
+//                   ? "text-[#ff8fa1] line-through"
+//                   : "text-[#3f1d2f]"
 //               }`}
 //             >
 //               {task.title}
@@ -86,8 +86,8 @@
 //             <p
 //               className={`mt-2 transition ${
 //                 task.status === "completed"
-//                   ? "text-gray-400"
-//                   : "text-gray-500"
+//                   ? "text-[#ff8fa1]"
+//                   : "text-[#8d6171]"
 //               }`}
 //             >
 //               {task.description}
@@ -108,7 +108,7 @@
 //               border
 //               p-2
 //               transition
-//               hover:bg-gray-100
+//               hover:bg-[#fff8d8]
 //             "
 //           >
 //             <Pencil size={18} />
@@ -121,7 +121,7 @@
 //               border
 //               border-red-200
 //               p-2
-//               text-red-500
+//               text-[#e63b5f]
 //               transition
 //               hover:bg-red-50
 //             "
@@ -135,21 +135,21 @@
 
 //       <div className="mt-6 flex flex-wrap items-center gap-4">
 
-//         <span className="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold capitalize text-rose-600">
+//         <span className="rounded-full bg-[#ffe6eb] px-3 py-1 text-sm font-semibold capitalize text-[#ff4d6d]">
 //           {task.priority}
 //         </span>
 
 //         <span
 //           className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${
 //             task.status === "completed"
-//               ? "bg-green-100 text-green-700"
-//               : "bg-yellow-100 text-yellow-700"
+//               ? "bg-[#fff8d8] text-[#111111]"
+//               : "bg-[#fff3b0] text-[#111111]"
 //           }`}
 //         >
 //           {task.status}
 //         </span>
 
-//         <span className="flex items-center gap-2 text-sm text-gray-500">
+//         <span className="flex items-center gap-2 text-sm text-[#8d6171]">
 
 //           <CalendarDays size={16} />
 
@@ -208,7 +208,7 @@ export default function PlannerTaskCard({
       className="
         rounded-3xl
         border
-        border-gray-200
+        border-[#ffb3bf]
         bg-white
         p-6
         shadow-sm
@@ -246,14 +246,14 @@ export default function PlannerTaskCard({
             "
           >
             {task.status === "COMPLETED" ? (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-500 transition-all duration-300">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ff4d6d] transition-all duration-300">
                 <Check
                   size={16}
                   className="text-white"
                 />
               </div>
             ) : (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-gray-300 transition-all duration-300">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#ffb3bf] transition-all duration-300">
                 <div className="h-2.5 w-2.5 rounded-full bg-transparent" />
               </div>
             )}
@@ -263,8 +263,8 @@ export default function PlannerTaskCard({
             <h3
               className={`text-lg font-semibold transition-all duration-300 ${
                 task.status === "COMPLETED"
-                  ? "text-gray-400 line-through"
-                  : "text-gray-700"
+                  ? "text-[#ff8fa1] line-through"
+                  : "text-[#6c2d45]"
               }`}
             >
               {task.title}
@@ -273,8 +273,8 @@ export default function PlannerTaskCard({
             <p
               className={`mt-2 transition ${
                 task.status === "COMPLETED"
-                  ? "text-gray-400"
-                  : "text-gray-500"
+                  ? "text-[#ff8fa1]"
+                  : "text-[#8d6171]"
               }`}
             >
               {task.description}
@@ -289,11 +289,11 @@ export default function PlannerTaskCard({
             className="
               rounded-xl
               border
-              border-gray-200
+              border-[#ffb3bf]
               p-2
-              text-gray-600
+              text-[#7a4a5c]
               transition
-              hover:bg-gray-100
+              hover:bg-[#fff8d8]
             "
           >
             <Pencil size={18} />
@@ -306,7 +306,7 @@ export default function PlannerTaskCard({
               border
               border-red-200
               p-2
-              text-red-500
+              text-[#e63b5f]
               transition
               hover:bg-red-50
             "
@@ -317,21 +317,21 @@ export default function PlannerTaskCard({
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
-        <span className="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold capitalize text-rose-600">
+        <span className="rounded-full bg-[#ffe6eb] px-3 py-1 text-sm font-semibold capitalize text-[#ff4d6d]">
           {String(task.priority).toLowerCase()}
         </span>
 
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${
             task.status === "COMPLETED"
-              ? "bg-green-100 text-green-700"
-              : "bg-yellow-100 text-yellow-700"
+              ? "bg-[#fff8d8] text-[#111111]"
+              : "bg-[#fff3b0] text-[#111111]"
           }`}
         >
           {task.status}
         </span>
 
-        <span className="flex items-center gap-2 text-sm text-gray-500">
+        <span className="flex items-center gap-2 text-sm text-[#8d6171]">
           <CalendarDays size={16} />
 
           {new Date(task.date).toLocaleDateString(

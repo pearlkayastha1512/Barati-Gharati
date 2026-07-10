@@ -7,11 +7,6 @@ import {
 
 import { useMemo } from "react";
 import { useBookingStore } from "@/store/bookingStore";
-export default function WeddingProgress() {
-
-  const bookings = useBookingStore(
-  (state) => state.bookings
-);
 
 const requiredCategories = [
   "Venue",
@@ -21,6 +16,12 @@ const requiredCategories = [
   "Caterer",
   "DJ",
 ];
+
+export default function WeddingProgress() {
+
+  const bookings = useBookingStore(
+  (state) => state.bookings
+);
 
 const checklist = useMemo(() => {
   return requiredCategories.map((category) => ({
@@ -41,37 +42,37 @@ const checklist = useMemo(() => {
   );
 
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="rounded-3xl border border-[#ffb3bf] bg-white/90 p-8 shadow-sm shadow-[#ff4d6d]/5">
 
-      <h2 className="text-2xl font-bold text-gray-900">
-        Wedding Progress
+      <h2 className="text-2xl font-bold text-[#3f1d2f]">
+        Essentials Checklist
       </h2>
 
-      <p className="mt-2 text-gray-500">
-        Track your wedding planning.
+      <p className="mt-2 text-[#8d6171]">
+        See which core wedding services are already covered.
       </p>
 
       <div className="mt-8">
 
         <div className="mb-3 flex justify-between">
 
-          <span className="font-medium">
+          <span className="font-medium text-[#7a4a5c]">
             Completion
           </span>
 
-          <span className="font-bold text-rose-500">
+          <span className="font-bold text-[#ff4d6d]">
             {progress}%
           </span>
 
         </div>
 
-        <div className="h-3 rounded-full bg-gray-100">
+        <div className="h-3 rounded-full bg-[#ffe6eb]">
 
           <div
             style={{
               width: `${progress}%`,
             }}
-            className="h-3 rounded-full bg-gradient-to-r from-rose-500 to-pink-500"
+            className="h-3 rounded-full bg-gradient-to-r from-[#ff4d6d] via-[#ff9aaa] to-[#ff4d6d]"
           />
 
         </div>
@@ -84,20 +85,20 @@ const checklist = useMemo(() => {
 
           <div
             key={item.title}
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 rounded-2xl border border-[#ffcad3] bg-[#fff5f7] p-3"
           >
 
             {item.completed ? (
 
               <CheckCircle2
-                className="text-green-500"
+                className="text-[#ff4d6d]"
                 size={20}
               />
 
             ) : (
 
               <Circle
-                className="text-gray-300"
+                className="text-[#d8a0ad]"
                 size={20}
               />
 
@@ -106,8 +107,8 @@ const checklist = useMemo(() => {
             <span
               className={
                 item.completed
-                  ? "font-medium text-gray-900"
-                  : "text-gray-500"
+                  ? "font-medium text-[#3f1d2f]"
+                  : "text-[#8d6171]"
               }
             >
               {item.title}

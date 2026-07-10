@@ -47,19 +47,19 @@ export default function UpcomingTasks() {
   };
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-[#3f1d2f]">
           Upcoming Tasks
         </h2>
 
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-[#8d6171]">
           Your next wedding activities.
         </p>
       </div>
 
       {upcomingTasks.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-gray-500">
+        <div className="rounded-2xl border border-dashed border-[#ffb3bf] py-12 text-center text-[#8d6171]">
           No upcoming tasks.
         </div>
       ) : (
@@ -70,34 +70,34 @@ export default function UpcomingTasks() {
               className="
                 rounded-2xl
                 border
-                border-gray-100
+                border-[#fff3b0]
                 p-5
                 transition
-                hover:border-rose-200
-                hover:bg-rose-50/30
+                hover:border-[#ff8fa1]
+                hover:bg-[#ffe6eb]/30
               "
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="rounded-2xl bg-rose-100 p-3">
+                  <div className="rounded-2xl bg-[#ffe6eb] p-3">
                     <CalendarClock
                       size={22}
-                      className="text-rose-500"
+                      className="text-[#ff4d6d]"
                     />
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-[#3f1d2f]">
                       {task.title}
                     </h3>
 
                     {task.description && (
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-[#8d6171]">
                         {task.description}
                       </p>
                     )}
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-[#8d6171]">
                       {new Date(
                         task.date
                       ).toLocaleDateString(
@@ -116,11 +116,11 @@ export default function UpcomingTasks() {
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                       task.priority === "HIGH"
-                        ? "bg-red-100 text-red-600"
+                        ? "bg-[#ffe6eb] text-[#e63b5f]"
                         : task.priority ===
                           "MEDIUM"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-green-100 text-green-700"
+                        ? "bg-[#fff3b0] text-[#111111]"
+                        : "bg-[#fff8d8] text-[#111111]"
                     }`}
                   >
                     {task.priority.toLowerCase()}

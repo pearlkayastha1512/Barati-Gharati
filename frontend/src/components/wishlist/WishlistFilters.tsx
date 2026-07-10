@@ -38,13 +38,13 @@ export default function WishlistFilters() {
 };
 
   return (
-    <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-6 shadow-sm">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">
+        <h2 className="text-xl font-bold text-[#3f1d2f]">
           Saved Vendors
         </h2>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-[#8d6171]">
           Compare and book your favourites.
         </p>
       </div>
@@ -55,7 +55,7 @@ export default function WishlistFilters() {
           onChange={(e) =>
             setSortBy(e.target.value)
           }
-          className="h-11 rounded-2xl border border-gray-200 px-5 text-sm outline-none text-gray-600"
+          className="h-11 rounded-2xl border border-[#ffb3bf] px-5 text-sm outline-none text-[#6c2d45]"
         >
           <option>Latest Saved</option>
 
@@ -81,7 +81,7 @@ export default function WishlistFilters() {
 
             ${
               wishlist.length === 0
-                ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                ? "cursor-not-allowed bg-[#fff8d8] text-[#ff8fa1]"
                 : "bg-red-500 text-white hover:bg-red-600"
             }
           `}

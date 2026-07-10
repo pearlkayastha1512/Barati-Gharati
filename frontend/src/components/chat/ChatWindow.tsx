@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Phone, Video } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
 import { useMessageStore } from "@/store/messageStore";
@@ -20,19 +20,19 @@ export default function ChatWindow() {
 
   if (!selectedConversation) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-white to-rose-50">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-rose-100">
+      <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-[#fffdf0] to-[#ffe6eb]">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#ffe6eb]">
           <MessageCircle
             size={42}
-            className="text-rose-500"
+            className="text-[#ff4d6d]"
           />
         </div>
 
-        <h2 className="mt-6 text-3xl font-bold text-slate-800">
+        <h2 className="mt-6 text-3xl font-bold text-[#3f1d2f]">
           Your Messages
         </h2>
 
-        <p className="mt-3 text-center text-slate-500">
+        <p className="mt-3 text-center text-[#8d6171]">
           Select a conversation to start chatting.
         </p>
       </div>
@@ -50,38 +50,38 @@ export default function ChatWindow() {
     <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
 
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
+      <div className="flex shrink-0 items-center justify-between border-b border-[#ffb3bf] bg-[#fffdf0] px-8 py-6">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-pink-100">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#ffe6eb] to-[#fff8d8]">
             <MessageCircle
               size={24}
-              className="text-rose-500"
+              className="text-[#ff4d6d]"
             />
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-[#3f1d2f]">
               {otherUserName}
             </h2>
 
-            <p className="text-sm text-green-500">
+            <p className="text-sm text-[#ff4d6d]">
               ● Online
             </p>
           </div>
         </div>
 
         {/* <div className="flex gap-3">
-          <button className="rounded-full bg-slate-100 p-3 transition hover:bg-rose-100">
+          <button className="rounded-full bg-[#ffe6eb] p-3 transition hover:bg-[#ffe6eb]">
             <Phone
               size={18}
-              className="text-slate-600"
+              className="text-[#6c2d45]"
             />
           </button>
 
-          <button className="rounded-full bg-slate-100 p-3 transition hover:bg-rose-100">
+          <button className="rounded-full bg-[#ffe6eb] p-3 transition hover:bg-[#ffe6eb]">
             <Video
               size={18}
-              className="text-slate-600"
+              className="text-[#6c2d45]"
             />
           </button>
         </div> */}
@@ -89,9 +89,9 @@ export default function ChatWindow() {
 
       {/* Chat Area */}
 
-      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-br from-white via-rose-50 to-pink-50 p-8">
+      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-br from-[#fffdf0] via-[#ffe6eb] to-[#fff8d8] p-8">
         <div className="mb-8 flex justify-center">
-          <span className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-slate-500 shadow">
+          <span className="rounded-full bg-[#fffdf0] px-5 py-2 text-xs font-semibold text-[#8d6171] shadow">
             Today
           </span>
         </div>
@@ -113,8 +113,8 @@ export default function ChatWindow() {
                 <div
                   className={`max-w-[70%] rounded-[28px] px-6 py-4 shadow-md ${
                     mine
-                      ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-                      : "border border-slate-200 bg-white text-slate-700"
+                      ? "bg-gradient-to-r from-[#ff4d6d] to-[#ff8fa1] text-white"
+                      : "border border-[#ffb3bf] bg-[#fffdf0] text-[#6c2d45]"
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words leading-7">
@@ -124,8 +124,8 @@ export default function ChatWindow() {
                   <p
                     className={`mt-2 text-right text-xs ${
                       mine
-                        ? "text-rose-100"
-                        : "text-slate-400"
+                        ? "text-[#111111]"
+                        : "text-[#ff8fa1]"
                     }`}
                   >
                     {new Date(

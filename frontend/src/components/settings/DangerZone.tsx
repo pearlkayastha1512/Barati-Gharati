@@ -103,7 +103,7 @@ export default function DangerZone() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 rounded-2xl border border-gray-300 bg-white px-6 py-4 text-green-600 transition hover:bg-gray-100"
+          className="flex items-center gap-3 rounded-2xl border border-[#ffb3bf] bg-[#fffdf0] px-6 py-4 text-[#111111] transition hover:bg-[#fff8d8]"
         >
           <LogOut size={18} />
 

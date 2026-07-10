@@ -3,7 +3,6 @@
 "use client";
 
 import {
-  MessageCircle,
   ChevronDown,
 } from "lucide-react";
 
@@ -23,20 +22,19 @@ export default function Header() {
   else if (hour < 18) greeting = "Good Afternoon";
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gray-200 bg-white/80 px-8 backdrop-blur-xl shadow-sm">
+    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[#ffb3bf] bg-[#fffef7]/90 px-8 shadow-sm shadow-[#ff4d6d]/5 backdrop-blur-xl">
 
       {/* Left */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Dashboard
+        <h1 className="text-3xl font-bold text-[#3f1d2f]">
+          Wedding Dashboard
         </h1>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-[#8d6171]">
           {greeting},{" "}
-          <span className="font-semibold text-gray-700">
+          <span className="font-semibold text-[#6c2d45]">
             {firstName}
           </span>{" "}
-          👋
         </p>
       </div>
 
@@ -57,16 +55,16 @@ export default function Header() {
 
         
 
-       <div className="rounded-2xl bg-gray-300 p-1 transition-all duration-300 hover:-translate-y-1 hover:bg-rose-50">
+       <div className="rounded-2xl bg-[#ffe6eb] p-1 transition-all duration-300 hover:-translate-y-1 hover:bg-[#ffdce4]">
   <NotificationBell />
 </div>
 
         {/* Profile */}
-        <button className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-2 transition-all duration-300 hover:border-rose-200 hover:shadow-md">
+        <button className="flex items-center gap-3 rounded-2xl border border-[#ffb3bf] bg-white/90 px-3 py-2 transition-all duration-300 hover:border-[#ff8fa1] hover:shadow-md hover:shadow-[#ff4d6d]/10">
 
           <div className="relative">
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-500 font-bold text-white">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-[#ff4d6d] to-[#ff8fa1] font-bold text-white">
               {firstName.charAt(0)}
             </div>
 
@@ -76,19 +74,19 @@ export default function Header() {
 
           <div className="hidden text-left lg:block">
 
-            <p className="font-semibold text-gray-800">
+            <p className="font-semibold text-[#3f1d2f]">
               {user?.name}
             </p>
 
-            <p className="text-xs text-gray-500">
-              Customer
+            <p className="text-xs text-[#8d6171]">
+              Wedding Planner
             </p>
 
           </div>
 
           <ChevronDown
             size={18}
-            className="hidden text-gray-500 lg:block"
+            className="hidden text-[#8d6171] lg:block"
           />
 
         </button>

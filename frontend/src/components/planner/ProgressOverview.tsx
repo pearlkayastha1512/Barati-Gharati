@@ -96,8 +96,8 @@ export default function ProgressOverview() {
             className="
               rounded-3xl
               border
-              border-gray-200
-              bg-white
+              border-[#ffb3bf]
+              bg-[#fffdf0]
               p-6
               shadow-sm
               transition-all
@@ -108,30 +108,30 @@ export default function ProgressOverview() {
           >
             <div className="flex items-start justify-between">
 
-              <div className="rounded-2xl bg-rose-50 p-3">
+              <div className="rounded-2xl bg-[#ffe6eb] p-3">
 
                 <Icon
                   size={24}
-                  className="text-rose-500"
+                  className="text-[#ff4d6d]"
                 />
 
               </div>
 
-              <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">
+              <span className="rounded-full bg-[#fff8d8] px-3 py-1 text-xs font-semibold text-[#111111]">
                 Live
               </span>
 
             </div>
 
-            <h3 className="mt-6 text-sm text-gray-500">
+            <h3 className="mt-6 text-sm text-[#8d6171]">
               {item.title}
             </h3>
 
-            <p className="mt-2 text-4xl font-bold text-gray-900">
+            <p className="mt-2 text-4xl font-bold text-[#3f1d2f]">
               {item.value}
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               {item.subtitle}
             </p>
 

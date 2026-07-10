@@ -20,23 +20,23 @@
 //         overflow-hidden
 //         rounded-[32px]
 //         bg-gradient-to-br
-//         from-rose-500
-//         via-pink-500
+//         from-[#ff4d6d]
+//         via-[#ff8fa1]
 //         to-red-500
 //         p-8
 //         text-white
 //         shadow-xl
 //       "
 //     >
-//       <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+//       <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
-//       <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+//       <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
 //       <div className="relative z-10 grid gap-8 lg:grid-cols-2">
 
 //         <div>
 
-//           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur">
+//           <div className="inline-flex items-center gap-2 rounded-full bg-[#fffdf0]/15 px-4 py-2 backdrop-blur">
 
 //             <Sparkles size={16} />
 
@@ -52,7 +52,7 @@
 //             fallen in love with.
 //           </h1>
 
-//           <p className="mt-6 max-w-xl text-lg text-rose-100">
+//           <p className="mt-6 max-w-xl text-lg text-[#111111]">
 //             Save your favorite vendors, compare them,
 //             and book when you're ready.
 //           </p>
@@ -65,11 +65,11 @@
 //               items-center
 //               gap-2
 //               rounded-2xl
-//               bg-white
+//               bg-[#fffdf0]
 //               px-6
 //               py-4
 //               font-semibold
-//               text-rose-600
+//               text-[#ff4d6d]
 //               transition
 //               hover:-translate-y-1
 //             "
@@ -82,7 +82,7 @@
 
 //         </div>
 
-//         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+//         <div className="rounded-3xl bg-[#fffdf0]/10 p-6 backdrop-blur">
 
 //           <div className="flex items-center gap-3">
 
@@ -221,23 +221,23 @@ export default function WishlistHero() {
         overflow-hidden
         rounded-[32px]
         bg-gradient-to-br
-        from-rose-500
-        via-pink-500
+        from-[#ff4d6d]
+        via-[#ff8fa1]
         to-red-500
         p-8
         text-white
         shadow-xl
       "
     >
-      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
-      <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-[#fffdf0]/10 blur-3xl" />
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-2">
         {/* Left */}
 
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#fffdf0]/15 px-4 py-2 backdrop-blur">
             <Sparkles size={16} />
 
             <span className="text-sm font-medium">
@@ -246,15 +246,15 @@ export default function WishlistHero() {
           </div>
 
           <h1 className="mt-6 text-5xl font-bold leading-tight">
-            Vendors you've
+            Vendors you&apos;ve
             <br />
             fallen in love with.
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-rose-100">
+          <p className="mt-6 max-w-xl text-lg text-[#111111]">
             Save your favorite vendors,
             compare them and book when
-            you're ready.
+            you&apos;re ready.
           </p>
 
           <Link
@@ -265,11 +265,11 @@ export default function WishlistHero() {
               items-center
               gap-2
               rounded-2xl
-              bg-white
+              bg-[#fffdf0]
               px-6
               py-4
               font-semibold
-              text-rose-600
+              text-[#ff4d6d]
               transition
               hover:-translate-y-1
             "
@@ -282,7 +282,7 @@ export default function WishlistHero() {
 
         {/* Right */}
 
-        <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <div className="rounded-3xl border border-white/70 bg-[#fff8d8]/90 p-6 text-[#111111] shadow-lg shadow-[#ff4d6d]/10 backdrop-blur">
           <div className="flex items-center gap-3">
             <Bookmark size={22} />
 

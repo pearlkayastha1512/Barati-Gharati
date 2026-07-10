@@ -61,13 +61,13 @@ export default function BudgetInsights() {
   }, [expenses, weddingBudget]);
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
 
-      <h2 className="text-2xl font-bold text-gray-900">
+      <h2 className="text-2xl font-bold text-[#3f1d2f]">
         Budget Insights
       </h2>
 
-      <p className="mt-2 text-gray-500">
+      <p className="mt-2 text-[#8d6171]">
         Smart insights from your wedding expenses.
       </p>
 
@@ -75,19 +75,19 @@ export default function BudgetInsights() {
 
         {/* Largest Category */}
 
-        <div className="flex items-start gap-4 rounded-2xl bg-emerald-50 p-4">
+        <div className="flex items-start gap-4 rounded-2xl bg-[#fff8d8] p-4">
 
           <TrendingUp
-            className="mt-1 text-emerald-600"
+            className="mt-1 text-[#ff4d6d]"
             size={22}
           />
 
           <div>
-            <h3 className="font-semibold text-gray-700">
+            <h3 className="font-semibold text-[#6c2d45]">
               Highest Spending
             </h3>
 
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-[#6c2d45]">
               {insights.highestCategory
                 ? `${insights.highestCategory[0]} • ₹${insights.highestCategory[1].toLocaleString(
                     "en-IN"
@@ -100,20 +100,20 @@ export default function BudgetInsights() {
 
         {/* Average */}
 
-        <div className="flex items-start gap-4 rounded-2xl bg-blue-50 p-4">
+        <div className="flex items-start gap-4 rounded-2xl bg-[#fff8d8] p-4">
 
           <BadgeIndianRupee
-            className="mt-1 text-blue-600"
+            className="mt-1 text-[#ff4d6d]"
             size={22}
           />
 
           <div>
 
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Average Expense
             </h3>
 
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-[#6c2d45]">
               ₹
               {insights.averageExpense.toLocaleString(
                 "en-IN"
@@ -130,7 +130,7 @@ export default function BudgetInsights() {
           className={`flex items-start gap-4 rounded-2xl p-4 ${
             insights.budgetUsed >= 80
               ? "bg-red-50"
-              : "bg-yellow-50"
+              : "bg-[#fff8d8]"
           }`}
         >
 
@@ -139,17 +139,17 @@ export default function BudgetInsights() {
             className={`mt-1 ${
               insights.budgetUsed >= 80
                 ? "text-red-600"
-                : "text-yellow-600"
+                : "text-[#111111]"
             }`}
           />
 
           <div>
 
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Budget Health
             </h3>
 
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-[#6c2d45]">
               {insights.budgetUsed >= 80
                 ? `You've already used ${insights.budgetUsed}% of your budget.`
                 : `${insights.budgetUsed}% of your budget has been used.`}
@@ -161,20 +161,20 @@ export default function BudgetInsights() {
 
         {/* Suggestion */}
 
-        <div className="flex items-start gap-4 rounded-2xl bg-purple-50 p-4">
+        <div className="flex items-start gap-4 rounded-2xl bg-[#ffe6eb] p-4">
 
           <Lightbulb
             size={22}
-            className="mt-1 text-purple-600"
+            className="mt-1 text-[#ff4d6d]"
           />
 
           <div>
 
-            <h3 className="font-semibold text-gray-600">
+            <h3 className="font-semibold text-[#6c2d45]">
               Recommendation
             </h3>
 
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-[#6c2d45]">
               {insights.budgetUsed >= 80
                 ? "Focus on essential bookings and compare vendors before making additional payments."
                 : "Your spending is healthy. Continue tracking expenses to stay within budget."}

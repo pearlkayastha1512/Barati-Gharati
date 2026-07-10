@@ -11,13 +11,13 @@ export default function ContactInformation() {
   }
 
   return (
-    <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#ffb3bf] bg-[linear-gradient(145deg,#fffdf0_0%,#fff8d8_100%)] p-7 shadow-md shadow-[#ff4d6d]/10">
 
-      <h2 className="text-2xl font-bold text-rose-500">
+      <h2 className="text-2xl font-bold text-[#ff4d6d]">
         Contact Information
       </h2>
 
-      <div className="mt-8 space-y-6 text-rose-400">
+      <div className="mt-8 space-y-6 text-[#ff8fa1]">
 
         <Info
           label="Address"
@@ -67,11 +67,11 @@ function Info({
   return (
     <div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-[#8d6171]">
         {label}
       </p>
 
-      <p className="mt-1 font-semibold text-gray-700">
+      <p className="mt-1 font-semibold text-[#6c2d45]">
         {value}
       </p>
 

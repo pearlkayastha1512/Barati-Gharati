@@ -76,27 +76,27 @@ export default function PayAdvanceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 text-gray-700 shadow-2xl">
+      <div className="w-full max-w-md rounded-3xl bg-[#fffdf0] p-6 text-[#6c2d45] shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
             Pay Advance
           </h2>
 
           <button
             onClick={onClose}
-            className="text-gray-500 transition hover:text-gray-700"
+            className="text-[#8d6171] transition hover:text-[#6c2d45]"
           >
             <X size={22} />
           </button>
         </div>
 
-        <div className="mb-6 rounded-2xl bg-gray-50 p-4">
+        <div className="mb-6 rounded-2xl bg-[#fffdf0] p-4">
           <div className="flex justify-between">
-            <span className="text-gray-600">
+            <span className="text-[#7a4a5c]">
               Remaining
             </span>
 
-            <span className="font-semibold text-gray-800">
+            <span className="font-semibold text-[#3f1d2f]">
               ₹
               {booking.remainingAmount.toLocaleString(
                 "en-IN"
@@ -108,7 +108,7 @@ export default function PayAdvanceModal({
         <div className="relative">
           <IndianRupee
             size={18}
-            className="absolute left-4 top-4 text-gray-400"
+            className="absolute left-4 top-4 text-[#ff8fa1]"
           />
 
           <input
@@ -120,13 +120,13 @@ export default function PayAdvanceModal({
                 e.target.value
               )
             }
-            className="w-full rounded-2xl border border-gray-200 py-3 pl-10 pr-4 text-gray-700 placeholder:text-gray-400 outline-none focus:border-indigo-500"
+            className="w-full rounded-2xl border border-[#ffb3bf] py-3 pl-10 pr-4 text-[#6c2d45] placeholder:text-[#ff8fa1] outline-none focus:border-[#ff4d6d]"
           />
         </div>
 
         <button
           onClick={handlePayment}
-          className="mt-6 w-full rounded-2xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"
+          className="mt-6 w-full rounded-2xl bg-[#ff4d6d] py-3 font-semibold text-white transition hover:bg-[#e63b5f]"
         >
           Pay Advance
         </button>

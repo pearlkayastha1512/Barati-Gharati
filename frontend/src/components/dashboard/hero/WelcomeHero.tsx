@@ -49,12 +49,6 @@ const totalSpent = useMemo(() => {
   );
 }, [bookings]);
 
-const completedBookings = useMemo(() => {
-  return bookings.filter(
-    (booking) => booking.bookingStatus === "completed"
-  ).length;
-}, [bookings]);
-
 // const progress = useMemo(() => {
 //   if (!bookings.length) return 0;
 
@@ -74,7 +68,8 @@ const progress = useMemo(() => {
 }, [bookings]);
 
 
-const today = new Date();
+const today = useMemo(() => new Date(), []);
+const todayTime = today.getTime();
 
 const upcomingBooking = useMemo(() => {
   return bookings
@@ -86,9 +81,9 @@ const upcomingBooking = useMemo(() => {
     )
     .find(
       (booking) =>
-        new Date(booking.eventDate).getTime() >= today.getTime()
+        new Date(booking.eventDate).getTime() >= todayTime
     );
-}, [bookings]);
+}, [bookings, todayTime]);
 
 const weddingDate = upcomingBooking
   ? new Date(upcomingBooking.eventDate)
@@ -105,26 +100,27 @@ const daysRemaining = weddingDate
 
   const hour = new Date().getHours();
 
-  let greeting = "Good Evening 🌙";
+  let greeting = "Good Evening";
 
-  if (hour < 12) greeting = "Good Morning ☀️";
-  else if (hour < 18) greeting = "Good Afternoon 🌤️";
+  if (hour < 12) greeting = "Good Morning";
+  else if (hour < 18) greeting = "Good Afternoon";
 
   return (
     <motion.section
       initial={{ opacity: 0, y: 25 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-rose-500 via-pink-500 to-rose-600 px-8 py-8 text-white shadow-xl"
+      className="relative overflow-hidden rounded-[32px] border border-[#ff9aaa] bg-[linear-gradient(135deg,#fffef7_0%,#ffe6eb_22%,#ff8fa1_58%,#ff4d6d_100%)] px-8 py-8 text-[#3f1d2f] shadow-xl shadow-[#ff4d6d]/25"
     >
-      {/* Background Glow */}
-      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-      <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-25 [background-image:linear-gradient(45deg,rgba(255,77,109,0.18)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,243,176,0.5)_1px,transparent_1px)] [background-size:30px_30px]"
+      />
 
       <div className="relative z-10 flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
         {/* Left */}
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/72 px-4 py-2 shadow-sm backdrop-blur-md">
             <Sparkles size={16} />
 
             <span className="text-sm font-medium">
@@ -135,19 +131,36 @@ const daysRemaining = weddingDate
           <h1 className="mt-5 text-4xl font-bold leading-tight xl:text-5xl">
             Welcome back,
             <br />
-            {firstName} 👋
+            {firstName}
           </h1>
 
-          <p className="mt-5 max-w-2xl text-base leading-7 text-rose-100">
-            Continue planning your dream wedding with trusted vendors,
-            premium venues and unforgettable experiences.
+          <p className="mt-5 max-w-2xl text-base leading-7 text-[#7a4a5c]">
+            Build your wedding plan one beautiful detail at a time:
+            shortlist vendors, track bookings, manage budget and keep
+            every celebration moment organized.
           </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            {[
+              "Vendors",
+              "Wishlist",
+              "Budget",
+              "Guest-ready",
+            ].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-white/60 bg-white/72 px-4 py-2 text-sm font-semibold text-[#6c2d45]"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
 
           {/* Buttons */}
           <div className="mt-7 flex flex-wrap gap-4">
             <Link
               href="/vendors"
-              className="flex items-center gap-2 rounded-2xl bg-white px-6 py-3 font-semibold text-rose-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              className="flex items-center gap-2 rounded-2xl bg-[#ff4d6d] px-6 py-3 font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#e63b5f] hover:shadow-xl"
             >
               Explore Vendors
               <ArrowRight size={18} />
@@ -155,14 +168,14 @@ const daysRemaining = weddingDate
 
             <Link
               href="/customer/planner"
-              className="rounded-2xl border border-white/30 bg-white/10 px-6 py-3 font-semibold backdrop-blur-md transition hover:bg-white/20"
+              className="rounded-2xl border border-white/70 bg-white/72 px-6 py-3 font-semibold text-[#6c2d45] backdrop-blur-md transition hover:bg-[#ffe6eb]"
             >
               Wedding Planner
             </Link>
 
             <Link
               href="/customer/bookings"
-              className="rounded-2xl border border-white/30 bg-white/10 px-6 py-3 font-semibold backdrop-blur-md transition hover:bg-white/20"
+              className="rounded-2xl border border-white/70 bg-white/72 px-6 py-3 font-semibold text-[#6c2d45] backdrop-blur-md transition hover:bg-[#ffe6eb]"
             >
               My Bookings
             </Link>
@@ -170,50 +183,50 @@ const daysRemaining = weddingDate
 
           {/* Bottom Stats */}
           <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
+            <div className="rounded-2xl border border-white/70 bg-white/70 p-4 backdrop-blur-md">
               <Building2 className="mb-3" size={22} />
 
               <p className="text-3xl font-bold">
                {bookings.length}
               </p>
 
-              <p className="mt-1 text-sm text-rose-100">
+              <p className="mt-1 text-sm text-[#8d6171]">
                 Vendors Booked
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
+            <div className="rounded-2xl border border-white/70 bg-white/70 p-4 backdrop-blur-md">
               <Users className="mb-3" size={22} />
 
               <p className="text-3xl font-bold">
               {totalGuests}
               </p>
 
-              <p className="mt-1 text-sm text-rose-100">
+              <p className="mt-1 text-sm text-[#8d6171]">
                 Guests
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
+            <div className="rounded-2xl border border-white/70 bg-white/70 p-4 backdrop-blur-md">
               <Wallet className="mb-3" size={22} />
 
               <p className="text-3xl font-bold">
                ₹{totalSpent.toLocaleString("en-IN")}
               </p>
 
-              <p className="mt-1 text-sm text-rose-100">
+              <p className="mt-1 text-sm text-[#8d6171]">
                 Budget Used
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
+            <div className="rounded-2xl border border-white/70 bg-white/70 p-4 backdrop-blur-md">
               <CheckCircle2 className="mb-3" size={22} />
 
               <p className="text-3xl font-bold">
                {progress}%
               </p>
 
-              <p className="mt-1 text-sm text-rose-100">
+              <p className="mt-1 text-sm text-[#8d6171]">
                 Completed
               </p>
             </div>
@@ -221,11 +234,11 @@ const daysRemaining = weddingDate
         </div>
 
         {/* Right Card */}
-        <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl">
+        <div className="w-full max-w-sm rounded-3xl border border-white/70 bg-white/82 p-6 text-[#3f1d2f] shadow-lg shadow-[#ff4d6d]/16 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <CalendarDays size={22} />
 
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-[#3f1d2f]">
               Wedding Countdown
             </h3>
           </div>
@@ -240,7 +253,7 @@ const daysRemaining = weddingDate
   : "Not Scheduled"}
           </p>
 
-          <div className="mt-5 flex items-center gap-2 text-lg">
+          <div className="mt-5 flex items-center gap-2 text-lg text-[#7a4a5c]">
             <Clock3 size={18} />
 
             <span>{weddingDate
@@ -257,9 +270,9 @@ const daysRemaining = weddingDate
               </span>
             </div>
 
-            <div className="h-3 rounded-full bg-white/20">
+            <div className="h-3 rounded-full bg-[#ffe6eb]">
               <div
-  className="h-3 rounded-full bg-white transition-all duration-500"
+  className="h-3 rounded-full bg-gradient-to-r from-[#ff4d6d] to-[#ff8fa1] transition-all duration-500"
   style={{
     width: `${progress}%`,
   }}
@@ -268,20 +281,20 @@ const daysRemaining = weddingDate
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="rounded-2xl bg-white/10 p-4">
+            <div className="rounded-2xl border border-[#ffcad3] bg-[#fff5f7] p-4">
               <p className="text-2xl font-bold">
                 ₹{totalSpent.toLocaleString("en-IN")}
               </p>
 
-              <p className="mt-1 text-sm text-rose-100">
+              <p className="mt-1 text-sm text-[#8d6171]">
                 Budget Used
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4">
+            <div className="rounded-2xl border border-[#ffcad3] bg-[#fff5f7] p-4">
               
-              <p className="mt-1 text-2xl text-rose-100">
-                Happy Life
+              <p className="mt-1 text-2xl font-bold text-[#ff4d6d]">
+                Forever
               </p>
             </div>
           </div>

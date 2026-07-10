@@ -119,12 +119,12 @@ subtitle="Reviews Given"
 
   <div className="mb-6">
 
-    <h2 className="text-2xl font-bold text-gray-900">
+    <h2 className="text-2xl font-bold text-[#3f1d2f]">
       Quick Actions
     </h2>
 
-    <p className="mt-1 text-gray-500">
-      Everything you need in one place.
+    <p className="mt-1 text-[#8d6171]">
+      Plan faster with the next steps couples use most.
     </p>
 
   </div>
@@ -153,9 +153,9 @@ subtitle="Reviews Given"
     />
 
     <QuickActionCard
-      title="Become Vendor"
-      description="Start growing your business."
-      href="/become-vendor"
+      title="Planner"
+      description="Organize tasks, timeline and priorities."
+      href="/customer/planner"
       icon={Sparkles}
     />
 

@@ -27,7 +27,7 @@
 //   image,
 // }: WishlistCardProps) {
 //   return (
-//     <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
+//     <div className="overflow-hidden rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
 
 //       <div className="relative h-60">
 
@@ -38,11 +38,11 @@
 //           className="object-cover"
 //         />
 
-//         <button className="absolute right-4 top-4 rounded-full bg-white p-3 shadow">
+//         <button className="absolute right-4 top-4 rounded-full bg-[#fffdf0] p-3 shadow">
 
 //           <Heart
 //             size={18}
-//             className="fill-rose-500 text-rose-500"
+//             className="fill-[#ff4d6d] text-[#ff4d6d]"
 //           />
 
 //         </button>
@@ -53,11 +53,11 @@
 
 //         <div className="flex items-center justify-between">
 
-//           <h3 className="text-2xl font-bold text-gray-900">
+//           <h3 className="text-2xl font-bold text-[#3f1d2f]">
 //             {vendorName}
 //           </h3>
 
-//           <span className="flex items-center gap-1 text-yellow-500">
+//           <span className="flex items-center gap-1 text-[#111111]">
 
 //             <Star
 //               size={18}
@@ -70,11 +70,11 @@
 
 //         </div>
 
-//         <p className="mt-2 text-gray-500">
+//         <p className="mt-2 text-[#8d6171]">
 //           {category}
 //         </p>
 
-//         <div className="mt-4 flex items-center gap-2 text-gray-500">
+//         <div className="mt-4 flex items-center gap-2 text-[#8d6171]">
 
 //           <MapPin size={18} />
 
@@ -82,7 +82,7 @@
 
 //         </div>
 
-//         <p className="mt-6 text-3xl font-bold text-gray-900">
+//         <p className="mt-6 text-3xl font-bold text-[#3f1d2f]">
 //           ₹{startingPrice.toLocaleString()}
 //         </p>
 
@@ -90,12 +90,12 @@
 
 //           <Link
 //             href="/vendors/1"
-//             className="flex-1 rounded-2xl border border-gray-200 py-3 text-center font-semibold transition hover:bg-gray-50 text-gray-600"
+//             className="flex-1 rounded-2xl border border-[#ffb3bf] py-3 text-center font-semibold transition hover:bg-[#fffdf0] text-[#6c2d45]"
 //           >
 //             View
 //           </Link>
 
-//           <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-600">
+//           <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#ff4d6d] py-3 font-semibold text-white transition hover:bg-[#e63b5f]">
 
 //             Book Now
 
@@ -158,7 +158,7 @@ export default function WishlistCard({
     image?.trim() || "/images/why-choose-us.jpg";
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
+    <div className="overflow-hidden rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div className="relative h-60">
         <Image
           src={imageSrc}
@@ -180,22 +180,22 @@ export default function WishlistCard({
               );
             }
           }}
-          className="absolute right-4 top-4 rounded-full bg-white p-3 shadow"
+          className="absolute right-4 top-4 rounded-full bg-[#fffdf0] p-3 shadow"
         >
           <Heart
             size={18}
-            className="fill-rose-500 text-rose-500"
+            className="fill-[#ff4d6d] text-[#ff4d6d]"
           />
         </button>
       </div>
 
       <div className="p-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-2xl font-bold text-[#3f1d2f]">
             {vendorName}
           </h3>
 
-          <span className="flex items-center gap-1 text-yellow-500">
+          <span className="flex items-center gap-1 text-[#111111]">
             <Star
               size={18}
               className="fill-current"
@@ -205,29 +205,29 @@ export default function WishlistCard({
           </span>
         </div>
 
-        <p className="mt-2 text-gray-500">
+        <p className="mt-2 text-[#8d6171]">
           {category}
         </p>
 
-        <div className="mt-4 flex items-center gap-2 text-gray-500">
+        <div className="mt-4 flex items-center gap-2 text-[#8d6171]">
           <MapPin size={18} />
 
           {city}
         </div>
 
-        <p className="mt-6 text-3xl font-bold text-gray-900">
+        <p className="mt-6 text-3xl font-bold text-[#3f1d2f]">
           ₹{startingPrice.toLocaleString()}
         </p>
 
         <div className="mt-6 flex gap-3">
           <Link
             href={`/vendors/${vendorId}`}
-            className="flex-1 rounded-2xl border border-gray-200 py-3 text-center font-semibold text-gray-600 transition hover:bg-gray-50"
+            className="flex-1 rounded-2xl border border-[#ffb3bf] py-3 text-center font-semibold text-[#6c2d45] transition hover:bg-[#fffdf0]"
           >
             View
           </Link>
 
-          <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-600">
+          <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#ff4d6d] py-3 font-semibold text-white transition hover:bg-[#e63b5f]">
             Book Now
 
             <ArrowRight size={18} />

@@ -56,7 +56,7 @@ export default function BookingTabs() {
 
   return (
     <div className="overflow-x-auto">
-      <div className="inline-flex rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+      <div className="inline-flex rounded-2xl border border-[#ffb3bf] bg-white p-2 shadow-sm">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -72,8 +72,8 @@ export default function BookingTabs() {
 
               ${
                 activeTab === tab
-                  ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-gradient-to-r from-[#ff4d6d] to-[#ff8fa1] text-white shadow-md"
+                  : "text-[#7a4a5c] hover:bg-[#fff8d8]"
               }
             `}
           >

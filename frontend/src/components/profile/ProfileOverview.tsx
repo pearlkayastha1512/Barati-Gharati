@@ -83,7 +83,7 @@ export default function ProfileOverview() {
       subtitle: "Completed",
       icon: User,
       color:
-        "bg-blue-100 text-blue-600",
+        "bg-[#ffe6eb] text-[#ff4d6d]",
     },
     {
       title: "Partner",
@@ -94,7 +94,7 @@ export default function ProfileOverview() {
       subtitle: "Information",
       icon: Heart,
       color:
-        "bg-pink-100 text-pink-600",
+        "bg-[#ffe6eb] text-[#ff4d6d]",
     },
     {
       title: "Wedding",
@@ -116,7 +116,7 @@ export default function ProfileOverview() {
         : "Not Set",
       icon: CalendarDays,
       color:
-        "bg-green-100 text-green-600",
+        "bg-[#fff8d8] text-[#111111]",
     },
     {
       title: "Budget",
@@ -127,7 +127,7 @@ export default function ProfileOverview() {
       subtitle: "Planning",
       icon: Wallet,
       color:
-        "bg-yellow-100 text-yellow-600",
+        "bg-[#fff3b0] text-[#111111]",
     },
   ];
 
@@ -142,14 +142,17 @@ export default function ProfileOverview() {
             className="
               rounded-3xl
               border
-              border-gray-200
-              bg-white
+              border-[#ffb3bf]
+              bg-[linear-gradient(145deg,#fffdf0_0%,#fff8d8_100%)]
               p-6
-              shadow-sm
+              shadow-md
+              shadow-[#ff4d6d]/10
               transition-all
               duration-300
               hover:-translate-y-1
+              hover:border-[#ff8fa1]
               hover:shadow-xl
+              hover:shadow-[#ff4d6d]/15
             "
           >
             <div
@@ -158,15 +161,15 @@ export default function ProfileOverview() {
               <Icon size={22} />
             </div>
 
-            <h3 className="mt-5 text-sm text-gray-700">
+            <h3 className="mt-5 text-sm text-[#6c2d45]">
               {item.title}
             </h3>
 
-            <p className="mt-2 text-3xl font-bold text-gray-900">
+            <p className="mt-2 text-3xl font-bold text-[#3f1d2f]">
               {item.value}
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               {item.subtitle}
             </p>
           </div>

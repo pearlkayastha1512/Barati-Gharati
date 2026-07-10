@@ -26,26 +26,26 @@ export default function VendorStatus() {
   }, [bookings]);
 
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-6 shadow-sm">
 
       <div className="mb-6 flex items-center gap-3">
 
-        <div className="rounded-2xl bg-rose-100 p-3">
+        <div className="rounded-2xl bg-[#ffe6eb] p-3">
 
           <Building2
             size={22}
-            className="text-rose-600"
+            className="text-[#ff4d6d]"
           />
 
         </div>
 
         <div>
 
-          <h3 className="font-semibold text-gray-900">
+          <h3 className="font-semibold text-[#3f1d2f]">
             Vendors
           </h3>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[#8d6171]">
             Booking Status
           </p>
 
@@ -54,7 +54,7 @@ export default function VendorStatus() {
       </div>
 
       {vendors.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-10 text-center text-gray-500">
+        <div className="rounded-2xl border border-dashed border-[#ffb3bf] py-10 text-center text-[#8d6171]">
           No vendors booked yet.
         </div>
       ) : (
@@ -66,26 +66,26 @@ export default function VendorStatus() {
               className="
                 rounded-2xl
                 border
-                border-gray-100
+                border-[#fff3b0]
                 p-4
                 transition
-                hover:border-rose-200
-                hover:bg-rose-50/30
+                hover:border-[#ff8fa1]
+                hover:bg-[#ffe6eb]/30
               "
             >
               <div className="flex items-start justify-between">
 
                 <div>
 
-                  <h4 className="font-semibold text-gray-900">
+                  <h4 className="font-semibold text-[#3f1d2f]">
                     {booking.vendorName}
                   </h4>
 
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[#8d6171]">
                     {booking.category}
                   </p>
 
-                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-[#8d6171]">
 
                     <CalendarDays size={15} />
 
@@ -110,14 +110,14 @@ export default function VendorStatus() {
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                       booking.bookingStatus ===
                       "completed"
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-[#ffe6eb] text-[#ff4d6d]"
                         : booking.bookingStatus ===
                           "accepted"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-[#fff8d8] text-[#111111]"
                         : booking.bookingStatus ===
                           "pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
+                        ? "bg-[#fff3b0] text-[#111111]"
+                        : "bg-[#ffe6eb] text-[#e63b5f]"
                     }`}
                   >
                     {booking.bookingStatus}
@@ -127,14 +127,14 @@ export default function VendorStatus() {
                     className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
                       booking.paymentStatus ===
                       "paid"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-[#fff8d8] text-[#111111]"
                         : booking.paymentStatus ===
                           "partial"
-                        ? "bg-yellow-100 text-yellow-700"
+                        ? "bg-[#fff3b0] text-[#111111]"
                         : booking.paymentStatus ===
                           "refunded"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-red-100 text-red-700"
+                        ? "bg-[#ffe6eb] text-[#ff4d6d]"
+                        : "bg-[#ffe6eb] text-[#e63b5f]"
                     }`}
                   >
                     {booking.paymentStatus}
@@ -144,24 +144,24 @@ export default function VendorStatus() {
                   "accepted" ? (
                     <CheckCircle2
                       size={20}
-                      className="text-green-500"
+                      className="text-[#ff4d6d]"
                     />
                   ) : booking.bookingStatus ===
                     "pending" ? (
                     <Clock3
                       size={20}
-                      className="text-yellow-500"
+                      className="text-[#ff4d6d]"
                     />
                   ) : booking.bookingStatus ===
                     "cancelled" ? (
                     <XCircle
                       size={20}
-                      className="text-red-500"
+                      className="text-[#e63b5f]"
                     />
                   ) : (
                     <CheckCircle2
                       size={20}
-                      className="text-blue-500"
+                      className="text-[#ff8fa1]"
                     />
                   )}
 

@@ -59,16 +59,16 @@ export default function AddTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white text-gray-700 shadow-xl">
+      <div className="w-full max-w-xl rounded-3xl bg-white text-[#6c2d45] shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 p-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <div className="flex items-center justify-between border-b border-[#fff3b0] p-6">
+          <h2 className="text-2xl font-bold text-[#3f1d2f]">
             Add Planner Task
           </h2>
 
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-[#8d6171] transition hover:bg-[#fff8d8] hover:text-[#6c2d45]"
           >
             <X size={22} />
           </button>
@@ -82,7 +82,7 @@ export default function AddTaskModal({
             onChange={(e) =>
               setTitle(e.target.value)
             }
-            className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
+            className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1] outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe6eb]"
           />
 
           <textarea
@@ -94,7 +94,7 @@ export default function AddTaskModal({
                 e.target.value
               )
             }
-            className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
+            className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] placeholder:text-[#ff8fa1] outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe6eb]"
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -106,7 +106,7 @@ export default function AddTaskModal({
                     .value as TaskPriority
                 )
               }
-              className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
+              className="rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe6eb]"
             >
               <option value="LOW">
                 Low
@@ -129,23 +129,23 @@ export default function AddTaskModal({
                   e.target.value
                 )
               }
-              className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
+              className="rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe6eb]"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-gray-100 p-6">
+        <div className="flex justify-end gap-3 border-t border-[#fff3b0] p-6">
           <button
             onClick={onClose}
-            className="rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-600 transition hover:bg-gray-100"
+            className="rounded-xl border border-[#ffb3bf] px-6 py-3 font-medium text-[#7a4a5c] transition hover:bg-[#fff8d8]"
           >
             Cancel
           </button>
 
           <button
             onClick={handleSubmit}
-            className="rounded-xl bg-rose-500 px-6 py-3 font-semibold text-white transition hover:bg-rose-600"
+            className="rounded-xl bg-[#ff4d6d] px-6 py-3 font-semibold text-white transition hover:bg-[#e63b5f]"
           >
             Add Task
           </button>

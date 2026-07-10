@@ -44,28 +44,28 @@ export default function BookingSummary() {
         value: total.toString(),
         subtitle: "All vendor bookings",
         icon: CalendarCheck,
-        color: "bg-indigo-100 text-indigo-600",
+        color: "bg-[#ffe6eb] text-[#ff4d6d]",
       },
       {
         title: "Upcoming",
         value: upcoming.toString(),
         subtitle: "Scheduled bookings",
         icon: Clock3,
-        color: "bg-yellow-100 text-yellow-600",
+        color: "bg-[#fff3b0] text-[#111111]",
       },
       {
         title: "Completed",
         value: completed.toString(),
         subtitle: "Successfully completed",
         icon: CheckCircle2,
-        color: "bg-green-100 text-green-600",
+        color: "bg-[#fff8d8] text-[#111111]",
       },
       {
         title: "Cancelled",
         value: cancelled.toString(),
         subtitle: "Cancelled bookings",
         icon: XCircle,
-        color: "bg-red-100 text-red-600",
+        color: "bg-[#ffe6eb] text-[#e63b5f]",
       },
     ];
   }, [bookings]);
@@ -86,8 +86,8 @@ export default function BookingSummary() {
             className="
               rounded-3xl
               border
-              border-gray-200
-              bg-white
+              border-[#ffb3bf]
+              bg-[#fffdf0]
               p-6
               shadow-sm
               transition-all
@@ -103,20 +103,20 @@ export default function BookingSummary() {
                 <Icon size={24} />
               </div>
 
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
+              <span className="rounded-full bg-[#fff8d8] px-3 py-1 text-xs font-semibold text-[#8d6171]">
                 Live
               </span>
             </div>
 
-            <h3 className="mt-6 text-sm text-gray-500">
+            <h3 className="mt-6 text-sm text-[#8d6171]">
               {item.title}
             </h3>
 
-            <p className="mt-2 text-4xl font-bold text-gray-900">
+            <p className="mt-2 text-4xl font-bold text-[#3f1d2f]">
               {item.value}
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               {item.subtitle}
             </p>
           </motion.div>

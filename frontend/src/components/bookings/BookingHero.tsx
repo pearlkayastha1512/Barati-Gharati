@@ -64,10 +64,9 @@ export default function BookingHero() {
         relative
         overflow-hidden
         rounded-[32px]
-        bg-gradient-to-br
-        from-indigo-500
-        via-violet-500
-        to-purple-600
+        border
+        border-[#ffb3bf]
+        bg-[linear-gradient(135deg,#ff4d6d_0%,#ff8fa1_48%,#fff3b0_100%)]
         p-8
         text-white
         shadow-xl
@@ -75,9 +74,10 @@ export default function BookingHero() {
     >
       {/* Background Glow */}
 
-      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-
-      <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-25 [background-image:linear-gradient(45deg,rgba(255,255,255,0.25)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,243,176,0.5)_1px,transparent_1px)] [background-size:30px_30px]"
+      />
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-2">
         {/* Left */}
@@ -97,7 +97,7 @@ export default function BookingHero() {
             event bookings.
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-indigo-100">
+          <p className="mt-6 max-w-xl text-lg font-semibold text-[#111111]">
             Track every vendor booking, monitor payment status,
             view upcoming events and manage your celebration schedule
             from one place.
@@ -115,7 +115,7 @@ export default function BookingHero() {
                 px-6
                 py-4
                 font-semibold
-                text-indigo-600
+                text-[#ff4d6d]
                 transition
                 hover:-translate-y-1
               "
@@ -129,7 +129,7 @@ export default function BookingHero() {
 
         {/* Right */}
 
-        <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <div className="rounded-3xl border border-white/70 bg-[#fff8d8]/90 p-6 text-[#111111] shadow-lg shadow-[#ff4d6d]/10 backdrop-blur">
   <div className="flex items-center gap-3">
     <CalendarCheck size={22} />
 
@@ -141,7 +141,7 @@ export default function BookingHero() {
   <div className="mt-8 space-y-5">
 
     <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-indigo-100">
+      <span className="flex items-center gap-2 text-[#111111]">
         <CalendarCheck size={18} />
         Total Bookings
       </span>
@@ -152,7 +152,7 @@ export default function BookingHero() {
     </div>
 
     <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-indigo-100">
+      <span className="flex items-center gap-2 text-[#111111]">
         <Clock3 size={18} />
         Upcoming
       </span>
@@ -163,7 +163,7 @@ export default function BookingHero() {
     </div>
 
     <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-indigo-100">
+      <span className="flex items-center gap-2 text-[#111111]">
         <CheckCircle2 size={18} />
         Completed
       </span>
@@ -174,7 +174,7 @@ export default function BookingHero() {
     </div>
 
     <div className="flex items-center justify-between">
-      <span className="text-indigo-100">
+      <span className="text-[#111111]">
         Pending
       </span>
 
@@ -184,7 +184,7 @@ export default function BookingHero() {
     </div>
 
     <div className="flex items-center justify-between">
-      <span className="text-indigo-100">
+      <span className="text-[#111111]">
         Cancelled
       </span>
 

@@ -73,12 +73,12 @@ export default function CustomerBookingsPage() {
 
       <div className="space-y-6">
         {filteredBookings.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-300 bg-white py-20 text-center">
-            <h2 className="text-2xl font-bold text-gray-700">
+          <div className="rounded-3xl border border-dashed border-[#ffb3bf] bg-[#fff8d8] py-20 text-center">
+            <h2 className="text-2xl font-bold text-[#6c2d45]">
               No Bookings Found
             </h2>
 
-            <p className="mt-3 text-gray-500">
+            <p className="mt-3 text-[#8d6171]">
               There are no bookings in the{" "}
               <span className="font-semibold">
                 {activeTab}

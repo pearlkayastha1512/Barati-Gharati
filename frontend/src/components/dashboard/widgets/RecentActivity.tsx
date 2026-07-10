@@ -73,18 +73,18 @@ export default function RecentActivity() {
   }, [bookings, wishlist, reviews]);
 
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="text-3xl font-bold text-gray-900">
-        Recent Activity
+    <div className="rounded-3xl border border-[#ffb3bf] bg-white/90 p-8 shadow-sm shadow-[#ff4d6d]/5">
+      <h2 className="text-3xl font-bold text-[#3f1d2f]">
+        Planning Journal
       </h2>
 
-      <p className="mt-2 text-gray-500">
-        Your latest wedding planning updates.
+      <p className="mt-2 text-[#8d6171]">
+        A quick trail of vendors saved, bookings made and reviews shared.
       </p>
 
       <div className="mt-8 space-y-5">
         {activities.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-500">
+          <div className="rounded-2xl border border-dashed border-[#ffe98a] bg-[#fff5f7] p-10 text-center text-[#8d6171]">
             No recent activity.
           </div>
         ) : (
@@ -100,26 +100,27 @@ export default function RecentActivity() {
                   gap-5
                   rounded-2xl
                   border
-                  border-gray-100
+                  border-[#ffcad3]
+                  bg-[#fff5f7]
                   p-5
                   transition
-                  hover:border-rose-200
-                  hover:bg-rose-50
+                  hover:border-[#ff8fa1]
+                  hover:bg-[#ffe6eb]
                 "
               >
-                <div className="rounded-2xl bg-rose-50 p-4">
+                <div className="rounded-2xl bg-[#ffe6eb] p-4">
                   <Icon
                     size={24}
-                    className="text-rose-500"
+                    className="text-[#ff4d6d]"
                   />
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-[#3f1d2f]">
                     {item.title}
                   </h3>
 
-                  <p className="text-gray-500">
+                  <p className="text-[#8d6171]">
                     {item.time}
                   </p>
                 </div>

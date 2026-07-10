@@ -71,19 +71,19 @@ export default function EditTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white text-gray-700 shadow-xl">
+      <div className="w-full max-w-xl rounded-3xl bg-white text-[#6c2d45] shadow-xl">
 
         {/* Header */}
 
-        <div className="flex items-center justify-between border-b border-gray-100 p-6">
+        <div className="flex items-center justify-between border-b border-[#fff3b0] p-6">
 
-          <h2 className="text-2xl font-bold text-gray-700">
+          <h2 className="text-2xl font-bold text-[#6c2d45]">
             Edit Planner Task
           </h2>
 
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-[#8d6171] transition hover:bg-[#fff8d8] hover:text-[#6c2d45]"
           >
             <X size={22} />
           </button>
@@ -99,7 +99,7 @@ export default function EditTaskModal({
             onChange={(e) =>
               setTitle(e.target.value)
             }
-            className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 outline-none focus:border-rose-500"
+            className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
           />
 
           <textarea
@@ -110,7 +110,7 @@ export default function EditTaskModal({
                 e.target.value
               )
             }
-            className="w-full rounded-xl border border-gray-300 p-3 text-gray-700 outline-none focus:border-rose-500"
+            className="w-full rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -123,7 +123,7 @@ export default function EditTaskModal({
                     .value as TaskPriority
                 )
               }
-              className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none focus:border-rose-500"
+              className="rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
             >
               <option value="LOW">
                 Low
@@ -147,7 +147,7 @@ export default function EditTaskModal({
                   e.target.value
                 )
               }
-              className="rounded-xl border border-gray-300 p-3 text-gray-700 outline-none focus:border-rose-500"
+              className="rounded-xl border border-[#ffb3bf] p-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
             />
 
           </div>
@@ -156,18 +156,18 @@ export default function EditTaskModal({
 
         {/* Footer */}
 
-        <div className="flex justify-end gap-3 border-t border-gray-100 p-6">
+        <div className="flex justify-end gap-3 border-t border-[#fff3b0] p-6">
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-xl border border-[#ffb3bf] px-6 py-3 font-medium text-[#7a4a5c] hover:bg-[#fff8d8]"
           >
             Cancel
           </button>
 
           <button
             onClick={handleSave}
-            className="rounded-xl bg-rose-500 px-6 py-3 font-semibold text-white hover:bg-rose-600"
+            className="rounded-xl bg-[#ff4d6d] px-6 py-3 font-semibold text-white hover:bg-[#e63b5f]"
           >
             Save Changes
           </button>

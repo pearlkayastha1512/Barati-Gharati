@@ -123,18 +123,18 @@ export default function PlannerHero() {
           relative
           overflow-hidden
           rounded-[32px]
-          bg-gradient-to-br
-          from-rose-500
-          via-pink-500
-          to-rose-600
+          border
+          border-[#ffb3bf]
+          bg-[linear-gradient(135deg,#ff4d6d_0%,#ff8fa1_48%,#fff3b0_100%)]
           p-8
           text-white
           shadow-xl
         "
       >
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-
-        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-25 [background-image:linear-gradient(45deg,rgba(255,255,255,0.25)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,243,176,0.5)_1px,transparent_1px)] [background-size:30px_30px]"
+        />
 
         <div className="relative z-10 grid gap-8 lg:grid-cols-2">
           {/* Left */}
@@ -154,7 +154,7 @@ export default function PlannerHero() {
               plan your dream wedding.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg text-rose-100">
+            <p className="mt-6 max-w-xl text-lg font-semibold text-[#111111]">
               Organize vendors, manage
               tasks, track your wedding
               preparation and never miss
@@ -172,7 +172,7 @@ export default function PlannerHero() {
                 px-6
                 py-4
                 font-semibold
-                text-rose-600
+                text-[#ff4d6d]
                 transition
                 hover:-translate-y-1
               "
@@ -183,7 +183,7 @@ export default function PlannerHero() {
 
           {/* Right */}
 
-          <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+          <div className="rounded-3xl border border-white/70 bg-[#fff8d8]/90 p-6 text-[#111111] shadow-lg shadow-[#ff4d6d]/10 backdrop-blur">
             <div className="flex items-center gap-3">
               <CalendarDays size={22} />
 
@@ -194,7 +194,7 @@ export default function PlannerHero() {
 
             <div className="mt-8 space-y-5">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-rose-100">
+                <span className="flex items-center gap-2 text-[#111111]">
                   <CalendarDays size={18} />
                   Wedding Date
                 </span>
@@ -216,7 +216,7 @@ export default function PlannerHero() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-rose-100">
+                <span className="flex items-center gap-2 text-[#111111]">
                   <Clock3 size={18} />
                   Days Remaining
                 </span>
@@ -229,7 +229,7 @@ export default function PlannerHero() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-rose-100">
+                <span className="flex items-center gap-2 text-[#111111]">
                   <CheckCircle2 size={18} />
                   Tasks
                 </span>
@@ -241,7 +241,7 @@ export default function PlannerHero() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-rose-100">
+                <span className="text-[#111111]">
                   Pending Tasks
                 </span>
 
@@ -262,12 +262,12 @@ export default function PlannerHero() {
                 </span>
               </div>
 
-              <div className="h-3 rounded-full bg-white/20">
+              <div className="h-3 rounded-full bg-white/70">
                 <div
                   style={{
                     width: `${progress}%`,
                   }}
-                  className="h-3 rounded-full bg-white transition-all duration-500"
+                  className="h-3 rounded-full bg-[#ff4d6d] transition-all duration-500"
                 />
               </div>
             </div>

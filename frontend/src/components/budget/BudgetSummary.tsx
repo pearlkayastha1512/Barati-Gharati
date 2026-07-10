@@ -47,7 +47,7 @@ export default function BudgetSummary() {
         value: `₹${weddingBudget.toLocaleString("en-IN")}`,
         subtitle: "Wedding Budget",
         icon: Wallet,
-        color: "bg-emerald-100 text-emerald-600",
+        color: "bg-[#fff8d8] text-[#ff4d6d]",
       },
       {
         title: "Spent",
@@ -61,14 +61,14 @@ export default function BudgetSummary() {
         value: `₹${remaining.toLocaleString("en-IN")}`,
         subtitle: "Available Budget",
         icon: PiggyBank,
-        color: "bg-blue-100 text-blue-600",
+        color: "bg-[#ffe6eb] text-[#ff4d6d]",
       },
       {
         title: "Transactions",
         value: expenses.length.toString(),
         subtitle: "Expenses Added",
         icon: Receipt,
-        color: "bg-yellow-100 text-yellow-600",
+        color: "bg-[#fff3b0] text-[#111111]",
       },
     ];
   }, [expenses, weddingBudget]);
@@ -89,8 +89,8 @@ export default function BudgetSummary() {
             className="
               rounded-3xl
               border
-              border-gray-200
-              bg-white
+              border-[#ffb3bf]
+              bg-[#fffdf0]
               p-6
               shadow-sm
               transition-all
@@ -106,20 +106,20 @@ export default function BudgetSummary() {
                 <Icon size={24} />
               </div>
 
-              <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">
+              <span className="rounded-full bg-[#fff8d8] px-3 py-1 text-xs font-semibold text-[#111111]">
                 Live
               </span>
             </div>
 
-            <h3 className="mt-6 text-sm text-gray-500">
+            <h3 className="mt-6 text-sm text-[#8d6171]">
               {item.title}
             </h3>
 
-            <p className="mt-2 text-3xl font-bold text-gray-900">
+            <p className="mt-2 text-3xl font-bold text-[#3f1d2f]">
               {item.value}
             </p>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#8d6171]">
               {item.subtitle}
             </p>
           </motion.div>

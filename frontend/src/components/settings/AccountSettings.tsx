@@ -38,11 +38,11 @@ export default function AccountSettings() {
 
   return (
     <>
-      <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+      <section className="rounded-3xl border border-[#ffb3bf] bg-[#fffdf0] p-7 shadow-sm">
 
         <div className="mb-6 flex items-center justify-between">
 
-          <h2 className="text-2xl font-bold text-rose-500">
+          <h2 className="text-2xl font-bold text-[#ff4d6d]">
             Account
           </h2>
 
@@ -50,7 +50,7 @@ export default function AccountSettings() {
             onClick={() =>
               setOpen(true)
             }
-            className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-white transition hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-xl bg-[#ff4d6d] px-4 py-2 text-white transition hover:bg-[#e63b5f]"
           >
             <Pencil size={16} />
 
@@ -121,17 +121,17 @@ function Item({
   return (
     <div className="flex items-center gap-4">
 
-      <div className="rounded-xl bg-gray-100 p-3 text-gray-700">
+      <div className="rounded-xl bg-[#fff8d8] p-3 text-[#6c2d45]">
         {icon}
       </div>
 
       <div>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#8d6171]">
           {label}
         </p>
 
-        <p className="font-semibold text-gray-900">
+        <p className="font-semibold text-[#3f1d2f]">
           {value}
         </p>
 
