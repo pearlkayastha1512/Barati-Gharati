@@ -70,15 +70,23 @@ const vendorPackages = [
 
   const startConversation = useMessagesStore((state) => state.startConversation);
 
-  const handleMessageVendor = () => {
-    const conversationId = startConversation(vendor.id, vendor.name, vendor.image);
-    navigation.getParent()?.navigate("Chat", { conversationId });
-  };
+ const handleMessageVendor = async () => {
+  const conversationId = await startConversation(vendor.id, vendor.name, vendor.image);
+  if (!conversationId) {
+    Alert.alert("Error", "Couldn't start conversation. Please try again.");
+    return;
+  }
+  navigation.getParent()?.navigate("Chat", { conversationId });
+};
 
-  const handleSendInquiry = () => {
-    const conversationId = startConversation(vendor.id, vendor.name, vendor.image);
-    navigation.getParent()?.navigate("Chat", { conversationId });
-  };
+const handleSendInquiry = async () => {
+  const conversationId = await startConversation(vendor.id, vendor.name, vendor.image);
+  if (!conversationId) {
+    Alert.alert("Error", "Couldn't start conversation. Please try again.");
+    return;
+  }
+  navigation.getParent()?.navigate("Chat", { conversationId });
+};
 
   const handleDeleteReview = () => {
     if (!userReview) return;

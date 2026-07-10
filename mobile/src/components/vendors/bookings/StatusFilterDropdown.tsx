@@ -3,8 +3,22 @@ import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, RADIUS, SPACING } from "../../../constants/theme";
 
-export type StatusFilter = "All Status" | "Pending" | "Completed" | "Cancelled";
-const OPTIONS: StatusFilter[] = ["All Status", "Pending", "Completed", "Cancelled"];
+export type StatusFilter =
+  | "All Status"
+  | "Pending"
+  | "Accepted"
+  | "Completed"
+  | "Cancelled"
+  | "Rejected";
+
+const OPTIONS: StatusFilter[] = [
+  "All Status",
+  "Pending",
+  "Accepted",
+  "Completed",
+  "Cancelled",
+  "Rejected",
+];
 
 type Props = { value: StatusFilter; onSelect: (value: StatusFilter) => void };
 

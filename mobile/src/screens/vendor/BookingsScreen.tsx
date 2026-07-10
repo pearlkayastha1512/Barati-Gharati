@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,26 +14,32 @@ import { styles } from "./bookingsStyles";
 
 export default function BookingsScreen() {
   const bookings = useVendorBookingsStore((state) => state.bookings);
+  const fetchBookings = useVendorBookingsStore((state) => state.fetchBookings); // add
+  console.log("fetchBookings =", fetchBookings);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Status");
   const [selectedBooking, setSelectedBooking] = useState<VendorBookingRecord | null>(null);
 
-  const totalCount = bookings.length;
+ useEffect(() => {
+  console.log("Bookings Screen Mounted");
+  fetchBookings();
+}, [fetchBookings]);
+   const totalCount = bookings.length;
   const pendingCount = bookings.filter((b) => b.status === "Pending").length;
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
   const totalRevenue = bookings
     .filter((b) => b.status === "Completed")
     .reduce((sum, b) => sum + b.amount, 0);
+const filteredBookings = bookings.filter((booking) => {
+  const matchesSearch =
+    booking.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
+    booking.eventType.toLowerCase().includes(searchText.toLowerCase());
 
-  const filteredBookings = bookings.filter((b) => {
-    const matchesStatus = statusFilter === "All Status" || b.status === statusFilter;
-    const matchesSearch =
-      !searchText.trim() ||
-      b.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-      b.eventType.toLowerCase().includes(searchText.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  const matchesStatus =
+    statusFilter === "All Status" || booking.status === statusFilter;
 
+  return matchesSearch && matchesStatus;
+});
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
