@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/store/authStore";
 
 const API_URL = "http://localhost:8000/api/v1/budgets";
+// const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/budgets`;
 
 function getHeaders() {
   const token = useAuthStore.getState().token;

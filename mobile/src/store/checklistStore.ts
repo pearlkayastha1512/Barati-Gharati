@@ -31,12 +31,7 @@ interface ChecklistState {
 // - toggleItem should call toggleChecklistItem(id, !isDone) — optimistic update with rollback on failure
 // - removeItem should call deleteChecklistItem(id) — optimistic update with rollback on failure
 export const useChecklistStore = create<ChecklistState>((set) => ({
-  items: [
-    { id: "1", task: "Book the venue", priority: "High", isDone: true },
-    { id: "2", task: "Send invitations", priority: "Medium", isDone: false },
-    { id: "3", task: "Finalize the guest list", priority: "Medium", isDone: false },
-    { id: "4", task: "Book photographer", priority: "High", isDone: true },
-  ],
+  items: [], // starts empty — no seed/sample tasks until the user adds their own or the API returns real ones
 
   addItem: (input) => {
     const newItem: ChecklistItem = {

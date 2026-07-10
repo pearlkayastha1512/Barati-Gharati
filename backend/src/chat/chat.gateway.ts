@@ -14,6 +14,12 @@ import { Server, Socket } from 'socket.io';
     credentials: true,
   },
 })
+// @WebSocketGateway({
+//   cors: {
+//     origin: process.env.FRONTEND_URL,
+//     credentials: true,
+//   },
+// })
 export class ChatGateway {
   @WebSocketServer()
   server!: Server;
