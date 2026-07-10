@@ -16,7 +16,7 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Role } from '@prisma/client';
+import { Role, VendorBadge } from '@prisma/client';
 
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 
@@ -78,6 +78,18 @@ rejectVendor(
 ) {
   return this.adminService.rejectVendor(id);
 }
+
+@Patch('vendors/:id/badge')
+updateVendorBadge(
+  @Param('id') id: string,
+  @Body() dto: { badge: VendorBadge },
+) {
+  return this.adminService.updateVendorBadge(
+    id,
+    dto.badge,
+  );
+}
+
 @Delete('vendors/:id')
 deleteVendor(
   @Param('id') id: string,
@@ -107,6 +119,13 @@ updateBookingStatus(
     id,
     dto.status,
   );
+}
+
+@Patch('bookings/:id/approve')
+approveBooking(
+  @Param('id') id: string,
+) {
+  return this.adminService.approveBooking(id);
 }
 
 @Get('analytics')

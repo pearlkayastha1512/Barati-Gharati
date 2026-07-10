@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 import { Booking } from "@/types/booking";
 
@@ -10,12 +10,15 @@ interface Props {
   open: boolean;
 
   onClose: () => void;
+
+  onApprove: (booking: Booking) => void;
 }
 
 export default function PaymentDetailsModal({
   booking,
   open,
   onClose,
+  onApprove,
 }: Props) {
   if (!open || !booking) {
     return null;
@@ -110,6 +113,15 @@ export default function PaymentDetailsModal({
             />
 
             <Info
+              label="Admin Approval"
+              value={
+                booking.adminApproved
+                  ? "Approved"
+                  : "Pending"
+              }
+            />
+
+            <Info
               label="Event Date"
               value={new Date(
                 booking.eventDate
@@ -162,7 +174,20 @@ export default function PaymentDetailsModal({
 
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {booking.paymentStatus ===
+              "partial" &&
+              !booking.adminApproved && (
+                <button
+                  onClick={() =>
+                    onApprove(booking)
+                  }
+                  className="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
+                >
+                  <Check size={18} />
+                  Approve Booking
+                </button>
+              )}
 
             <button
               onClick={onClose}

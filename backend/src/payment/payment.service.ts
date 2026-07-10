@@ -13,6 +13,12 @@ import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
 import { InvoiceService } from '../invoice/invoice.service';
 import { MailService } from '../mail/mail.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import {
+  Role,
+  VendorBadge,
+  VendorStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class PaymentService {
@@ -20,7 +26,217 @@ export class PaymentService {
     private readonly prisma: PrismaService,
     private readonly invoiceService: InvoiceService,
     private readonly mailService: MailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
+
+  private getRazorpay() {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      throw new BadRequestException(
+        'Payment gateway is not configured',
+      );
+    }
+
+    return new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+
+  private getAdvanceAmount(totalAmount: unknown) {
+    return Math.round(Number(totalAmount) * 10) / 100;
+  }
+
+  private readonly badgePrices: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 0,
+    [VendorBadge.SILVER]: 999,
+    [VendorBadge.GOLD]: 1999,
+  };
+
+  private readonly badgeLimits: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 5,
+    [VendorBadge.SILVER]: 15,
+    [VendorBadge.GOLD]: 50,
+  };
+
+  private readonly badgeRank: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 1,
+    [VendorBadge.SILVER]: 2,
+    [VendorBadge.GOLD]: 3,
+  };
+
+  private verifySignature(
+    orderId: string,
+    paymentId: string,
+    signature: string,
+  ) {
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keySecret) {
+      throw new BadRequestException(
+        'Payment gateway is not configured',
+      );
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', keySecret)
+      .update(orderId + '|' + paymentId)
+      .digest('hex');
+
+    const providedSignature = Buffer.from(signature);
+    const calculatedSignature = Buffer.from(expectedSignature);
+
+    if (
+      providedSignature.length !== calculatedSignature.length ||
+      !crypto.timingSafeEqual(
+        providedSignature,
+        calculatedSignature,
+      )
+    ) {
+      throw new BadRequestException(
+        'Invalid payment signature',
+      );
+    }
+  }
+
+  async createVendorBadgeOrder(
+    userId: string,
+    badge: VendorBadge,
+  ) {
+    if (!Object.values(VendorBadge).includes(badge)) {
+      throw new BadRequestException('Invalid badge plan');
+    }
+
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { userId },
+    });
+
+    if (!vendor) {
+      throw new NotFoundException('Vendor profile not found');
+    }
+
+    if (vendor.status !== VendorStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Vendor account must be approved before upgrading badge',
+      );
+    }
+
+    if (this.badgeRank[badge] <= this.badgeRank[vendor.badge]) {
+      throw new BadRequestException(
+        'Please select a higher badge plan to upgrade',
+      );
+    }
+
+    const amount = this.badgePrices[badge];
+
+    const order = await this.getRazorpay().orders.create({
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      receipt: `badge_${vendor.id}_${Date.now()}`.slice(0, 40),
+      notes: {
+        vendorId: vendor.id,
+        badge,
+        paymentType: 'VENDOR_BADGE_UPGRADE',
+      },
+    });
+
+    await this.prisma.vendor.update({
+      where: { id: vendor.id },
+      data: {
+        badgePaymentOrderId: order.id,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Badge upgrade order created successfully',
+      data: {
+        vendorId: vendor.id,
+        badge: badge.toLowerCase(),
+        orderId: order.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        amount,
+        amountInPaise: order.amount,
+        currency: 'INR',
+        monthlyBookingLimit: this.badgeLimits[badge],
+      },
+    };
+  }
+
+  async verifyVendorBadgePayment(
+    userId: string,
+    badge: VendorBadge,
+    dto: VerifyPaymentDto,
+  ) {
+    if (!Object.values(VendorBadge).includes(badge)) {
+      throw new BadRequestException('Invalid badge plan');
+    }
+
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { userId },
+    });
+
+    if (!vendor) {
+      throw new NotFoundException('Vendor profile not found');
+    }
+
+    if (
+      !vendor.badgePaymentOrderId ||
+      dto.orderId !== vendor.badgePaymentOrderId
+    ) {
+      throw new BadRequestException(
+        'Payment order does not match this badge upgrade',
+      );
+    }
+
+    this.verifySignature(
+      dto.orderId,
+      dto.paymentId,
+      dto.signature,
+    );
+
+    const updatedVendor = await this.prisma.vendor.update({
+      where: { id: vendor.id },
+      data: {
+        badge,
+        monthlyBookingLimit: this.badgeLimits[badge],
+        badgePurchasedAt: new Date(),
+        badgePaymentOrderId: null,
+      },
+    });
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: { id: true },
+    });
+
+    await Promise.all([
+      this.notificationsService.create(userId, {
+        title: 'Badge Upgraded',
+        message: `Your vendor badge is now ${badge}. You can receive up to ${this.badgeLimits[badge]} bookings per month.`,
+      }),
+      ...admins.map((admin) =>
+        this.notificationsService.create(admin.id, {
+          title: 'Vendor Badge Purchased',
+          message: `${updatedVendor.businessName} upgraded to ${badge}.`,
+        }),
+      ),
+    ]);
+
+    return {
+      success: true,
+      message: 'Badge upgraded successfully',
+      data: {
+        badge: updatedVendor.badge.toLowerCase(),
+        monthlyBookingLimit:
+          updatedVendor.monthlyBookingLimit,
+        badgePurchasedAt:
+          updatedVendor.badgePurchasedAt,
+      },
+    };
+  }
 
   // ===============================
   // CREATE ORDER
@@ -49,22 +265,47 @@ export class PaymentService {
       );
     }
 
-    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
+    const requiredAdvance = this.getAdvanceAmount(
+      booking.totalAmount,
+    );
+
+    if (
+      Number(booking.amountPaid) >= requiredAdvance
+    ) {
       throw new BadRequestException(
-        'Payment already completed',
+        'Required advance is already paid',
       );
     }
 
-    // Razorpay order yahin create hoga
-    // Abhi dummy response return kar rahe hain
+    const order = await this.getRazorpay().orders.create({
+      amount: Math.round(requiredAdvance * 100),
+      currency: 'INR',
+      receipt: `advance_${booking.bookingNumber}`.slice(0, 40),
+      notes: {
+        bookingId: booking.id,
+        paymentType: 'BOOKING_ADVANCE',
+      },
+    });
+
+    await this.prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        advancePaymentOrderId: order.id,
+        paymentStatus: PaymentStatus.PROCESSING,
+      },
+    });
 
     return {
       success: true,
       message: 'Order created successfully',
       data: {
         bookingId: booking.id,
-        amount: booking.totalAmount,
-        paymentStatus: booking.paymentStatus,
+        orderId: order.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        amount: requiredAdvance,
+        amountInPaise: order.amount,
+        totalAmount: Number(booking.totalAmount),
+        paymentStatus: PaymentStatus.PROCESSING,
         currency: 'INR',
       },
     };
@@ -105,30 +346,32 @@ export class PaymentService {
       );
     }
 
-    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
+    const requiredAdvance = this.getAdvanceAmount(
+      booking.totalAmount,
+    );
+
+    if (
+      Number(booking.amountPaid) >= requiredAdvance
+    ) {
       throw new BadRequestException(
         'Payment already verified',
       );
     }
 
-    const body = dto.orderId + "|" + dto.paymentId;
+    if (
+      !booking.advancePaymentOrderId ||
+      dto.orderId !== booking.advancePaymentOrderId
+    ) {
+      throw new BadRequestException(
+        'Payment order does not match this booking',
+      );
+    }
 
-const expectedSignature = crypto
-  .createHmac(
-    "sha256",
-    process.env.RAZORPAY_KEY_SECRET!,
-  )
-  .update(body)
-  .digest("hex");
-
-// if (expectedSignature !== dto.signature) {
-//   throw new BadRequestException(
-//     "Invalid payment signature",
-//   );
-// }
-
-    // Razorpay Signature Verification
-    // Baad me yahin hoga
+    this.verifySignature(
+      dto.orderId,
+      dto.paymentId,
+      dto.signature,
+    );
 
     const updatedBooking =
       await this.prisma.booking.update({
@@ -136,9 +379,10 @@ const expectedSignature = crypto
     id: booking.id,
   },
   data: {
-  paymentStatus: PaymentStatus.SUCCESS,
-amountPaid: booking.totalAmount,
-  remainingAmount: 0,
+  paymentStatus: PaymentStatus.PARTIAL,
+  amountPaid: requiredAdvance,
+  remainingAmount:
+    Number(booking.totalAmount) - requiredAdvance,
 }
 });
 
@@ -166,22 +410,44 @@ if (!completedBooking) {
 }
 
 // Generate Invoice PDF
-const invoicePath =
-  await this.invoiceService.generateInvoice(
-    completedBooking,
-  );
+try {
+  const invoicePath =
+    await this.invoiceService.generateInvoice(
+      completedBooking,
+    );
 
-// Send Email with Invoice
-await this.mailService.sendBookingInvoice(
-  completedBooking.user.email,
-  completedBooking.user.name,
-  invoicePath,
+  await this.mailService.sendBookingInvoice(
+    completedBooking.user.email,
+    completedBooking.user.name,
+    invoicePath,
+  );
+} catch {
+  // Payment remains valid even if email delivery is temporarily unavailable.
+}
+
+const admins = await this.prisma.user.findMany({
+  where: { role: Role.ADMIN },
+  select: { id: true },
+});
+
+await Promise.all(
+  admins.map((admin) =>
+    this.notificationsService.create(admin.id, {
+      title: 'Booking Awaiting Approval',
+      message: `${completedBooking.user.name} paid the 10% advance for booking ${completedBooking.bookingNumber}.`,
+    }),
+  ),
 );
+
+await this.notificationsService.create(completedBooking.userId, {
+  title: 'Advance Payment Received',
+  message: `Your 10% advance for booking ${completedBooking.bookingNumber} was received. Admin review is pending.`,
+});
 
 return {
   success: true,
   message:
-    'Payment verified and invoice sent successfully.',
+    'Advance payment verified. Booking is awaiting admin approval.',
   data: completedBooking,
 };
   }
@@ -194,7 +460,12 @@ return {
       await this.prisma.booking.findMany({
         where: {
           userId,
-          paymentStatus: PaymentStatus.SUCCESS,
+          paymentStatus: {
+            in: [
+              PaymentStatus.PARTIAL,
+              PaymentStatus.SUCCESS,
+            ],
+          },
         },
         include: {
           package: true,

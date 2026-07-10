@@ -11,8 +11,6 @@ import {
   Clock3,
   MapPin,
   IndianRupee,
-  MessageCircle,
-  FileText,
   Eye,
   Star,
   CreditCard,
@@ -88,7 +86,7 @@ export default function BookingCard({
                   </h2>
 
                   <p className="mt-1 text-gray-500">
-                    {booking.category}
+                    {booking.category} · {booking.eventType}
                   </p>
                 </div>
 
@@ -230,6 +228,7 @@ export default function BookingCard({
 <button
   disabled={
     booking.paymentStatus === "paid" ||
+    booking.paymentStatus === "partial" ||
     booking.bookingStatus === "cancelled"
   }
   onClick={() => setOpenPayment(true)}
@@ -247,6 +246,7 @@ export default function BookingCard({
 
     ${
       booking.paymentStatus === "paid" ||
+      booking.paymentStatus === "partial" ||
       booking.bookingStatus === "cancelled"
         ? "cursor-not-allowed bg-gray-200 text-gray-500"
         : "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -259,6 +259,10 @@ export default function BookingCard({
     ? "Booking Cancelled"
     : booking.paymentStatus === "paid"
     ? "Payment Completed"
+    : booking.paymentStatus === "partial"
+    ? booking.adminApproved
+      ? "Advance Paid"
+      : "Awaiting Admin Approval"
     : "Pay Advance"}
 </button>
 

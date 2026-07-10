@@ -30,7 +30,7 @@ export default function OwnerInformation() {
           icon={
             <User
               size={18}
-              className="text-blue-600"
+              className="text-[#e4005a]"
             />
           }
           label="Owner Name"
@@ -52,7 +52,7 @@ export default function OwnerInformation() {
           icon={
             <Phone
               size={18}
-              className="text-violet-600"
+              className="text-[#e4005a]"
             />
           }
           label="Phone"

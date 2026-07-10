@@ -8,15 +8,15 @@ export default function InsightsCard() {
       </h2>
 
       <div className="mt-8 space-y-4">
-        <div className="rounded-2xl bg-blue-50 p-4 text-gray-700">
+        <div className="rounded-2xl bg-[#fff8ef] p-4 text-gray-700">
           📈 Profile views increased by 24%.
         </div>
 
-        <div className="rounded-2xl bg-blue-50 p-4 text-gray-700">
+        <div className="rounded-2xl bg-[#fff8ef] p-4 text-gray-700">
           ⭐ Rating remains above 4.8.
         </div>
 
-        <div className="rounded-2xl bg-blue-50 p-4 text-gray-700">
+        <div className="rounded-2xl bg-[#fff8ef] p-4 text-gray-700">
           💰 Photography generates highest revenue.
         </div>
       </div>

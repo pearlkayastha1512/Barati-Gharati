@@ -95,13 +95,13 @@ const handleLogout = () => {
 };
 
   return (
-    <aside className="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white lg:flex">
+    <aside className="hidden h-screen w-72 shrink-0 border-r border-[#f4c8a0] bg-[#fffaf3] lg:flex">
 
       <div className="flex h-full w-full flex-col">
 
 <Link href="/">
-        <div className="border-b border-slate-100 p-6">
-          <div className="rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-100">
+        <div className="border-b border-[#f7dcb8] p-6">
+          <div className="rounded-3xl bg-white p-4 shadow-xl shadow-[#e4005a]/10 ring-1 ring-[#ffc43d]/35">
             <BrandLogo className="h-24 w-full" />
           </div>
         </div>
@@ -112,7 +112,7 @@ const handleLogout = () => {
 
         <nav className="flex-1 overflow-y-auto px-4 py-6">
 
-          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <p className="mb-5 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#b85f7b]">
             Business
           </p>
 
@@ -132,8 +132,8 @@ const handleLogout = () => {
 
                   ${
                     active
-                      ? "bg-gradient-to-r from-slate-800 to-blue-700 text-white shadow-lg"
-                      : "text-slate-600 hover:bg-slate-100"
+                      ? "bg-gradient-to-r from-[#e4005a] to-[#ffb703] text-white shadow-lg shadow-[#e4005a]/25"
+                      : "text-[#6d4052] hover:bg-[#ffe9bf] hover:text-[#b00045]"
                   }`}
                 >
 
@@ -166,19 +166,19 @@ const handleLogout = () => {
 
         {/* Bottom */}
 
-        <div className="border-t border-slate-100 p-5">
+        <div className="border-t border-[#f7dcb8] p-5">
 
-          <div className="rounded-3xl bg-slate-100 p-5">
+          <div className="rounded-3xl border border-[#ffd37a] bg-[#fff1cf] p-5 shadow-sm">
 
-            <h3 className="font-semibold text-slate-800">
+            <h3 className="font-semibold text-[#5b243a]">
               Vendor Support
             </h3>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#8f5870]">
               Need help managing your business?
             </p>
             <Link href={"/contact"}>
-              <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">
+              <button className="mt-5 w-full rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c8004e]">
 
               Contact Support
 

@@ -91,14 +91,14 @@ export default function PayoutDetailsModal({
         <div className="grid gap-6 border-b bg-slate-50 p-8 md:grid-cols-2">
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <Wallet className="text-blue-700" />
+              <Wallet className="text-[#e4005a]" />
 
               <h3 className="font-semibold text-slate-600">
                 Total Upcoming Payout
               </h3>
             </div>
 
-            <p className="mt-5 text-5xl font-bold text-blue-700">
+            <p className="mt-5 text-5xl font-bold text-[#e4005a]">
               ₹
               {totalPayout.toLocaleString(
                 "en-IN"
@@ -233,7 +233,7 @@ export default function PayoutDetailsModal({
               Total Settlement
             </p>
 
-            <h3 className="text-3xl font-bold text-blue-700">
+            <h3 className="text-3xl font-bold text-[#e4005a]">
               ₹
               {totalPayout.toLocaleString(
                 "en-IN"
@@ -243,7 +243,7 @@ export default function PayoutDetailsModal({
 
           <button
             onClick={onClose}
-            className="rounded-2xl bg-blue-700 px-8 py-3 font-semibold text-white transition hover:bg-blue-800"
+            className="rounded-2xl bg-[#e4005a] px-8 py-3 font-semibold text-white transition hover:bg-[#c8004e]"
           >
             Close
           </button>

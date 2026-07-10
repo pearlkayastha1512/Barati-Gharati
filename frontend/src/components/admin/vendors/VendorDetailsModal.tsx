@@ -4,6 +4,12 @@ import Image from "next/image";
 import { X } from "lucide-react";
 
 import { StoredVendor } from "@/services/vendor.service";
+import {
+  VendorBadge,
+  VENDOR_BADGE_COLORS,
+  VENDOR_BADGE_LABELS,
+  VENDOR_BADGE_LIMITS,
+} from "@/constants/vendor-badges";
 
 interface Props {
   vendor: StoredVendor | null;
@@ -12,9 +18,14 @@ interface Props {
 
   onClose: () => void;
 
-  onApprove: (vendorId: number) => void;
+  onApprove: (vendorId: string | number) => void;
 
-  onReject: (vendorId: number) => void;
+  onReject: (vendorId: string | number) => void;
+
+  onBadgeChange: (
+    vendorId: string | number,
+    badge: VendorBadge
+  ) => void;
 }
 
 export default function VendorDetailsModal({
@@ -23,6 +34,7 @@ export default function VendorDetailsModal({
   onClose,
   onApprove,
   onReject,
+  onBadgeChange,
 }: Props) {
   if (!open || !vendor) {
     return null;
@@ -91,6 +103,14 @@ export default function VendorDetailsModal({
                     : "Pending"}
                 </span>
               </div>
+
+              <div className="mt-3">
+                <span
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${VENDOR_BADGE_COLORS[vendor.badge]}`}
+                >
+                  {VENDOR_BADGE_LABELS[vendor.badge]} Badge
+                </span>
+              </div>
             </div>
           </div>
 
@@ -103,6 +123,75 @@ export default function VendorDetailsModal({
             <Info label="City" value={vendor.city} />
             <Info label="GST Number" value={vendor.gstNumber} />
             <Info label="Experience" value={vendor.experience} />
+            <Info
+              label="Monthly Booking Limit"
+              value={`${vendor.currentMonthBookings}/${vendor.monthlyBookingLimit}`}
+            />
+            <Info
+              label="Badge Purchased At"
+              value={
+                vendor.badgePurchasedAt
+                  ? new Date(
+                      vendor.badgePurchasedAt
+                    ).toLocaleDateString()
+                  : "-"
+              }
+            />
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="text-lg font-semibold text-gray-700">
+              Vendor Badge
+            </h3>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Badge decides how many bookings this vendor can receive per month.
+            </p>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              {(
+                [
+                  "bronze",
+                  "silver",
+                  "gold",
+                ] as VendorBadge[]
+              ).map((badge) => {
+                const active =
+                  vendor.badge === badge;
+
+                return (
+                  <button
+                    key={badge}
+                    onClick={() =>
+                      onBadgeChange(
+                        vendor.id,
+                        badge
+                      )
+                    }
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${
+                      active
+                        ? "border-blue-500 bg-white shadow-sm"
+                        : "border-slate-200 bg-white hover:border-blue-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${VENDOR_BADGE_COLORS[badge]}`}
+                    >
+                      {VENDOR_BADGE_LABELS[badge]}
+                    </span>
+
+                    <p className="mt-3 text-sm font-semibold text-gray-700">
+                      {
+                        VENDOR_BADGE_LIMITS[
+                          badge
+                        ]
+                      }{" "}
+                      bookings/month
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Description */}

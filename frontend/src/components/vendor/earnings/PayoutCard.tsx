@@ -78,11 +78,11 @@ export default function PayoutCard() {
 
         <div className="flex items-center gap-3">
 
-          <div className="rounded-2xl bg-blue-100 p-3">
+          <div className="rounded-2xl bg-[#ffe1ec] p-3">
 
             <Wallet
               size={22}
-              className="text-blue-700"
+              className="text-[#e4005a]"
             />
 
           </div>
@@ -101,7 +101,7 @@ export default function PayoutCard() {
 
         </div>
 
-        <h3 className="mt-8 text-5xl font-bold text-blue-700">
+        <h3 className="mt-8 text-5xl font-bold text-[#e4005a]">
 
           ₹
           {payoutAmount.toLocaleString(
@@ -150,7 +150,7 @@ export default function PayoutCard() {
           onClick={() =>
             setOpen(true)
           }
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c8004e]"
         >
 
           <ArrowUpRight size={18} />

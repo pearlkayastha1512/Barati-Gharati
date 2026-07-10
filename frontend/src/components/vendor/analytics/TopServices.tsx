@@ -95,7 +95,7 @@ export default function TopServices() {
 
         </div>
 
-        <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+        <div className="rounded-xl bg-[#fff8ef] px-4 py-2 text-sm font-semibold text-[#e4005a]">
           {topServices.length} Services
         </div>
 
@@ -118,11 +118,11 @@ export default function TopServices() {
               >
                 <div className="flex items-center gap-4">
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ffe1ec]">
 
                     <BriefcaseBusiness
                       size={20}
-                      className="text-blue-700"
+                      className="text-[#e4005a]"
                     />
 
                   </div>
@@ -148,7 +148,7 @@ export default function TopServices() {
 
                 <div className="text-right">
 
-                  <div className="text-xl font-bold text-blue-700">
+                  <div className="text-xl font-bold text-[#e4005a]">
                     ₹
                     {service.revenue.toLocaleString(
                       "en-IN"

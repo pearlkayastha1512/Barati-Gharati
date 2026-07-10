@@ -64,11 +64,13 @@ getConversations(
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 getMessages(
+  @CurrentUser() user: { sub: string },
   @Param("conversationId")
   conversationId: string,
 ) {
   return this.chatService.getMessages(
     conversationId,
+    user.sub,
   );
 }
 }

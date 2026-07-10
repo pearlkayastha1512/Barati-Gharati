@@ -64,7 +64,7 @@ export default function BookingTimeline({
     },
 
     {
-      title: "Wedding Day",
+      title: "Event Day",
       description:
         "Celebrate your special day.",
       date: booking.eventDate,

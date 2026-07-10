@@ -17,6 +17,10 @@ import { messageService } from "@/services/message.service";
 import { toast } from "sonner";
 import { getVendorById } from "@/services/vendor.service";
 import { useEffect, useState } from "react";
+import {
+  VENDOR_BADGE_COLORS,
+  VENDOR_BADGE_LABELS,
+} from "@/constants/vendor-badges";
 
 interface VendorBookingCardProps {
   vendor: Vendor;
@@ -101,6 +105,9 @@ if (!selectedPackage)  {
 const canBook =
   !isAuthenticated ||
   user?.role === "customer";
+
+const badge = vendor.badge ?? "bronze";
+
   return (
 
     
@@ -128,6 +135,19 @@ const canBook =
       <h2 className="mt-2 text-4xl font-bold text-rose-300">
         ₹{selectedPackage.price.toLocaleString("en-IN")}
       </h2>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${VENDOR_BADGE_COLORS[badge]}`}
+        >
+          {VENDOR_BADGE_LABELS[badge]} Vendor
+        </span>
+
+        <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-rose-100/70">
+          {vendor.currentMonthBookings ?? 0}/
+          {vendor.monthlyBookingLimit ?? 5} bookings this month
+        </span>
+      </div>
 
       {/* Package */}
 
@@ -179,7 +199,7 @@ if (pkg) {
       <div className="mt-6">
 
         <label className="mb-2 block text-sm font-semibold text-rose-50">
-          Wedding Date
+          Event Date
         </label>
 
         <input
@@ -219,7 +239,7 @@ if (pkg) {
         <div className="flex items-center justify-between rounded-xl border border-white/15 bg-[#12070d] px-4 py-3">
 
           <button
-            onClick={() => setGuests((g) => Math.max(50, g - 50))}
+            onClick={() => setGuests((g) => Math.max(1, g - 10))}
             className="text-2xl font-bold text-rose-100 transition hover:text-rose-300"
           >
             −
@@ -230,7 +250,7 @@ if (pkg) {
           </span>
 
           <button
-            onClick={() => setGuests((g) => g + 50)}
+            onClick={() => setGuests((g) => g + 10)}
             className="text-2xl font-bold text-rose-100 transition hover:text-rose-300"
           >
             +
@@ -275,7 +295,7 @@ if (!storedVendor) {
 }
 
 if (!date) {
-  toast.error("Please select a wedding date.");
+  toast.error("Please select an event date.");
   return;
 }
 
@@ -343,13 +363,28 @@ if (!date) {
         conversation.vendor?.user?.id === vendor.userId
     );
 
+  const conversationResult =
+    existingConversation
+      ? null
+      : await messageService.createConversation(
+          vendor.backendId ??
+            vendor.id.toString()
+        );
+
+  if (
+    conversationResult &&
+    !conversationResult.ok
+  ) {
+    toast.error(
+      conversationResult.error ??
+        "Chat unlocks after advance payment and admin approval."
+    );
+    return;
+  }
+
   const conversation =
     existingConversation ??
-    (
-      await messageService.createConversation(
-        vendor.backendId ?? vendor.id.toString()
-      )
-    ).data;
+    conversationResult?.data;
 
   if (!conversation?.id) {
     toast.error(

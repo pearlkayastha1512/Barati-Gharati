@@ -20,9 +20,9 @@ const reviews = [
 
 export default function RecentReviews() {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#f4c8a0] bg-white/90 p-7 shadow-sm shadow-[#e4005a]/5">
 
-      <h2 className="text-xl font-bold text-slate-900">
+      <h2 className="text-xl font-bold text-[#4d1730]">
         Recent Reviews
       </h2>
 
@@ -32,22 +32,22 @@ export default function RecentReviews() {
 
           <div
             key={review.name}
-            className="rounded-2xl bg-slate-50 p-5"
+            className="rounded-2xl border border-[#ffe0a3] bg-[#fff8ef] p-5"
           >
 
             <div className="flex items-center justify-between">
 
-              <h3 className="font-semibold text-gray-700">
+              <h3 className="font-semibold text-[#4d1730]">
                 {review.name}
               </h3>
 
-              <span className="text-yellow-500">
+              <span className="text-[#ffb703]">
                 {review.rating}
               </span>
 
             </div>
 
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-[#946176]">
               {review.comment}
             </p>
 

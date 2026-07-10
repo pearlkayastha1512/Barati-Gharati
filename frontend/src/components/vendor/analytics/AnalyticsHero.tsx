@@ -8,7 +8,7 @@ export default function AnalyticsHero() {
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-[32px] bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-800 p-8 shadow-xl"
+      className="rounded-[32px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] p-8 shadow-xl"
     >
       <div>
         <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-gray-100">

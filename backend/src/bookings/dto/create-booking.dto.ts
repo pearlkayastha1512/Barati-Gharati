@@ -100,6 +100,22 @@ export class CreateBookingDto {
 
   @IsOptional()
   @IsString()
+  eventTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  primaryPersonName?: string;
+
+  @IsOptional()
+  @IsNumber()
+  primaryPersonAge?: number;
+
+  @IsOptional()
+  @IsString()
+  eventTheme?: string;
+
+  @IsOptional()
+  @IsString()
   specialRequirements?: string;
 
   @IsNumber()

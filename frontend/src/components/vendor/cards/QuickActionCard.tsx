@@ -19,31 +19,31 @@ export default function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group rounded-3xl border border-[#f4c8a0] bg-white/90 p-6 shadow-sm shadow-[#e4005a]/5 transition-all duration-300 hover:-translate-y-1 hover:border-[#ffc43d] hover:shadow-xl hover:shadow-[#e4005a]/10"
     >
       <div className="flex items-center justify-between">
 
-        <div className="rounded-2xl bg-blue-100 p-3">
+        <div className="rounded-2xl bg-[#fff0bf] p-3 ring-1 ring-[#ffb703]/25">
 
           <Icon
             size={24}
-            className="text-blue-700"
+            className="text-[#b00045]"
           />
 
         </div>
 
         <ArrowRight
           size={20}
-          className="transition group-hover:translate-x-1"
+          className="text-[#e4005a] transition group-hover:translate-x-1"
         />
 
       </div>
 
-      <h3 className="mt-6 text-xl font-semibold text-slate-900">
+      <h3 className="mt-6 text-xl font-semibold text-[#4d1730]">
         {title}
       </h3>
 
-      <p className="mt-2 text-sm text-slate-500">
+      <p className="mt-2 text-sm text-[#946176]">
         {description}
       </p>
 

@@ -201,7 +201,7 @@ export default function ManageAvailabilityModal({
             disabled={booked}
             className={`rounded-xl px-6 py-3 font-semibold text-white transition ${
               booked
-                ? "cursor-not-allowed bg-blue-400"
+                ? "cursor-not-allowed bg-[#f17aa8]"
                 : blocked
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-green-600 hover:bg-green-700"

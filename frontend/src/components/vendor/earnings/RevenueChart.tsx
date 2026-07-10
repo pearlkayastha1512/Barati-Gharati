@@ -32,7 +32,7 @@
 //             className="flex flex-col items-center gap-3"
 //           >
 //             <div
-//               className="w-12 rounded-t-xl bg-gradient-to-t from-blue-700 to-indigo-500 transition-all duration-300 hover:opacity-90"
+//               className="w-12 rounded-t-xl bg-gradient-to-t from-[#e4005a] to-[#ffb703] transition-all duration-300 hover:opacity-90"
 //               style={{
 //                 height: heights[index],
 //               }}
@@ -223,14 +223,14 @@ export default function RevenueChart() {
       <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <Card
           icon={
-            <Wallet className="h-6 w-6 text-blue-600" />
+            <Wallet className="h-6 w-6 text-[#e4005a]" />
           }
           title="Total Revenue"
           value={`₹${totalRevenue.toLocaleString(
             "en-IN"
           )}`}
           subtitle="Current Year"
-          bg="bg-blue-50"
+          bg="bg-[#fff8ef]"
         />
 
         <Card
@@ -247,14 +247,14 @@ export default function RevenueChart() {
 
         <Card
           icon={
-            <TrendingDown className="h-6 w-6 text-violet-600" />
+            <TrendingDown className="h-6 w-6 text-[#e4005a]" />
           }
           title="Lowest Month"
           value={`₹${lowestMonth.revenue.toLocaleString(
             "en-IN"
           )}`}
           subtitle={lowestMonth.month}
-          bg="bg-violet-50"
+          bg="bg-[#fff8ef]"
         />
 
         <Card
@@ -293,7 +293,7 @@ export default function RevenueChart() {
 
                 <div className="flex h-60 w-full items-end justify-center">
                   <div
-                    className="w-full max-w-[38px] rounded-t-2xl bg-gradient-to-t from-blue-600 to-blue-400 transition-all duration-500"
+                    className="w-full max-w-[38px] rounded-t-2xl bg-gradient-to-t from-[#e4005a] to-[#ffb703] transition-all duration-500"
                     style={{
                       height: `${Math.max(
                         height,

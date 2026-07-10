@@ -7,6 +7,7 @@ interface BookingSuccessProps {
   bookingId: string;
   vendorName: string;
   date: string;
+  eventType: string;
   onClose: () => void;
 }
 
@@ -14,6 +15,7 @@ export default function BookingSuccess({
   bookingId,
   vendorName,
   date,
+  eventType,
   onClose,
 }: BookingSuccessProps) {
   return (
@@ -26,11 +28,11 @@ export default function BookingSuccess({
       <CheckCircle2 className="mx-auto h-24 w-24 text-green-500" />
 
       <h2 className="mt-6 text-4xl font-bold text-gray-900">
-        Booking Confirmed 🎉
+        Advance Payment Received
       </h2>
 
       <p className="mt-2 text-gray-600 ">
-        Thank you for choosing <b>{vendorName}</b>.
+        Thank you for choosing <b>{vendorName}</b>. Your request is now waiting for admin approval.
       </p>
 
       <div className="mt-10 rounded-2xl bg-gray-50 p-6 text-left">
@@ -45,13 +47,13 @@ export default function BookingSuccess({
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Wedding Date</p>
+          <p className="text-sm text-gray-500">{eventType} Date</p>
           <p className="font-semibold text-rose-500">{date}</p>
         </div>
       </div>
 
       <p className="mt-8 text-gray-600">
-        We'll contact you shortly to confirm your booking.
+        Vendor chat will unlock after admin approves this booking.
       </p>
 
       <button

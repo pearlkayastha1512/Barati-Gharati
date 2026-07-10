@@ -48,7 +48,7 @@ export default function BookingFilters() {
           >
             <option>Sort: Latest</option>
             <option>Oldest First</option>
-            <option>Wedding Date</option>
+            <option>Event Date</option>
             <option>Vendor Name</option>
           </select>
 

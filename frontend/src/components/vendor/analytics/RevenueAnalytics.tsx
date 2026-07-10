@@ -187,7 +187,7 @@ function Row({
 
       <div className="flex items-center gap-5">
 
-        <span className="text-lg font-bold text-blue-700">
+        <span className="text-lg font-bold text-[#e4005a]">
           {value}
         </span>
 

@@ -8,7 +8,7 @@ export default function MessagesHero() {
     <motion.section
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-[28px] bg-gradient-to-r from-sky-700 via-blue-700 to-slate-900 px-10 py-7 text-white shadow-xl"
+      className="rounded-[28px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] px-10 py-7 text-white shadow-xl"
     >
       <div>
 

@@ -22,7 +22,7 @@ function badge(status: string) {
     case "accepted":
       return "bg-green-100 text-green-700";
     case "completed":
-      return "bg-blue-100 text-blue-700";
+      return "bg-[#ffe1ec] text-[#e4005a]";
     case "rejected":
       return "bg-red-100 text-red-700";
     default:
@@ -132,7 +132,8 @@ export default function BookingTable({ bookings }: Props) {
 
                 <td className="px-6 py-5">
                   <div className="flex gap-2">
-                    {booking.bookingStatus === "pending" && (
+                    {booking.bookingStatus === "pending" &&
+                      booking.adminApproved && (
                       <>
                         <button
                           onClick={() =>
@@ -160,11 +161,19 @@ export default function BookingTable({ bookings }: Props) {
                       </>
                     )}
 
+                    {booking.bookingStatus ===
+                      "pending" &&
+                      !booking.adminApproved && (
+                        <span className="rounded-lg bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-700">
+                          Awaiting admin
+                        </span>
+                      )}
+
                   <button
   onClick={() =>
     selectBooking(booking)
   }
-  className="rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+  className="rounded-lg bg-[#e4005a] px-3 py-2 text-white transition hover:bg-[#e4005a]"
 >
   <Eye size={16} />
 </button>

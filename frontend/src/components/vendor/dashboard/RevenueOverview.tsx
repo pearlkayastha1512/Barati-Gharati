@@ -74,9 +74,9 @@ export default function RevenueOverview() {
   }, [bookings]);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+    <section className="rounded-3xl border border-[#f4c8a0] bg-white/90 p-7 shadow-sm shadow-[#e4005a]/5">
 
-      <h2 className="text-xl font-bold text-slate-900">
+      <h2 className="text-xl font-bold text-[#4d1730]">
         Revenue Overview
       </h2>
 
@@ -116,13 +116,13 @@ function Row({
   value: number;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between rounded-2xl border border-[#ffe0a3] bg-[#fff8ef] px-4 py-3">
 
-      <span className="text-slate-500">
+      <span className="text-[#946176]">
         {label}
       </span>
 
-      <span className="font-semibold text-slate-900">
+      <span className="font-semibold text-[#b00045]">
         ₹
         {value.toLocaleString(
           "en-IN"

@@ -117,9 +117,9 @@ export default function AnalyticsStats() {
         value:
           profileViews.toLocaleString(),
         icon: Eye,
-        bg: "bg-blue-100",
+        bg: "bg-[#ffe1ec]",
         color:
-          "text-blue-700",
+          "text-[#e4005a]",
       },
       {
         title: "Customers",
@@ -134,9 +134,9 @@ export default function AnalyticsStats() {
         title: "Growth",
         value: `${growth >= 0 ? "+" : ""}${growth}%`,
         icon: TrendingUp,
-        bg: "bg-violet-100",
+        bg: "bg-[#ffe1ec]",
         color:
-          "text-violet-700",
+          "text-[#e4005a]",
       },
       {
         title: "Rating",

@@ -60,6 +60,8 @@ export class VendorService {
   };
 }
 async getMyVendorProfile(userId: string) {
+  const { start, end } = this.getCurrentMonthRange();
+
   const vendor = await this.prisma.vendor.findUnique({
     where: {
       userId,
@@ -74,6 +76,18 @@ async getMyVendorProfile(userId: string) {
         },
       },
       category: true,
+      _count: {
+        select: {
+          bookings: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -84,7 +98,14 @@ async getMyVendorProfile(userId: string) {
   }
   return {
     success: true,
-    data: vendor,
+    data: {
+      ...vendor,
+      badge: vendor.badge,
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+      currentMonthBookings:
+        vendor._count.bookings,
+    },
   };
 }
 
@@ -184,6 +205,8 @@ if (vendor.status !== VendorStatus.APPROVED) {
 }
 
 async getAllVendors() {
+  const { start, end } = this.getCurrentMonthRange();
+
   const vendorsNeedingPublicIds =
     await this.prisma.vendor.findMany({
       where: {
@@ -245,6 +268,19 @@ async getAllVendors() {
       },
 
       reviews: true,
+
+      _count: {
+        select: {
+          bookings: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+            },
+          },
+        },
+      },
     },
 
     orderBy: {
@@ -312,6 +348,14 @@ async getAllVendors() {
 
       featured: false,
 
+      badge: vendor.badge.toLowerCase(),
+
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+
+      currentMonthBookings:
+        vendor._count.bookings,
+
       description:
         vendor.description ??
         "No description available.",
@@ -332,6 +376,8 @@ async getAllVendors() {
 }
 
 async getVendorById(id: string) {
+  const { start, end } = this.getCurrentMonthRange();
+
   const vendor = await this.prisma.vendor.findFirst({
     where: {
       frontendVendorId: Number(id),
@@ -347,6 +393,18 @@ async getVendorById(id: string) {
         },
       },
       reviews: true,
+      _count: {
+        select: {
+          bookings: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -403,6 +461,14 @@ async getVendorById(id: string) {
             ],
 
       featured: false,
+
+      badge: vendor.badge.toLowerCase(),
+
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+
+      currentMonthBookings:
+        vendor._count.bookings,
 
       description:
         vendor.description ?? "No description available.",
@@ -465,6 +531,7 @@ async searchVendors(searchVendorDto: SearchVendorDto) {
   };
 }
 async getDashboard(userId: string) {
+  const { start, end } = this.getCurrentMonthRange();
 
   const vendor = await this.prisma.vendor.findUnique({
     where: {
@@ -523,9 +590,23 @@ async getDashboard(userId: string) {
     },
   });
 
+  const currentMonthBookings = await this.prisma.booking.count({
+    where: {
+      vendorId: vendor.id,
+      createdAt: {
+        gte: start,
+        lt: end,
+      },
+    },
+  });
+
   return {
     success: true,
     data: {
+      badge: vendor.badge.toLowerCase(),
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+      currentMonthBookings,
       totalPackages,
       totalBookings,
       pendingBookings,
@@ -534,6 +615,29 @@ async getDashboard(userId: string) {
       totalRevenue: 0,
       averageRating: 0,
     },
+  };
+}
+
+private getCurrentMonthRange() {
+  const now = new Date();
+  const start = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      1,
+    ),
+  );
+  const end = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth() + 1,
+      1,
+    ),
+  );
+
+  return {
+    start,
+    end,
   };
 }
 

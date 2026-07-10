@@ -137,7 +137,7 @@
 //             <input
 //               value={title}
 //               onChange={(e) => setTitle(e.target.value)}
-//               className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+//               className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
 //             />
 //           </div>
 
@@ -149,7 +149,7 @@
 //             <select
 //               value={category}
 //               onChange={(e) => setCategory(e.target.value)}
-//               className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
+//               className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
 //             >
 //               <option value="">Select Category</option>
 //               <option>Wedding</option>
@@ -173,7 +173,7 @@
 //               rows={4}
 //               value={description}
 //               onChange={(e) => setDescription(e.target.value)}
-//               className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+//               className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
 //             />
 //           </div>
 
@@ -206,7 +206,7 @@
 //                     setImagePreview(URL.createObjectURL(file));
 //                   }
 //                 }}
-//                 className="mt-5 text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-violet-100 file:px-4 file:py-2 file:text-violet-700 hover:file:bg-violet-200"
+//                 className="mt-5 text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#ffe1ec] file:px-4 file:py-2 file:text-[#e4005a] hover:file:bg-[#ffd6e5]"
 //               />
 //             </div>
 //           </div>
@@ -226,7 +226,7 @@
 
 //           <button
 //             onClick={handleSubmit}
-//             className="rounded-xl bg-violet-700 px-6 py-3 font-semibold text-white transition hover:bg-violet-800"
+//             className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white transition hover:bg-[#c8004e]"
 //           >
 //             {selectedPortfolio ? "Update Portfolio" : "Upload Portfolio"}
 //           </button>
@@ -455,7 +455,7 @@ export default function AddPortfolioModal({
                   e.target.value
                 )
               }
-              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:ring-2 focus:ring-violet-500 focus:outline-none"
+              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:ring-2 focus:ring-[#e4005a] focus:outline-none"
             />
           </div>
 
@@ -471,7 +471,7 @@ export default function AddPortfolioModal({
                   e.target.value
                 )
               }
-              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:ring-2 focus:ring-violet-500 focus:outline-none"
+              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:ring-2 focus:ring-[#e4005a] focus:outline-none"
             >
               <option value="">
                 Select Category
@@ -528,7 +528,7 @@ export default function AddPortfolioModal({
                   e.target.value
                 )
               }
-              className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 focus:ring-2 focus:ring-violet-500 focus:outline-none"
+              className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 focus:ring-2 focus:ring-[#e4005a] focus:outline-none"
             />
           </div>
 
@@ -570,7 +570,7 @@ export default function AddPortfolioModal({
                     )
                   );
                 }}
-                className="mt-5 text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-violet-100 file:px-4 file:py-2 file:text-violet-700"
+                className="mt-5 text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#ffe1ec] file:px-4 file:py-2 file:text-[#e4005a]"
               />
             </div>
           </div>
@@ -594,7 +594,7 @@ export default function AddPortfolioModal({
           <button
             disabled={loading}
             onClick={handleSubmit}
-            className="rounded-xl bg-violet-700 px-6 py-3 font-semibold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white hover:bg-[#c8004e] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
               ? "Please wait..."

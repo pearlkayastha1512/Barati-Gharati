@@ -12,6 +12,7 @@ import PerformanceSection from "@/components/vendor/dashboard/PerformanceSection
 import RevenueOverview from "@/components/vendor/dashboard/RevenueOverview";
 import UpcomingBookings from "@/components/vendor/dashboard/UpcomingBookings";
 import RecentReviews from "@/components/vendor/dashboard/RecentReviews";
+import VendorBadgeSummary from "@/components/vendor/dashboard/VendorBadgeSummary";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import { useBookingStore } from "@/store/bookingStore";
@@ -74,6 +75,8 @@ export default function VendorDashboardPage() {
       <div className="space-y-8">
         <VendorHero />
 
+        <VendorBadgeSummary />
+
         <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
           <StatsCard
             title="Bookings"
@@ -106,11 +109,11 @@ export default function VendorDashboardPage() {
 
         <section>
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-2xl font-bold text-[#4d1730]">
               Quick Actions
             </h2>
 
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 text-[#946176]">
               Manage your business efficiently.
             </p>
           </div>

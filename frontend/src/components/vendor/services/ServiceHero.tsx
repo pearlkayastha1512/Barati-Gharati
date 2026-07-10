@@ -58,7 +58,7 @@ export default function ServiceHero({
         opacity: 1,
         y: 0,
       }}
-      className="rounded-[32px] bg-gradient-to-r from-indigo-700 via-blue-700 to-slate-800 p-8 text-white shadow-xl"
+      className="rounded-[32px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] p-8 text-white shadow-xl"
     >
       <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 

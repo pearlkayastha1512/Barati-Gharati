@@ -189,7 +189,7 @@ export default function AddServiceModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter service name"
-              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
             />
           </div>
 
@@ -201,7 +201,7 @@ export default function AddServiceModal({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
             >
               <option value="">
                 Select Category
@@ -255,7 +255,7 @@ export default function AddServiceModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter description"
-              className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-300 p-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
             />
           </div>
 
@@ -269,7 +269,7 @@ export default function AddServiceModal({
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 placeholder="e.g. 30 mins"
-                className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
               />
             </div>
 
@@ -283,7 +283,7 @@ export default function AddServiceModal({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Enter price"
-                className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e4005a]"
               />
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function AddServiceModal({
 
           <button
             onClick={handleSave}
-            className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+            className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white hover:bg-[#e4005a]"
           >
             {selectedService
               ? "Update Service"

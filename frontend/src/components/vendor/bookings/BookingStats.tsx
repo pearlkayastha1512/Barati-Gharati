@@ -54,7 +54,7 @@ export default function BookingStats() {
           totalBookings.toString(),
         icon: CalendarCheck2,
         color:
-          "bg-blue-100 text-blue-700",
+          "bg-[#ffe1ec] text-[#e4005a]",
       },
       {
         title: "Pending",

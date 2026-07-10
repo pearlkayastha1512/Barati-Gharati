@@ -12,6 +12,10 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useVendorStore } from "@/store/vendorStore";
 
 import { Vendor } from "@/types/vendor";
+import {
+  VENDOR_BADGE_COLORS,
+  VENDOR_BADGE_LABELS,
+} from "@/constants/vendor-badges";
 
 function VendorListingCard({
   vendor,
@@ -22,6 +26,8 @@ function VendorListingCard({
     isWishlisted,
     handleToggleWishlist,
   } = useWishlist(vendor);
+
+  const badge = vendor.badge ?? "bronze";
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.08] shadow-xl shadow-black/20 transition-all duration-500 hover:-translate-y-2 hover:bg-white/[0.11]">
@@ -71,6 +77,12 @@ function VendorListingCard({
           />
           {vendor.rating} ({vendor.reviews})
         </div>
+
+        <div
+          className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold shadow-lg ${VENDOR_BADGE_COLORS[badge]}`}
+        >
+          {VENDOR_BADGE_LABELS[badge]}
+        </div>
       </div>
 
       <div className="space-y-5 p-6">
@@ -87,6 +99,11 @@ function VendorListingCard({
         <div className="flex items-center gap-2 text-rose-100/65">
           <MapPin size={18} />
           <span>{vendor.city}</span>
+        </div>
+
+        <div className="text-sm text-rose-100/55">
+          {vendor.currentMonthBookings ?? 0}/
+          {vendor.monthlyBookingLimit ?? 5} bookings this month
         </div>
 
         <div>

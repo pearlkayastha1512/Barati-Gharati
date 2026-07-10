@@ -1,55 +1,79 @@
-import { Injectable,NotFoundException, } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BookingStatus,Role,VendorStatus,PaymentStatus } from '@prisma/client';
+import {
+  BookingStatus,
+  Role,
+  VendorBadge,
+  VendorStatus,
+  PaymentStatus,
+} from '@prisma/client';
 import { MailService } from '../mail/mail.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AdminService {
  constructor(
   private readonly prisma: PrismaService,
   private readonly mailService: MailService,
+  private readonly notificationsService: NotificationsService,
 ) {}
 
   async getDashboard() {
-    const totalUsers = await this.prisma.user.count();
-
-    const totalVendors = await this.prisma.vendor.count();
-
-    const totalPackages = await this.prisma.package.count();
-
-    const totalBookings = await this.prisma.booking.count();
-
-    const totalCategories = await this.prisma.category.count();
-
-    const pendingBookings =
-      await this.prisma.booking.count({
-        where: {
-          status: BookingStatus.PENDING,
-        },
-      });
-
-    const confirmedBookings =
-      await this.prisma.booking.count({
-        where: {
-          status: BookingStatus.CONFIRMED,
-        },
-      });
-
-    const cancelledBookings =
-      await this.prisma.booking.count({
-        where: {
-          status: BookingStatus.CANCELLED,
-        },
-      });
+    const [
+      totalUsers,
+      totalCustomers,
+      totalVendors,
+      totalPackages,
+      totalBookings,
+      totalCategories,
+      pendingVendorApprovals,
+      pendingBookings,
+      confirmedBookings,
+      cancelledBookings,
+      revenue,
+    ] = await this.prisma.$transaction([
+      this.prisma.user.count(),
+      this.prisma.user.count({
+        where: { role: Role.USER },
+      }),
+      this.prisma.vendor.count(),
+      this.prisma.package.count(),
+      this.prisma.booking.count(),
+      this.prisma.category.count(),
+      this.prisma.vendor.count({
+        where: { status: VendorStatus.PENDING },
+      }),
+      this.prisma.booking.count({
+        where: { status: BookingStatus.PENDING },
+      }),
+      this.prisma.booking.count({
+        where: { status: BookingStatus.CONFIRMED },
+      }),
+      this.prisma.booking.count({
+        where: { status: BookingStatus.CANCELLED },
+      }),
+      this.prisma.booking.aggregate({
+        _sum: { amountPaid: true },
+      }),
+    ]);
 
     return {
       success: true,
       data: {
         totalUsers,
+        totalCustomers,
         totalVendors,
         totalPackages,
         totalBookings,
         totalCategories,
+        totalRevenue: Number(
+          revenue._sum.amountPaid ?? 0,
+        ),
+        pendingVendorApprovals,
         pendingBookings,
         confirmedBookings,
         cancelledBookings,
@@ -124,11 +148,31 @@ async deleteUser(id: string) {
 }
 
 async getAllVendors() {
+  const { start, end } = this.getCurrentMonthRange();
+
   const vendors = await this.prisma.vendor.findMany({
     include: {
       user: true,
       category: true,
       gallery: true,
+      _count: {
+        select: {
+          bookings: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+              status: {
+                notIn: [
+                  BookingStatus.CANCELLED,
+                  BookingStatus.REJECTED,
+                ],
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -221,6 +265,18 @@ async getAllVendors() {
       approvalStatus:
         vendor.status.toLowerCase(),
 
+      badge:
+        vendor.badge.toLowerCase(),
+
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+
+      currentMonthBookings:
+        vendor._count.bookings,
+
+      badgePurchasedAt:
+        vendor.badgePurchasedAt,
+
       isActive:
         vendor.isActive,
 
@@ -260,6 +316,8 @@ async getAllVendors() {
 
 
 async getVendorById(id: string) {
+  const { start, end } = this.getCurrentMonthRange();
+
   const vendor = await this.prisma.vendor.findUnique({
     where: {
       id,
@@ -269,6 +327,24 @@ async getVendorById(id: string) {
       category: true,
       gallery: true,
       packages: true,
+      _count: {
+        select: {
+          bookings: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+              status: {
+                notIn: [
+                  BookingStatus.CANCELLED,
+                  BookingStatus.REJECTED,
+                ],
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -366,6 +442,18 @@ async getVendorById(id: string) {
       approvalStatus:
         vendor.status.toLowerCase(),
 
+      badge:
+        vendor.badge.toLowerCase(),
+
+      monthlyBookingLimit:
+        vendor.monthlyBookingLimit,
+
+      currentMonthBookings:
+        vendor._count.bookings,
+
+      badgePurchasedAt:
+        vendor.badgePurchasedAt,
+
       isActive:
         vendor.isActive,
 
@@ -403,6 +491,62 @@ async getVendorById(id: string) {
       createdAt: vendor.createdAt,
 
       updatedAt: vendor.updatedAt,
+    },
+  };
+}
+
+async updateVendorBadge(
+  id: string,
+  badge: VendorBadge,
+) {
+  const limits: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 5,
+    [VendorBadge.SILVER]: 15,
+    [VendorBadge.GOLD]: 50,
+  };
+
+  if (!Object.values(VendorBadge).includes(badge)) {
+    throw new BadRequestException('Invalid vendor badge');
+  }
+
+  const vendor = await this.prisma.vendor.findUnique({
+    where: { id },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!vendor) {
+    throw new NotFoundException('Vendor not found');
+  }
+
+  const updated = await this.prisma.vendor.update({
+    where: { id },
+    data: {
+      badge,
+      monthlyBookingLimit: limits[badge],
+      badgePurchasedAt: new Date(),
+    },
+    include: {
+      user: true,
+      category: true,
+      gallery: true,
+    },
+  });
+
+  await this.notificationsService.create(vendor.userId, {
+    title: 'Vendor Badge Updated',
+    message: `Your vendor badge is now ${badge}. You can receive up to ${limits[badge]} bookings per month.`,
+  });
+
+  return {
+    success: true,
+    message: 'Vendor badge updated successfully',
+    data: {
+      id: updated.id,
+      badge: updated.badge.toLowerCase(),
+      monthlyBookingLimit: updated.monthlyBookingLimit,
+      badgePurchasedAt: updated.badgePurchasedAt,
     },
   };
 }
@@ -682,6 +826,90 @@ async updateBookingStatus(
   };
 }
 
+async approveBooking(id: string) {
+  const booking = await this.prisma.booking.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      vendor: true,
+      package: true,
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundException('Booking not found');
+  }
+
+  const requiredAdvance =
+    Math.round(Number(booking.totalAmount) * 10) / 100;
+
+  if (Number(booking.amountPaid) < requiredAdvance) {
+    throw new BadRequestException(
+      'The 10% advance must be paid before approval',
+    );
+  }
+
+  if (booking.adminApproved) {
+    return {
+      success: true,
+      message: 'Booking is already approved',
+      data: this.mapBooking(booking),
+    };
+  }
+
+  const updated = await this.prisma.booking.update({
+    where: { id },
+    data: {
+      adminApproved: true,
+      adminApprovedAt: new Date(),
+      status: BookingStatus.ACCEPTED,
+    },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+    },
+  });
+
+  const existingConversation =
+    await this.prisma.conversation.findFirst({
+      where: {
+        customerId: booking.userId,
+        vendorId: booking.vendorId,
+      },
+    });
+
+  if (!existingConversation) {
+    await this.prisma.conversation.create({
+      data: {
+        customerId: booking.userId,
+        vendorId: booking.vendorId,
+      },
+    });
+  }
+
+  await Promise.all([
+    this.notificationsService.create(booking.userId, {
+      title: 'Booking Approved',
+      message: `Booking ${booking.bookingNumber} was approved. You can now message ${booking.vendor.businessName}.`,
+    }),
+    this.notificationsService.create(booking.vendor.userId, {
+      title: 'New Approved Booking',
+      message: `Booking ${booking.bookingNumber} is approved and the customer conversation is now available.`,
+    }),
+  ]);
+
+  return {
+    success: true,
+    message: 'Booking approved and conversation unlocked',
+    data: this.mapBooking(updated),
+  };
+}
+
 private mapBooking(booking: any) {
   return {
     id: booking.id,
@@ -725,6 +953,15 @@ private mapBooking(booking: any) {
       booking.contactCountry ?? '',
     weddingTheme:
       booking.weddingTheme ?? '',
+    eventTitle: booking.eventTitle ?? '',
+    primaryPersonName:
+      booking.primaryPersonName ?? '',
+    primaryPersonAge:
+      booking.primaryPersonAge ?? null,
+    eventTheme:
+      booking.eventTheme ??
+      booking.weddingTheme ??
+      '',
     guests: booking.guests ?? 0,
     brideName: booking.brideName ?? '',
     groomName: booking.groomName ?? '',
@@ -738,6 +975,9 @@ private mapBooking(booking: any) {
     paymentStatus: this.mapPaymentStatus(
       booking.paymentStatus,
     ),
+    adminApproved: booking.adminApproved,
+    adminApprovedAt:
+      booking.adminApprovedAt,
     bookingStatus: this.mapBookingStatus(
       booking.status,
     ),
@@ -760,6 +1000,29 @@ private mapBookingStatus(status: BookingStatus) {
   }
 
   return status.toLowerCase();
+}
+
+private getCurrentMonthRange() {
+  const now = new Date();
+  const start = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      1,
+    ),
+  );
+  const end = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth() + 1,
+      1,
+    ),
+  );
+
+  return {
+    start,
+    end,
+  };
 }
 
 async getAnalytics() {

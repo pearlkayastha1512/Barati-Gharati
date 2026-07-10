@@ -24,7 +24,7 @@ function getStatusText(status: string) {
       return "Booking Confirmed";
 
     case "completed":
-      return "Wedding Completed";
+      return "Event Completed";
 
     case "cancelled":
       return "Booking Cancelled";

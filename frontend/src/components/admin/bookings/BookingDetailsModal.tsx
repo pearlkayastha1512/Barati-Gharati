@@ -130,6 +130,26 @@ export default function BookingDetailsModal({
             />
 
             <Info
+              label="Admin Approval"
+              value={
+                booking.adminApproved
+                  ? "Approved"
+                  : "Pending"
+              }
+            />
+
+            <Info
+              label="Admin Approved At"
+              value={
+                booking.adminApprovedAt
+                  ? new Date(
+                      booking.adminApprovedAt
+                    ).toLocaleString()
+                  : "-"
+              }
+            />
+
+            <Info
               label="Total Amount"
               value={`₹${booking.amount.toLocaleString(
                 "en-IN"

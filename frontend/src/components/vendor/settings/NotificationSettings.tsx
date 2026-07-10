@@ -137,7 +137,7 @@ export default function NotificationSettings() {
       <button
         onClick={handleSave}
         disabled={loading}
-        className="mt-8 w-full rounded-2xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-8 w-full rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c8004e] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading
           ? "Saving..."
@@ -183,7 +183,7 @@ function Toggle({
         onClick={onChange}
         className={`relative h-7 w-14 rounded-full transition ${
           checked
-            ? "bg-blue-700"
+            ? "bg-[#e4005a]"
             : "bg-slate-300"
         }`}
       >

@@ -153,7 +153,7 @@
 //           icon={
 //             <BriefcaseBusiness
 //               size={18}
-//               className="text-blue-600"
+//               className="text-[#e4005a]"
 //             />
 //           }
 //           label="Category"
@@ -175,7 +175,7 @@
 //           icon={
 //             <BriefcaseBusiness
 //               size={18}
-//               className="text-violet-600"
+//               className="text-[#e4005a]"
 //             />
 //           }
 //           label="Services"
@@ -361,7 +361,7 @@ export default function BusinessDetails() {
           icon={
             <BriefcaseBusiness
               size={18}
-              className="text-blue-600"
+              className="text-[#e4005a]"
             />
           }
           label="Category"
@@ -373,7 +373,7 @@ export default function BusinessDetails() {
           icon={
             <BriefcaseBusiness
               size={18}
-              className="text-violet-600"
+              className="text-[#e4005a]"
             />
           }
           label="Services"

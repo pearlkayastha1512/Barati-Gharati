@@ -31,14 +31,33 @@ export function useVendorProfile() {
       setIsLoading(true);
       setError(null);
 
-      const data = await getVendorByUserId();
+      try {
+        const data = await getVendorByUserId();
 
-      if (!active) {
-        return;
+        if (!active) {
+          return;
+        }
+
+        setVendor(data ?? null);
+        setError(
+          data
+            ? null
+            : "Vendor profile could not be loaded."
+        );
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setVendor(null);
+        setError(
+          "Vendor profile could not be loaded."
+        );
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-
-      setVendor(data ?? null);
-      setIsLoading(false);
     }
 
     void loadVendor();
