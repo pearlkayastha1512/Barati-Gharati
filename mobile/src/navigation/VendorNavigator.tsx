@@ -8,8 +8,8 @@ import ServicesScreen from "../screens/vendor/ServicesScreen";
 import VendorMessagesScreen from "../screens/vendor/VendorMessagesScreen";
 // import VendorProfileScreen from "../screens/vendor/VendorProfileScreen";
 
-// import PortfolioScreen from "../screens/vendor/PortfolioScreen";
-// import ReviewsScreen from "../screens/vendor/ReviewsScreen";
+import PortfolioScreen from "../screens/vendor/PortfolioScreen";
+import ReviewsScreen from "../screens/vendor/ReviewsScreen";
 // import VendorCalendarScreen from "../screens/vendor/VendorCalendarScreen";
 // import EarningsScreen from "../screens/vendor/EarningsScreen";
 // import AnalyticsScreen from "../screens/vendor/AnalyticsScreen";
@@ -53,12 +53,11 @@ export default function VendorNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="VendorTabs" component={VendorTabs} />
-      {/* <Stack.Screen name="Portfolio" component={PortfolioScreen} />
-      <Stack.Screen name="Reviews" component={ReviewsScreen} />
-      <Stack.Screen name="VendorCalendar" component={VendorCalendarScreen} />
+      <Stack.Screen name="Portfolio" component={PortfolioScreen} />
+       <Stack.Screen name="Reviews" component={ReviewsScreen} />
+      {/*<Stack.Screen name="VendorCalendar" component={VendorCalendarScreen} />
       <Stack.Screen name="Earnings" component={EarningsScreen} />
       <Stack.Screen name="Analytics" component={AnalyticsScreen} />
       <Stack.Screen name="Settings" component={VendorSettingsScreen} /> */}
     </Stack.Navigator>
-  );
-}
+  );}
