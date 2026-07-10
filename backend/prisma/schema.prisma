@@ -55,6 +55,10 @@ model User {
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
 
+  warningCount   Int       @default(0)
+  chatMutedUntil DateTime?
+  isChatFlagged  Boolean   @default(false)
+
   sentMessages Message[] @relation("SentMessages")
 
   receivedMessages Message[] @relation("ReceivedMessages")

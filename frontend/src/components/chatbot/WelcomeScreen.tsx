@@ -10,6 +10,8 @@ import {
 
 import { useChatbotStore } from "@/store/chatbotStore";
 
+import { sendChatMessage } from "@/services/chatbot.service";
+
 const actions = [
   {
     title: "Find Vendors",
@@ -41,27 +43,53 @@ export default function WelcomeScreen() {
   const addMessage = useChatbotStore((state) => state.addMessage);
   const setTyping = useChatbotStore((state) => state.setTyping);
 
-  const handleClick = (message: string) => {
-    addMessage({
-      id: crypto.randomUUID(),
-      sender: "user",
-      text: message,
-      createdAt: new Date().toISOString(),
-    });
 
-    setTyping(true);
 
-   setTimeout(() => {
+
+const handleClick = async (message: string) => {
   addMessage({
     id: crypto.randomUUID(),
-    sender: "bot",
-    text: "Hey! 😊 I'm here to help with your wedding planning. To get started, can I ask you a few quick questions?",
+    sender: "user",
+    text: message,
     createdAt: new Date().toISOString(),
   });
 
-  setTyping(false);
-}, 1200);
-  };
+  setTyping(true);
+
+  try {
+    const response = await sendChatMessage(message);
+
+    addMessage({
+      id: crypto.randomUUID(),
+      sender: "bot",
+      text:
+        response?.reply ??
+        response?.message ??
+        "Sorry, I couldn't generate a response.",
+      createdAt: new Date().toISOString(),
+    });
+  } catch {
+    addMessage({
+      id: crypto.randomUUID(),
+      sender: "bot",
+      text:
+        "Sorry, something went wrong.",
+      createdAt: new Date().toISOString(),
+    });
+  } finally {
+    setTyping(false);
+  }
+};
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div

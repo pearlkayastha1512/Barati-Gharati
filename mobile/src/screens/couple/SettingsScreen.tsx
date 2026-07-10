@@ -37,11 +37,42 @@ export default function SettingsScreen() {
   }
 }, [route.params?.openEditModal]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-  };
+  // const handleLogout = async () => {
 
+  //   await logout();
+  //   navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+  // };
+ const handleLogout = () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Auth" }],
+            });
+          } catch (error) {
+            Alert.alert(
+              "Error",
+              "Unable to logout."
+            );
+          }
+        },
+      },
+    ]
+  );
+};
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",

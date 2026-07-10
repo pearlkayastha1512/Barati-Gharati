@@ -12,6 +12,11 @@ import { StatCard } from "../../components/users/home/StatCard";
 import { QuickActionCard } from "../../components/users/home/QuickActionCard";
 import { WeddingProgressChecklist } from "../../components/users/home/WeddingProgressChecklist";
 import { useFavoritesStore } from "../../store/favoritesStore";
+import { ChatbotFAB } from "../../components/users/home/ChatbotFAB";
+import { ChatbotModal } from "../../components/users/home/ChatbotModal";
+import { useReviewStore } from "../../store/reviewStore";
+
+import { useBudgetStore } from "../../store/budgetStore";
 
 // TODO: import API functions once backend is connected, e.g.
 // import { getUserProfile } from "../../api/user.api";
@@ -26,8 +31,14 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [chatbotVisible, setChatbotVisible] = useState(false);
   const checklistItems = useChecklistStore((state) => state.items);
+  const reviewsCount = useReviewStore((state) => state.reviews.length);
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds); 
+   const totalBudget = useBudgetStore((state) => state.totalBudget);        // ← add this line
+  const expenses = useBudgetStore((state) => state.expenses);              // ← add this line
+  const budgetSpent = expenses.reduce((sum, e) => sum + e.amount, 0);       // ← add this line
+  const budgetRemaining = totalBudget - budgetSpent;     
   const checklistDoneCount = checklistItems.filter((item) => item.isDone).length;
   const checklistTotal = checklistItems.length;
   const checklistPercent = checklistTotal > 0 ? Math.round((checklistDoneCount / checklistTotal) * 100) : 0;
@@ -137,8 +148,9 @@ export default function HomeScreen() {
         <View style={styles.statsGrid}>
           <StatCard icon="event" label="Total Bookings" value={0} onPress={() => navigation.navigate("Bookings")} />
           <StatCard icon="favorite" label="Saved Vendors" value={favoriteIds.size} onPress={() => navigation.navigate("Wishlist")} />
-          <StatCard icon="account-balance-wallet" label="Budget Remaining" value="₹0" onPress={() => navigation.navigate("Budget")} />
-          <StatCard icon="star" label="Reviews Given" value={0} />
+           
+         <StatCard icon="account-balance-wallet" label="Budget Remaining" value={`₹${budgetRemaining.toLocaleString("en-IN")}`} onPress={() => navigation.navigate("Budget")} /> 
+          <StatCard icon="star" label="Reviews Given" value={reviewsCount} />
         </View>
 
         {/* Quick Actions */}
@@ -170,7 +182,7 @@ export default function HomeScreen() {
             title="Become a Vendor"
             subtitle="Start growing your business."
             // TODO: navigate to your vendor-registration screen/flow once built
-            onPress={() => navigation.navigate("BecomeVendor")}
+           onPress={() => navigation.navigate("BecomeVendor")}
           />
         </View>
 
@@ -256,6 +268,8 @@ export default function HomeScreen() {
       </ScrollView>
 
       <Sidebar visible={sidebarVisible} onClose={() => setSidebarVisible(false)} />
+        <ChatbotFAB onPress={() => setChatbotVisible(true)} />
+      <ChatbotModal visible={chatbotVisible} onClose={() => setChatbotVisible(false)} />
     </SafeAreaView>
   );
 }

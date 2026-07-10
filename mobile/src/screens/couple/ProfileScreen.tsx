@@ -4,41 +4,158 @@ import { Avatar, Button, Card, Divider, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+
+import { useSettingsStore } from "../../store/settingsStore";
 import { ProfileStatTile } from "../../components/users/profile/ProfileStatTile";
 import { ProfileInfoSection } from "../../components/users/profile/ProfileInfoSection";
 import { ProfileQuickActionRow } from "../../components/users/profile/ProfileQuickActionRow";
+import { Alert } from "react-native";
+import { useAuthStore } from "../../store/authStore";
 import { styles } from "./styles/ProfileScreen.styles";
 
-// TODO: import API functions once backend is connected
-// import { getProfile } from "../../api/user.api";
+
+// TODO: Replace local Zustand data with getProfile() API response.
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
 
-  // TODO: replace with real user data from useAuthStore / getProfile() once connected
-  const user = {
-    name: "Pearl Kayastha",
-    initials: "PK",
-    email: "pearl@example.com",
-    phone: "8527636888",
-    gender: undefined as string | undefined,
-    occupation: undefined as string | undefined,
-    weddingDate: undefined as string | undefined,
-    venue: undefined as string | undefined,
-    guests: undefined as string | undefined,
-    theme: undefined as string | undefined,
-    address: undefined as string | undefined,
-    city: undefined as string | undefined,
-    state: undefined as string | undefined,
-    country: undefined as string | undefined,
-    profileCompletion: 19,
-    partnerStatus: "Pending",
-    budget: "₹10.0L",
-  };
+const { profile } = useSettingsStore();
+
+const { logout } = useAuthStore();
+
+  const initials =
+    profile.fullName
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
+
+      const handleLogout = () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: "Auth",
+                },
+              ],
+            });
+          } catch (error) {
+            Alert.alert(
+              "Error",
+              "Unable to logout."
+            );
+          }
+        },
+      },
+    ]
+  );
+};
+
+  const sections = [
+    {
+      title: "Personal Information",
+      rows: [
+        { label: "Full Name", value: profile.fullName },
+        { label: "Email", value: profile.email },
+        { label: "Phone", value: profile.phone },
+        { label: "Gender", value: profile.gender },
+      ],
+    },
+    {
+      title: "Partner Information",
+      rows: [
+        { label: "Partner Name", value: profile.partnerName },
+        { label: "Partner Email", value: profile.partnerEmail },
+        { label: "Partner Phone", value: profile.partnerPhone },
+        { label: "Occupation", value: profile.occupation },
+      ],
+    },
+    {
+      title: "Wedding Information",
+      rows: [
+        { label: "Wedding Date", value: profile.weddingDate },
+        { label: "Venue", value: profile.venue },
+        { label: "Guest Count", value: profile.guestCount },
+        { label: "Theme", value: profile.theme },
+      ],
+    },
+    {
+      title: "Contact Information",
+      rows: [
+        { label: "Address", value: profile.address },
+        { label: "City", value: profile.city },
+        { label: "State", value: profile.state },
+        { label: "Country", value: profile.country },
+      ],
+    },
+  ];
+
+  const stats: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  value: string;
+  sublabel: string;
+}[] = [
+  {
+    icon: "person",
+    iconBg: "#E3ECFF",
+    iconColor: "#3A6FE8",
+    label: "Profile",
+    value: "100%",
+    sublabel: "Completed",
+  },
+  {
+    icon: "favorite",
+    iconBg: "#FDEEF3",
+    iconColor: "#C2185B",
+    label: "Partner",
+    value: profile.partnerName ? "Added" : "Pending",
+    sublabel: "Information",
+  },
+  {
+    icon: "event-available",
+    iconBg: "#E8F8F0",
+    iconColor: "#22B07D",
+    label: "Wedding",
+    value: profile.weddingDate || "--",
+    sublabel: "Not Set",
+  },
+  {
+    icon: "account-balance-wallet",
+    iconBg: "#FEF6E0",
+    iconColor: "#D9A404",
+    label: "Budget",
+    value: "₹10.0L",
+    sublabel: "Planning",
+  },
+];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Hero card */}
+  <ScrollView
+    style={styles.container}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingBottom: 120,
+    }}
+  >
       <LinearGradient
         colors={["#3AB6E8", "#3A6FE8"]}
         start={{ x: 0, y: 0 }}
@@ -48,131 +165,95 @@ export default function ProfileScreen() {
         <View style={styles.heroTopRow}>
           <Avatar.Text
             size={64}
-            label={user.initials}
+            label={initials}
             style={styles.avatar}
             labelStyle={{ color: "#3A6FE8", fontWeight: "700" }}
           />
+
           <View style={{ marginLeft: 14 }}>
-            <Text style={styles.heroName}>{user.name}</Text>
+            <Text style={styles.heroName}>
+              {profile.fullName || "User"}
+            </Text>
+
             <Text style={styles.heroRole}>Customer</Text>
           </View>
         </View>
 
         <View style={styles.heroInfoRow}>
-          <MaterialIcons name="verified-user" size={16} color="#fff" />
-          <Text style={styles.heroInfoText}>Profile Verified</Text>
-        </View>
-        <View style={styles.heroInfoRow}>
-          <MaterialIcons name="event" size={16} color="#fff" />
+          <MaterialIcons
+            name="verified-user"
+            size={16}
+            color="#fff"
+          />
           <Text style={styles.heroInfoText}>
-            {user.weddingDate ? user.weddingDate : "Wedding date not set"}
+            Profile Verified
+          </Text>
+        </View>
+
+        <View style={styles.heroInfoRow}>
+          <MaterialIcons
+            name="event"
+            size={16}
+            color="#fff"
+          />
+          <Text style={styles.heroInfoText}>
+            {profile.weddingDate || "Wedding date"}
           </Text>
         </View>
 
         <Button
           mode="contained"
+          icon="pencil"
           style={styles.editButton}
           labelStyle={styles.editButtonLabel}
-          icon="pencil"
-          onPress={() => navigation.navigate("EditProfile")}
+          onPress={() =>
+            navigation.navigate("Settings", {
+              openEditModal: true,
+            })
+          }
         >
           Edit Profile
         </Button>
       </LinearGradient>
 
-      {/* Stat tiles */}
       <View style={styles.statsGrid}>
-        <ProfileStatTile
-          icon="person"
-          iconBg="#E3ECFF"
-          iconColor="#3A6FE8"
-          label="Profile"
-          value={`${user.profileCompletion}%`}
-          sublabel="Completed"
-        />
-        <ProfileStatTile
-          icon="favorite"
-          iconBg="#FDEEF3"
-          iconColor="#C2185B"
-          label="Partner"
-          value={user.partnerStatus}
-          sublabel="Information"
-        />
-        <ProfileStatTile
-          icon="event-available"
-          iconBg="#E8F8F0"
-          iconColor="#22B07D"
-          label="Wedding"
-          value={user.weddingDate ? user.weddingDate : "--"}
-          sublabel="Not Set"
-        />
-        <ProfileStatTile
-          icon="account-balance-wallet"
-          iconBg="#FEF6E0"
-          iconColor="#D9A404"
-          label="Budget"
-          value={user.budget}
-          sublabel="Planning"
-        />
+        {stats.map((item) => (
+          <ProfileStatTile
+            key={item.label}
+            {...item}
+          />
+        ))}
       </View>
 
-      {/* Info sections */}
-      <View style={styles.sectionRow}>
-        <ProfileInfoSection
-          title="Personal Information"
-          rows={[
-            { label: "Full Name", value: user.name },
-            { label: "Email", value: user.email },
-            { label: "Phone", value: user.phone },
-            { label: "Gender", value: user.gender },
-          ]}
-        />
-      </View>
+      {sections.map((section) => (
+        <View
+          key={section.title}
+          style={styles.sectionRow}
+        >
+          <ProfileInfoSection
+            title={section.title}
+            rows={section.rows}
+          />
+        </View>
+      ))}
 
-      <View style={styles.sectionRow}>
-        <ProfileInfoSection
-          title="Partner Information"
-          rows={[
-            { label: "Partner Name", value: undefined },
-            { label: "Email", value: undefined },
-            { label: "Phone", value: undefined },
-            { label: "Occupation", value: user.occupation },
-          ]}
-        />
-      </View>
-
-      <View style={styles.sectionRow}>
-        <ProfileInfoSection
-          title="Wedding Information"
-          rows={[
-            { label: "Wedding Date", value: user.weddingDate },
-            { label: "Venue", value: user.venue },
-            { label: "Guests", value: user.guests },
-            { label: "Theme", value: user.theme },
-          ]}
-        />
-      </View>
-
-      <View style={styles.sectionRow}>
-        <ProfileInfoSection
-          title="Contact Information"
-          rows={[
-            { label: "Address", value: user.address },
-            { label: "City", value: user.city },
-            { label: "State", value: user.state },
-            { label: "Country", value: user.country },
-          ]}
-        />
-      </View>
-
-      {/* Quick actions */}
       <View style={styles.sectionRow}>
         <Card style={styles.quickActionsCard}>
-          <ProfileQuickActionRow icon="favorite-border" label="Wishlist" onPress={() => navigation.navigate("Wishlist")} />
+          <ProfileQuickActionRow
+            icon="favorite-border"
+            label="Wishlist"
+            onPress={() => navigation.navigate("Wishlist")}
+          />
           <Divider />
-          <ProfileQuickActionRow icon="chat-bubble-outline" label="Messages" onPress={() => {}} />
-          <Divider />
-          <ProfileQuickActionRow icon="settings" label="Settings" onPress={() => navigation.navigate("Settings")} />
+
+          
+          
+
+          <ProfileQuickActionRow
+            icon="settings"
+            label="Settings"
+            onPress={() => navigation.navigate("Settings")}
+          />
         </Card>
       </View>
 
@@ -184,16 +265,16 @@ export default function ProfileScreen() {
         Become a Vendor
       </Button>
 
-      <Button
-        mode="outlined"
-        style={styles.logoutButton}
-        textColor="#E53935"
-        onPress={() => {}}
-      >
-        Logout
-      </Button>
+     <Button
+  mode="outlined"
+  style={styles.logoutButton}
+  textColor="#E53935"
+  onPress={handleLogout}
+>
+  Logout
+</Button>
 
-      <View style={{ height: 30 }} />
+      
     </ScrollView>
   );
 }

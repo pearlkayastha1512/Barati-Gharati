@@ -120,10 +120,7 @@ export default function VendorListScreen() {
               navigation.navigate("VendorDetails", { vendorId: item.id })
             }
             onBookNow={() =>
-              navigation.navigate("Bookings", {
-                screen: "BookingScreen", // TODO: confirm this matches your actual screen name inside the Bookings tab
-                params: { vendorId: item.id },
-              })
+              navigation.navigate("VendorDetails", { vendorId: item.id })
             }
           />
         )}

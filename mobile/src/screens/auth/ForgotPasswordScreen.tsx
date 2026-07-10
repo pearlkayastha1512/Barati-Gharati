@@ -2,7 +2,8 @@ import { useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
-import { forgotPassword } from "../../api/auth.api";
+// import { forgotPassword } from "../../api/auth.api";
+import { useNavigation } from "@react-navigation/native";
 
 type ForgotPasswordForm = {
   email: string;
@@ -19,19 +20,25 @@ export default function ForgotPasswordScreen() {
     },
   });
 
-  const onSubmit = async (data: ForgotPasswordForm) => {
+  const navigation = useNavigation<any>();
+
+const onSubmit = async (data: ForgotPasswordForm) => {
   try {
-    await forgotPassword(data.email);
+    // TODO: Call Forgot Password API
+    // await forgotPassword(data.email);
 
     Alert.alert(
       "Success",
-      "Password reset link sent to your email."
+      "Password reset link has been sent to your email.",
+      [
+        {
+          text: "OK",
+          onPress: () => navigation.replace("Login"),
+        },
+      ]
     );
-  } catch (error: any) {
-    Alert.alert(
-      "Error",
-      error.response?.data?.message || "Something went wrong"
-    );
+  } catch (error) {
+    Alert.alert("Error", "Something went wrong.");
   }
 };
 

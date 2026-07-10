@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import { useState } from "react";
@@ -69,6 +70,7 @@
 //   );
 // }
 
+
 "use client";
 
 import { useState } from "react";
@@ -76,6 +78,9 @@ import { SendHorizonal } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
 import { useMessageStore } from "@/store/messageStore";
+import { toast } from "sonner";
+
+import { validateMessage } from "@/utils/messageValidator";
 
 export default function ChatInput() {
   const [text, setText] = useState("");
@@ -111,11 +116,11 @@ export default function ChatInput() {
       return;
     }
 
-    await sendNewMessage(
-      selectedConversation,
-      receiverId,
-      text
-    );
+await sendNewMessage(
+  selectedConversation,
+  receiverId,
+  text
+);
 
     setText("");
   };

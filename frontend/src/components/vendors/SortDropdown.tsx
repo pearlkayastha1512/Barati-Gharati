@@ -24,7 +24,7 @@ export default function SortDropdown() {
             border
             border-white/10
             bg-white/[0.08]
-            text-rose-50
+           
             pl-10
             pr-10
             text-sm
@@ -32,7 +32,7 @@ export default function SortDropdown() {
             outline-none
             transition
             backdrop-blur
-            focus:border-rose-300
+            focus:border-rose-300 text-gray-700
           "
         >
           <option value="Popularity">Popularity</option>
