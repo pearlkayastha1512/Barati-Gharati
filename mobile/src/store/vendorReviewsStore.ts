@@ -1,33 +1,56 @@
 import { create } from "zustand";
 import { VendorReviewRecord } from "../types/vendorReview";
-
-// TODO: import API functions once wired up
-// import { getReviewsByVendor, replyToReview } from "../api/review.api";
+import {
+  getReviewsByVendor,
+  replyToReview,
+} from "../api/vendorReviews.api";
 
 interface VendorReviewsState {
   reviews: VendorReviewRecord[];
-  setReviews: (reviews: VendorReviewRecord[]) => void;
-  submitReply: (reviewId: string, reply: string) => void;
+  isLoading: boolean;
+  error: string | null;
+
+  fetchReviews: (vendorId: string) => Promise<void>;
+  submitReply: (reviewId: string, reply: string) => Promise<void>;
 }
 
-// TODO: on mount (in ReviewsScreen), call:
-//   const data = await getReviewsByVendor(vendorId);  // GET /reviews/vendor/:vendorId
-//   setReviews(data);
-// submitReply should call:
-//   await replyToReview(reviewId, { reply });  // PATCH /reviews/:id/reply
-// then update local state optimistically (as below), with rollback on failure
-export const useVendorReviewsStore = create<VendorReviewsState>((set) => ({
-  reviews: [],
+export const useVendorReviewsStore = create<VendorReviewsState>(
+  (set, get) => ({
+    reviews: [],
+    isLoading: false,
+    error: null,
 
-  setReviews: (reviews) => set({ reviews }),
+    fetchReviews: async (vendorId: string) => {
+      set({ isLoading: true, error: null });
 
-  submitReply: (reviewId, reply) => {
-    set((state) => ({
-      reviews: state.reviews.map((r) =>
+      try {
+        const data = await getReviewsByVendor(vendorId);
+        set({ reviews: data, isLoading: false });
+      } catch (error) {
+        console.log("Failed to fetch reviews", error);
+        set({ isLoading: false, error: "Failed to load reviews" });
+      }
+    },
+
+    submitReply: async (reviewId: string, reply: string) => {
+  try {
+    const updated = await replyToReview(reviewId, reply);
+
+    set({
+      reviews: get().reviews.map((r) =>
         r.id === reviewId
-          ? { ...r, reply, repliedAt: new Date().toISOString() }
-          : r
+          ? {
+              ...r,
+              reply: updated.reply,
+              repliedAt: updated.repliedAt,
+            }
+          : r,
       ),
-    }));
-  },
-}));
+    });
+  } catch (error) {
+    console.log("Failed to submit reply", error);
+    throw error;
+  }
+},
+  }),
+);

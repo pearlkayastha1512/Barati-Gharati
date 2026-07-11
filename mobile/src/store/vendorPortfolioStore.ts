@@ -1,64 +1,89 @@
 import { create } from "zustand";
-import { PortfolioItemRecord, PortfolioCategory } from "../types/vendorPortfolio";
+
+import { PortfolioItemRecord } from "../types/vendorPortfolio";
+
+import {
+  getMyPortfolio,
+  createPortfolio,
+  deletePortfolio,
+  updatePortfolio,
+} from "../api/portfolio.api";
 
 interface VendorPortfolioState {
   items: PortfolioItemRecord[];
-  addItem: (item: Omit<PortfolioItemRecord, "id" | "createdAt">) => void;
-  deleteItem: (id: string) => void;
+
+  fetchPortfolio: () => Promise<void>;
+
+  addItem: (formData: FormData) => Promise<void>;
+
+  updateItem: (
+    id: string,
+    data: {
+      title?: string;
+      category?: string;
+      description?: string;
+    }
+  ) => Promise<void>;
+
+  deleteItem: (id: string) => Promise<void>;
 }
 
-export const useVendorPortfolioStore = create<VendorPortfolioState>((set) => ({
-  // ==============================
-  // TODO: Fetch vendor's portfolio items from API on screen mount instead
-  // of starting empty here. Something like:
-  //
-  // const response = await getVendorPortfolio(vendorId);
-  // set({ items: response.data });
-  //
-  // For now, starts empty — vendor sees "No Portfolio Found" until they
-  // upload their first item via the Upload Portfolio form.
-  // ==============================
+export const useVendorPortfolioStore =
+create<VendorPortfolioState>((set) => ({
   items: [],
 
-  addItem: (item) => {
-    // ==============================
-    // TODO: Call Upload Portfolio API here instead of mutating local state.
-    // This will likely be a multipart/form-data request since it includes
-    // an image file, e.g.:
-    //
-    // const formData = new FormData();
-    // formData.append("title", item.title);
-    // formData.append("category", item.category);
-    // formData.append("description", item.description);
-    // if (item.imageUri) {
-    //   formData.append("image", { uri: item.imageUri, name: "photo.jpg", type: "image/jpeg" } as any);
-    // }
-    // const response = await uploadVendorPortfolioItem(formData);
-    // set((state) => ({ items: [...state.items, response.data] }));
-    //
-    // Keep the local-state fallback below until the API is wired in.
-    // ==============================
-    set((state) => ({
-      items: [
-        ...state.items,
-        {
-          ...item,
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    }));
+  fetchPortfolio: async () => {
+    try {
+      const items = await getMyPortfolio();
+
+      set({
+        items,
+      });
+    } catch (err) {
+      console.log("Fetch Portfolio Error", err);
+    }
   },
 
-  deleteItem: (id) => {
-    // ==============================
-    // TODO: Call Delete Portfolio Item API here instead of mutating local state.
-    //
-    // await deleteVendorPortfolioItem(id);
-    // set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
-    // ==============================
-    set((state) => ({
-      items: state.items.filter((i) => i.id !== id),
-    }));
+  addItem: async (formData) => {
+    try {
+      const item = await createPortfolio(formData);
+
+      set((state) => ({
+        items: [item, ...state.items],
+      }));
+    } catch (err) {
+      console.log("Create Portfolio Error", err);
+      throw err;
+    }
+  },
+
+  updateItem: async (id, data) => {
+    try {
+      const updated = await updatePortfolio(id, data);
+
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.id === id ? updated : item
+        ),
+      }));
+    } catch (err) {
+      console.log("Update Portfolio Error", err);
+      throw err;
+    }
+  },
+
+  deleteItem: async (id) => {
+    try {
+      await deletePortfolio(id);
+
+      set((state) => ({
+        items: state.items.filter(
+          (item) => item.id !== id
+        ),
+      }));
+    } catch (err) {
+      console.log("Delete Portfolio Error", err);
+      throw err;
+    }
   },
 }));
