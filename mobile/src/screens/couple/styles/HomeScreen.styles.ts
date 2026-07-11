@@ -35,6 +35,10 @@ export const styles = StyleSheet.create({
     backgroundColor: "#C2185B",
   },
   avatar: { width: 40, height: 40, borderRadius: 20 },
+  avatarPlaceholder: {
+  justifyContent: "center",
+  alignItems: "center",
+},
 
   weddingCard: {
     flexDirection: "row",

@@ -59,6 +59,11 @@ export function PortfolioUploadModal({ visible, onClose, onSubmit }: Props) {
     }
     onSubmit({ title: title.trim(), category, description: description.trim(), imageUri });
     onClose();
+    // TODO: once connected, the parent's onSubmit (PortfolioScreen) will need to turn
+    // `imageUri` (a local file:// uri from ImagePicker) into a { uri, name, type } object
+    // before passing it to createPortfolioItem(dto, file) — see portfolio.api.ts.
+    // This modal itself needs no changes — title/category/description/imageUri
+    // already match what CreatePortfolioDto needs.
   };
 
   return (

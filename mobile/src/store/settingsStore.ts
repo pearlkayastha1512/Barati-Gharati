@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getMyProfile, updateMyProfile, changeMyPassword } from "../api/users.api";
 
 export type ProfileData = {
   fullName: string;
@@ -12,7 +13,7 @@ export type ProfileData = {
   partnerName: string;
   partnerEmail: string;
   partnerPhone: string;
-  weddingDate: string; // dd-mm-yyyy
+  weddingDate: string;
   venue: string;
   guestCount: string;
   occupation: string;
@@ -21,6 +22,7 @@ export type ProfileData = {
 
 interface SettingsState {
   profile: ProfileData;
+  isLoading: boolean;
   notifications: {
     emailNotifications: boolean;
     bookingUpdates: boolean;
@@ -37,35 +39,37 @@ interface SettingsState {
     twoFactorAuth: boolean;
     loginAlerts: boolean;
   };
-  updateProfile: (data: Partial<ProfileData>) => void;
+  fetchProfile: () => Promise<void>;
+  updateProfile: (data: Partial<ProfileData>) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   toggleNotification: (key: keyof SettingsState["notifications"]) => void;
   togglePrivacy: (key: keyof SettingsState["privacy"]) => void;
   toggleSecurity: (key: keyof SettingsState["security"]) => void;
 }
 
-// TODO: once backend is connected, replace local state with API-backed state:
-// - on mount, fetch via getUserSettings() / getUserProfile()
-// - updateProfile should call updateUserProfile(data)
-// - each toggle should call updateNotificationPrefs() / updatePrivacyPrefs() / updateSecurityPrefs()
-export const useSettingsStore = create<SettingsState>((set) => ({
-  profile: {
-    fullName: "user29",
-    email: "user@gmail.com",
-    phone: "8527636888",
-    address: "",
-    city: "",
-    state: "",
-    gender: "",
-    country: "",
-    partnerName: "",
-    partnerEmail: "",
-    partnerPhone: "",
-    weddingDate: "",
-    venue: "",
-    guestCount: "0",
-    occupation: "",
-    theme: "",
-  },
+const emptyProfile: ProfileData = {
+  fullName: "",
+  email: "",
+  phone: "",
+  address: "",
+  city: "",
+  state: "",
+  gender: "",
+  country: "",
+  partnerName: "",
+  partnerEmail: "",
+  partnerPhone: "",
+  weddingDate: "",
+  venue: "",
+  guestCount: "0",
+  occupation: "",
+  theme: "",
+};
+
+export const useSettingsStore = create<SettingsState>((set, get) => ({
+  profile: emptyProfile,
+  isLoading: false,
+
   notifications: {
     emailNotifications: true,
     bookingUpdates: true,
@@ -83,7 +87,58 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     loginAlerts: true,
   },
 
-  updateProfile: (data) => set((state) => ({ profile: { ...state.profile, ...data } })),
+  // Only pulls name/email/phone from backend — the rest of ProfileData
+  // has no DB columns yet, so those fields stay whatever they were locally.
+  fetchProfile: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await getMyProfile();
+      set((state) => ({
+        profile: {
+          ...state.profile,
+          fullName: data.name,
+          email: data.email,
+          phone: data.phone ?? "",
+        },
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.log("FETCH PROFILE ERROR =>", error);
+      set({ isLoading: false });
+    }
+  },
+
+  // Only name + phone are sent to the backend; other fields update locally only.
+  updateProfile: async (data) => {
+    const previous = get().profile;
+
+    set((state) => ({ profile: { ...state.profile, ...data } }));
+
+    const backendPayload: { name?: string; phone?: string } = {};
+    if (data.fullName !== undefined) backendPayload.name = data.fullName;
+    if (data.phone !== undefined) backendPayload.phone = data.phone;
+
+    if (Object.keys(backendPayload).length === 0) return; // nothing backend-relevant changed
+
+    try {
+      await updateMyProfile(backendPayload);
+    } catch (error) {
+      console.log("UPDATE PROFILE ERROR =>", error);
+      set({ profile: previous }); // rollback
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      await changeMyPassword({ currentPassword, newPassword });
+      return { success: true };
+    } catch (error: any) {
+      console.log("CHANGE PASSWORD ERROR =>", error);
+      const message = error?.response?.data?.message ?? "Unable to change password.";
+      return { success: false, error: message };
+    }
+  },
+
   toggleNotification: (key) =>
     set((state) => ({
       notifications: { ...state.notifications, [key]: !state.notifications[key] },

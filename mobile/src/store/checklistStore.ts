@@ -1,4 +1,12 @@
 import { create } from "zustand";
+import {
+  getTimeline,
+  createTimelineItem,
+  updateTimelineStatus,
+  deleteTimelineItem,
+  BackendTimelineItem,
+  BackendPriority,
+} from "../api/timeline.api";
 
 export type Priority = "Low" | "Medium" | "High";
 
@@ -7,7 +15,7 @@ export type ChecklistItem = {
   task: string;
   description?: string;
   priority: Priority;
-  dueDate?: string; // ISO date string, e.g. "2026-12-25"
+  dueDate?: string; // "dd-mm-yyyy" for display
   isDone: boolean;
 };
 
@@ -15,47 +23,111 @@ type NewChecklistItemInput = {
   task: string;
   description?: string;
   priority?: Priority;
-  dueDate?: string;
+  dueDate?: string; // "dd-mm-yyyy" from the date picker
 };
+
+const priorityToBackend = (p: Priority): BackendPriority =>
+  p.toUpperCase() as BackendPriority;
+
+const priorityFromBackend = (p: BackendPriority): Priority =>
+  (p.charAt(0) + p.slice(1).toLowerCase()) as Priority;
+
+// Convert "dd-mm-yyyy" -> "yyyy-mm-dd" for the API
+const toIsoDate = (ddmmyyyy: string): string => {
+  const [dd, mm, yyyy] = ddmmyyyy.split("-");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// Convert backend ISO date -> "dd-mm-yyyy" for display
+const fromIsoDate = (iso: string): string => {
+  const date = new Date(iso);
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+};
+
+const mapFromBackend = (item: BackendTimelineItem): ChecklistItem => ({
+  id: item.id,
+  task: item.title,
+  description: item.description ?? undefined,
+  priority: priorityFromBackend(item.priority),
+  dueDate: fromIsoDate(item.date),
+  isDone: item.status === "COMPLETED",
+});
 
 interface ChecklistState {
   items: ChecklistItem[];
-  addItem: (input: NewChecklistItemInput) => void;
-  toggleItem: (id: string) => void;
-  removeItem: (id: string) => void;
+  isLoading: boolean;
+
+  fetchChecklist: () => Promise<void>;
+  addItem: (input: NewChecklistItemInput) => Promise<void>;
+  toggleItem: (id: string) => Promise<void>;
+  removeItem: (id: string) => Promise<void>;
 }
 
-// TODO: once backend is connected, replace local array with API-backed state:
-// - on mount (e.g. in App.tsx or a loader), fetch via getChecklist() and setItems
-// - addItem should call createChecklistItem(input), then append the returned item
-// - toggleItem should call toggleChecklistItem(id, !isDone) — optimistic update with rollback on failure
-// - removeItem should call deleteChecklistItem(id) — optimistic update with rollback on failure
-export const useChecklistStore = create<ChecklistState>((set) => ({
-  items: [], // starts empty — no seed/sample tasks until the user adds their own or the API returns real ones
+export const useChecklistStore = create<ChecklistState>((set, get) => ({
+  items: [],
+  isLoading: false,
 
-  addItem: (input) => {
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      task: input.task,
-      description: input.description,
-      priority: input.priority ?? "Medium",
-      dueDate: input.dueDate,
-      isDone: false,
-    };
-    set((state) => ({ items: [newItem, ...state.items] }));
+  fetchChecklist: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await getTimeline();
+      set({ items: response.data.map(mapFromBackend), isLoading: false });
+    } catch (error) {
+      console.log("FETCH TIMELINE ERROR =>", error);
+      set({ isLoading: false });
+    }
   },
 
-  toggleItem: (id) => {
+  addItem: async (input) => {
+    try {
+      const response = await createTimelineItem({
+        title: input.task,
+        date: input.dueDate ? toIsoDate(input.dueDate) : new Date().toISOString().split("T")[0],
+        description: input.description,
+        priority: input.priority ? priorityToBackend(input.priority) : undefined,
+      });
+      set((state) => ({ items: [mapFromBackend(response.data), ...state.items] }));
+    } catch (error) {
+      console.log("ADD TIMELINE ITEM ERROR =>", error);
+    }
+  },
+
+  toggleItem: async (id) => {
+    const previousItems = get().items;
+    const target = previousItems.find((item) => item.id === id);
+    if (!target) return;
+
+    const newStatus = target.isDone ? "PENDING" : "COMPLETED";
+
     set((state) => ({
       items: state.items.map((item) =>
         item.id === id ? { ...item, isDone: !item.isDone } : item
       ),
     }));
+
+    try {
+      await updateTimelineStatus(id, newStatus);
+    } catch (error) {
+      console.log("TOGGLE TIMELINE ITEM ERROR =>", error);
+      set({ items: previousItems });
+    }
   },
 
-  removeItem: (id) => {
+  removeItem: async (id) => {
+    const previousItems = get().items;
+
     set((state) => ({
       items: state.items.filter((item) => item.id !== id),
     }));
+
+    try {
+      await deleteTimelineItem(id);
+    } catch (error) {
+      console.log("REMOVE TIMELINE ITEM ERROR =>", error);
+      set({ items: previousItems });
+    }
   },
 }));

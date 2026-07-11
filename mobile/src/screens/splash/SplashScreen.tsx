@@ -254,36 +254,34 @@ export default function SplashScreen() {
     let timer: ReturnType<typeof setTimeout>;
 
     const initializeApp = async () => {
-      try {
-        await restoreSession();
+  try {
+    // await restoreSession(); // TEMP: disabled so Auth screen always shows during dev
 
-        const onboardingCompleted =
-          await getOnboardingStatus();
+    const onboardingCompleted = await getOnboardingStatus();
 
-        timer = setTimeout(() => {
-          const { isAuthenticated, user } =
-            useAuthStore.getState();
+    timer = setTimeout(() => {
+      const { isAuthenticated, user } = useAuthStore.getState();
 
-          if (isAuthenticated && user) {
-            if (user.role === UserRole.VENDOR) {
-              navigation.navigate("Vendor");
-              return;
-            }
+      if (isAuthenticated && user) {
+        if (user.role === UserRole.VENDOR) {
+          navigation.navigate("Vendor");
+          return;
+        }
 
-            navigation.navigate("Couple");
-            return;
-          }
-
-          if (onboardingCompleted) {
-            navigation.navigate("Auth");
-          } else {
-            navigation.navigate("Onboarding");
-          }
-        }, 2500);
-      } catch (error) {
-        navigation.navigate("Auth");
+        navigation.navigate("Couple");
+        return;
       }
-    };
+
+      if (onboardingCompleted) {
+        navigation.navigate("Auth");
+      } else {
+        navigation.navigate("Onboarding");
+      }
+    }, 2500);
+  } catch (error) {
+    navigation.navigate("Auth");
+  }
+};
 
     initializeApp();
 

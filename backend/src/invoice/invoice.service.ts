@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 // ==========================================================
@@ -424,6 +425,24 @@ export class InvoiceService {
           align: 'center',
         });
     }
+
+    doc.text(
+      company.phone,
+      220,
+      805,
+    );
+
+    doc.text(
+      company.website,
+      380,
+      805,
+    );
+
+    doc.text(
+      company.address,
+      40,
+      822,
+    );
 
     doc.end();
     await finished;

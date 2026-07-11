@@ -17,6 +17,7 @@ import { ChatbotModal } from "../../components/users/home/ChatbotModal";
 import { useReviewStore } from "../../store/reviewStore";
 
 import { useBudgetStore } from "../../store/budgetStore";
+import { useAuthStore } from "../../store/authStore";
 
 // TODO: import API functions once backend is connected, e.g.
 // import { getUserProfile } from "../../api/user.api";
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [chatbotVisible, setChatbotVisible] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const checklistItems = useChecklistStore((state) => state.items);
   const reviewsCount = useReviewStore((state) => state.reviews.length);
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds); 
@@ -103,7 +105,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={{ marginLeft: 12 }}>
               {/* TODO: replace "Pearl" with user.name */}
-              <Text style={styles.greeting}>Hello, <Text style={{ fontWeight: "700" }}>Pearl</Text> 💐</Text>
+              <Text style={styles.greeting}>Hello, <Text style={{ fontWeight: "700" }}>{user?.name ?? "Guest"}</Text> 💐</Text>
               <Text style={styles.subGreeting}>Let's plan your dream wedding</Text>
             </View>
           </View>
@@ -120,9 +122,9 @@ export default function HomeScreen() {
 
         {/* Hero Card — Welcome + primary actions (matches website dashboard) */}
         <LinearGradient colors={["#EC407A", "#C2185B"]} style={styles.weddingCard}>
-          <Text style={styles.weddingLabel}>Good Morning 🌸</Text>
-          {/* TODO: replace "Pearl" with user.name */}
-          <Text style={[styles.weddingDate, { color: "#fff", fontSize: 22 }]}>Welcome back, Pearl 👋</Text>
+          {/* <Text style={styles.weddingLabel}>Good Morning 🌸</Text> */}
+          
+          <Text style={[styles.weddingDate, { color: "#fff", fontSize: 22 }]}>Welcome back, {user?.name ?? "Guest"} 👋</Text>
           <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 6 }}>
             Continue planning your dream wedding with trusted vendors.
           </Text>

@@ -1,119 +1,5 @@
-
-// import { ScrollView, Text, View } from "react-native";
-
-// const badge = {
-//   name: "Bronze",
-//   limit: 5,
-//   used: 0,
-//   color: "#92400e",
-//   bg: "#fef3c7",
-// };
-
-// export default function VendorHomeScreen() {
-//   const remaining = Math.max(
-//     badge.limit - badge.used,
-//     0
-//   );
-
-//   return (
-//     <ScrollView
-//       style={{
-//         flex: 1,
-//         backgroundColor: "#f8fafc",
-//       }}
-//       contentContainerStyle={{
-//         padding: 20,
-//         gap: 16,
-//       }}
-//     >
-//       <Text
-//         style={{
-//           fontSize: 28,
-//           fontWeight: "800",
-//           color: "#0f172a",
-//         }}
-//       >
-//         Vendor Dashboard
-//       </Text>
-
-//       <View
-//         style={{
-//           borderRadius: 24,
-//           backgroundColor: "#ffffff",
-//           padding: 20,
-//           shadowColor: "#000",
-//           shadowOpacity: 0.08,
-//           shadowRadius: 12,
-//           elevation: 3,
-//         }}
-//       >
-//         <Text
-//           style={{
-//             fontSize: 14,
-//             fontWeight: "700",
-//             color: "#64748b",
-//           }}
-//         >
-//           Vendor Badge
-//         </Text>
-
-//         <View
-//           style={{
-//             marginTop: 12,
-//             alignSelf: "flex-start",
-//             borderRadius: 999,
-//             backgroundColor: badge.bg,
-//             paddingHorizontal: 14,
-//             paddingVertical: 8,
-//           }}
-//         >
-//           <Text
-//             style={{
-//               color: badge.color,
-//               fontWeight: "800",
-//             }}
-//           >
-//             {badge.name} Badge
-//           </Text>
-//         </View>
-
-//         <Text
-//           style={{
-//             marginTop: 18,
-//             fontSize: 32,
-//             fontWeight: "900",
-//             color: "#0f172a",
-//           }}
-//         >
-//           {badge.used}/{badge.limit}
-//         </Text>
-
-//         <Text
-//           style={{
-//             marginTop: 4,
-//             color: "#64748b",
-//             fontSize: 15,
-//           }}
-//         >
-//           bookings received this month
-//         </Text>
-
-//         <Text
-//           style={{
-//             marginTop: 12,
-//             color: "#16a34a",
-//             fontWeight: "700",
-//           }}
-//         >
-//           {remaining} bookings left
-//         </Text>
-//       </View>
-//     </ScrollView>
-//   );
-// }
-
-import React, { useState } from "react";
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -127,21 +13,83 @@ import { QuickActionCard } from "../../components/vendors/dashboard/QuickActionC
 import { SectionCard } from "../../components/vendors/dashboard/SectionCard";
 import { StarRating } from "../../components/vendors/dashboard/StarRating";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
-
-import {
-  MOCK_STATS,
-  MOCK_MONTH_SUMMARY,
-  MOCK_PERFORMANCE,
-  MOCK_REVENUE_OVERVIEW,
-  MOCK_UPCOMING_BOOKINGS,
-  MOCK_REVIEWS,
-} from "../../constants/mockVendorData";
-
-const VENDOR_NAME = "Preeti"; // TODO: pull from authStore once connected
+import { useVendorDashboardStore } from "../../store/vendorDashboardStore";
 
 export default function VendorHomeScreen() {
   const navigation = useNavigation<any>();
   const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  const {
+    isLoading,
+    isApproved,
+    approvalChecked,
+    vendorName,
+    bookingsThisMonth,
+    revenueThisMonth,
+    rating,
+    totalCustomers,
+    monthRevenue,
+    monthBookings,
+    monthUpcoming,
+    totalBookings,
+    pendingRequests,
+    conversionRate,
+    customerSatisfaction,
+    revenueToday,
+    revenueThisWeek,
+    revenueThisMonthTotal,
+    revenueThisYear,
+    upcomingBookings,
+    recentReviews,
+    fetchDashboard,
+  } = useVendorDashboardStore();
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  // Loading state
+  if (!approvalChecked || isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Vendor not yet approved by admin
+  if (!isApproved) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <MaterialCommunityIcons name="clock-alert-outline" size={48} color={COLORS.primary} />
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: COLORS.text,
+              marginTop: 16,
+              textAlign: "center",
+            }}
+          >
+            Your vendor account is awaiting admin approval.
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              color: COLORS.textMuted,
+              marginTop: 8,
+              textAlign: "center",
+            }}
+          >
+            You'll be able to access your dashboard once an admin approves your profile.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -174,7 +122,7 @@ export default function VendorHomeScreen() {
             <MaterialCommunityIcons name="briefcase-outline" size={13} color="#fff" />
             <Text style={styles.heroPillText}>Vendor Dashboard</Text>
           </View>
-          <Text style={styles.heroTitle}>Welcome back,{"\n"}{VENDOR_NAME} 👋</Text>
+          <Text style={styles.heroTitle}>Welcome back,{"\n"}{vendorName || "Vendor"} 👋</Text>
           <Text style={styles.heroSubtitle}>
             Manage your bookings, earnings, services and grow your business.
           </Text>
@@ -199,23 +147,23 @@ export default function VendorHomeScreen() {
           <Text style={styles.monthCardTitle}>This Month</Text>
           <View style={styles.monthRow}>
             <Text style={styles.monthLabel}>Revenue</Text>
-            <Text style={styles.monthValue}>₹{MOCK_MONTH_SUMMARY.revenue}</Text>
+            <Text style={styles.monthValue}>₹{monthRevenue}</Text>
           </View>
           <View style={styles.monthRow}>
             <Text style={styles.monthLabel}>Bookings</Text>
-            <Text style={styles.monthValue}>{MOCK_MONTH_SUMMARY.bookings}</Text>
+            <Text style={styles.monthValue}>{monthBookings}</Text>
           </View>
           <View style={styles.monthRow}>
             <Text style={styles.monthLabel}>Upcoming</Text>
-            <Text style={styles.monthValue}>{MOCK_MONTH_SUMMARY.upcoming}</Text>
+            <Text style={styles.monthValue}>{monthUpcoming}</Text>
           </View>
         </View>
 
         <View style={styles.grid}>
-          <StatCard icon="calendar-check-outline" label="Bookings" value={`${MOCK_STATS.bookingsThisMonth}`} sublabel="This Month" />
-          <StatCard icon="cash-multiple" label="Revenue" value={`₹${MOCK_STATS.revenueThisMonth}`} sublabel="Monthly Earnings" />
-          <StatCard icon="star-outline" label="Rating" value={`${MOCK_STATS.rating}`} sublabel="Customer Reviews" />
-          <StatCard icon="account-group-outline" label="Customers" value={`${MOCK_STATS.totalCustomers}`} sublabel="Total Clients" />
+          <StatCard icon="calendar-check-outline" label="Bookings" value={`${bookingsThisMonth}`} sublabel="This Month" />
+          <StatCard icon="cash-multiple" label="Revenue" value={`₹${revenueThisMonth}`} sublabel="Monthly Earnings" />
+          <StatCard icon="star-outline" label="Rating" value={`${rating}`} sublabel="Customer Reviews" />
+          <StatCard icon="account-group-outline" label="Customers" value={`${totalCustomers}`} sublabel="Total Clients" />
         </View>
 
         <Text style={styles.sectionHeading}>Quick Actions</Text>
@@ -251,28 +199,28 @@ export default function VendorHomeScreen() {
           <View style={styles.performanceGrid}>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Total Bookings</Text>
-              <Text style={styles.performanceValue}>{MOCK_PERFORMANCE.totalBookings}</Text>
+              <Text style={styles.performanceValue}>{totalBookings}</Text>
             </View>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Pending Requests</Text>
-              <Text style={styles.performanceValue}>{MOCK_PERFORMANCE.pendingRequests}</Text>
+              <Text style={styles.performanceValue}>{pendingRequests}</Text>
             </View>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Conversion Rate</Text>
-              <Text style={styles.performanceValue}>{MOCK_PERFORMANCE.conversionRate}%</Text>
+              <Text style={styles.performanceValue}>{conversionRate}%</Text>
             </View>
             <View style={styles.performanceItem}>
               <Text style={styles.performanceLabel}>Customer Satisfaction</Text>
-              <Text style={styles.performanceValue}>{MOCK_PERFORMANCE.customerSatisfaction} ★</Text>
+              <Text style={styles.performanceValue}>{customerSatisfaction} ★</Text>
             </View>
           </View>
         </SectionCard>
 
         <SectionCard title="Upcoming Bookings" subtitle="Your next scheduled wedding events.">
-          {MOCK_UPCOMING_BOOKINGS.length === 0 ? (
+          {upcomingBookings.length === 0 ? (
             <EmptyState icon="calendar-blank-outline" message="No upcoming bookings." />
           ) : (
-            MOCK_UPCOMING_BOOKINGS.map((b) => (
+            upcomingBookings.map((b) => (
               <View key={b.id} style={styles.upcomingRow}>
                 <Text style={styles.upcomingName}>{b.customerName}</Text>
                 <Text style={styles.upcomingDate}>{b.date}</Text>
@@ -284,32 +232,36 @@ export default function VendorHomeScreen() {
         <SectionCard title="Revenue Overview">
           <View style={styles.revenueRow}>
             <Text style={styles.revenueLabel}>Today</Text>
-            <Text style={styles.revenueValue}>₹{MOCK_REVENUE_OVERVIEW.today}</Text>
+            <Text style={styles.revenueValue}>₹{revenueToday}</Text>
           </View>
           <View style={styles.revenueRow}>
             <Text style={styles.revenueLabel}>This Week</Text>
-            <Text style={styles.revenueValue}>₹{MOCK_REVENUE_OVERVIEW.thisWeek}</Text>
+            <Text style={styles.revenueValue}>₹{revenueThisWeek}</Text>
           </View>
           <View style={styles.revenueRow}>
             <Text style={styles.revenueLabel}>This Month</Text>
-            <Text style={styles.revenueValue}>₹{MOCK_REVENUE_OVERVIEW.thisMonth}</Text>
+            <Text style={styles.revenueValue}>₹{revenueThisMonthTotal}</Text>
           </View>
           <View style={[styles.revenueRow, { borderBottomWidth: 0 }]}>
             <Text style={styles.revenueLabel}>This Year</Text>
-            <Text style={styles.revenueValue}>₹{MOCK_REVENUE_OVERVIEW.thisYear}</Text>
+            <Text style={styles.revenueValue}>₹{revenueThisYear}</Text>
           </View>
         </SectionCard>
 
         <SectionCard title="Recent Reviews">
-          {MOCK_REVIEWS.map((r) => (
-            <View key={r.id} style={styles.reviewRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.reviewName}>{r.customerName}</Text>
-                <Text style={styles.reviewComment}>{r.comment}</Text>
+          {recentReviews.length === 0 ? (
+            <EmptyState icon="star-outline" message="No reviews yet." />
+          ) : (
+            recentReviews.map((r) => (
+              <View key={r.id} style={styles.reviewRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.reviewName}>{r.customerName}</Text>
+                  <Text style={styles.reviewComment}>{r.comment}</Text>
+                </View>
+                <StarRating rating={r.rating} />
               </View>
-              <StarRating rating={r.rating} />
-            </View>
-          ))}
+            ))
+          )}
           <TouchableOpacity onPress={() => navigation.navigate("Reviews")} style={{ marginTop: SPACING.sm }}>
             <Text style={styles.seeAll}>See all reviews →</Text>
           </TouchableOpacity>

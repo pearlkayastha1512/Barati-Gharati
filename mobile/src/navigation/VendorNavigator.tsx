@@ -10,10 +10,10 @@ import VendorMessagesScreen from "../screens/vendor/VendorMessagesScreen";
 
 import PortfolioScreen from "../screens/vendor/PortfolioScreen";
 import ReviewsScreen from "../screens/vendor/ReviewsScreen";
-// import VendorCalendarScreen from "../screens/vendor/VendorCalendarScreen";
-// import EarningsScreen from "../screens/vendor/EarningsScreen";
-// import AnalyticsScreen from "../screens/vendor/AnalyticsScreen";
-// import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
+import VendorCalendarScreen from "../screens/vendor/VendorCalendarScreen";
+import EarningsScreen from "../screens/vendor/VendorEarningsScreen";
+import AnalyticsScreen from "../screens/vendor/VendorAnalyticsScreen";
+import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 
 import { COLORS } from "../constants/theme";
 
@@ -55,9 +55,9 @@ export default function VendorNavigator() {
       <Stack.Screen name="VendorTabs" component={VendorTabs} />
       <Stack.Screen name="Portfolio" component={PortfolioScreen} />
        <Stack.Screen name="Reviews" component={ReviewsScreen} />
-      {/*<Stack.Screen name="VendorCalendar" component={VendorCalendarScreen} />
+      <Stack.Screen name="VendorCalendar" component={VendorCalendarScreen} />
       <Stack.Screen name="Earnings" component={EarningsScreen} />
       <Stack.Screen name="Analytics" component={AnalyticsScreen} />
-      <Stack.Screen name="Settings" component={VendorSettingsScreen} /> */}
+      <Stack.Screen name="Settings" component={VendorSettingsScreen} /> 
     </Stack.Navigator>
   );}
