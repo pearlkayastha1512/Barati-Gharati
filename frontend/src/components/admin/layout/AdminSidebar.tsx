@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ShieldAlert,
 } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
@@ -59,6 +60,11 @@ const menuItems = [
     title: "Notifications",
     href: "/admin/notifications",
     icon: Bell,
+  },
+  {
+    title: "Chat Moderation",
+    href: "/admin/chat-moderation",
+    icon: ShieldAlert,
   },
 //   {
 //     title: "Analytics",

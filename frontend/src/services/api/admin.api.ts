@@ -126,6 +126,75 @@ export async function getAdminNotificationsApi() {
   return requestAdmin("/notifications");
 }
 
+export type ChatModerationStatus =
+  | "active"
+  | "muted"
+  | "blocked"
+  | "suspended"
+  | "flagged";
+
+export type ChatModerationUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: "customer" | "vendor";
+  warningCount: number;
+  chatMutedUntil?: string | null;
+  isChatFlagged: boolean;
+  isChatBlocked: boolean;
+  isSuspended: boolean;
+  lastViolationTime?: string | null;
+  violationReason: string;
+  status: ChatModerationStatus;
+};
+
+export async function getChatModerationUsersApi() {
+  return requestAdmin("/chat/users");
+}
+
+export async function muteChatUserApi(
+  id: string,
+  durationMinutes: number
+) {
+  return requestAdmin(`/chat/${id}/mute`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      durationMinutes,
+    }),
+  });
+}
+
+export async function blockChatUserApi(
+  id: string
+) {
+  return requestAdmin(`/chat/${id}/block`, {
+    method: "PATCH",
+  });
+}
+
+export async function suspendChatUserApi(
+  id: string
+) {
+  return requestAdmin(
+    `/chat/${id}/suspend`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
+export async function resetChatWarningsApi(
+  id: string
+) {
+  return requestAdmin(
+    `/chat/${id}/reset-warnings`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
 export type PlatformSettingsPayload = {
   allowVendorRegistration?: boolean;
   allowCustomerRegistration?: boolean;

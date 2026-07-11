@@ -1304,6 +1304,271 @@ async getNotifications() {
   };
 }
 
+async getChatModerationUsers() {
+  const users = await this.prisma.user.findMany({
+    where: {
+      role: {
+        in: [Role.USER, Role.VENDOR],
+      },
+      OR: [
+        {
+          warningCount: {
+            gt: 0,
+          },
+        },
+        {
+          chatMutedUntil: {
+            not: null,
+          },
+        },
+        {
+          isChatFlagged: true,
+        },
+        {
+          isChatBlocked: true,
+        },
+        {
+          isSuspended: true,
+        },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      warningCount: true,
+      chatMutedUntil: true,
+      isChatFlagged: true,
+      isChatBlocked: true,
+      isSuspended: true,
+      chatLastViolationAt: true,
+      chatViolationReason: true,
+      updatedAt: true,
+    },
+    orderBy: [
+      {
+        isSuspended: 'desc',
+      },
+      {
+        isChatBlocked: 'desc',
+      },
+      {
+        isChatFlagged: 'desc',
+      },
+      {
+        warningCount: 'desc',
+      },
+      {
+        updatedAt: 'desc',
+      },
+    ],
+  });
+
+  const now = new Date();
+
+  return {
+    success: true,
+    count: users.length,
+    data: users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? '',
+      role:
+        user.role === Role.VENDOR
+          ? 'vendor'
+          : 'customer',
+      warningCount: user.warningCount,
+      chatMutedUntil: user.chatMutedUntil,
+      isChatFlagged: user.isChatFlagged,
+      isChatBlocked: user.isChatBlocked,
+      isSuspended: user.isSuspended,
+      lastViolationTime:
+        user.chatLastViolationAt,
+      violationReason:
+        user.chatViolationReason ?? '',
+      status: this.getChatModerationStatus(
+        user,
+        now,
+      ),
+    })),
+  };
+}
+
+async muteChatUser(
+  id: string,
+  durationMinutes = 30,
+) {
+  if (!durationMinutes || durationMinutes <= 0) {
+    throw new BadRequestException(
+      'Mute duration must be greater than zero',
+    );
+  }
+
+  const mutedUntil = new Date(
+    Date.now() + durationMinutes * 60 * 1000,
+  );
+
+  const user = await this.prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      chatMutedUntil: mutedUntil,
+      isChatFlagged: true,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  await this.notificationsService.create(id, {
+    title: 'Chat Temporarily Muted',
+    message: `Your chat access has been muted until ${mutedUntil.toLocaleString('en-IN')}.`,
+  });
+
+  return {
+    success: true,
+    message: `${user.name} has been muted`,
+    data: {
+      id: user.id,
+      chatMutedUntil: mutedUntil,
+    },
+  };
+}
+
+async blockChatUser(id: string) {
+  const user = await this.prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      isChatBlocked: true,
+      isChatFlagged: true,
+      chatMutedUntil: null,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  await this.notificationsService.create(id, {
+    title: 'Chat Access Blocked',
+    message:
+      'Your chat access has been permanently blocked by admin.',
+  });
+
+  return {
+    success: true,
+    message: `${user.name} has been permanently blocked from chat`,
+    data: {
+      id: user.id,
+      isChatBlocked: true,
+    },
+  };
+}
+
+async suspendUser(id: string) {
+  const user = await this.prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      isSuspended: true,
+      isChatBlocked: true,
+      chatMutedUntil: null,
+      isChatFlagged: true,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  await this.notificationsService.create(id, {
+    title: 'Account Suspended',
+    message:
+      'Your account has been suspended by admin.',
+  });
+
+  return {
+    success: true,
+    message: `${user.name} has been suspended`,
+    data: {
+      id: user.id,
+      isSuspended: true,
+    },
+  };
+}
+
+async resetChatWarnings(id: string) {
+  const user = await this.prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      warningCount: 0,
+      isChatFlagged: false,
+      chatMutedUntil: null,
+      chatViolationReason: null,
+      chatLastViolationAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  await this.notificationsService.create(id, {
+    title: 'Chat Warnings Reset',
+    message:
+      'Your chat warnings have been reset by admin.',
+  });
+
+  return {
+    success: true,
+    message: `${user.name}'s warnings have been reset`,
+    data: {
+      id: user.id,
+    },
+  };
+}
+
+private getChatModerationStatus(
+  user: {
+    isSuspended: boolean;
+    isChatBlocked: boolean;
+    chatMutedUntil: Date | null;
+    isChatFlagged: boolean;
+  },
+  now: Date,
+) {
+  if (user.isSuspended) {
+    return 'suspended';
+  }
+
+  if (user.isChatBlocked) {
+    return 'blocked';
+  }
+
+  if (
+    user.chatMutedUntil &&
+    user.chatMutedUntil > now
+  ) {
+    return 'muted';
+  }
+
+  if (user.isChatFlagged) {
+    return 'flagged';
+  }
+
+  return 'active';
+}
+
 async getPlatformSettings() {
   const settings =
     await this.prisma.platformSettings.upsert({

@@ -1,0 +1,5 @@
+ALTER TABLE "User"
+ADD COLUMN "isChatBlocked" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "isSuspended" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "chatLastViolationAt" TIMESTAMP(3),
+ADD COLUMN "chatViolationReason" TEXT;

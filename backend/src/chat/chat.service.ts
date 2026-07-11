@@ -325,6 +325,8 @@ async sendMessage(
       warningCount: true,
       chatMutedUntil: true,
       isChatFlagged: true,
+      isChatBlocked: true,
+      isSuspended: true,
     },
   });
 
@@ -334,20 +336,30 @@ async sendMessage(
     );
   }
 
-  // Block flagged users
-  if (sender.isChatFlagged) {
+  if (sender.isSuspended) {
     throw new ForbiddenException(
-      'Your account has been flagged for administrator review due to repeated policy violations.',
+      'Your account has been suspended.',
     );
   }
 
-  // Block muted users
+  if (sender.isChatBlocked) {
+    throw new ForbiddenException(
+      'Your chat access has been permanently blocked.',
+    );
+  }
+
   if (
     sender.chatMutedUntil &&
     sender.chatMutedUntil > new Date()
   ) {
     throw new ForbiddenException(
       'Your chat has been temporarily disabled for 30 minutes due to repeated policy violations.',
+    );
+  }
+
+  if (sender.isChatFlagged) {
+    throw new ForbiddenException(
+      'Your account has been flagged for administrator review due to repeated policy violations.',
     );
   }
 
@@ -389,6 +401,10 @@ async sendMessage(
     validateMessage(cleanMessage);
   } catch (error) {
     const warnings = sender.warningCount + 1;
+    const violationReason =
+      error instanceof ForbiddenException
+        ? String(error.message)
+        : 'Sharing personal contact information is not allowed.';
 
     // First violation
     if (warnings === 1) {
@@ -398,6 +414,8 @@ async sendMessage(
         },
         data: {
           warningCount: warnings,
+          chatLastViolationAt: new Date(),
+          chatViolationReason: violationReason,
         },
       });
 
@@ -419,6 +437,8 @@ async sendMessage(
         data: {
           warningCount: warnings,
           chatMutedUntil: muteUntil,
+          chatLastViolationAt: new Date(),
+          chatViolationReason: violationReason,
         },
       });
 
@@ -435,6 +455,8 @@ async sendMessage(
       data: {
         warningCount: warnings,
         isChatFlagged: true,
+        chatLastViolationAt: new Date(),
+        chatViolationReason: violationReason,
       },
     });
 

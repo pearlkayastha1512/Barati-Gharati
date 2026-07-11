@@ -21,6 +21,25 @@ export class BookingsService {
   ) {}
 
   async create(userId: string, dto: CreateBookingDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        isSuspended: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isSuspended) {
+      throw new ForbiddenException(
+        'Your account has been suspended.',
+      );
+    }
+
     // Find vendor using frontend numeric ID
     const vendor = await this.prisma.vendor.findUnique({
       where: {
