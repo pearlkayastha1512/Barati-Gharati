@@ -157,6 +157,43 @@ getNotifications() {
   return this.adminService.getNotifications();
 }
 
+@Get('chat/users')
+getChatModerationUsers() {
+  return this.adminService.getChatModerationUsers();
+}
+
+@Patch('chat/:id/mute')
+muteChatUser(
+  @Param('id') id: string,
+  @Body() dto: { durationMinutes?: number },
+) {
+  return this.adminService.muteChatUser(
+    id,
+    dto.durationMinutes,
+  );
+}
+
+@Patch('chat/:id/block')
+blockChatUser(
+  @Param('id') id: string,
+) {
+  return this.adminService.blockChatUser(id);
+}
+
+@Patch('chat/:id/suspend')
+suspendUser(
+  @Param('id') id: string,
+) {
+  return this.adminService.suspendUser(id);
+}
+
+@Patch('chat/:id/reset-warnings')
+resetChatWarnings(
+  @Param('id') id: string,
+) {
+  return this.adminService.resetChatWarnings(id);
+}
+
 @Get('settings')
 getPlatformSettings() {
   return this.adminService.getPlatformSettings();

@@ -349,6 +349,12 @@ async login(loginDto: LoginDto) {
     );
   }
 
+  if (user.isSuspended) {
+    throw new UnauthorizedException(
+      'Your account has been suspended.',
+    );
+  }
+
 
   const isPasswordCorrect = await bcrypt.compare(
     loginDto.password,

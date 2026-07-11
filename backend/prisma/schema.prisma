@@ -58,6 +58,10 @@ model User {
   warningCount   Int       @default(0)
   chatMutedUntil DateTime?
   isChatFlagged  Boolean   @default(false)
+  isChatBlocked  Boolean   @default(false)
+  isSuspended    Boolean   @default(false)
+  chatLastViolationAt DateTime?
+  chatViolationReason String?
 
   sentMessages Message[] @relation("SentMessages")
 
