@@ -96,6 +96,28 @@ export async function approveBookingApi(
   );
 }
 
+export async function approveBookingPaymentApi(
+  id: string
+) {
+  return requestAdmin(
+    `/bookings/${id}/approve-payment`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
+export async function holdBookingPaymentApi(
+  id: string
+) {
+  return requestAdmin(
+    `/bookings/${id}/hold-payment`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
 export async function getEmailLogsApi() {
   return requestAdmin("/emails");
 }

@@ -10,12 +10,18 @@ interface Props {
   open: boolean;
 
   onClose: () => void;
+
+  onApprovePayment?: (review: Review) => void;
+
+  onHoldPayment?: (review: Review) => void;
 }
 
 export default function ReviewDetailsModal({
   review,
   open,
   onClose,
+  onApprovePayment,
+  onHoldPayment,
 }: Props) {
   if (!open || !review) {
     return null;
@@ -131,6 +137,43 @@ export default function ReviewDetailsModal({
 
           </div>
 
+          {review.complaint && (
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">
+                Complaint
+              </h3>
+
+              <div className="mt-3 rounded-2xl bg-red-50 p-5 leading-7 text-red-700">
+                {review.complaint}
+              </div>
+            </div>
+          )}
+
+          {review.proofImages &&
+            review.proofImages.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Proof Images
+                </h3>
+
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {review.proofImages.map(
+                    (image) => (
+                      <a
+                        key={image}
+                        href={image}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-slate-200"
+                      >
+                        View Proof
+                      </a>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
           {/* Vendor Reply */}
 
           <div>
@@ -145,7 +188,24 @@ export default function ReviewDetailsModal({
 
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-3">
+            <button
+              onClick={() =>
+                onHoldPayment?.(review)
+              }
+              className="rounded-2xl bg-red-100 px-6 py-3 font-semibold text-red-700 transition hover:bg-red-200"
+            >
+              Hold Payment
+            </button>
+
+            <button
+              onClick={() =>
+                onApprovePayment?.(review)
+              }
+              className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Approve Payment
+            </button>
 
             <button
               onClick={onClose}

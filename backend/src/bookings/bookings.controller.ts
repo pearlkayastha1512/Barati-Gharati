@@ -114,6 +114,16 @@ export class BookingsController {
     );
   }
 
+  @Patch(':id/complete-event')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  completeEvent(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+  ) {
+    return this.bookingsService.completeEvent(id, userId);
+  }
+
   // ===========================
   // VENDOR
   // Confirm Booking

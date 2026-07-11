@@ -1,7 +1,12 @@
 
 export type BookingStatus =
   | "pending"
+  | "advance_paid"
   | "accepted"
+  | "event_completed"
+  | "awaiting_admin_review"
+  | "payment_approved"
+  | "payment_held"
   | "completed"
   | "rejected"
   | "cancelled";
@@ -78,6 +83,23 @@ export interface Booking {
   adminApproved?: boolean;
 
   adminApprovedAt?: string;
+
+  review?: {
+    id: string;
+    rating: number;
+    comment: string;
+    complaint?: string;
+    proofImages?: string[];
+    vendorDispute?: string;
+    createdAt: string;
+  } | null;
+
+  settlement?: {
+    totalAmount: number;
+    platformCommissionRate: number;
+    platformCommission: number;
+    vendorReceives: number;
+  } | null;
 
   bookingStatus: BookingStatus;
 

@@ -5,6 +5,7 @@ import {
   IsUUID,
   Max,
   Min,
+  IsArray,
 } from 'class-validator';
 
 export class CreateReviewDto {
@@ -19,4 +20,13 @@ export class CreateReviewDto {
   @IsOptional()
   @IsString()
   comment?: string;
+
+  @IsOptional()
+  @IsString()
+  complaint?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  proofImages?: string[];
 }

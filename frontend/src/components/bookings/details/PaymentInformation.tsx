@@ -69,7 +69,7 @@ export default function PaymentInformation({
 
             <IndianRupee
               size={20}
-              className="text-indigo-600"
+              className="text-[#ff4d6d]"
             />
 
             <span className="text-gray-600">
@@ -136,7 +136,7 @@ export default function PaymentInformation({
 
             <Clock3
               size={20}
-              className="text-indigo-500"
+              className="text-[#ff4d6d]"
             />
 
             <span className="text-gray-600">

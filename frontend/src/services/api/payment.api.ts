@@ -23,6 +23,7 @@ export type PaymentOrderResponse = {
   orderId: string;
   keyId: string;
   amount: number;
+  advancePercentage?: number;
   amountInPaise: number;
   totalAmount: number;
   currency: string;
@@ -83,6 +84,65 @@ export async function verifyPaymentApi(
       error: getErrorMessage(
         error,
         "Unable to verify payment."
+      ),
+    };
+  }
+}
+
+export async function createRemainingPaymentOrderApi(
+  bookingId: string
+) {
+  try {
+    const { data } = await api.post(
+      "/payment/remaining/create-order",
+      {
+        bookingId,
+      }
+    );
+
+    return {
+      ok: true,
+      data: data?.data as PaymentOrderResponse,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to create remaining payment order."
+      ),
+    };
+  }
+}
+
+export async function verifyRemainingPaymentApi(
+  payload: {
+    bookingId: string;
+    orderId: string;
+    paymentId: string;
+    signature: string;
+  }
+) {
+  try {
+    const { data } = await api.post(
+      `/payment/remaining/verify/${payload.bookingId}`,
+      {
+        orderId: payload.orderId,
+        paymentId: payload.paymentId,
+        signature: payload.signature,
+      }
+    );
+
+    return {
+      ok: true,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to verify remaining payment."
       ),
     };
   }

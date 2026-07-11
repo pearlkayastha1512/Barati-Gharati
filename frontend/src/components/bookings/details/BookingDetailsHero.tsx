@@ -20,8 +20,23 @@ function getStatusText(status: string) {
     case "pending":
       return "Booking Pending";
 
+    case "advance_paid":
+      return "Advance Paid";
+
     case "accepted":
       return "Booking Confirmed";
+
+    case "event_completed":
+      return "Event Completed";
+
+    case "awaiting_admin_review":
+      return "Awaiting Admin Review";
+
+    case "payment_approved":
+      return "Payment Approved";
+
+    case "payment_held":
+      return "Payment Held";
 
     case "completed":
       return "Event Completed";
@@ -39,11 +54,26 @@ function getStatusColor(status: string) {
     case "pending":
       return "text-yellow-300";
 
+    case "advance_paid":
+      return "text-rose-100";
+
     case "accepted":
       return "text-green-300";
 
+    case "event_completed":
+      return "text-rose-100";
+
+    case "awaiting_admin_review":
+      return "text-rose-100";
+
+    case "payment_approved":
+      return "text-emerald-200";
+
+    case "payment_held":
+      return "text-red-200";
+
     case "completed":
-      return "text-blue-300";
+      return "text-rose-100";
 
     case "cancelled":
       return "text-red-300";
@@ -60,15 +90,7 @@ export default function BookingDetailsHero({
     <motion.section
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="
-        rounded-[32px]
-        bg-gradient-to-r
-        from-indigo-600
-        via-violet-600
-        to-purple-600
-        p-8
-        text-white
-      "
+      className="rounded-[32px] bg-gradient-to-r from-[#ff4d6d] via-[#e4005a] to-[#6c2d45] p-8 text-white shadow-lg shadow-rose-200/60"
     >
       <Link
         href="/customer/bookings"
@@ -87,11 +109,11 @@ export default function BookingDetailsHero({
             {booking.vendorName}
           </h1>
 
-          <p className="mt-3 text-lg text-indigo-100">
+          <p className="mt-3 text-lg text-rose-50">
             {booking.category}
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-5 text-indigo-100">
+          <div className="mt-5 flex flex-wrap gap-5 text-rose-50">
 
             <div className="flex items-center gap-2">
               <Clock3 size={18} />

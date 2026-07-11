@@ -206,10 +206,13 @@ export const useBookingStore =
     return false;
   }
 
+  const updatedBooking =
+    result.data?.data as Booking | undefined;
+
   set((state) => ({
     bookings: state.bookings.map((booking) =>
       booking.id === bookingId
-        ? {
+        ? updatedBooking ?? {
             ...booking,
             bookingStatus: status,
             updatedAt: new Date().toISOString(),
@@ -219,7 +222,7 @@ export const useBookingStore =
 
     selectedBooking:
       state.selectedBooking?.id === bookingId
-        ? {
+        ? updatedBooking ?? {
             ...state.selectedBooking,
             bookingStatus: status,
             updatedAt: new Date().toISOString(),

@@ -170,6 +170,24 @@ export default function BookingDetailsModal({
               )}`}
             />
 
+            {booking.settlement && (
+              <>
+                <Info
+                  label="Platform Commission"
+                  value={`₹${booking.settlement.platformCommission.toLocaleString(
+                    "en-IN"
+                  )}`}
+                />
+
+                <Info
+                  label="Vendor Receives"
+                  value={`₹${booking.settlement.vendorReceives.toLocaleString(
+                    "en-IN"
+                  )}`}
+                />
+              </>
+            )}
+
           </div>
 
           {/* Bride & Groom */}
@@ -187,6 +205,56 @@ export default function BookingDetailsModal({
             />
 
           </div>
+
+          {booking.review && (
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">
+                Customer Review
+              </h3>
+
+              <div className="mt-3 space-y-3 rounded-2xl bg-slate-50 p-4 text-slate-600">
+                <p>
+                  Rating: {booking.review.rating}/5
+                </p>
+
+                <p>
+                  {booking.review.comment || "-"}
+                </p>
+
+                {booking.review.complaint && (
+                  <p>
+                    Complaint: {booking.review.complaint}
+                  </p>
+                )}
+
+                {booking.review.vendorDispute && (
+                  <p>
+                    Vendor dispute: {booking.review.vendorDispute}
+                  </p>
+                )}
+
+                {booking.review.proofImages &&
+                  booking.review.proofImages.length >
+                    0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {booking.review.proofImages.map(
+                        (image) => (
+                          <a
+                            key={image}
+                            href={image}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-blue-700"
+                          >
+                            Proof
+                          </a>
+                        )
+                      )}
+                    </div>
+                  )}
+              </div>
+            </div>
+          )}
 
           {/* Special Requirements */}
 

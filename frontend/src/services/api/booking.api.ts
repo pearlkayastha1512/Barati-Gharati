@@ -193,6 +193,10 @@ export async function updateBookingStatusApi(
         endpoint = `/bookings/${id}/confirm`;
         break;
 
+      case "event_completed":
+        endpoint = `/bookings/${id}/complete-event`;
+        break;
+
       case "cancelled":
         endpoint = `/bookings/${id}/cancel`;
         body = {

@@ -16,7 +16,9 @@ import BookingDetailsModal from "@/components/admin/bookings/BookingDetailsModal
 import { Booking } from "@/types/booking";
 import {
   approveBookingApi,
+  approveBookingPaymentApi,
   getAllBookingsApi,
+  holdBookingPaymentApi,
 } from "@/services/api/admin.api";
 import { toast } from "sonner";
 
@@ -127,6 +129,48 @@ export default function BookingManagementPage() {
     await loadBookings();
   };
 
+  const handleApprovePayment = async (
+    booking: Booking
+  ) => {
+    const result =
+      await approveBookingPaymentApi(
+        booking.id
+      );
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to approve payment."
+      );
+      return;
+    }
+
+    toast.success(
+      "Payment approved. Customer can pay the remaining balance."
+    );
+    await loadBookings();
+  };
+
+  const handleHoldPayment = async (
+    booking: Booking
+  ) => {
+    const result =
+      await holdBookingPaymentApi(
+        booking.id
+      );
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to hold payment."
+      );
+      return;
+    }
+
+    toast.success("Payment held.");
+    await loadBookings();
+  };
+
   return (
     <div className="space-y-8">
       <BookingHero />
@@ -150,6 +194,10 @@ export default function BookingManagementPage() {
         bookings={filteredBookings}
         onView={handleViewBooking}
         onApprove={handleApproveBooking}
+        onApprovePayment={
+          handleApprovePayment
+        }
+        onHoldPayment={handleHoldPayment}
       />
 
       <BookingDetailsModal

@@ -317,7 +317,7 @@ export default function WriteReviewModal({
     } else {
       if (!bookingId) {
         toast.error(
-          "You can review after your booking is accepted."
+          "You can review after the vendor marks your event completed."
         );
         return;
       }

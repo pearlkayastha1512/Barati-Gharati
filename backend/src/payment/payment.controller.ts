@@ -48,6 +48,19 @@ export class PaymentController {
     );
   }
 
+  @Post('remaining/create-order')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  createRemainingOrder(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateOrderDto,
+  ) {
+    return this.paymentService.createRemainingOrder(
+      userId,
+      dto,
+    );
+  }
+
   @Post('vendor-badge/create-order')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)
@@ -91,6 +104,21 @@ export class PaymentController {
     @Body() dto: VerifyPaymentDto,
   ) {
     return this.paymentService.verifyPayment(
+      userId,
+      bookingId,
+      dto,
+    );
+  }
+
+  @Post('remaining/verify/:bookingId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  verifyRemainingPayment(
+    @CurrentUser('sub') userId: string,
+    @Param('bookingId') bookingId: string,
+    @Body() dto: VerifyPaymentDto,
+  ) {
+    return this.paymentService.verifyRemainingPayment(
       userId,
       bookingId,
       dto,

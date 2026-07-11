@@ -36,9 +36,12 @@ export default function BookingTable({ bookings }: Props) {
   selectBooking,
 } = useBookingStore();
 
- const handleStatusChange = async (
+  const handleStatusChange = async (
   booking: Booking,
-  status: "accepted" | "rejected"
+  status:
+    | "accepted"
+    | "rejected"
+    | "event_completed"
 ) => {
   const success = await updateStatus(
     booking.id,
@@ -160,6 +163,22 @@ export default function BookingTable({ bookings }: Props) {
                         </button>
                       </>
                     )}
+
+                    {booking.bookingStatus ===
+                      "accepted" && (
+                        <button
+                          onClick={() =>
+                            handleStatusChange(
+                              booking,
+                              "event_completed"
+                            )
+                          }
+                          className="rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+                          title="Complete event"
+                        >
+                          <CheckCircle2 size={16} />
+                        </button>
+                      )}
 
                     {booking.bookingStatus ===
                       "pending" &&
