@@ -65,6 +65,22 @@ export default function BookingFilters({
             Accepted
           </option>
 
+          <option value="event_completed">
+            Event Completed
+          </option>
+
+          <option value="awaiting_admin_review">
+            Awaiting Admin Review
+          </option>
+
+          <option value="payment_approved">
+            Payment Approved
+          </option>
+
+          <option value="payment_held">
+            Payment Held
+          </option>
+
           <option value="completed">
             Completed
           </option>

@@ -1,6 +1,7 @@
 
 import {
   Injectable,
+  BadRequestException,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -312,38 +313,52 @@ console.log("===================================");
   }
 
   async remove(id: string, userId: string) {
-    const vendor = await this.prisma.vendor.findUnique({
-      where: {
-        userId,
-      },
-    });
+  const vendor = await this.prisma.vendor.findUnique({
+    where: {
+      userId,
+    },
+  });
 
-    if (!vendor) {
-      throw new ForbiddenException(
-        'Only vendors can delete packages',
-      );
-    }
-
-    if (vendor.status !== VendorStatus.APPROVED) {
-      throw new ForbiddenException(
-        'Vendor is not approved by admin',
-      );
-    }
-
-    const pkg = await this.findOne(id);
-
-    if (pkg.vendorId !== vendor.id) {
-      throw new ForbiddenException(
-        'You can only delete your own packages',
-      );
-    }
-
-    return this.prisma.package.delete({
-      where: {
-        id,
-      },
-    });
+  if (!vendor) {
+    throw new ForbiddenException(
+      "Only vendors can delete packages",
+    );
   }
+
+  if (vendor.status !== VendorStatus.APPROVED) {
+    throw new ForbiddenException(
+      "Vendor is not approved by admin",
+    );
+  }
+
+  const pkg = await this.findOne(id);
+
+  if (pkg.vendorId !== vendor.id) {
+    throw new ForbiddenException(
+      "You can only delete your own packages",
+    );
+  }
+
+  // Check if this package has any bookings
+  const bookingExists =
+    await this.prisma.booking.findFirst({
+      where: {
+        packageId: id,
+      },
+    });
+
+  if (bookingExists) {
+    throw new BadRequestException(
+      "This package cannot be deleted because it already has bookings."
+    );
+  }
+
+  return this.prisma.package.delete({
+    where: {
+      id,
+    },
+  });
+}
 
   async findVendorPackages(frontendVendorId: number) {
   const vendor =

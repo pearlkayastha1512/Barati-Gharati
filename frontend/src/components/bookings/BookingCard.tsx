@@ -18,7 +18,10 @@ import {
 
 import PayAdvanceModal from "./PayAdvanceModal";
 
-import { Booking } from "@/types/booking";
+import {
+  Booking,
+  BookingStatus,
+} from "@/types/booking";
 
 interface BookingCardProps {
   booking: Booking;
@@ -30,12 +33,30 @@ export default function BookingCard({
   const [openPayment, setOpenPayment] =
     useState(false);
 
-  const statusColor = {
+  const statusColor: Record<
+    BookingStatus,
+    string
+  > = {
     pending:
       "bg-[#fff3b0] text-[#111111]",
 
+    advance_paid:
+      "bg-blue-100 text-blue-700",
+
     accepted:
       "bg-[#fff8d8] text-[#111111]",
+
+    event_completed:
+      "bg-indigo-100 text-indigo-700",
+
+    awaiting_admin_review:
+      "bg-purple-100 text-purple-700",
+
+    payment_approved:
+      "bg-emerald-100 text-emerald-700",
+
+    payment_held:
+      "bg-red-100 text-red-700",
 
     completed:
       "bg-[#ffe6eb] text-[#ff4d6d]",

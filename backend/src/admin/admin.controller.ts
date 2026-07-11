@@ -128,6 +128,20 @@ approveBooking(
   return this.adminService.approveBooking(id);
 }
 
+@Patch('bookings/:id/approve-payment')
+approveBookingPayment(
+  @Param('id') id: string,
+) {
+  return this.adminService.approveBookingPayment(id);
+}
+
+@Patch('bookings/:id/hold-payment')
+holdBookingPayment(
+  @Param('id') id: string,
+) {
+  return this.adminService.holdBookingPayment(id);
+}
+
 @Get('analytics')
 getAnalytics() {
   return this.adminService.getAnalytics();

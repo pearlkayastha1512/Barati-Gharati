@@ -114,7 +114,7 @@ export default function BookingTimeline({
                   ${
                     step.completed
                       ? "bg-green-400"
-                      : "bg-gray-200"
+                      : "bg-rose-100"
                   }`}
                 />
 
@@ -122,10 +122,10 @@ export default function BookingTimeline({
 
               <div
                 className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full
-                ${
-                  step.completed
+                  ${
+                    step.completed
                     ? "bg-green-100"
-                    : "bg-indigo-100"
+                    : "bg-rose-100"
                 }`}
               >
 
@@ -134,13 +134,13 @@ export default function BookingTimeline({
                   className={
                     step.completed
                       ? "text-green-600"
-                      : "text-indigo-600"
+                      : "text-[#e4005a]"
                   }
                 />
 
               </div>
 
-              <div className="flex-1 rounded-2xl border border-gray-100 p-5 transition hover:border-indigo-200 hover:bg-indigo-50/30">
+              <div className="flex-1 rounded-2xl border border-gray-100 p-5 transition hover:border-rose-200 hover:bg-rose-50/40">
 
                 <div className="flex items-center justify-between">
 
@@ -153,7 +153,7 @@ export default function BookingTimeline({
                     ${
                       step.completed
                         ? "bg-green-100 text-green-700"
-                        : "bg-indigo-100 text-indigo-600"
+                        : "bg-rose-100 text-[#e4005a]"
                     }`}
                   >
                     {step.completed

@@ -765,6 +765,7 @@ async getAllBookings() {
           category: true,
         },
       },
+      review: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -787,6 +788,7 @@ async getBookingById(id: string) {
       user: true,
       vendor: true,
       package: true,
+      review: true,
     },
   });
 
@@ -840,12 +842,16 @@ async approveBooking(id: string) {
     throw new NotFoundException('Booking not found');
   }
 
-  const requiredAdvance =
-    Math.round(Number(booking.totalAmount) * 10) / 100;
+  const requiredAdvance = this.getAdvanceAmount(
+    booking.totalAmount,
+  );
+  const advanceRate = this.getAdvanceRate(
+    booking.totalAmount,
+  );
 
   if (Number(booking.amountPaid) < requiredAdvance) {
     throw new BadRequestException(
-      'The 10% advance must be paid before approval',
+      `The ${advanceRate}% advance must be paid before approval`,
     );
   }
 
@@ -899,7 +905,7 @@ async approveBooking(id: string) {
     }),
     this.notificationsService.create(booking.vendor.userId, {
       title: 'New Approved Booking',
-      message: `Booking ${booking.bookingNumber} is approved and the customer conversation is now available.`,
+      message: 'You have a new approved booking.',
     }),
   ]);
 
@@ -910,7 +916,126 @@ async approveBooking(id: string) {
   };
 }
 
+async approveBookingPayment(id: string) {
+  const booking = await this.prisma.booking.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+      review: true,
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundException('Booking not found');
+  }
+
+  if (booking.status !== BookingStatus.AWAITING_ADMIN_REVIEW) {
+    throw new BadRequestException(
+      'Booking must be awaiting admin review before payment approval',
+    );
+  }
+
+  const updated = await this.prisma.booking.update({
+    where: { id },
+    data: {
+      status: BookingStatus.PAYMENT_APPROVED,
+    },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+      review: true,
+    },
+  });
+
+  await this.notificationsService.create(booking.userId, {
+    title: 'Complete Remaining Payment',
+    message:
+      'Your booking has been approved. Please complete the remaining payment.',
+  });
+
+  return {
+    success: true,
+    message: 'Payment approved. Customer can now pay the remaining amount.',
+    data: this.mapBooking(updated),
+  };
+}
+
+async holdBookingPayment(id: string) {
+  const booking = await this.prisma.booking.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+      review: true,
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundException('Booking not found');
+  }
+
+  if (booking.status !== BookingStatus.AWAITING_ADMIN_REVIEW) {
+    throw new BadRequestException(
+      'Booking must be awaiting admin review before payment can be held',
+    );
+  }
+
+  const updated = await this.prisma.booking.update({
+    where: { id },
+    data: {
+      status: BookingStatus.PAYMENT_HELD,
+    },
+    include: {
+      user: true,
+      vendor: true,
+      package: {
+        include: {
+          category: true,
+        },
+      },
+      review: true,
+    },
+  });
+
+  await Promise.all([
+    this.notificationsService.create(booking.userId, {
+      title: 'Payment On Hold',
+      message: `Payment for booking ${booking.bookingNumber} is on hold while admin reviews the issue.`,
+    }),
+    this.notificationsService.create(booking.vendor.userId, {
+      title: 'Payment On Hold',
+      message: `Payment for booking ${booking.bookingNumber} is on hold while admin reviews the issue.`,
+    }),
+  ]);
+
+  return {
+    success: true,
+    message: 'Payment held for admin review',
+    data: this.mapBooking(updated),
+  };
+}
+
 private mapBooking(booking: any) {
+  const totalAmount = Number(booking.totalAmount);
+  const platformCommission =
+    Math.round(totalAmount * 10) / 100;
+
   return {
     id: booking.id,
     bookingNumber: booking.bookingNumber,
@@ -978,12 +1103,55 @@ private mapBooking(booking: any) {
     adminApproved: booking.adminApproved,
     adminApprovedAt:
       booking.adminApprovedAt,
+    review: booking.review
+      ? {
+          id: booking.review.id,
+          rating: booking.review.rating,
+          comment: booking.review.comment ?? '',
+          complaint: booking.review.complaint ?? '',
+          proofImages: booking.review.proofImages ?? [],
+          vendorDispute:
+            booking.review.vendorReply ?? '',
+          createdAt: booking.review.createdAt,
+        }
+      : null,
+    settlement:
+      booking.paymentStatus === PaymentStatus.SUCCESS
+        ? {
+            totalAmount,
+            platformCommissionRate: 10,
+            platformCommission,
+            vendorReceives:
+              totalAmount - platformCommission,
+          }
+        : null,
     bookingStatus: this.mapBookingStatus(
       booking.status,
     ),
     createdAt: booking.createdAt,
     updatedAt: booking.updatedAt,
   };
+}
+
+private getAdvanceRate(totalAmount: unknown) {
+  const total = Number(totalAmount);
+
+  if (total <= 50000) {
+    return 2;
+  }
+
+  if (total <= 250000) {
+    return 5;
+  }
+
+  return 10;
+}
+
+private getAdvanceAmount(totalAmount: unknown) {
+  const total = Number(totalAmount);
+  const rate = this.getAdvanceRate(total);
+
+  return Math.round(total * rate) / 100;
 }
 
 private mapPaymentStatus(status: PaymentStatus) {
@@ -997,6 +1165,26 @@ private mapPaymentStatus(status: PaymentStatus) {
 private mapBookingStatus(status: BookingStatus) {
   if (status === BookingStatus.CONFIRMED) {
     return 'completed';
+  }
+
+  if (status === BookingStatus.ADVANCE_PAID) {
+    return 'advance_paid';
+  }
+
+  if (status === BookingStatus.EVENT_COMPLETED) {
+    return 'event_completed';
+  }
+
+  if (status === BookingStatus.AWAITING_ADMIN_REVIEW) {
+    return 'awaiting_admin_review';
+  }
+
+  if (status === BookingStatus.PAYMENT_APPROVED) {
+    return 'payment_approved';
+  }
+
+  if (status === BookingStatus.PAYMENT_HELD) {
+    return 'payment_held';
   }
 
   return status.toLowerCase();

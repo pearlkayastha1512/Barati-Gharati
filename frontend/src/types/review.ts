@@ -17,6 +17,10 @@ export interface Review {
 
   comment: string;
 
+  complaint?: string;
+
+  proofImages?: string[];
+
   reply?: string;
 
   repliedAt?: string;

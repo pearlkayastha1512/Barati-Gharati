@@ -80,7 +80,7 @@ export default function VendorInformation({
 
               <Building2
                 size={20}
-                className="text-indigo-500"
+                className="text-[#ff4d6d]"
               />
 
               <span className="text-gray-700">
@@ -93,7 +93,7 @@ export default function VendorInformation({
 
               <Phone
                 size={20}
-                className="text-indigo-500"
+                className="text-[#ff4d6d]"
               />
 
               <span className="text-gray-500">
@@ -106,7 +106,7 @@ export default function VendorInformation({
 
               <Mail
                 size={20}
-                className="text-indigo-500"
+                className="text-[#ff4d6d]"
               />
 
               <span className="text-gray-500">
@@ -119,7 +119,7 @@ export default function VendorInformation({
 
               <MapPin
                 size={20}
-                className="text-indigo-500"
+                className="text-[#ff4d6d]"
               />
 
               <span className="text-gray-700">
@@ -132,7 +132,7 @@ export default function VendorInformation({
 
               <IndianRupee
                 size={20}
-                className="text-indigo-500"
+                className="text-[#ff4d6d]"
               />
 
               <span className="font-semibold text-gray-900">
@@ -154,13 +154,13 @@ export default function VendorInformation({
               items-center
               gap-2
               rounded-2xl
-              bg-indigo-600
+              bg-[#ff4d6d]
               px-6
               py-3
               font-semibold
               text-white
               transition
-              hover:bg-indigo-700
+              hover:bg-[#e4005a]
             "
           >
             View Vendor Profile

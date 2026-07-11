@@ -15,6 +15,7 @@ import { InvoiceService } from '../invoice/invoice.service';
 import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
+  BookingStatus,
   Role,
   VendorBadge,
   VendorStatus,
@@ -45,8 +46,37 @@ export class PaymentService {
     });
   }
 
+  private getAdvanceRate(totalAmount: unknown) {
+    const total = Number(totalAmount);
+
+    if (total <= 50000) {
+      return 2;
+    }
+
+    if (total <= 250000) {
+      return 5;
+    }
+
+    return 10;
+  }
+
   private getAdvanceAmount(totalAmount: unknown) {
-    return Math.round(Number(totalAmount) * 10) / 100;
+    const total = Number(totalAmount);
+    const rate = this.getAdvanceRate(total);
+
+    return Math.round(total * rate) / 100;
+  }
+
+  private getSettlement(totalAmount: unknown) {
+    const total = Number(totalAmount);
+    const platformCommission = Math.round(total * 10) / 100;
+
+    return {
+      totalAmount: total,
+      platformCommissionRate: 10,
+      platformCommission,
+      vendorReceives: total - platformCommission,
+    };
   }
 
   private readonly badgePrices: Record<VendorBadge, number> = {
@@ -268,6 +298,9 @@ export class PaymentService {
     const requiredAdvance = this.getAdvanceAmount(
       booking.totalAmount,
     );
+    const advanceRate = this.getAdvanceRate(
+      booking.totalAmount,
+    );
 
     if (
       Number(booking.amountPaid) >= requiredAdvance
@@ -303,6 +336,77 @@ export class PaymentService {
         orderId: order.id,
         keyId: process.env.RAZORPAY_KEY_ID,
         amount: requiredAdvance,
+        advancePercentage: advanceRate,
+        amountInPaise: order.amount,
+        totalAmount: Number(booking.totalAmount),
+        paymentStatus: PaymentStatus.PROCESSING,
+        currency: 'INR',
+      },
+    };
+  }
+
+  async createRemainingOrder(
+    userId: string,
+    dto: CreateOrderDto,
+  ) {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id: dto.bookingId,
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.userId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to access this booking',
+      );
+    }
+
+    if (booking.status !== BookingStatus.PAYMENT_APPROVED) {
+      throw new BadRequestException(
+        'Admin approval is required before completing the remaining payment',
+      );
+    }
+
+    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
+      throw new BadRequestException('Payment already completed');
+    }
+
+    const remainingAmount = Number(booking.remainingAmount);
+
+    if (remainingAmount <= 0) {
+      throw new BadRequestException('No remaining payment is due');
+    }
+
+    const order = await this.getRazorpay().orders.create({
+      amount: Math.round(remainingAmount * 100),
+      currency: 'INR',
+      receipt: `remaining_${booking.bookingNumber}`.slice(0, 40),
+      notes: {
+        bookingId: booking.id,
+        paymentType: 'BOOKING_REMAINING',
+      },
+    });
+
+    await this.prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        finalPaymentOrderId: order.id,
+        paymentStatus: PaymentStatus.PROCESSING,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Remaining payment order created successfully',
+      data: {
+        bookingId: booking.id,
+        orderId: order.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        amount: remainingAmount,
         amountInPaise: order.amount,
         totalAmount: Number(booking.totalAmount),
         paymentStatus: PaymentStatus.PROCESSING,
@@ -349,6 +453,9 @@ export class PaymentService {
     const requiredAdvance = this.getAdvanceAmount(
       booking.totalAmount,
     );
+    const advanceRate = this.getAdvanceRate(
+      booking.totalAmount,
+    );
 
     if (
       Number(booking.amountPaid) >= requiredAdvance
@@ -383,6 +490,7 @@ export class PaymentService {
   amountPaid: requiredAdvance,
   remainingAmount:
     Number(booking.totalAmount) - requiredAdvance,
+  status: BookingStatus.ADVANCE_PAID,
 }
 });
 
@@ -434,14 +542,14 @@ await Promise.all(
   admins.map((admin) =>
     this.notificationsService.create(admin.id, {
       title: 'Booking Awaiting Approval',
-      message: `${completedBooking.user.name} paid the 10% advance for booking ${completedBooking.bookingNumber}.`,
+      message: `${completedBooking.user.name} paid the ${advanceRate}% advance for booking ${completedBooking.bookingNumber}.`,
     }),
   ),
 );
 
 await this.notificationsService.create(completedBooking.userId, {
   title: 'Advance Payment Received',
-  message: `Your 10% advance for booking ${completedBooking.bookingNumber} was received. Admin review is pending.`,
+  message: `Your ${advanceRate}% advance for booking ${completedBooking.bookingNumber} was received. Admin review is pending.`,
 });
 
 return {
@@ -450,6 +558,105 @@ return {
     'Advance payment verified. Booking is awaiting admin approval.',
   data: completedBooking,
 };
+  }
+
+  async verifyRemainingPayment(
+    userId: string,
+    bookingId: string,
+    dto: VerifyPaymentDto,
+  ) {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    if (booking.status !== BookingStatus.PAYMENT_APPROVED) {
+      throw new BadRequestException(
+        'Admin approval is required before completing the remaining payment',
+      );
+    }
+
+    if (booking.paymentStatus === PaymentStatus.SUCCESS) {
+      throw new BadRequestException('Payment already verified');
+    }
+
+    if (
+      !booking.finalPaymentOrderId ||
+      dto.orderId !== booking.finalPaymentOrderId
+    ) {
+      throw new BadRequestException(
+        'Payment order does not match this booking',
+      );
+    }
+
+    this.verifySignature(
+      dto.orderId,
+      dto.paymentId,
+      dto.signature,
+    );
+
+    const totalAmount = Number(booking.totalAmount);
+    const updatedBooking = await this.prisma.booking.update({
+      where: {
+        id: booking.id,
+      },
+      data: {
+        amountPaid: totalAmount,
+        remainingAmount: 0,
+        paymentStatus: PaymentStatus.SUCCESS,
+        status: BookingStatus.CONFIRMED,
+        finalPaymentOrderId: null,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    const settlement = this.getSettlement(totalAmount);
+
+    await Promise.all([
+      this.notificationsService.create(updatedBooking.vendor.userId, {
+        title: 'Payment Ready for Settlement',
+        message: `Full payment for booking ${updatedBooking.bookingNumber} is complete. Vendor settlement amount is ₹${settlement.vendorReceives.toLocaleString('en-IN')}.`,
+      }),
+      this.notificationsService.create(updatedBooking.userId, {
+        title: 'Payment Completed',
+        message: `Your remaining payment for booking ${updatedBooking.bookingNumber} was received.`,
+      }),
+    ]);
+
+    return {
+      success: true,
+      message: 'Remaining payment verified successfully',
+      data: {
+        ...updatedBooking,
+        settlement,
+      },
+    };
   }
 
   // ===============================

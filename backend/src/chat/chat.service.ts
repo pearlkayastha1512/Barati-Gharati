@@ -462,10 +462,10 @@ async sendMessage(
     );
   }
 
-  const isCustomer =
-    senderId === conversation.customerId;
-  const isVendor =
-    senderId === conversation.vendor.userId;
+  // const isCustomer =
+  //   senderId === conversation.customerId;
+  // const isVendor =
+  //   senderId === conversation.vendor.userId;
 
   if (!isCustomer && !isVendor) {
     throw new ForbiddenException(

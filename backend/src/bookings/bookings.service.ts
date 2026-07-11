@@ -275,8 +275,13 @@ export class BookingsService {
       );
     }
 
-    if (booking.status !== BookingStatus.PENDING)
-      throw new BadRequestException('Only PENDING bookings can be accepted');
+    if (
+      booking.status !== BookingStatus.PENDING &&
+      booking.status !== BookingStatus.ADVANCE_PAID
+    )
+      throw new BadRequestException(
+        'Only pending or advance paid bookings can be accepted',
+      );
 
     await this.ensureVendorAvailable(
       booking.vendorId,
@@ -337,6 +342,46 @@ export class BookingsService {
     });
 
     return this.mapBooking(updatedBooking);
+  }
+
+  async completeEvent(id: string, userId: string) {
+    const booking = await this.getVendorBooking(id, userId);
+
+    if (
+      booking.status !== BookingStatus.ACCEPTED &&
+      booking.status !== BookingStatus.CONFIRMED
+    ) {
+      throw new BadRequestException(
+        'Only accepted bookings can be marked as completed',
+      );
+    }
+
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: {
+        status: BookingStatus.EVENT_COMPLETED,
+      },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    await this.notificationsService.create(updatedBooking.userId, {
+      title: 'Event Completed',
+      message: `${updatedBooking.vendor.businessName} marked your event as completed. Please share your review.`,
+    });
+
+    return {
+      success: true,
+      message: 'Event marked as completed',
+      data: this.mapBooking(updatedBooking),
+    };
   }
 
   async confirm(id: string, userId: string) {
@@ -605,7 +650,14 @@ export class BookingsService {
             lt: end,
           },
           status: {
-            in: [BookingStatus.ACCEPTED, BookingStatus.CONFIRMED],
+            in: [
+              BookingStatus.ADVANCE_PAID,
+              BookingStatus.ACCEPTED,
+              BookingStatus.EVENT_COMPLETED,
+              BookingStatus.AWAITING_ADMIN_REVIEW,
+              BookingStatus.PAYMENT_APPROVED,
+              BookingStatus.CONFIRMED,
+            ],
           },
         },
       }),
@@ -761,6 +813,26 @@ export class BookingsService {
   private mapBookingStatus(status: BookingStatus) {
     if (status === BookingStatus.CONFIRMED) {
       return 'completed';
+    }
+
+    if (status === BookingStatus.ADVANCE_PAID) {
+      return 'advance_paid';
+    }
+
+    if (status === BookingStatus.EVENT_COMPLETED) {
+      return 'event_completed';
+    }
+
+    if (status === BookingStatus.AWAITING_ADMIN_REVIEW) {
+      return 'awaiting_admin_review';
+    }
+
+    if (status === BookingStatus.PAYMENT_APPROVED) {
+      return 'payment_approved';
+    }
+
+    if (status === BookingStatus.PAYMENT_HELD) {
+      return 'payment_held';
     }
 
     return status.toLowerCase();

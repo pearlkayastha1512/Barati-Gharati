@@ -84,10 +84,10 @@ export default function Header() {
 
           </div>
 
-          <ChevronDown
+          {/* <ChevronDown
             size={18}
             className="hidden text-[#8d6171] lg:block"
-          />
+          /> */}
 
         </button>
 

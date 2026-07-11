@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Eye } from "lucide-react";
+import { Check, Eye, PauseCircle } from "lucide-react";
 
 import { Booking } from "@/types/booking";
 
@@ -10,12 +10,18 @@ interface Props {
   onView: (booking: Booking) => void;
 
   onApprove: (booking: Booking) => void;
+
+  onApprovePayment?: (booking: Booking) => void;
+
+  onHoldPayment?: (booking: Booking) => void;
 }
 
 export default function BookingTable({
   bookings,
   onView,
   onApprove,
+  onApprovePayment,
+  onHoldPayment,
 }: Props) {
   if (bookings.length === 0) {
     return (
@@ -140,6 +146,15 @@ export default function BookingTable({
                       "accepted"
                         ? "bg-green-100 text-green-700"
                         : booking.bookingStatus ===
+                          "awaiting_admin_review"
+                        ? "bg-purple-100 text-purple-700"
+                        : booking.bookingStatus ===
+                          "payment_approved"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : booking.bookingStatus ===
+                          "payment_held"
+                        ? "bg-red-100 text-red-700"
+                        : booking.bookingStatus ===
                           "completed"
                         ? "bg-blue-100 text-blue-700"
                         : booking.bookingStatus ===
@@ -166,6 +181,35 @@ export default function BookingTable({
                         >
                           <Check size={18} />
                         </button>
+                      )}
+
+                    {booking.bookingStatus ===
+                      "awaiting_admin_review" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              onApprovePayment?.(
+                                booking
+                              )
+                            }
+                            className="rounded-xl bg-emerald-100 p-2 text-emerald-700 transition hover:bg-emerald-200"
+                            title="Approve payment"
+                          >
+                            <Check size={18} />
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              onHoldPayment?.(
+                                booking
+                              )
+                            }
+                            className="rounded-xl bg-red-100 p-2 text-red-700 transition hover:bg-red-200"
+                            title="Hold payment"
+                          >
+                            <PauseCircle size={18} />
+                          </button>
+                        </>
                       )}
 
                   <button

@@ -7,7 +7,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { VendorReplyDto } from './dto/vendor-reply.dto';
-import { BookingStatus, VendorStatus } from '@prisma/client';
+import {
+  BookingStatus,
+  Role,
+  VendorStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
@@ -33,12 +37,9 @@ export class ReviewsService {
       );
     }
 
-    if (
-      booking.status !== BookingStatus.CONFIRMED &&
-      booking.status !== BookingStatus.ACCEPTED
-    ) {
+    if (booking.status !== BookingStatus.EVENT_COMPLETED) {
       throw new ForbiddenException(
-        'You can only review an accepted or confirmed booking',
+        'You can only review a completed event',
       );
     }
 
@@ -64,34 +65,66 @@ export class ReviewsService {
       );
     }
 
-    const review = await this.prisma.review.create({
-      data: {
-        userId,
-        bookingId: booking.id,
-        packageId: booking.packageId,
-        vendorId: booking.vendorId,
-        rating: dto.rating,
-        comment: dto.comment,
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
+    const review = await this.prisma.$transaction(async (tx) => {
+      const createdReview = await tx.review.create({
+        data: {
+          userId,
+          bookingId: booking.id,
+          packageId: booking.packageId,
+          vendorId: booking.vendorId,
+          rating: dto.rating,
+          comment: dto.comment,
+          complaint: dto.complaint,
+          proofImages: dto.proofImages ?? [],
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+          package: {
+            select: {
+              title: true,
+            },
+          },
+          vendor: {
+            select: {
+              businessName: true,
+              frontendVendorId: true,
+            },
           },
         },
-        package: {
-          select: {
-            title: true,
-          },
+      });
+
+      await tx.booking.update({
+        where: {
+          id: booking.id,
         },
-        vendor: {
-          select: {
-            businessName: true,
-            frontendVendorId: true,
-          },
+        data: {
+          status: BookingStatus.AWAITING_ADMIN_REVIEW,
         },
-      },
+      });
+
+      return createdReview;
     });
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      admins.map((admin) =>
+        this.prisma.notification.create({
+          data: {
+            userId: admin.id,
+            title: 'Booking Awaiting Review',
+            message: `Customer submitted a review for booking ${booking.bookingNumber}. Please approve or hold the final payment.`,
+          },
+        }),
+      ),
+    );
 
     return {
       id: review.id,
@@ -104,6 +137,8 @@ export class ReviewsService {
       packageName: review.package.title,
       rating: review.rating,
       comment: review.comment,
+      complaint: review.complaint,
+      proofImages: review.proofImages,
       reply: review.vendorReply,
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
@@ -183,6 +218,8 @@ export class ReviewsService {
       packageName: review.package.title,
       rating: review.rating,
       comment: review.comment ?? '',
+      complaint: review.complaint,
+      proofImages: review.proofImages,
       reply: review.vendorReply,
       repliedAt: review.vendorReply
         ? review.updatedAt

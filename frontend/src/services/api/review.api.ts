@@ -109,6 +109,8 @@ export async function createReviewApi(
         bookingId: review.bookingId,
         rating: review.rating,
         comment: review.comment,
+        complaint: review.complaint,
+        proofImages: review.proofImages,
       }
     );
 

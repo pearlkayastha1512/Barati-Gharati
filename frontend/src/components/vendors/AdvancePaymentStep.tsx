@@ -141,7 +141,7 @@ export default function AdvancePaymentStep({
       amount: order.amountInPaise,
       currency: order.currency,
       name: "Barati Gharati",
-      description: `10% advance for ${vendorName}`,
+      description: `${order.advancePercentage ?? ""}% advance for ${vendorName}`,
       order_id: order.orderId,
       prefill: {
         name: customerName,
@@ -194,7 +194,9 @@ export default function AdvancePaymentStep({
         </div>
 
         <h2 className="mt-5 text-3xl font-bold text-gray-900">
-          Pay 10% Advance
+          {order?.advancePercentage
+            ? `Pay ${order.advancePercentage}% Advance`
+            : "Pay Advance"}
         </h2>
 
         <p className="mt-3 text-gray-600">
@@ -217,6 +219,9 @@ export default function AdvancePaymentStep({
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm font-medium text-gray-600">
               Advance Due
+              {order?.advancePercentage
+                ? ` (${order.advancePercentage}%)`
+                : ""}
             </span>
             <span className="text-2xl font-bold text-rose-600">
               ₹

@@ -14,6 +14,11 @@ import ReviewDetailsModal from "@/components/admin/reviews/ReviewDetailsModal";
 
 import { getReviews } from "@/services/review.service";
 import { Review } from "@/types/review";
+import {
+  approveBookingPaymentApi,
+  holdBookingPaymentApi,
+} from "@/services/api/admin.api";
+import { toast } from "sonner";
 
 export default function ReviewsManagementPage() {
   const [reviews, setReviews] =
@@ -30,6 +35,14 @@ export default function ReviewsManagementPage() {
 
     void loadReviews();
   }, []);
+
+  const loadReviews = async () => {
+    const data = await getReviews();
+
+    setReviews(
+      Array.isArray(data) ? data : []
+    );
+  };
 
   const [search, setSearch] = useState("");
 
@@ -78,6 +91,52 @@ export default function ReviewsManagementPage() {
     setIsModalOpen(true);
   };
 
+  const handleApprovePayment = async (
+    review: Review
+  ) => {
+    const result =
+      await approveBookingPaymentApi(
+        review.bookingId
+      );
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to approve payment."
+      );
+      return;
+    }
+
+    toast.success(
+      "Payment approved. Customer can now pay the remaining balance."
+    );
+    setIsModalOpen(false);
+    setSelectedReview(null);
+    await loadReviews();
+  };
+
+  const handleHoldPayment = async (
+    review: Review
+  ) => {
+    const result =
+      await holdBookingPaymentApi(
+        review.bookingId
+      );
+
+    if (!result.ok) {
+      toast.error(
+        result.error ??
+          "Unable to hold payment."
+      );
+      return;
+    }
+
+    toast.success("Payment held.");
+    setIsModalOpen(false);
+    setSelectedReview(null);
+    await loadReviews();
+  };
+
   return (
     <div className="space-y-8">
       <ReviewHero />
@@ -99,6 +158,10 @@ export default function ReviewsManagementPage() {
       <ReviewDetailsModal
         review={selectedReview}
         open={isModalOpen}
+        onApprovePayment={
+          handleApprovePayment
+        }
+        onHoldPayment={handleHoldPayment}
         onClose={() => {
           setSelectedReview(null);
 

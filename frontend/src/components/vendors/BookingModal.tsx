@@ -251,7 +251,7 @@ const handleBooking = async () => {
   setPaymentBooking(result.data);
 
   toast.success(
-    "Booking details saved. Please pay the 10% advance."
+    "Booking details saved. Please pay the required advance."
   );
 };
 

@@ -26,8 +26,7 @@ interface VendorReviewsProps {
 }
 
 const REVIEWABLE_BOOKING_STATUSES = [
-  "accepted",
-  "completed",
+  "event_completed",
 ];
 
 export default function VendorReviews({
@@ -133,7 +132,7 @@ export default function VendorReviews({
               onClick={() => {
                 if (!hasReviewableBooking) {
                   toast.error(
-                    "You can review after your booking is accepted."
+                    "You can review after the vendor marks your event completed."
                   );
                   return;
                 }
