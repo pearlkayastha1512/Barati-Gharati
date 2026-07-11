@@ -5,6 +5,7 @@ import {
   MapPin,
   Mail,
   Phone,
+  Link2,
 } from "lucide-react";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -55,7 +56,7 @@ export default function SocialLinks() {
           icon={
             <Mail
               size={18}
-              className="text-emerald-600"
+              className="text-[#e4005a]"
             />
           }
           label="Email"
@@ -73,6 +74,66 @@ export default function SocialLinks() {
           value={vendor.phone}
         />
 
+        <Row
+          icon={
+            <Globe
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="Website"
+          value={vendor.website || "-"}
+          isLink
+        />
+
+        <Row
+          icon={
+            <Link2
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="Instagram"
+          value={vendor.instagram || "-"}
+          isLink
+        />
+
+        <Row
+          icon={
+            <Link2
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="Facebook"
+          value={vendor.facebook || "-"}
+          isLink
+        />
+
+        <Row
+          icon={
+            <Link2
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="YouTube"
+          value={vendor.youtube || "-"}
+          isLink
+        />
+
+        <Row
+          icon={
+            <Link2
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="LinkedIn"
+          value={vendor.linkedin || "-"}
+          isLink
+        />
+
       </div>
 
     </section>
@@ -83,11 +144,16 @@ function Row({
   icon,
   label,
   value,
+  isLink = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  isLink?: boolean;
 }) {
+  const showLink =
+    isLink && value && value !== "-";
+
   return (
     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
 
@@ -101,9 +167,20 @@ function Row({
 
       </div>
 
-      <span className="max-w-[60%] text-right font-medium text-slate-900">
-        {value}
-      </span>
+      {showLink ? (
+        <a
+          href={value}
+          target="_blank"
+          rel="noreferrer"
+          className="max-w-[60%] break-words text-right font-medium text-[#e4005a] hover:underline"
+        >
+          {value}
+        </a>
+      ) : (
+        <span className="max-w-[60%] break-words text-right font-medium text-slate-900">
+          {value}
+        </span>
+      )}
 
     </div>
   );

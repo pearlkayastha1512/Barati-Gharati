@@ -201,6 +201,11 @@ export class ReviewsService {
             frontendVendorId: true,
           },
         },
+        booking: {
+          select: {
+            status: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -216,6 +221,7 @@ export class ReviewsService {
       customerName: review.user.name,
       vendorName: review.vendor.businessName,
       packageName: review.package.title,
+      bookingStatus: review.booking.status.toLowerCase(),
       rating: review.rating,
       comment: review.comment ?? '',
       complaint: review.complaint,

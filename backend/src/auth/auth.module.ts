@@ -8,12 +8,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { MailModule } from '../mail/mail.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     NotificationsModule,
     PrismaModule,
      MailModule,
+    CloudinaryModule,
     PassportModule.register({
     defaultStrategy: 'jwt',
   }),

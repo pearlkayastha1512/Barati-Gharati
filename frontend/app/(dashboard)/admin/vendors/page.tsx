@@ -95,8 +95,14 @@ export default function VendorManagementPage() {
     setIsModalOpen(false);
     setSelectedVendor(null);
 
+    const data =
+      result.data as
+        | { message?: string }
+        | undefined;
+
     toast.success(
-      "Vendor rejected successfully."
+      data?.message ??
+        "Vendor rejected successfully."
     );
   };
 
@@ -104,6 +110,20 @@ export default function VendorManagementPage() {
     vendorId: string | number,
     badge: VendorBadge
   ) => {
+    const vendor = vendors.find(
+      (item) => item.id === vendorId
+    );
+
+    if (
+      vendor &&
+      vendor.approvalStatus !== "approved"
+    ) {
+      toast.error(
+        "Approve vendor before changing badge."
+      );
+      return;
+    }
+
     const result =
       await updateVendorBadgeApi(
         String(vendorId),

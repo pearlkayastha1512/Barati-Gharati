@@ -74,6 +74,7 @@ export async function updatePortfolioApi(
   payload: {
     title: string;
     category: string;
+    categories?: string[];
     description: string;
   }
 ) {

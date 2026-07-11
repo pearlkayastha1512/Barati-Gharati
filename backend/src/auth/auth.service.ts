@@ -10,11 +10,17 @@ import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import Razorpay from 'razorpay';
 
 
 import { RegisterVendorDto } from './dto/register-vendor.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
-import { Role, VendorStatus } from '@prisma/client';
+import {
+  Role,
+  VendorBadge,
+  VendorStatus,
+} from '@prisma/client';
 
 
 @Injectable()
@@ -25,7 +31,149 @@ export class AuthService {
   private readonly jwtService: JwtService,
   private readonly notificationsService: NotificationsService,
    private readonly mailService: MailService,
+  private readonly cloudinaryService: CloudinaryService,
 ) {}
+
+  private readonly badgePrices: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 0,
+    [VendorBadge.SILVER]: 999,
+    [VendorBadge.GOLD]: 1999,
+  };
+
+  private readonly badgeLimits: Record<VendorBadge, number> = {
+    [VendorBadge.BRONZE]: 5,
+    [VendorBadge.SILVER]: 15,
+    [VendorBadge.GOLD]: 50,
+  };
+
+  private getRazorpay() {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      throw new BadRequestException(
+        'Payment gateway is not configured',
+      );
+    }
+
+    return new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+
+  private verifyPaymentSignature(
+    orderId: string,
+    paymentId: string,
+    signature: string,
+  ) {
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keySecret) {
+      throw new BadRequestException(
+        'Payment gateway is not configured',
+      );
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', keySecret)
+      .update(orderId + '|' + paymentId)
+      .digest('hex');
+
+    const providedSignature = Buffer.from(signature);
+    const calculatedSignature = Buffer.from(expectedSignature);
+
+    if (
+      providedSignature.length !== calculatedSignature.length ||
+      !crypto.timingSafeEqual(
+        providedSignature,
+        calculatedSignature,
+      )
+    ) {
+      throw new BadRequestException(
+        'Invalid badge payment signature',
+      );
+    }
+  }
+
+  private async verifyVendorRegistrationBadgePayment(
+    dto: RegisterVendorDto,
+  ) {
+    if (
+      !Object.values(VendorBadge).includes(dto.selectedBadge)
+    ) {
+      throw new BadRequestException('Invalid badge plan');
+    }
+
+    if (dto.selectedBadge === VendorBadge.BRONZE) {
+      throw new BadRequestException(
+        'Please select a paid badge plan to register as a vendor',
+      );
+    }
+
+    this.verifyPaymentSignature(
+      dto.badgePaymentOrderId,
+      dto.badgePaymentId,
+      dto.badgePaymentSignature,
+    );
+
+    const reusedOrder =
+      await this.prisma.vendor.findFirst({
+        where: {
+          badgePaymentOrderId:
+            dto.badgePaymentOrderId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (reusedOrder) {
+      throw new BadRequestException(
+        'This badge payment has already been used',
+      );
+    }
+
+    const order =
+      await this.getRazorpay().orders.fetch(
+        dto.badgePaymentOrderId,
+      );
+    const expectedAmount =
+      this.badgePrices[dto.selectedBadge] * 100;
+
+    if (Number(order.amount) !== expectedAmount) {
+      throw new BadRequestException(
+        'Badge payment amount does not match selected plan',
+      );
+    }
+
+    if (
+      order.notes?.paymentType !==
+        'VENDOR_REGISTRATION_BADGE' ||
+      order.notes?.badge !== dto.selectedBadge
+    ) {
+      throw new BadRequestException(
+        'Badge payment order does not match vendor registration',
+      );
+    }
+  }
+
+  async uploadVendorRegistrationImage(
+    file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Image file is required');
+    }
+
+    const uploaded =
+      await this.cloudinaryService.uploadImage(file);
+
+    return {
+      success: true,
+      message: 'Image uploaded successfully',
+      image: uploaded.secure_url,
+    };
+  }
 
   async register(registerDto: RegisterDto) {
 
@@ -156,12 +304,43 @@ await this.prisma.verificationToken.create({
     );
   }
 
+  await this.verifyVendorRegistrationBadgePayment(
+    registerVendorDto,
+  );
+
   // Hash password
   const hashedPassword =
     await bcrypt.hash(
       registerVendorDto.password,
       10,
     );
+
+  let categoryId: string | undefined;
+
+  if (registerVendorDto.category) {
+    const category =
+      await this.prisma.category.findFirst({
+        where: {
+          name: {
+            equals: registerVendorDto.category,
+            mode: 'insensitive',
+          },
+        },
+      });
+
+    if (category) {
+      categoryId = category.id;
+    } else {
+      const createdCategory =
+        await this.prisma.category.create({
+          data: {
+            name: registerVendorDto.category,
+          },
+        });
+
+      categoryId = createdCategory.id;
+    }
+  }
 
   // Create User + Vendor together
   // Generate next frontend vendor ID
@@ -201,15 +380,41 @@ const user =
           description:
             registerVendorDto.description,
 
-          address:
-            registerVendorDto.city &&
-            registerVendorDto.address
-              ? `${registerVendorDto.city}, ${registerVendorDto.address}`
-              : registerVendorDto.address,
+          address: registerVendorDto.address,
 
-          categoryId: undefined,
+          city: registerVendorDto.city,
+
+          logoUrl: registerVendorDto.profileImage,
+
+          coverImage: registerVendorDto.coverImage,
+
+          website: registerVendorDto.website,
+
+          instagram: registerVendorDto.instagram,
+
+          facebook: registerVendorDto.facebook,
+
+          youtube: registerVendorDto.youtube,
+
+          linkedin: registerVendorDto.linkedin,
+
+          experience: registerVendorDto.experience,
+
+          gstNumber: registerVendorDto.gstNumber,
+
+          categoryId,
 
           status: VendorStatus.PENDING,
+          badge: registerVendorDto.selectedBadge,
+          monthlyBookingLimit:
+            this.badgeLimits[
+              registerVendorDto.selectedBadge
+            ],
+          badgePurchasedAt: new Date(),
+          badgePaymentOrderId:
+            registerVendorDto.badgePaymentOrderId,
+          badgePaymentId:
+            registerVendorDto.badgePaymentId,
         },
       },
     },

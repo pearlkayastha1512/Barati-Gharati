@@ -244,6 +244,21 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 
 import { usePortfolioStore } from "@/store/portfolioStore";
+import {
+  PortfolioCategory,
+} from "@/types/portfolio";
+
+const PORTFOLIO_CATEGORIES: PortfolioCategory[] = [
+  "Wedding",
+  "Reception",
+  "Engagement",
+  "Haldi",
+  "Mehendi",
+  "Pre Wedding",
+  "Bridal Makeup",
+  "Decoration",
+  "Other",
+];
 
 interface AddPortfolioModalProps {
   open: boolean;
@@ -262,7 +277,8 @@ export default function AddPortfolioModal({
   } = usePortfolioStore();
 
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] =
+    useState<PortfolioCategory[]>([]);
   const [description, setDescription] = useState("");
 
   const [imagePreview, setImagePreview] =
@@ -279,7 +295,11 @@ export default function AddPortfolioModal({
 
     if (selectedPortfolio) {
       setTitle(selectedPortfolio.title);
-      setCategory(selectedPortfolio.category);
+      setCategories(
+        selectedPortfolio.categories?.length
+          ? selectedPortfolio.categories
+          : [selectedPortfolio.category]
+      );
       setDescription(
         selectedPortfolio.description
       );
@@ -294,7 +314,7 @@ export default function AddPortfolioModal({
 
   function resetForm() {
     setTitle("");
-    setCategory("");
+    setCategories([]);
     setDescription("");
     setImagePreview("");
     setImageFile(null);
@@ -310,9 +330,9 @@ export default function AddPortfolioModal({
       return;
     }
 
-    if (!category) {
+    if (categories.length === 0) {
       toast.error(
-        "Please select category."
+        "Please select at least one category."
       );
       return;
     }
@@ -330,7 +350,8 @@ export default function AddPortfolioModal({
             ...selectedPortfolio,
             title,
             category:
-              category as typeof selectedPortfolio.category,
+              categories[0],
+            categories,
             description,
             image: imagePreview,
           });
@@ -376,8 +397,15 @@ export default function AddPortfolioModal({
 
       formData.append(
         "category",
-        category
+        categories[0]
       );
+
+      categories.forEach((category) => {
+        formData.append(
+          "categories",
+          category
+        );
+      });
 
       formData.append(
         "description",
@@ -464,55 +492,47 @@ export default function AddPortfolioModal({
               Category
             </label>
 
-            <select
-              value={category}
-              onChange={(e) =>
-                setCategory(
-                  e.target.value
-                )
-              }
-              className="h-12 w-full rounded-xl border border-gray-300 px-4 text-gray-600 focus:ring-2 focus:ring-[#e4005a] focus:outline-none"
-            >
-              <option value="">
-                Select Category
-              </option>
+            <div className="grid gap-3 rounded-2xl border border-gray-300 p-4 sm:grid-cols-2">
+              {PORTFOLIO_CATEGORIES.map(
+                (category) => {
+                  const selected =
+                    categories.includes(
+                      category
+                    );
 
-              <option>
-                Wedding
-              </option>
-
-              <option>
-                Reception
-              </option>
-
-              <option>
-                Engagement
-              </option>
-
-              <option>
-                Haldi
-              </option>
-
-              <option>
-                Mehendi
-              </option>
-
-              <option>
-                Pre Wedding
-              </option>
-
-              <option>
-                Bridal Makeup
-              </option>
-
-              <option>
-                Decoration
-              </option>
-
-              <option>
-                Other
-              </option>
-            </select>
+                  return (
+                    <label
+                      key={category}
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                        selected
+                          ? "border-[#e4005a] bg-[#ffe1ec] text-[#4d1730]"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-[#e4005a]"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => {
+                          setCategories((current) =>
+                            selected
+                              ? current.filter(
+                                  (item) =>
+                                    item !== category
+                                )
+                              : [
+                                  ...current,
+                                  category,
+                                ]
+                          );
+                        }}
+                        className="h-4 w-4 accent-[#e4005a]"
+                      />
+                      {category}
+                    </label>
+                  );
+                }
+              )}
+            </div>
           </div>
 
           <div>

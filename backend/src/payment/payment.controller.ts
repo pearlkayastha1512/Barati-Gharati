@@ -74,6 +74,15 @@ export class PaymentController {
     );
   }
 
+  @Post('vendor-registration-badge/create-order')
+  createVendorRegistrationBadgeOrder(
+    @Body() dto: { badge: VendorBadge },
+  ) {
+    return this.paymentService.createVendorRegistrationBadgeOrder(
+      dto.badge,
+    );
+  }
+
   @Post('vendor-badge/verify')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)

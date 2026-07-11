@@ -7,7 +7,7 @@ import AnalyticsStats from "@/components/vendor/analytics/AnalyticsStats";
 import BookingAnalytics from "@/components/vendor/analytics/BookingAnalytics";
 import RevenueAnalytics from "@/components/vendor/analytics/RevenueAnalytics";
 import TopServices from "@/components/vendor/analytics/TopServices";
-import InsightsCard from "@/components/vendor/analytics/InsightsCard";
+//import InsightsCard from "@/components/vendor/analytics/InsightsCard";
 import { useAuthStore } from "@/store/authStore";
 import { useBookingStore } from "@/store/bookingStore";
 
@@ -53,7 +53,7 @@ export default function VendorAnalyticsPage() {
 
         </div>
 
-        <InsightsCard />
+        {/* <InsightsCard /> */}
 
       </section>
 

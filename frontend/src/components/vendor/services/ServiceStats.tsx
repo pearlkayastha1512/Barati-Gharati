@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+//import { useMemo } from "react";
 
 import {
   BriefcaseBusiness,
@@ -10,31 +10,40 @@ import {
 } from "lucide-react";
 
 import { useServiceStore } from "@/store/serviceStore";
-
+import { useEffect, useMemo } from "react";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { useReviewStore } from "@/store/reviewStore";
 export default function ServiceStats() {
   const services = useServiceStore(
     (state) => state.services
   );
+  const { vendor } = useVendorProfile();
 
+const reviews = useReviewStore((state) => state.reviews);
+
+const loadVendorReviews = useReviewStore(
+  (state) => state.loadVendorReviews
+);
+
+useEffect(() => {
+  if (!vendor) return;
+
+  void loadVendorReviews(vendor.id);
+}, [vendor, loadVendorReviews]);
   const stats = useMemo(() => {
     const totalServices = services.length;
 
-    const totalReviews = services.reduce(
-      (sum, service) =>
-        sum + service.reviews,
-      0
-    );
+    const totalReviews = reviews.length;
 
-    const averageRating =
-      totalServices > 0
-        ? (
-            services.reduce(
-              (sum, service) =>
-                sum + service.rating,
-              0
-            ) / totalServices
-          ).toFixed(1)
-        : "0.0";
+const averageRating =
+  totalReviews === 0
+    ? "0.0"
+    : (
+        reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        ) / totalReviews
+      ).toFixed(1);
 
     const averagePrice =
       totalServices > 0
@@ -56,7 +65,7 @@ export default function ServiceStats() {
             )
           )
         : 0;
-
+      
     return {
       totalServices,
       totalReviews,
@@ -64,7 +73,7 @@ export default function ServiceStats() {
       averagePrice,
       startingPrice,
     };
-  }, [services]);
+  }, [services,reviews]);
 
   const cards = [
     {

@@ -46,6 +46,7 @@ export default function PortfolioGrid({
           title={item.title}
           image={item.image}
           category={item.category}
+          categories={item.categories}
           onEdit={() => {
             setSelectedPortfolio(item);
 

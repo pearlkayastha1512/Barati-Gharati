@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useMemo } from "react";
 import {
   UserCircle2,
   MapPin,
@@ -9,9 +10,43 @@ import {
 } from "lucide-react";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { useReviewStore } from "@/store/reviewStore";
 
 export default function ProfileHero() {
   const { vendor, isLoading } = useVendorProfile();
+  const reviews = useReviewStore((state) => state.reviews);
+  const loadVendorReviews = useReviewStore(
+    (state) => state.loadVendorReviews
+  );
+
+  useEffect(() => {
+    if (!vendor) return;
+
+    void loadVendorReviews(vendor.id);
+  }, [loadVendorReviews, vendor]);
+
+  const reviewStats = useMemo(() => {
+    const reviewCount = reviews.length;
+
+    if (reviewCount === 0) {
+      return {
+        averageRating: "-",
+        reviewCount,
+      };
+    }
+
+    const averageRating = (
+      reviews.reduce(
+        (sum, review) => sum + review.rating,
+        0
+      ) / reviewCount
+    ).toFixed(1);
+
+    return {
+      averageRating,
+      reviewCount,
+    };
+  }, [reviews]);
 
   if (isLoading || !vendor) {
     return null;
@@ -21,9 +56,20 @@ export default function ProfileHero() {
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="overflow-hidden rounded-[32px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] p-8 text-white shadow-xl"
+      className="relative overflow-hidden rounded-[32px] bg-gradient-to-r from-[#e4005a] via-[#c90055] to-[#ffb703] p-8 text-white shadow-xl"
     >
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      {vendor.coverImage && (
+        <>
+          <img
+            src={vendor.coverImage}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#4d1730]/90 via-[#c90055]/80 to-[#ffb703]/75" />
+        </>
+      )}
+
+      <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
         <div className="flex items-center gap-6">
 
@@ -112,7 +158,7 @@ export default function ProfileHero() {
               />
 
               <span className="text-3xl font-bold">
-                4.9
+                {reviewStats.averageRating}
               </span>
 
             </div>
@@ -126,7 +172,7 @@ export default function ProfileHero() {
             </p>
 
             <h3 className="mt-2 text-3xl font-bold">
-              0
+              {reviewStats.reviewCount}
             </h3>
 
           </div>

@@ -22,6 +22,12 @@ export class PortfolioService {
   // ==========================================
 
   private mapPortfolio(item: any) {
+    const categories =
+      Array.isArray(item.categories) &&
+      item.categories.length > 0
+        ? item.categories
+        : [item.category].filter(Boolean);
+
     return {
       id: item.id,
 
@@ -31,6 +37,8 @@ export class PortfolioService {
 
       category: item.category,
 
+      categories,
+
       description: item.description ?? "",
 
       image: item.imageUrl,
@@ -39,6 +47,31 @@ export class PortfolioService {
 
       updatedAt: item.updatedAt,
     };
+  }
+
+  private normalizeCategories(
+    category?: string,
+    categories?: unknown,
+  ) {
+    const values = Array.isArray(categories)
+      ? categories
+      : typeof categories === "string"
+        ? categories
+            .split(",")
+            .map((item) => item.trim())
+        : [];
+
+    const normalized = values.filter(
+      (item): item is string =>
+        typeof item === "string" &&
+        item.trim().length > 0,
+    );
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+
+    return category ? [category] : [];
   }
 
   // ==========================================
@@ -68,12 +101,21 @@ export class PortfolioService {
         file,
       )) as any;
 
+    const categories =
+      this.normalizeCategories(
+        dto.category,
+        dto.categories,
+      );
+
     const portfolio =
       await this.prisma.portfolio.create({
         data: {
           title: dto.title,
 
-          category: dto.category,
+          category:
+            categories[0] ?? dto.category,
+
+          categories,
 
           description:
             dto.description ?? "",
@@ -231,6 +273,12 @@ export class PortfolioService {
       );
     }
 
+    const categories =
+      this.normalizeCategories(
+        dto.category,
+        dto.categories,
+      );
+
     const updated =
       await this.prisma.portfolio.update({
         where: {
@@ -241,7 +289,9 @@ export class PortfolioService {
           title: dto.title,
 
           category:
-            dto.category,
+            categories[0] ?? dto.category,
+
+          categories,
 
           description:
             dto.description,

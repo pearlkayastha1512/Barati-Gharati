@@ -68,6 +68,12 @@ export class PortfolioController {
         category: {
           type: "string",
         },
+        categories: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+        },
         description: {
           type: "string",
         },

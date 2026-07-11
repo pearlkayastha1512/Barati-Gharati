@@ -38,7 +38,7 @@ export default function EarningsHero() {
         booking.remainingAmount;
 
       const date = new Date(
-        booking.eventDate
+        booking.createdAt
       );
 
       if (

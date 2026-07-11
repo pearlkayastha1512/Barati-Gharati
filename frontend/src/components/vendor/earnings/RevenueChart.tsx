@@ -145,7 +145,7 @@ export default function RevenueChart() {
       }
 
       const date = new Date(
-        booking.eventDate
+        booking.createdAt
       );
 
       if (

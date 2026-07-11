@@ -40,6 +40,12 @@ export default function VendorDetailsModal({
     return null;
   }
 
+  const isApproved =
+    vendor.approvalStatus === "approved";
+  const monthlyBookingLimitLabel = isApproved
+    ? `${vendor.currentMonthBookings}/${vendor.monthlyBookingLimit}`
+    : "Inactive until approval";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
       <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
@@ -106,9 +112,15 @@ export default function VendorDetailsModal({
 
               <div className="mt-3">
                 <span
-                  className={`rounded-full px-4 py-2 text-sm font-semibold ${VENDOR_BADGE_COLORS[vendor.badge]}`}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                    isApproved
+                      ? VENDOR_BADGE_COLORS[vendor.badge]
+                      : "bg-slate-100 text-slate-600"
+                  }`}
                 >
-                  {VENDOR_BADGE_LABELS[vendor.badge]} Badge
+                  {isApproved
+                    ? `${VENDOR_BADGE_LABELS[vendor.badge]} Badge`
+                    : "Badge inactive"}
                 </span>
               </div>
             </div>
@@ -125,7 +137,7 @@ export default function VendorDetailsModal({
             <Info label="Experience" value={vendor.experience} />
             <Info
               label="Monthly Booking Limit"
-              value={`${vendor.currentMonthBookings}/${vendor.monthlyBookingLimit}`}
+              value={monthlyBookingLimitLabel}
             />
             <Info
               label="Badge Purchased At"
@@ -145,7 +157,9 @@ export default function VendorDetailsModal({
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              Badge decides how many bookings this vendor can receive per month.
+              {isApproved
+                ? "Badge decides how many bookings this vendor can receive per month."
+                : "Approve this vendor before assigning an active badge."}
             </p>
 
             <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -162,16 +176,24 @@ export default function VendorDetailsModal({
                 return (
                   <button
                     key={badge}
-                    onClick={() =>
+                    type="button"
+                    disabled={!isApproved}
+                    onClick={() => {
+                      if (!isApproved) {
+                        return;
+                      }
+
                       onBadgeChange(
                         vendor.id,
                         badge
-                      )
-                    }
+                      );
+                    }}
                     className={`rounded-2xl border px-4 py-3 text-left transition ${
-                      active
-                        ? "border-blue-500 bg-white shadow-sm"
-                        : "border-slate-200 bg-white hover:border-blue-300"
+                      !isApproved
+                        ? "cursor-not-allowed border-slate-200 bg-slate-100 opacity-70"
+                        : active
+                        ? "border-rose-500 bg-white shadow-sm"
+                        : "border-slate-200 bg-white hover:border-rose-300"
                     }`}
                   >
                     <span
@@ -188,6 +210,13 @@ export default function VendorDetailsModal({
                       }{" "}
                       bookings/month
                     </p>
+
+                    {!isApproved &&
+                      active && (
+                        <p className="mt-2 text-xs font-medium text-slate-500">
+                          Not active yet
+                        </p>
+                      )}
                   </button>
                 );
               })}

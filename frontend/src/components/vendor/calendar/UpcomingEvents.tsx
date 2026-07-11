@@ -43,7 +43,7 @@ export default function UpcomingEvents() {
           Upcoming Events
         </h2>
 
-        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+        <span className="rounded-full bg-rose-100 px-3 py-1 text-sm font-semibold text-rose-700">
           {upcomingBookings.length} Events
         </span>
 
@@ -93,7 +93,7 @@ export default function UpcomingEvents() {
 
                 <div className="text-right">
 
-                  <p className="font-semibold text-green-700">
+                  <p className="font-semibold text-rose-700">
                     {new Date(
                       booking.eventDate
                     ).toLocaleDateString(
