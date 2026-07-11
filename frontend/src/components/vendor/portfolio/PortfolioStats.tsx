@@ -24,8 +24,11 @@ export default function PortfolioStats() {
       new Set(
         portfolio.map(
           (item) =>
-            item.category
+            item.categories?.length
+              ? item.categories
+              : [item.category]
         )
+        .flat()
       ).size;
 
     const currentMonth =

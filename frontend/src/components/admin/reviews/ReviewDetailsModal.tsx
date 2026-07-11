@@ -27,6 +27,10 @@ export default function ReviewDetailsModal({
     return null;
   }
 
+  const canModeratePayment =
+    review.bookingStatus ===
+    "awaiting_admin_review";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
@@ -84,6 +88,14 @@ export default function ReviewDetailsModal({
             <Info
               label="Booking ID"
               value={review.bookingId}
+            />
+
+            <Info
+              label="Booking Status"
+              value={
+                review.bookingStatus
+                  ?.replaceAll("_", " ") ?? "-"
+              }
             />
 
             <Info
@@ -189,23 +201,31 @@ export default function ReviewDetailsModal({
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">
-            <button
-              onClick={() =>
-                onHoldPayment?.(review)
-              }
-              className="rounded-2xl bg-red-100 px-6 py-3 font-semibold text-red-700 transition hover:bg-red-200"
-            >
-              Hold Payment
-            </button>
+            {canModeratePayment ? (
+              <>
+                <button
+                  onClick={() =>
+                    onHoldPayment?.(review)
+                  }
+                  className="rounded-2xl bg-red-100 px-6 py-3 font-semibold text-red-700 transition hover:bg-red-200"
+                >
+                  Hold Payment
+                </button>
 
-            <button
-              onClick={() =>
-                onApprovePayment?.(review)
-              }
-              className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700"
-            >
-              Approve Payment
-            </button>
+                <button
+                  onClick={() =>
+                    onApprovePayment?.(review)
+                  }
+                  className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  Approve Payment
+                </button>
+              </>
+            ) : (
+              <span className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold capitalize text-slate-600">
+                Payment action unavailable
+              </span>
+            )}
 
             <button
               onClick={onClose}

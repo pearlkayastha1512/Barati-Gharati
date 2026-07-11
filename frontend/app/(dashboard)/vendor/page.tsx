@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useMemo } from "react";
+//import { useMemo } from "react";
 
 import VendorHero from "@/components/vendor/hero/VendorHero";
 import StatsCard from "@/components/vendor/cards/StatsCard";
@@ -10,12 +10,16 @@ import QuickActionCard from "@/components/vendor/cards/QuickActionCard";
 
 import PerformanceSection from "@/components/vendor/dashboard/PerformanceSection";
 import RevenueOverview from "@/components/vendor/dashboard/RevenueOverview";
-import UpcomingBookings from "@/components/vendor/dashboard/UpcomingBookings";
-import RecentReviews from "@/components/vendor/dashboard/RecentReviews";
+//import UpcomingBookings from "@/components/vendor/dashboard/UpcomingBookings";
+//import RecentReviews from "@/components/vendor/dashboard/RecentReviews";
 import VendorBadgeSummary from "@/components/vendor/dashboard/VendorBadgeSummary";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { useEffect, useMemo } from "react";
+
+import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { useReviewStore } from "@/store/reviewStore";
 
 import {
   CalendarCheck2,
@@ -32,13 +36,29 @@ export default function VendorDashboardPage() {
   const bookings = useBookingStore(
     (state) => state.bookings
   );
+  const loadVendorBookings = useBookingStore(
+    (state) => state.loadVendorBookings
+  );
+  const { vendor } = useVendorProfile();
 
+const reviews = useReviewStore((state) => state.reviews);
+
+const loadVendorReviews = useReviewStore(
+  (state) => state.loadVendorReviews
+);
+
+useEffect(() => {
+  if (!vendor) return;
+
+  void loadVendorBookings(vendor.id);
+  void loadVendorReviews(vendor.id);
+}, [vendor, loadVendorBookings, loadVendorReviews]);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
   const stats = useMemo(() => {
     const monthlyBookings = bookings.filter((booking) => {
-      const date = new Date(booking.eventDate);
+      const date = new Date(booking.createdAt);
 
       return (
         date.getMonth() === currentMonth &&
@@ -57,17 +77,26 @@ export default function VendorDashboardPage() {
         (booking) => booking.customerId
       )
     );
-
+    const averageRating =
+  reviews.length === 0
+    ? "0"
+    : (
+        reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        ) / reviews.length
+      ).toFixed(1);
     return {
       monthlyBookings: monthlyBookings.length,
       monthlyRevenue,
       totalCustomers: customers.size,
-      rating: "4.9",
+      rating: averageRating,
     };
   }, [
     bookings,
     currentMonth,
     currentYear,
+    reviews,
   ]);
 
   return (
@@ -152,11 +181,11 @@ export default function VendorDashboardPage() {
         <PerformanceSection />
 
         <section className="grid gap-6 xl:grid-cols-2">
-          <UpcomingBookings />
+          {/* <UpcomingBookings /> */}
           <RevenueOverview />
         </section>
 
-        <RecentReviews />
+        {/* <RecentReviews /> */}
       </div>
     </ProtectedRoute>
   );

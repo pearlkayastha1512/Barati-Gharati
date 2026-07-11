@@ -49,22 +49,34 @@ export class PaymentService {
   private getAdvanceRate(totalAmount: unknown) {
     const total = Number(totalAmount);
 
+    if (total <= 20000) {
+      return 50;
+    }
+
     if (total <= 50000) {
-      return 2;
+      return 40;
     }
 
-    if (total <= 250000) {
-      return 5;
+    if (total <= 100000) {
+      return 30;
     }
 
-    return 10;
+    if (total <= 300000) {
+      return 25;
+    }
+
+    if (total <= 500000) {
+      return 20;
+    }
+
+    return 15;
   }
 
   private getAdvanceAmount(totalAmount: unknown) {
     const total = Number(totalAmount);
     const rate = this.getAdvanceRate(total);
 
-    return Math.round(total * rate) / 100;
+    return Math.round((total * rate) / 100);
   }
 
   private getSettlement(totalAmount: unknown) {
@@ -195,6 +207,47 @@ export class PaymentService {
     };
   }
 
+  async createVendorRegistrationBadgeOrder(
+    badge: VendorBadge,
+  ) {
+    if (!Object.values(VendorBadge).includes(badge)) {
+      throw new BadRequestException('Invalid badge plan');
+    }
+
+    if (badge === VendorBadge.BRONZE) {
+      throw new BadRequestException(
+        'Please select a paid badge plan to register as a vendor',
+      );
+    }
+
+    const amount = this.badgePrices[badge];
+
+    const order = await this.getRazorpay().orders.create({
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      receipt: `vendor_reg_${Date.now()}`.slice(0, 40),
+      notes: {
+        badge,
+        paymentType: 'VENDOR_REGISTRATION_BADGE',
+      },
+    });
+
+    return {
+      success: true,
+      message:
+        'Vendor registration badge order created successfully',
+      data: {
+        badge: badge.toLowerCase(),
+        orderId: order.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        amount,
+        amountInPaise: order.amount,
+        currency: 'INR',
+        monthlyBookingLimit: this.badgeLimits[badge],
+      },
+    };
+  }
+
   async verifyVendorBadgePayment(
     userId: string,
     badge: VendorBadge,
@@ -233,7 +286,10 @@ export class PaymentService {
         badge,
         monthlyBookingLimit: this.badgeLimits[badge],
         badgePurchasedAt: new Date(),
+        badgePaymentId: dto.paymentId,
         badgePaymentOrderId: null,
+        badgePaymentRefundId: null,
+        badgePaymentRefundedAt: null,
       },
     });
 

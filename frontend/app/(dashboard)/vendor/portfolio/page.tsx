@@ -194,8 +194,11 @@ export default function VendorPortfolioPage() {
         ...new Set(
           portfolio.map(
             (item) =>
-              item.category
+              item.categories?.length
+                ? item.categories
+                : [item.category]
           )
+          .flat()
         ),
       ],
       [portfolio]
@@ -214,8 +217,13 @@ export default function VendorPortfolioPage() {
 
           const matchesCategory =
             category === "All" ||
-            item.category ===
-              category;
+            (item.categories?.length
+              ? item.categories
+              : [item.category]
+            ).some(
+              (itemCategory) =>
+                itemCategory === category
+            );
 
           return (
             matchesSearch &&

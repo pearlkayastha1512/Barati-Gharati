@@ -157,6 +157,11 @@ import {
 import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
 import { useState } from "react";
 import { validateGalleryStep } from "@/lib/validations/vendorRegistration";
+import { uploadVendorRegistrationImageApi } from "@/services/api/auth.api";
+
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE_BYTES =
+  MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 export default function GalleryStep() {
   const {
@@ -169,8 +174,12 @@ export default function GalleryStep() {
   const [errors, setErrors] = useState<
     Record<string, string>
   >({});
+  const [uploadingField, setUploadingField] =
+    useState<"profileImage" | "coverImage" | null>(
+      null
+    );
 
-  const handleImage = (
+  const handleImage = async (
     e: React.ChangeEvent<HTMLInputElement>,
     field: "profileImage" | "coverImage"
   ) => {
@@ -178,18 +187,53 @@ export default function GalleryStep() {
 
     if (!file) return;
 
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      e.target.value = "";
+      setErrors((prev) => ({
+        ...prev,
+        [field]: `Please upload image within ${MAX_IMAGE_SIZE_MB} MB.`,
+      }));
+      return;
+    }
+
     const preview = URL.createObjectURL(file);
-
     updateField(field, preview);
+    setUploadingField(field);
 
-    // Clear error immediately after selecting an image
     setErrors((prev) => ({
       ...prev,
       [field]: "",
     }));
+
+    const result =
+      await uploadVendorRegistrationImageApi(file);
+
+    setUploadingField(null);
+
+    if (!result.ok || !result.data.image) {
+      updateField(field, "");
+      setErrors((prev) => ({
+        ...prev,
+        [field]:
+          result.data.message ??
+          "Unable to upload image. Please try again.",
+      }));
+      return;
+    }
+
+    updateField(field, result.data.image);
   };
 
   const handleContinue = () => {
+    if (uploadingField) {
+      setErrors((prev) => ({
+        ...prev,
+        [uploadingField]:
+          "Please wait, image is still uploading.",
+      }));
+      return;
+    }
+
     const result = validateGalleryStep(formData);
 
     if (!result.isValid) {
@@ -219,6 +263,9 @@ export default function GalleryStep() {
           <label className="mb-3 block font-medium text-gray-600">
             Profile Image
           </label>
+          <p className="mb-3 text-xs font-medium text-rose-600">
+            Please upload image within 5 MB.
+          </p>
 
           <label
             className={`flex h-60 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed bg-white transition ${
@@ -242,6 +289,12 @@ export default function GalleryStep() {
                   className="mx-auto mb-3 text-gray-400"
                 />
                 <p>Select Profile Image</p>
+                {uploadingField ===
+                  "profileImage" && (
+                  <p className="mt-2 text-sm text-rose-600">
+                    Uploading...
+                  </p>
+                )}
               </div>
             )}
 
@@ -267,6 +320,9 @@ export default function GalleryStep() {
           <label className="mb-3 block font-medium text-gray-600">
             Cover Image
           </label>
+          <p className="mb-3 text-xs font-medium text-rose-600">
+            Please upload image within 5 MB.
+          </p>
 
           <label
             className={`flex h-60 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed bg-white transition ${
@@ -290,6 +346,12 @@ export default function GalleryStep() {
                   className="mx-auto mb-3 text-gray-400"
                 />
                 <p>Select Cover Image</p>
+                {uploadingField ===
+                  "coverImage" && (
+                  <p className="mt-2 text-sm text-rose-600">
+                    Uploading...
+                  </p>
+                )}
               </div>
             )}
 
@@ -324,9 +386,12 @@ export default function GalleryStep() {
         <button
           type="button"
           onClick={handleContinue}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
+          disabled={Boolean(uploadingField)}
+          className="flex items-center gap-2 rounded-xl bg-[#e4005a] px-6 py-3 font-medium text-white shadow-lg transition-all duration-200 hover:bg-[#c9004f] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Continue
+          {uploadingField
+            ? "Uploading..."
+            : "Continue"}
           <ArrowRight size={18} />
         </button>
       </div>

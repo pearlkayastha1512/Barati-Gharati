@@ -24,8 +24,12 @@ export default function PortfolioHero({
   const stats = useMemo(() => {
     const categories = new Set(
       portfolio.map(
-        (item) => item.category
+        (item) =>
+          item.categories?.length
+            ? item.categories
+            : [item.category]
       )
+      .flat()
     );
 
     return {

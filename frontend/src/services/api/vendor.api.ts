@@ -125,6 +125,78 @@ export async function updateMyVendorProfileApi(
     };
   }
 }
+
+export async function uploadVendorLogoApi(
+  file: File
+): Promise<{
+  ok: boolean;
+  image?: string;
+  error?: string;
+}> {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const { data } = await api.post(
+      "/vendor/upload-logo",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return {
+      ok: true,
+      image: data.image,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to upload profile image."
+      ),
+    };
+  }
+}
+
+export async function uploadVendorCoverApi(
+  file: File
+): Promise<{
+  ok: boolean;
+  coverImage?: string;
+  error?: string;
+}> {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const { data } = await api.post(
+      "/vendor/upload-cover",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return {
+      ok: true,
+      coverImage: data.coverImage,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to upload cover image."
+      ),
+    };
+  }
+}
 export async function getVendorByIdApi(
   id: number
 ): Promise<{

@@ -16,21 +16,18 @@ import {
   IndianRupee,
 } from "lucide-react";
 
-import { useAuthStore } from "@/store/authStore";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 import { useBookingStore } from "@/store/bookingStore";
 
 export default function VendorHero() {
-  const user = useAuthStore(
-    (state) => state.user
-  );
+  const { vendor } = useVendorProfile();
 
   const bookings = useBookingStore(
     (state) => state.bookings
   );
 
-  const firstName =
-    user?.name?.split(" ")[0] ??
-    "Vendor";
+  const displayName =
+    vendor?.ownerName ?? "Vendor";
 
   const currentMonth =
     new Date().getMonth();
@@ -58,13 +55,13 @@ export default function VendorHero() {
     );
 
     bookings.forEach((booking) => {
-      const eventDate = new Date(
-        booking.eventDate
+      const bookingDate = new Date(
+        booking.createdAt
       );
 
       if (
-  eventDate.getMonth() === currentMonth &&
-  eventDate.getFullYear() === currentYear &&
+  bookingDate.getMonth() === currentMonth &&
+  bookingDate.getFullYear() === currentYear &&
   booking.bookingStatus !== "cancelled"
 ) {
   monthlyBookings++;
@@ -140,7 +137,7 @@ export default function VendorHero() {
 
             <br />
 
-            {firstName}
+            {displayName}
 
           </h1>
 

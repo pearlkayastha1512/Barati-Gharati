@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
+import { VENDOR_CATEGORIES } from "@/constants/categories";
 
 interface AddServiceModalProps {
   open: boolean;
@@ -207,41 +208,16 @@ export default function AddServiceModal({
                 Select Category
               </option>
 
-              <option value="Photographer">
-                Photographer
-              </option>
-
-              <option value="Wedding Venue">
-                Wedding Venue
-              </option>
-
-              <option value="Decorator">
-                Decorator
-              </option>
-
-              <option value="Caterer">
-                Caterer
-              </option>
-
-              <option value="Makeup Artist">
-                Makeup Artist
-              </option>
-
-              <option value="Wedding Transport">
-                Wedding Transport
-              </option>
-
-              <option value="Mehendi Artist">
-                Mehendi Artist
-              </option>
-
-              <option value="DJ">
-                DJ
-              </option>
-
-              <option value="Band">
-                Band
-              </option>
+              {VENDOR_CATEGORIES.map(
+                (category) => (
+                  <option
+                    key={category}
+                    value={category}
+                  >
+                    {category}
+                  </option>
+                )
+              )}
             </select>
           </div>
 

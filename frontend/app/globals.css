@@ -223,8 +223,9 @@ body {
 
 
 .react-calendar__tile--active {
-  background: transparent !important;
-  color: #6b7280 !important;
+  background: #fff1f5 !important;
+  color: #4d1730 !important;
+  border-radius: 999px;
 }
 /* Blocked date */
 .calendar-blocked {
@@ -270,8 +271,8 @@ body {
 
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background: transparent !important;
-  color: #6b7280 !important;
+  background: #ffe4ec !important;
+  color: #4d1730 !important;
 }
 
 .calendar-blocked,
@@ -322,7 +323,7 @@ body {
 }
 
 .calendar-booked {
-  background: #3b82f6 !important;
+  background: #e4005a !important;
   color: white !important;
   border-radius: 999px;
 }

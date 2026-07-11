@@ -278,6 +278,8 @@ import {
   CheckCircle2,
   IndianRupee,
   MapPin,
+  FileText,
+  BadgeInfo,
   Star,
 } from "lucide-react";
 
@@ -368,7 +370,66 @@ export default function BusinessDetails() {
           value={vendor.category}
         />
 
-       
+        <Row
+          icon={
+            <MapPin
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="City"
+          value={vendor.city || "-"}
+        />
+
+        <Row
+          icon={
+            <MapPin
+              size={18}
+              className="text-rose-600"
+            />
+          }
+          label="Address"
+          value={vendor.address || "-"}
+        />
+
+        <Row
+          icon={
+            <BadgeInfo
+              size={18}
+              className="text-[#e4005a]"
+            />
+          }
+          label="Experience"
+          value={vendor.experience || "-"}
+        />
+
+        <Row
+          icon={
+            <FileText
+              size={18}
+              className="text-amber-600"
+            />
+          }
+          label="GST Number"
+          value={vendor.gstNumber || "-"}
+        />
+
+        <div className="rounded-2xl bg-rose-50 p-4">
+          <div className="flex items-center gap-3">
+            <FileText
+              size={18}
+              className="text-[#e4005a]"
+            />
+            <span className="font-medium text-slate-700">
+              Business Description
+            </span>
+          </div>
+
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+            {vendor.description || "-"}
+          </p>
+        </div>
+
         <Row
           icon={
             <BriefcaseBusiness
@@ -384,7 +445,7 @@ export default function BusinessDetails() {
           icon={
             <CalendarCheck2
               size={18}
-              className="text-green-600"
+              className="text-rose-600"
             />
           }
           label="Bookings"
@@ -395,7 +456,7 @@ export default function BusinessDetails() {
           icon={
             <CheckCircle2
               size={18}
-              className="text-emerald-600"
+              className="text-rose-600"
             />
           }
           label="Completed"

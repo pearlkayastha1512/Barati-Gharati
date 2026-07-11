@@ -15,6 +15,7 @@ import AddServiceModal from "@/components/vendor/services/AddServiceModal";
 
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
+import { VENDOR_CATEGORIES } from "@/constants/categories";
 
 export default function VendorServicesPage() {
   const [open, setOpen] = useState(false);
@@ -53,9 +54,12 @@ export default function VendorServicesPage() {
   const categories = useMemo(
     () => [
       ...new Set(
-        services.map(
-          (service) => service.category
-        )
+        [
+          ...VENDOR_CATEGORIES,
+          ...services.map(
+            (service) => service.category
+          ),
+        ]
       ),
     ],
     [services]
@@ -122,4 +126,3 @@ export default function VendorServicesPage() {
     </div>
   );
 }
-

@@ -7,6 +7,9 @@ import {
   Wallet,
   User,
   Tag,
+  Clock,
+  Users,
+  FileText,
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
@@ -45,6 +48,28 @@ export default function BookingDetailsCard() {
     );
   }
 
+  const canViewCustomerContact =
+    Boolean(selectedBooking.adminApproved);
+
+  const hasPeopleDetails =
+    canViewCustomerContact &&
+    Boolean(
+      selectedBooking.primaryPersonName ||
+        selectedBooking.brideName ||
+        selectedBooking.groomName ||
+        selectedBooking.partnerName ||
+        selectedBooking.partnerEmail ||
+        selectedBooking.partnerPhone ||
+        selectedBooking.partnerOccupation
+    );
+
+  const hasLocationDetails = Boolean(
+    selectedBooking.city ||
+      selectedBooking.contactAddress ||
+      selectedBooking.contactState ||
+      selectedBooking.contactCountry
+  );
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
 
@@ -66,7 +91,8 @@ export default function BookingDetailsCard() {
           value={selectedBooking.eventType}
         />
 
-        {selectedBooking.primaryPersonName && (
+        {canViewCustomerContact &&
+          selectedBooking.primaryPersonName && (
           <Item
             icon={<User size={18} />}
             label="Celebrant / Primary Person"
@@ -77,7 +103,12 @@ export default function BookingDetailsCard() {
         <Item
           icon={<Phone size={18} />}
           label="Phone"
-          value={selectedBooking.customerPhone}
+          value={
+            canViewCustomerContact &&
+            selectedBooking.customerPhone
+              ? selectedBooking.customerPhone
+              : "Hidden until admin approval"
+          }
         />
 
         <Item
@@ -133,6 +164,169 @@ export default function BookingDetailsCard() {
 
       </div>
 
+      {!canViewCustomerContact && (
+        <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+          Customer contact details will unlock after admin approves this booking.
+        </div>
+      )}
+
+      <DetailsSection title="Event Details">
+        <Item
+          icon={<Users size={18} />}
+          label="Guests"
+          value={selectedBooking.guests.toLocaleString(
+            "en-IN"
+          )}
+        />
+
+        {selectedBooking.eventTime && (
+          <Item
+            icon={<Clock size={18} />}
+            label="Event Time"
+            value={selectedBooking.eventTime}
+          />
+        )}
+
+        {selectedBooking.eventTitle && (
+          <Item
+            icon={<FileText size={18} />}
+            label="Event Title"
+            value={selectedBooking.eventTitle}
+          />
+        )}
+
+        {(selectedBooking.eventTheme ||
+          selectedBooking.weddingTheme) && (
+          <Item
+            icon={<FileText size={18} />}
+            label="Theme"
+            value={
+              selectedBooking.eventTheme ||
+              selectedBooking.weddingTheme ||
+              ""
+            }
+          />
+        )}
+      </DetailsSection>
+
+      {hasPeopleDetails && (
+        <DetailsSection title="People Details">
+          {selectedBooking.primaryPersonName && (
+            <Item
+              icon={<User size={18} />}
+              label="Primary Person"
+              value={
+                selectedBooking.primaryPersonAge
+                  ? `${selectedBooking.primaryPersonName} (${selectedBooking.primaryPersonAge})`
+                  : selectedBooking.primaryPersonName
+              }
+            />
+          )}
+
+          {selectedBooking.brideName && (
+            <Item
+              icon={<User size={18} />}
+              label="Bride Name"
+              value={selectedBooking.brideName}
+            />
+          )}
+
+          {selectedBooking.groomName && (
+            <Item
+              icon={<User size={18} />}
+              label="Groom Name"
+              value={selectedBooking.groomName}
+            />
+          )}
+
+          {selectedBooking.partnerName && (
+            <Item
+              icon={<User size={18} />}
+              label="Partner Name"
+              value={selectedBooking.partnerName}
+            />
+          )}
+
+          {selectedBooking.partnerPhone && (
+            <Item
+              icon={<Phone size={18} />}
+              label="Partner Phone"
+              value={selectedBooking.partnerPhone}
+            />
+          )}
+
+          {selectedBooking.partnerEmail && (
+            <Item
+              icon={<FileText size={18} />}
+              label="Partner Email"
+              value={selectedBooking.partnerEmail}
+            />
+          )}
+
+          {selectedBooking.partnerOccupation && (
+            <Item
+              icon={<FileText size={18} />}
+              label="Partner Occupation"
+              value={selectedBooking.partnerOccupation}
+            />
+          )}
+        </DetailsSection>
+      )}
+
+      {hasLocationDetails && (
+        <DetailsSection title="Location Details">
+          {selectedBooking.city && (
+            <Item
+              icon={<MapPin size={18} />}
+              label="City"
+              value={selectedBooking.city}
+            />
+          )}
+
+          {canViewCustomerContact &&
+            selectedBooking.contactAddress && (
+            <Item
+              icon={<MapPin size={18} />}
+              label="Contact Address"
+              value={selectedBooking.contactAddress}
+            />
+          )}
+
+          {canViewCustomerContact &&
+            selectedBooking.contactState && (
+            <Item
+              icon={<MapPin size={18} />}
+              label="State"
+              value={selectedBooking.contactState}
+            />
+          )}
+
+          {canViewCustomerContact &&
+            selectedBooking.contactCountry && (
+            <Item
+              icon={<MapPin size={18} />}
+              label="Country"
+              value={selectedBooking.contactCountry}
+            />
+          )}
+        </DetailsSection>
+      )}
+
+      {selectedBooking.specialRequirements && (
+        <div className="mt-8 rounded-2xl bg-rose-50 p-5">
+          <div className="flex items-center gap-3 text-[#e4005a]">
+            <FileText size={18} />
+            <h3 className="font-semibold text-slate-900">
+              Special Requirements
+            </h3>
+          </div>
+
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+            {selectedBooking.specialRequirements}
+          </p>
+        </div>
+      )}
+
       {selectedBooking.bookingStatus ===
         "pending" &&
         !selectedBooking.adminApproved && (
@@ -174,6 +368,26 @@ export default function BookingDetailsCard() {
       )}
 
     </section>
+  );
+}
+
+function DetailsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-8">
+      <h3 className="text-lg font-bold text-slate-900">
+        {title}
+      </h3>
+
+      <div className="mt-5 grid gap-6 md:grid-cols-2">
+        {children}
+      </div>
+    </div>
   );
 }
 

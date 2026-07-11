@@ -7,17 +7,26 @@ import { toast } from "sonner";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
 import { updateVendor } from "@/services/vendor.service";
+import {
+  uploadVendorCoverApi,
+  uploadVendorLogoApi,
+} from "@/services/api/vendor.api";
 
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE_BYTES =
+  MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
 export default function EditVendorProfileModal({
   open,
   onClose,
 }: Props) {
-  const { vendor, isLoading } = useVendorProfile();
+  const { vendor, setVendor, isLoading } =
+    useVendorProfile();
 
   const [localVendor, setLocalVendor] = useState(
     null as typeof vendor
@@ -74,12 +83,16 @@ export default function EditVendorProfileModal({
 
   const [profileImage, setProfileImage] =
     useState("");
+  const [profileImageFile, setProfileImageFile] =
+    useState<File | null>(null);
 
     const [gstNumber, setGstNumber] =
   useState("");
 
   const [coverImage, setCoverImage] =
     useState("");
+  const [coverImageFile, setCoverImageFile] =
+    useState<File | null>(null);
 
   useEffect(() => {
     if (!open || !localVendor) return;
@@ -101,6 +114,8 @@ export default function EditVendorProfileModal({
     setExperience(localVendor.experience ?? "");
     setProfileImage(localVendor.profileImage ?? "");
     setCoverImage(localVendor.coverImage ?? "");
+    setProfileImageFile(null);
+    setCoverImageFile(null);
   }, [open, localVendor]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -111,9 +126,16 @@ export default function EditVendorProfileModal({
 
     if (!file) return;
 
-    setProfileImage(
-      URL.createObjectURL(file)
-    );
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      e.target.value = "";
+      toast.error(
+        `Please upload image within ${MAX_IMAGE_SIZE_MB} MB.`
+      );
+      return;
+    }
+
+    setProfileImage(URL.createObjectURL(file));
+    setProfileImageFile(file);
   };
 
   const handleCoverImage = (
@@ -123,9 +145,16 @@ export default function EditVendorProfileModal({
 
     if (!file) return;
 
-    setCoverImage(
-      URL.createObjectURL(file)
-    );
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      e.target.value = "";
+      toast.error(
+        `Please upload image within ${MAX_IMAGE_SIZE_MB} MB.`
+      );
+      return;
+    }
+
+    setCoverImage(URL.createObjectURL(file));
+    setCoverImageFile(file);
   };
 
   const handleSave = async () => {
@@ -142,6 +171,43 @@ export default function EditVendorProfileModal({
       );
 
       return;
+    }
+
+    let savedProfileImage = profileImage;
+    let savedCoverImage = coverImage;
+
+    if (profileImageFile) {
+      const upload =
+        await uploadVendorLogoApi(
+          profileImageFile
+        );
+
+      if (!upload.ok || !upload.image) {
+        toast.error(
+          upload.error ??
+            "Unable to upload profile image."
+        );
+        return;
+      }
+
+      savedProfileImage = upload.image;
+    }
+
+    if (coverImageFile) {
+      const upload =
+        await uploadVendorCoverApi(
+          coverImageFile
+        );
+
+      if (!upload.ok || !upload.coverImage) {
+        toast.error(
+          upload.error ??
+            "Unable to upload cover image."
+        );
+        return;
+      }
+
+      savedCoverImage = upload.coverImage;
     }
 
     const updatedVendor =
@@ -177,9 +243,9 @@ export default function EditVendorProfileModal({
 
       experience,
 
-      profileImage,
+      profileImage: savedProfileImage,
 
-      coverImage,
+      coverImage: savedCoverImage,
 
       updatedAt:
         new Date().toISOString(),
@@ -191,6 +257,8 @@ export default function EditVendorProfileModal({
       );
       return;
     }
+
+    setVendor(updatedVendor);
 
     window.dispatchEvent(
       new Event("vendor-profile-updated")
@@ -479,6 +547,10 @@ onClose();
         className="mt-5 block w-full text-sm  text-gray-600"
       />
 
+      <p className="mt-2 text-xs font-medium text-rose-600">
+        Please upload image within 5 MB.
+      </p>
+
     </div>
 
   </div>
@@ -509,6 +581,10 @@ onClose();
         onChange={handleCoverImage}
         className="mt-5 block w-full text-sm"
       />
+
+      <p className="mt-2 text-xs font-medium text-rose-600">
+        Please upload image within 5 MB.
+      </p>
 
     </div>
 

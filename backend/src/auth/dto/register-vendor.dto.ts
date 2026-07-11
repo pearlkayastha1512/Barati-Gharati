@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -10,6 +11,7 @@ import {
   ApiProperty,
   ApiPropertyOptional,
 } from '@nestjs/swagger';
+import { VendorBadge } from '@prisma/client';
 
 export class RegisterVendorDto {
 
@@ -106,4 +108,33 @@ export class RegisterVendorDto {
   @IsOptional()
   @IsString()
   gstNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  profileImage?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  coverImage?: string;
+
+  @ApiProperty({
+    enum: VendorBadge,
+    example: VendorBadge.SILVER,
+  })
+  @IsEnum(VendorBadge)
+  selectedBadge!: VendorBadge;
+
+  @ApiProperty()
+  @IsString()
+  badgePaymentOrderId!: string;
+
+  @ApiProperty()
+  @IsString()
+  badgePaymentId!: string;
+
+  @ApiProperty()
+  @IsString()
+  badgePaymentSignature!: string;
 }

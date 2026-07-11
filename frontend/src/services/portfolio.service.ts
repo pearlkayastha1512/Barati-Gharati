@@ -82,6 +82,9 @@ export async function updatePortfolio(
         title: portfolio.title,
         category:
           portfolio.category,
+        categories:
+          portfolio.categories ??
+          [portfolio.category],
         description:
           portfolio.description,
       }

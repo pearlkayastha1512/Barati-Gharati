@@ -94,6 +94,16 @@ export default function ReviewsManagementPage() {
   const handleApprovePayment = async (
     review: Review
   ) => {
+    if (
+      review.bookingStatus !==
+      "awaiting_admin_review"
+    ) {
+      toast.error(
+        "Payment can only be approved when booking is awaiting admin review."
+      );
+      return;
+    }
+
     const result =
       await approveBookingPaymentApi(
         review.bookingId
@@ -118,6 +128,16 @@ export default function ReviewsManagementPage() {
   const handleHoldPayment = async (
     review: Review
   ) => {
+    if (
+      review.bookingStatus !==
+      "awaiting_admin_review"
+    ) {
+      toast.error(
+        "Payment can only be held when booking is awaiting admin review."
+      );
+      return;
+    }
+
     const result =
       await holdBookingPaymentApi(
         review.bookingId

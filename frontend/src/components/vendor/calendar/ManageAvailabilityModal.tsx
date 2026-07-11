@@ -182,7 +182,7 @@ export default function ManageAvailabilityModal({
                 )
               }
               placeholder="Vacation / Personal Event / Holiday..."
-              className="w-full rounded-xl border border-slate-300 p-4 outline-none transition focus:border-green-600 text-gray-500"
+              className="w-full rounded-xl border border-slate-300 p-4 text-gray-500 outline-none transition focus:border-[#e4005a]"
             />
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function ManageAvailabilityModal({
                 ? "cursor-not-allowed bg-[#f17aa8]"
                 : blocked
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
+                : "bg-[#e4005a] hover:bg-[#c9004f]"
             }`}
           >
             {booked

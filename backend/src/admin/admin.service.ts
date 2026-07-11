@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import Razorpay from 'razorpay';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   BookingStatus,
@@ -21,6 +22,94 @@ export class AdminService {
   private readonly mailService: MailService,
   private readonly notificationsService: NotificationsService,
 ) {}
+
+  private getRazorpay() {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      throw new BadRequestException(
+        'Payment gateway is not configured',
+      );
+    }
+
+    return new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+
+  private async findBadgePaymentId(vendor: {
+    badgePaymentId: string | null;
+    badgePaymentOrderId: string | null;
+  }) {
+    if (vendor.badgePaymentId) {
+      return vendor.badgePaymentId;
+    }
+
+    if (!vendor.badgePaymentOrderId) {
+      return null;
+    }
+
+    const payments =
+      await this.getRazorpay().orders.fetchPayments(
+        vendor.badgePaymentOrderId,
+      );
+
+    const payment = payments.items?.find(
+      (item: { status?: string }) =>
+        item.status === 'captured' ||
+        item.status === 'authorized',
+    );
+
+    return payment?.id ?? null;
+  }
+
+  private async refundVendorBadgePayment(vendor: {
+    id: string;
+    badgePaymentId: string | null;
+    badgePaymentOrderId: string | null;
+    badgePaymentRefundId: string | null;
+    badgePaymentRefundedAt: Date | null;
+  }) {
+    if (
+      vendor.badgePaymentRefundId ||
+      vendor.badgePaymentRefundedAt
+    ) {
+      return null;
+    }
+
+    const paymentId =
+      await this.findBadgePaymentId(vendor);
+
+    if (!paymentId) {
+      return null;
+    }
+
+    const refund =
+      await this.getRazorpay().payments.refund(
+        paymentId,
+        {
+          notes: {
+            vendorId: vendor.id,
+            reason: 'VENDOR_REGISTRATION_REJECTED',
+          },
+        },
+      );
+
+    await this.prisma.vendor.update({
+      where: {
+        id: vendor.id,
+      },
+      data: {
+        badgePaymentId: paymentId,
+        badgePaymentRefundId: refund.id,
+        badgePaymentRefundedAt: new Date(),
+      },
+    });
+
+    return refund;
+  }
 
   async getDashboard() {
     const [
@@ -520,6 +609,12 @@ async updateVendorBadge(
     throw new NotFoundException('Vendor not found');
   }
 
+  if (vendor.status !== VendorStatus.APPROVED) {
+    throw new BadRequestException(
+      'Vendor must be approved before changing badge',
+    );
+  }
+
   const updated = await this.prisma.vendor.update({
     where: { id },
     data: {
@@ -583,6 +678,13 @@ async approveVendor(id: string) {
         data: {
           status: VendorStatus.APPROVED,
           approvedAt: new Date(),
+          badge: vendor.badgePurchasedAt
+            ? vendor.badge
+            : VendorBadge.BRONZE,
+          monthlyBookingLimit:
+            vendor.badgePurchasedAt
+              ? vendor.monthlyBookingLimit
+              : 5,
           frontendVendorId:
             vendor.frontendVendorId ??
             (maxPublicId._max.frontendVendorId ??
@@ -662,6 +764,9 @@ async rejectVendor(id: string) {
     );
   }
 
+  const refund =
+    await this.refundVendorBadgePayment(vendor);
+
   const updatedVendor = await this.prisma.$transaction(
     async (tx) => {
       const updated = await tx.vendor.update({
@@ -685,7 +790,9 @@ async rejectVendor(id: string) {
           userId: vendor.userId,
           title: 'Vendor Registration Rejected',
           message:
-            'Unfortunately your vendor registration has been rejected. Please contact support for more information.',
+            refund
+              ? 'Unfortunately your vendor registration has been rejected. Your badge payment refund has been initiated.'
+              : 'Unfortunately your vendor registration has been rejected. Please contact support for more information.',
         },
       });
 
@@ -700,7 +807,9 @@ async rejectVendor(id: string) {
 
   return {
     success: true,
-    message: 'Vendor rejected successfully.',
+    message: refund
+      ? 'Vendor rejected successfully. Badge payment refund initiated.'
+      : 'Vendor rejected successfully.',
 
     data: {
       id: updatedVendor.id,
@@ -710,6 +819,9 @@ async rejectVendor(id: string) {
       businessVerified: false,
 
       isActive: false,
+
+      badgePaymentRefundId:
+        refund?.id ?? vendor.badgePaymentRefundId,
     },
   };
 }
@@ -799,6 +911,31 @@ async getBookingById(id: string) {
   return {
     success: true,
     data: this.mapBooking(booking),
+  };
+}
+
+async deleteBooking(id: string) {
+  const booking = await this.prisma.booking.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+
+  if (!booking) {
+    throw new NotFoundException('Booking not found');
+  }
+
+  await this.prisma.$transaction([
+    this.prisma.review.deleteMany({
+      where: { bookingId: id },
+    }),
+    this.prisma.booking.delete({
+      where: { id },
+    }),
+  ]);
+
+  return {
+    success: true,
+    message: 'Booking deleted successfully',
   };
 }
 
@@ -1136,22 +1273,34 @@ private mapBooking(booking: any) {
 private getAdvanceRate(totalAmount: unknown) {
   const total = Number(totalAmount);
 
+  if (total <= 20000) {
+    return 50;
+  }
+
   if (total <= 50000) {
-    return 2;
+    return 40;
   }
 
-  if (total <= 250000) {
-    return 5;
+  if (total <= 100000) {
+    return 30;
   }
 
-  return 10;
+  if (total <= 300000) {
+    return 25;
+  }
+
+  if (total <= 500000) {
+    return 20;
+  }
+
+  return 15;
 }
 
 private getAdvanceAmount(totalAmount: unknown) {
   const total = Number(totalAmount);
   const rate = this.getAdvanceRate(total);
 
-  return Math.round(total * rate) / 100;
+  return Math.round((total * rate) / 100);
 }
 
 private mapPaymentStatus(status: PaymentStatus) {

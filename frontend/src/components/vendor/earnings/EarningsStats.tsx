@@ -41,14 +41,14 @@ export default function EarningsStats() {
       pendingAmount +=
         booking.remainingAmount;
 
-      const eventDate = new Date(
-        booking.eventDate
+      const bookingDate = new Date(
+        booking.createdAt
       );
 
       if (
-        eventDate.getMonth() ===
+        bookingDate.getMonth() ===
           currentMonth &&
-        eventDate.getFullYear() ===
+        bookingDate.getFullYear() ===
           currentYear
       ) {
         monthlyRevenue +=

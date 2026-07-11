@@ -84,6 +84,39 @@ export interface VendorRegisterRequest {
 
   experience: string;
   gstNumber: string;
+
+  profileImage: string;
+  coverImage: string;
+
+  selectedBadge: "SILVER" | "GOLD";
+  badgePaymentOrderId: string;
+  badgePaymentId: string;
+  badgePaymentSignature: string;
+}
+
+export async function uploadVendorRegistrationImageApi(
+  file: File,
+) {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(
+    `${API_URL}/register/vendor/image`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const result = await response.json();
+
+  return {
+    ok: response.ok,
+    data: result as {
+      image?: string;
+      message?: string;
+    },
+  };
 }
 
 export async function registerVendorApi(

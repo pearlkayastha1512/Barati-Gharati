@@ -92,7 +92,7 @@ export default function CalendarHero() {
         opacity: 1,
         y: 0,
       }}
-      className="rounded-[32px] bg-gradient-to-r from-emerald-600 via-green-600 to-teal-700 p-8 text-white shadow-xl"
+      className="rounded-[32px] bg-gradient-to-r from-[#4d1730] via-[#e4005a] to-[#ffc43d] p-8 text-white shadow-xl shadow-[#e4005a]/15"
     >
       <div className="flex flex-col gap-8 lg:flex-row lg:justify-between">
 
@@ -112,7 +112,7 @@ export default function CalendarHero() {
             wedding schedule.
           </h1>
 
-          <p className="mt-5 max-w-xl text-emerald-100">
+          <p className="mt-5 max-w-xl text-rose-50">
             Track bookings, block dates and manage your availability.
           </p>
 

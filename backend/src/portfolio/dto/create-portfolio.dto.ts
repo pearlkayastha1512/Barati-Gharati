@@ -1,5 +1,6 @@
 import {
   IsEnum,
+  IsArray,
   IsOptional,
   IsString,
 } from "class-validator";
@@ -22,6 +23,13 @@ export class CreatePortfolioDto {
 
   @IsEnum(PortfolioCategory)
   category!: PortfolioCategory;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(PortfolioCategory, {
+    each: true,
+  })
+  categories?: PortfolioCategory[];
 
   @IsOptional()
   @IsString()

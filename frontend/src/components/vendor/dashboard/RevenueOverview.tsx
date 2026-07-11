@@ -38,7 +38,7 @@ export default function RevenueOverview() {
       }
 
       const date = new Date(
-        booking.eventDate
+        booking.createdAt
       );
 
       if (date >= todayStart) {

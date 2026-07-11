@@ -144,11 +144,11 @@ export default function CalendarStats() {
             key={item.title}
             className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
           >
-            <div className="w-fit rounded-2xl bg-green-100 p-3">
+            <div className="w-fit rounded-2xl bg-rose-100 p-3">
 
               <Icon
                 size={22}
-                className="text-green-700"
+                className="text-rose-700"
               />
 
             </div>

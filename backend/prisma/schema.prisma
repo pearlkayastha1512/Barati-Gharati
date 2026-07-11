@@ -77,6 +77,7 @@ model Portfolio {
 
   title       String
   category    String
+  categories  String[] @default([])
   description String?
 
   imageUrl String
@@ -127,6 +128,9 @@ model Vendor {
   monthlyBookingLimit Int         @default(5)
   badgePurchasedAt    DateTime?
   badgePaymentOrderId String?
+  badgePaymentId      String?
+  badgePaymentRefundId String?
+  badgePaymentRefundedAt DateTime?
 
   rejectionReason String?
 

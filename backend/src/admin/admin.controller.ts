@@ -110,6 +110,13 @@ getBookingById(
   return this.adminService.getBookingById(id);
 }
 
+@Delete('bookings/:id')
+deleteBooking(
+  @Param('id') id: string,
+) {
+  return this.adminService.deleteBooking(id);
+}
+
 @Patch('bookings/:id/status')
 updateBookingStatus(
   @Param('id') id: string,

@@ -18,6 +18,8 @@ export interface Portfolio {
 
   category: PortfolioCategory;
 
+  categories?: PortfolioCategory[];
+
   description: string;
 
   image: string;

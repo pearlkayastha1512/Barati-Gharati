@@ -15,6 +15,7 @@ interface Props {
   title: string;
   image: string;
   category: string;
+  categories?: string[];
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -23,9 +24,15 @@ export default function PortfolioCard({
   title,
   image,
   category,
+  categories,
   onEdit,
   onDelete,
 }: Props) {
+  const visibleCategories =
+    categories?.length
+      ? categories
+      : [category];
+
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white text-gray-600 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       {/* Image */}
@@ -37,9 +44,16 @@ export default function PortfolioCard({
           className="object-cover transition duration-300 hover:scale-105"
         />
 
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-600 backdrop-blur">
-          {category}
-        </span>
+        <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap gap-2">
+          {visibleCategories.map((item) => (
+            <span
+              key={item}
+              className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-600 backdrop-blur"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Body */}
@@ -50,15 +64,15 @@ export default function PortfolioCard({
 
         <div className="mt-5 flex items-center justify-between">
           <div className="flex gap-5 text-gray-500">
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Eye size={17} />
               <span>842</span>
-            </div>
+            </div> */}
 
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Heart size={17} />
               <span>218</span>
-            </div>
+            </div> */}
           </div>
 
           <div className="flex gap-2">

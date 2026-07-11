@@ -3,19 +3,19 @@
 import Image from "next/image";
 import { Heart, MapPin, Share2, Star } from "lucide-react";
 
+import { useWishlist } from "@/hooks/useWishlist";
+import { Vendor } from "@/types/vendor";
+
 interface VendorHeroProps {
-  vendor: {
-    name: string;
-    image: string;
-    category: string;
-    city: string;
-    rating: number;
-    reviews: number;
-    price: number;
-  };
+  vendor: Vendor;
 }
 
 export default function VendorHero({ vendor }: VendorHeroProps) {
+  const {
+    isWishlisted,
+    handleToggleWishlist,
+  } = useWishlist(vendor);
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-rose-950/40">
 
@@ -81,9 +81,29 @@ export default function VendorHero({ vendor }: VendorHeroProps) {
 
             <div className="mt-8 flex gap-4">
 
-              <button className="flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-gray-950 transition hover:bg-rose-50">
-                <Heart size={18} />
-                Save
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                aria-label={
+                  isWishlisted
+                    ? "Remove from wishlist"
+                    : "Add to wishlist"
+                }
+                className={`flex items-center gap-2 rounded-xl px-6 py-3 font-semibold transition ${
+                  isWishlisted
+                    ? "bg-rose-600 text-white hover:bg-rose-500"
+                    : "bg-white text-gray-950 hover:bg-rose-50"
+                }`}
+              >
+                <Heart
+                  size={18}
+                  className={
+                    isWishlisted
+                      ? "fill-current"
+                      : ""
+                  }
+                />
+                {isWishlisted ? "Saved" : "Save"}
               </button>
 
               <button className="flex items-center gap-2 rounded-xl border border-white/25 bg-black/30 px-6 py-3 font-semibold text-white backdrop-blur-md transition hover:bg-white/15">

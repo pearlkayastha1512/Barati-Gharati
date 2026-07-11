@@ -117,7 +117,7 @@ export default function AvailabilityCard() {
             Available
           </span>
 
-          <span className="text-sm font-semibold text-green-700">
+          <span className="text-sm font-semibold text-rose-700">
             {stats.percentage}%
           </span>
 
@@ -126,7 +126,7 @@ export default function AvailabilityCard() {
         <div className="h-3 overflow-hidden rounded-full bg-slate-200">
 
           <div
-            className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-[#e4005a] to-[#ffc43d] transition-all duration-500"
             style={{
               width: `${stats.percentage}%`,
             }}
@@ -142,7 +142,7 @@ export default function AvailabilityCard() {
           icon={
             <CheckCircle2
               size={18}
-              className="text-green-600"
+              className="text-rose-600"
             />
           }
           label="Available Days"
@@ -177,7 +177,7 @@ export default function AvailabilityCard() {
   onClick={() =>
     setOpenModal(true)
   }
-  className="mt-8 w-full rounded-2xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700"
+  className="mt-8 w-full rounded-2xl bg-[#e4005a] py-3 font-semibold text-white transition hover:bg-[#c9004f]"
 >
   Manage Availability
 </button>

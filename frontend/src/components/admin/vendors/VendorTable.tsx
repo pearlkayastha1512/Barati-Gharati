@@ -141,19 +141,40 @@ export default function VendorTable({
 
                 <td className="px-6 py-5">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${VENDOR_BADGE_COLORS[vendor.badge]}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      vendor.approvalStatus ===
+                      "approved"
+                        ? VENDOR_BADGE_COLORS[
+                            vendor.badge
+                          ]
+                        : "bg-slate-100 text-slate-600"
+                    }`}
                   >
-                    {VENDOR_BADGE_LABELS[vendor.badge]}
+                    {vendor.approvalStatus ===
+                    "approved"
+                      ? VENDOR_BADGE_LABELS[
+                          vendor.badge
+                        ]
+                      : "Inactive"}
                   </span>
                 </td>
 
                 <td className="px-6 py-5">
-                  <span className="font-semibold text-slate-800">
-                    {vendor.currentMonthBookings}
-                  </span>
-                  <span className="text-slate-500">
-                    /{vendor.monthlyBookingLimit}
-                  </span>
+                  {vendor.approvalStatus ===
+                  "approved" ? (
+                    <>
+                      <span className="font-semibold text-slate-800">
+                        {vendor.currentMonthBookings}
+                      </span>
+                      <span className="text-slate-500">
+                        /{vendor.monthlyBookingLimit}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-sm font-medium text-slate-500">
+                      Inactive
+                    </span>
+                  )}
                 </td>
 
                 {/* Business Verification */}

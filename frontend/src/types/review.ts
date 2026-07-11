@@ -13,6 +13,8 @@ export interface Review {
 
   vendorName: string;
 
+  bookingStatus?: string;
+
   rating: number;
 
   comment: string;

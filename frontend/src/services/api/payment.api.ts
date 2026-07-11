@@ -185,6 +185,35 @@ export async function createVendorBadgeOrderApi(
   }
 }
 
+export async function createVendorRegistrationBadgeOrderApi(
+  badge: "silver" | "gold"
+) {
+  try {
+    const { data } = await api.post(
+      "/payment/vendor-registration-badge/create-order",
+      {
+        badge: badge.toUpperCase(),
+      }
+    );
+
+    return {
+      ok: true,
+      data: data?.data as Omit<
+        VendorBadgeOrderResponse,
+        "vendorId"
+      >,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to create badge payment order."
+      ),
+    };
+  }
+}
+
 export async function verifyVendorBadgePaymentApi(
   payload: {
     badge: "silver" | "gold";

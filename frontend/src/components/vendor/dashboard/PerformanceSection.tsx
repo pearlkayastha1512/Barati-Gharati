@@ -1,13 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo,useEffect } from "react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { useReviewStore } from "@/store/reviewStore";
 
 export default function PerformanceSection() {
   const bookings = useBookingStore(
     (state) => state.bookings
   );
+  const { vendor } = useVendorProfile();
+
+const reviews = useReviewStore((state) => state.reviews);
+
+const loadVendorReviews = useReviewStore(
+  (state) => state.loadVendorReviews
+);
+
+useEffect(() => {
+  if (!vendor) return;
+
+  void loadVendorReviews(vendor.id);
+}, [vendor, loadVendorReviews]);
 
   const metrics = useMemo(() => {
     const totalBookings =
@@ -37,6 +52,17 @@ export default function PerformanceSection() {
               totalBookings) *
               100
           );
+    const reviewCount = reviews.length;
+
+const averageRating =
+  reviewCount === 0
+    ? "0"
+    : (
+        reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        ) / reviewCount
+      ).toFixed(1);
 
     return [
       {
@@ -54,12 +80,11 @@ export default function PerformanceSection() {
         value: `${conversionRate}%`,
       },
       {
-        title:
-          "Customer Satisfaction",
-        value: "4.9 ★",
-      },
+  title: "Customer Satisfaction",
+  value: `${averageRating} ★`,
+},
     ];
-  }, [bookings]);
+  }, [bookings,reviews]);
 
   return (
     <section className="rounded-3xl border border-[#f4c8a0] bg-white/90 p-7 shadow-sm shadow-[#e4005a]/5">

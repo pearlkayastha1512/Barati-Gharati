@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 
 import {
-  Eye,
   Users,
   TrendingUp,
   Star,
@@ -104,23 +103,7 @@ export default function AnalyticsStats() {
           ).toFixed(1)
         : "0.0";
 
-    // Temporary simulated profile views
-    const profileViews =
-      uniqueCustomers * 35 +
-      reviews.length * 12 +
-      bookings.length * 18;
-
     return [
-      {
-        title:
-          "Profile Views",
-        value:
-          profileViews.toLocaleString(),
-        icon: Eye,
-        bg: "bg-[#ffe1ec]",
-        color:
-          "text-[#e4005a]",
-      },
       {
         title: "Customers",
         value:
@@ -150,7 +133,7 @@ export default function AnalyticsStats() {
   }, [bookings, reviews]);
 
   return (
-    <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-6 md:grid-cols-3">
       {stats.map((item) => {
         const Icon = item.icon;
 

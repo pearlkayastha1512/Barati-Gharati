@@ -1,15 +1,100 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  Loader2,
+  ShieldCheck,
 } from "lucide-react";
-import { registerVendor } from "@/services/vendor.service";
-
 
 import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
 import { registerVendorApi } from "@/services/api/auth.api";
+import {
+  VendorBadge,
+  VENDOR_BADGE_LABELS,
+  VENDOR_BADGE_LIMITS,
+} from "@/constants/vendor-badges";
+import { createVendorRegistrationBadgeOrderApi } from "@/services/api/payment.api";
+
+type PaidBadge = Extract<
+  VendorBadge,
+  "silver" | "gold"
+>;
+
+type RazorpayResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  theme?: {
+    color?: string;
+  };
+  modal?: {
+    ondismiss?: () => void;
+  };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (
+      options: RazorpayOptions
+    ) => {
+      open: () => void;
+    };
+  }
+}
+
+const badgePlans: Array<{
+  badge: PaidBadge;
+  price: number;
+  className: string;
+}> = [
+  {
+    badge: "silver",
+    price: 999,
+    className:
+      "border-slate-300 bg-slate-50 text-slate-800",
+  },
+  {
+    badge: "gold",
+    price: 1999,
+    className:
+      "border-yellow-300 bg-yellow-50 text-yellow-900",
+  },
+];
+
+function loadRazorpayScript() {
+  return new Promise<boolean>((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script =
+      document.createElement("script");
+    script.src =
+      "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function ReviewStep() {
   const {
@@ -17,6 +102,11 @@ export default function ReviewStep() {
     previousStep,
     nextStep,
   } = useVendorRegistrationStore();
+  const [selectedBadge, setSelectedBadge] =
+    useState<PaidBadge>("silver");
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+  const [error, setError] = useState("");
 
 //  const handleSubmit = () => {
 //   const result = registerVendor(formData);
@@ -34,7 +124,9 @@ export default function ReviewStep() {
 
 
 
-const handleSubmit = async () => {
+const submitRegistration = async (
+  payment: RazorpayResponse
+) => {
   const result = await registerVendorApi({
     ownerName: formData.ownerName,
     email: formData.email,
@@ -55,14 +147,94 @@ const handleSubmit = async () => {
 
     experience: formData.experience,
     gstNumber: formData.gstNumber,
+    profileImage: formData.profileImage,
+    coverImage: formData.coverImage,
+
+    selectedBadge:
+      selectedBadge.toUpperCase() as
+        | "SILVER"
+        | "GOLD",
+    badgePaymentOrderId:
+      payment.razorpay_order_id,
+    badgePaymentId:
+      payment.razorpay_payment_id,
+    badgePaymentSignature:
+      payment.razorpay_signature,
   });
 
   if (!result.ok) {
-    alert(result.data.message);
-    return;
+    throw new Error(
+      result.data.message ??
+        "Vendor registration failed."
+    );
   }
 
   nextStep();
+};
+
+const handleSubmit = async () => {
+  setError("");
+  setIsSubmitting(true);
+
+  const order =
+    await createVendorRegistrationBadgeOrderApi(
+      selectedBadge
+    );
+
+  if (!order.ok || !order.data) {
+    setIsSubmitting(false);
+    setError(
+      order.error ??
+        "Unable to start badge payment."
+    );
+    return;
+  }
+
+  const loaded = await loadRazorpayScript();
+
+  if (!loaded || !window.Razorpay) {
+    setIsSubmitting(false);
+    setError(
+      "Payment gateway could not be loaded."
+    );
+    return;
+  }
+
+  const razorpay = new window.Razorpay({
+    key: order.data.keyId,
+    amount: order.data.amountInPaise,
+    currency: order.data.currency,
+    name: "Barati Gharati",
+    description: `${VENDOR_BADGE_LABELS[selectedBadge]} vendor registration badge`,
+    order_id: order.data.orderId,
+    prefill: {
+      name: formData.ownerName,
+      email: formData.email,
+      contact: formData.phone,
+    },
+    theme: {
+      color: "#e4005a",
+    },
+    modal: {
+      ondismiss: () => {
+        setIsSubmitting(false);
+      },
+    },
+    handler: async (response) => {
+      try {
+        await submitRegistration(response);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Vendor registration failed."
+        );
+        setIsSubmitting(false);
+      }
+    },
+  });
+
+  razorpay.open();
 };
 
 
@@ -154,6 +326,84 @@ const handleSubmit = async () => {
         </p>
       </div>
 
+      <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="text-rose-600" />
+          <div>
+            <h3 className="text-xl font-semibold text-gray-700">
+              Vendor Badge Payment
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Choose a paid badge to submit your vendor registration.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {badgePlans.map((plan) => {
+            const active =
+              selectedBadge === plan.badge;
+
+            return (
+              <button
+                type="button"
+                key={plan.badge}
+                disabled={isSubmitting}
+                onClick={() =>
+                  setSelectedBadge(plan.badge)
+                }
+                className={`rounded-2xl border p-5 text-left transition ${
+                  active
+                    ? "border-rose-500 bg-rose-50 shadow-md"
+                    : `${plan.className} hover:border-rose-300`
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="text-lg font-bold">
+                    {
+                      VENDOR_BADGE_LABELS[
+                        plan.badge
+                      ]
+                    }{" "}
+                    Badge
+                  </h4>
+
+                  {active && (
+                    <CheckCircle2
+                      size={20}
+                      className="text-rose-600"
+                    />
+                  )}
+                </div>
+
+                <p className="mt-4 text-3xl font-black">
+                  ₹
+                  {plan.price.toLocaleString(
+                    "en-IN"
+                  )}
+                </p>
+
+                <p className="mt-3 text-sm font-medium text-gray-600">
+                  Up to{" "}
+                  {
+                    VENDOR_BADGE_LIMITS[
+                      plan.badge
+                    ]
+                  }{" "}
+                  bookings per month
+                </p>
+              </button>
+            );
+          })}
+        </div>
+
+        {error && (
+          <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            {error}
+          </p>
+        )}
+      </div>
+
       {/* Images */}
       <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
         <h3 className="mb-5 text-xl font-semibold text-gray-700">
@@ -214,10 +464,20 @@ const handleSubmit = async () => {
 
         <button
           onClick={handleSubmit}
-          className="flex items-center gap-3 rounded-xl bg-green-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-green-700 hover:shadow-xl"
+          disabled={isSubmitting}
+          className="flex items-center gap-3 rounded-xl bg-green-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-green-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
         >
-          <CheckCircle2 size={20} />
-          Submit Registration
+          {isSubmitting ? (
+            <Loader2
+              size={20}
+              className="animate-spin"
+            />
+          ) : (
+            <CheckCircle2 size={20} />
+          )}
+          {isSubmitting
+            ? "Processing Payment"
+            : "Pay & Submit Registration"}
         </button>
       </div>
     </div>

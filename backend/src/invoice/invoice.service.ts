@@ -426,24 +426,6 @@ export class InvoiceService {
         });
     }
 
-    doc.text(
-      company.phone,
-      220,
-      805,
-    );
-
-    doc.text(
-      company.website,
-      380,
-      805,
-    );
-
-    doc.text(
-      company.address,
-      40,
-      822,
-    );
-
     doc.end();
     await finished;
 

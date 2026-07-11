@@ -227,7 +227,11 @@ export class BookingsService {
     return {
       success: true,
 
-      data: bookings.map((booking) => this.mapBooking(booking)),
+      data: bookings.map((booking) =>
+        this.mapBooking(booking, {
+          viewerRole: role,
+        }),
+      ),
     };
   }
 
@@ -281,7 +285,9 @@ export class BookingsService {
     return {
       success: true,
 
-      data: this.mapBooking(booking),
+      data: this.mapBooking(booking, {
+        viewerRole: role,
+      }),
     };
   }
 
@@ -733,7 +739,16 @@ export class BookingsService {
     };
   }
 
-  private mapBooking(booking: any) {
+  private mapBooking(
+    booking: any,
+    options?: {
+      viewerRole?: Role;
+    },
+  ) {
+    const hideCustomerContact =
+      options?.viewerRole === Role.VENDOR &&
+      !booking.adminApproved;
+
     return {
       id: booking.id,
 
@@ -745,9 +760,13 @@ export class BookingsService {
 
       customerName: booking.customerName ?? booking.user.name,
 
-      customerEmail: booking.customerEmail ?? booking.user.email,
+      customerEmail: hideCustomerContact
+        ? ''
+        : booking.customerEmail ?? booking.user.email,
 
-      customerPhone: booking.customerPhone ?? booking.user.phone ?? '',
+      customerPhone: hideCustomerContact
+        ? ''
+        : booking.customerPhone ?? booking.user.phone ?? '',
 
       vendorName: booking.vendor.businessName,
 
@@ -773,25 +792,43 @@ export class BookingsService {
 
       eventTitle: booking.eventTitle ?? '',
 
-      primaryPersonName: booking.primaryPersonName ?? '',
+      primaryPersonName: hideCustomerContact
+        ? ''
+        : booking.primaryPersonName ?? '',
 
-      primaryPersonAge: booking.primaryPersonAge ?? null,
+      primaryPersonAge: hideCustomerContact
+        ? null
+        : booking.primaryPersonAge ?? null,
 
       eventTheme: booking.eventTheme ?? booking.weddingTheme ?? '',
 
-      partnerName: booking.partnerName ?? '',
+      partnerName: hideCustomerContact
+        ? ''
+        : booking.partnerName ?? '',
 
-      partnerEmail: booking.partnerEmail ?? '',
+      partnerEmail: hideCustomerContact
+        ? ''
+        : booking.partnerEmail ?? '',
 
-      partnerPhone: booking.partnerPhone ?? '',
+      partnerPhone: hideCustomerContact
+        ? ''
+        : booking.partnerPhone ?? '',
 
-      partnerOccupation: booking.partnerOccupation ?? '',
+      partnerOccupation: hideCustomerContact
+        ? ''
+        : booking.partnerOccupation ?? '',
 
-      contactAddress: booking.contactAddress ?? '',
+      contactAddress: hideCustomerContact
+        ? ''
+        : booking.contactAddress ?? '',
 
-      contactState: booking.contactState ?? '',
+      contactState: hideCustomerContact
+        ? ''
+        : booking.contactState ?? '',
 
-      contactCountry: booking.contactCountry ?? '',
+      contactCountry: hideCustomerContact
+        ? ''
+        : booking.contactCountry ?? '',
 
       weddingTheme: booking.weddingTheme ?? '',
 
