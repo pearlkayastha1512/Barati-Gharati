@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,10 +23,15 @@ export default function VendorCalendarScreen() {
     selectedDate,
     setSelectedDate,
     blockedDates,
-    bookedDates, // TODO: this stays empty until Booking data is connected
+    bookedDates,
+    upcomingEvents,
     isBlocked,
     getMonthStats,
   } = useVendorCalendarStore();
+
+  useEffect(() => {
+    useVendorCalendarStore.getState().fetchCalendarData();
+  }, []);
 
   const today = new Date();
   const stats = useMemo(
@@ -187,14 +192,13 @@ export default function VendorCalendarScreen() {
 
         {/* Upcoming Events */}
         <SectionCard title="Upcoming Events">
-          {/* TODO: replace with real upcoming bookings once Booking API is connected */}
-          {bookedDates.length === 0 ? (
+          {upcomingEvents.length === 0 ? (
             <EmptyState icon="calendar-blank-outline" message="No Upcoming Events. Upcoming accepted bookings will appear here." />
           ) : (
-            bookedDates.map((b) => (
-              <View key={b.date} style={styles.upcomingRow}>
-                <Text style={styles.upcomingName}>{b.customerName}</Text>
-                <Text style={styles.upcomingDate}>{b.date}</Text>
+            upcomingEvents.map((e) => (
+              <View key={e.bookingId} style={styles.upcomingRow}>
+                <Text style={styles.upcomingName}>{e.customerName}</Text>
+                <Text style={styles.upcomingDate}>{e.date}</Text>
               </View>
             ))
           )}

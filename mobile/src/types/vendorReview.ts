@@ -7,7 +7,7 @@ export type VendorReviewRecord = {
   vendorName: string;
   packageName: string;
   rating: number;
-  comment: string;
+  comment: string | null;
   reply?: string | null;
   repliedAt?: string;
   createdAt: string;

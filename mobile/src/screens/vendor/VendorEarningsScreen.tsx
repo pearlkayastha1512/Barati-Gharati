@@ -13,23 +13,29 @@ import { SectionCard } from "../../components/vendors/dashboard/SectionCard";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
 import { RevenueBarChart } from "../../components/vendors/earnings/RevenueBarChart";
 import { styles } from "./vendorEarningsStyles";
+import { useEffect } from "react";
 
 const formatCurrency = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 export default function VendorEarningsScreen() {
   const navigation = useNavigation<any>();
   const {
-    totalRevenue,
-    thisMonthRevenue,
-    pendingAmount,
-    averageBooking,
-    highestMonth,
-    lowestMonth,
-    monthlyAverage,
-    monthlyRevenue,
-    nextPayout,
-    recentTransactions,
-  } = useVendorEarningsStore();
+  totalRevenue,
+  thisMonthRevenue,
+  pendingAmount,
+  averageBooking,
+  highestMonth,
+  lowestMonth,
+  monthlyAverage,
+  monthlyRevenue,
+  nextPayout,
+  recentTransactions,
+  fetchEarnings,
+  isLoading,
+} = useVendorEarningsStore(); 
+useEffect(() => {
+  fetchEarnings();
+}, []);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

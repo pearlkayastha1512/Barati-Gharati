@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import { View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,6 +12,8 @@ import { ServiceCard } from "../../components/vendors/services/ServiceCard";
 import { ServiceFormModal } from "../../components/vendors/services/ServiceFormModal";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
 import { styles } from "./servicesStyles";
+import React, { useState, useEffect } from "react";
+import { Alert } from "react-native";
 
 export default function ServicesScreen() {
   const services = useVendorServicesStore((state) => state.services);
@@ -22,6 +24,16 @@ export default function ServicesScreen() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editingService, setEditingService] = useState<VendorServiceRecord | null>(null);
+  const fetchServices = useVendorServicesStore(
+  (state) => state.fetchServices
+);
+useEffect(() => {
+  const loadServices = async () => {
+    await fetchServices();
+  };
+
+  loadServices();
+}, [fetchServices]);
 
   const totalServices = services.length;
   const activeServices = services.filter((s) => s.status === "Active").length;
@@ -52,22 +64,23 @@ export default function ServicesScreen() {
     setEditingService(service);
     setModalVisible(true);
   };
+const handleSubmit = async (data: {
+  serviceName: string;
+  category: ServiceCategory;
+  description: string;
+  duration: string;
+  price: number;
+  image: string | null;
+}) => {
+  if (editingService) {
+    await updateService(editingService.id, data);
+  } else {
+    await addService(data);
+  }
 
-  const handleSubmit = (data: {
-    serviceName: string;
-    category: ServiceCategory;
-    description: string;
-    duration: string;
-    price: number;
-    image: string | null;
-  }) => {
-    if (editingService) {
-      updateService(editingService.id, data);
-    } else {
-      addService(data);
-    }
-  };
-
+  setModalVisible(false);
+  setEditingService(null);
+};
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
@@ -120,7 +133,30 @@ export default function ServicesScreen() {
               key={service.id}
               service={service}
               onEdit={() => openEditModal(service)}
-              onDelete={() => deleteService(service.id)}
+             onDelete={() =>
+  Alert.alert(
+    "Delete Service",
+    "Are you sure you want to delete this service?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+  try {
+    await deleteService(service.id);
+    Alert.alert("Success", "Service deleted successfully.");
+  } catch {
+    Alert.alert("Error", "Failed to delete service.");
+  }
+},
+      },
+    ]
+  )
+}
             />
           ))
         )}

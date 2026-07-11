@@ -7,30 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  VENDOR
-  ADMIN
-}
-
-enum VendorStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum VendorBadge {
-  BRONZE
-  SILVER
-  GOLD
-}
-
-enum MessageStatus {
-  SENT
-  DELIVERED
-  READ
-}
-
 model User {
   id         String   @id @default(uuid())
   name       String
@@ -83,49 +59,42 @@ model Portfolio {
   imageUrl String
 
   vendorId      String
-  conversations Conversation[]
-  createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
   vendor        Vendor         @relation(fields: [vendorId], references: [id])
 }
 
 model Vendor {
-  id String @id @default(uuid())
-
-  frontendVendorId Int? @unique
-
-  businessName String
-
-  description String?
-
-  address String?
-
-  city String?
-
-  logoUrl String?
-
-  coverImage String?
-
-  businessVerified  Boolean @default(false)
-  gstVerified       Boolean @default(false)
-  bankVerified      Boolean @default(false)
-  documentsUploaded Boolean @default(false)
-
-  isActive Boolean @default(true)
-
-  website   String?
-  instagram String?
-  facebook  String?
-  youtube   String?
-  linkedin  String?
-
-  experience String?
-  gstNumber  String?
-
-  status VendorStatus @default(PENDING)
-
-  badge               VendorBadge @default(BRONZE)
-  monthlyBookingLimit Int         @default(5)
+  id                  String               @id @default(uuid())
+  businessName        String
+  description         String?
+  address             String?
+  userId              String               @unique
+  categoryId          String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  coverImage          String?
+  logoUrl             String?
+  status              VendorStatus         @default(PENDING)
+  approvedAt          DateTime?
+  rejectionReason     String?
+  frontendVendorId    Int?                 @unique
+  bankVerified        Boolean              @default(false)
+  businessVerified    Boolean              @default(false)
+  city                String?
+  documentsUploaded   Boolean              @default(false)
+  experience          String?
+  facebook            String?
+  gstNumber           String?
+  gstVerified         Boolean              @default(false)
+  instagram           String?
+  isActive            Boolean              @default(true)
+  linkedin            String?
+  website             String?
+  youtube             String?
+  badge               VendorBadge          @default(BRONZE)
+  monthlyBookingLimit Int                  @default(5)
   badgePurchasedAt    DateTime?
   badgePaymentOrderId String?
   badgePaymentId      String?
@@ -171,89 +140,55 @@ model Vendor {
 }
 
 model VendorGallery {
-  id       String @id @default(uuid())
-  imageUrl String
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  imageUrl  String
+  vendorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@index([vendorId])
 }
 
 model Category {
-  id    String  @id @default(uuid())
-  name  String  @unique
-  image String?
-
-  vendors   Vendor[]
-  packages  Package[]
+  id        String    @id @default(uuid())
+  name      String    @unique
+  image     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  packages  Package[]
+  vendors   Vendor[]
 }
 
 model Package {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String?
-  price       Decimal  @db.Decimal(10, 2)
+  price       Decimal   @db.Decimal(10, 2)
+  vendorId    String
+  categoryId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   inclusions  String[]
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  bookings  Booking[]
-  reviews   Review[]
-  leads     Lead[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  bookings    Booking[]
+  leads       Lead[]
+  category    Category  @relation(fields: [categoryId], references: [id])
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  reviews     Review[]
 
   @@index([vendorId])
   @@index([categoryId])
 }
 
-enum BookingStatus {
-  PENDING
-  ADVANCE_PAID
-  ACCEPTED
-  EVENT_COMPLETED
-  AWAITING_ADMIN_REVIEW
-  PAYMENT_APPROVED
-  PAYMENT_HELD
-  CONFIRMED
-  CANCELLED
-  REJECTED
-}
-
-enum PaymentStatus {
-  PENDING
-  PROCESSING
-  SUCCESS
-  FAILED
-  PARTIAL
-  REFUNDED
-}
-
-enum AvailabilityStatus {
-  BLOCKED
-}
-
 model VendorAvailability {
-  id     String             @id @default(uuid())
-  date   DateTime
-  status AvailabilityStatus @default(BLOCKED)
-  reason String?
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String             @id @default(uuid())
+  date      DateTime
+  status    AvailabilityStatus @default(BLOCKED)
+  reason    String?
+  vendorId  String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  vendor    Vendor             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@unique([vendorId, date])
   @@index([vendorId])
@@ -261,76 +196,52 @@ model VendorAvailability {
 }
 
 model Booking {
-  id String @id @default(uuid())
-
-  bookingNumber String @unique
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  packageId String
-  package   Package @relation(fields: [packageId], references: [id], onDelete: Restrict)
-
-  // Event Details
-  eventType String?
-  eventDate DateTime
-  eventTime String?
-
-  venue String?
-  city  String?
-
-  guests Int @default(0)
-
-  customerName  String?
-  customerEmail String?
-  customerPhone String?
-
-  brideName String?
-  groomName String?
-
-  eventTitle       String?
-  primaryPersonName String?
-  primaryPersonAge  Int?
-  eventTheme        String?
-
-  partnerName       String?
-  partnerEmail      String?
-  partnerPhone      String?
-  partnerOccupation String?
-
-  contactAddress String?
-  contactState   String?
-  contactCountry String?
-  weddingTheme   String?
-
-  notes               String?
-  specialRequirements String?
-
-  // Pricing
-  totalAmount Decimal @db.Decimal(10, 2)
-
-  paymentStatus PaymentStatus @default(PENDING)
-
-  amountPaid Decimal @default(0) @db.Decimal(10, 2)
-
-  remainingAmount Decimal @default(0) @db.Decimal(10, 2)
-
+  id                    String        @id @default(uuid())
+  userId                String
+  packageId             String
+  eventDate             DateTime
+  status                BookingStatus @default(PENDING)
+  totalAmount           Decimal       @db.Decimal(10, 2)
+  paymentStatus         PaymentStatus @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  cancellationReason    String?
+  notes                 String?
+  vendorId              String
+  remainingAmount       Decimal       @default(0) @db.Decimal(10, 2)
+  bookingNumber         String        @unique
+  brideName             String?
+  city                  String?
+  eventTime             String?
+  eventType             String?
+  groomName             String?
+  guests                Int           @default(0)
+  specialRequirements   String?
+  venue                 String?
+  amountPaid            Decimal       @default(0) @db.Decimal(10, 2)
+  customerName          String?
+  customerEmail         String?
+  customerPhone         String?
+  partnerName           String?
+  partnerEmail          String?
+  partnerPhone          String?
+  partnerOccupation     String?
+  contactAddress        String?
+  contactState          String?
+  contactCountry        String?
+  weddingTheme          String?
+  eventTitle            String?
+  primaryPersonName     String?
+  primaryPersonAge      Int?
+  eventTheme            String?
   advancePaymentOrderId String?
-  finalPaymentOrderId   String?
-  adminApproved         Boolean   @default(false)
+  adminApproved         Boolean       @default(false)
   adminApprovedAt       DateTime?
-
-  status BookingStatus @default(PENDING)
-
-  cancellationReason String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  review Review?
+  finalPaymentOrderId   String?
+  package               Package       @relation(fields: [packageId], references: [id])
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor                Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  review                Review?
 
   @@index([userId])
   @@index([vendorId])
@@ -338,186 +249,115 @@ model Booking {
   @@index([status])
 }
 
-// model Availability {
-//   id String @id @default(uuid())
-
-//   vendorId String
-//   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-//   date DateTime
-
-//   status AvailabilityStatus @default(BLOCKED)
-
-//   reason String?
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   @@unique([vendorId, date])
-//   @@index([vendorId])
-// }
-
 model Review {
   id          String   @id @default(uuid())
   rating      Int      @default(5)
   comment     String?
+  userId      String
+  packageId   String
+  createdAt   DateTime @default(now())
+  bookingId   String   @unique
+  updatedAt   DateTime @updatedAt
+  vendorId    String
+  vendorReply String?
   complaint   String?
   proofImages String[] @default([])
-  vendorReply String?
-  updatedAt   DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  packageId String
-  package   Package @relation(fields: [packageId], references: [id], onDelete: Restrict)
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  bookingId String  @unique
-  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  package     Package  @relation(fields: [packageId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@index([vendorId])
   @@index([userId])
   @@index([packageId])
 }
 
-enum GuestStatus {
-  INVITED
-  CONFIRMED
-  DECLINED
-}
-
 model Guest {
-  id     String      @id @default(uuid())
-  name   String
-  phone  String?
-  email  String?
-  status GuestStatus @default(INVITED)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String      @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  status    GuestStatus @default(INVITED)
+  userId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Budget {
-  id          String  @id @default(uuid())
-  totalBudget Decimal @db.Decimal(10, 2)
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  expenses  Expense[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  totalBudget Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
 }
 
 model Expense {
-  id       String   @id @default(uuid())
-  title    String
-  category String
-  amount   Decimal  @db.Decimal(10, 2)
-  note     String?
-  date     DateTime @default(now())
-
-  budgetId String
-  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  title     String
+  category  String
+  amount    Decimal  @db.Decimal(10, 2)
+  note      String?
+  date      DateTime @default(now())
+  budgetId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
 
   @@index([budgetId])
 }
 
-enum TimelineStatus {
-  PENDING
-  COMPLETED
-}
-
-enum TimelinePriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 model Timeline {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title String
-
-  date DateTime
-
+  id          String           @id @default(uuid())
+  userId      String
+  title       String
+  date        DateTime
   description String?
-
-  priority TimelinePriority @default(MEDIUM)
-
-  status TimelineStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  status      TimelineStatus   @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  priority    TimelinePriority @default(MEDIUM)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Checklist {
-  id     String  @id @default(uuid())
-  task   String
-  isDone Boolean @default(false)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  task      String
+  isDone    Boolean  @default(false)
+  userId    String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Notification {
-  id      String  @id @default(uuid())
-  title   String
-  message String
-  isRead  Boolean @default(false)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  userId    String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
-}
-
-enum ChatRole {
-  USER
-  ASSISTANT
 }
 
 model ChatMessage {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   role      ChatRole
   content   String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-}
-
-enum LeadStatus {
-  PENDING
-  RESPONDED
-  CONVERTED
-  CLOSED
 }
 
 model Lead {
@@ -530,18 +370,14 @@ model Lead {
   message     String
   status      LeadStatus @default(PENDING)
   vendorReply String?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  packageId String?
-  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId      String
+  vendorId    String
+  packageId   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  package     Package?   @relation(fields: [packageId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor      Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@index([vendorId])
   @@index([userId])
@@ -552,7 +388,7 @@ model SiteContent {
   id        String   @id @default(uuid())
   slug      String   @unique
   title     String
-  content   String   @db.Text
+  content   String
   updatedAt DateTime @updatedAt
 }
 
@@ -562,8 +398,7 @@ model VerificationToken {
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
 }
@@ -574,52 +409,38 @@ model PasswordResetToken {
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
 }
 
 model Conversation {
-  id String @id @default(uuid())
-
-  customerId String
-  vendorId   String
-
-  customer User @relation("CustomerConversations", fields: [customerId], references: [id], onDelete: Cascade)
-
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  messages Message[]
-
+  id          String     @id @default(uuid())
+  customerId  String
+  vendorId    String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id])
   portfolioId String?
+  customer    User       @relation("CustomerConversations", fields: [customerId], references: [id], onDelete: Cascade)
+  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id])
+  vendor      Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  messages    Message[]
 
   @@index([customerId])
   @@index([vendorId])
 }
 
 model Message {
-  id String @id @default(uuid())
-
+  id             String        @id @default(uuid())
   conversationId String
-
-  senderId   String
-  receiverId String
-
-  message String
-
-  status MessageStatus @default(SENT)
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  sender User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  senderId       String
+  receiverId     String
+  message        String
+  status         MessageStatus @default(SENT)
+  createdAt      DateTime      @default(now())
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  receiver       User          @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([senderId])
@@ -627,15 +448,12 @@ model Message {
 }
 
 model Wishlist {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  vendorId String
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  userId    String
+  vendorId  String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@unique([userId, vendorId])
   @@index([userId])
@@ -646,7 +464,7 @@ model EmailLog {
   id        String   @id @default(uuid())
   to        String
   subject   String
-  message   String   @db.Text
+  message   String
   status    String   @default("sent")
   createdAt DateTime @default(now())
 
@@ -663,4 +481,83 @@ model PlatformSettings {
   maintenanceMode           Boolean  @default(false)
   updatedAt                 DateTime @updatedAt
   createdAt                 DateTime @default(now())
+}
+
+enum Role {
+  USER
+  VENDOR
+  ADMIN
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VendorBadge {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  ACCEPTED
+  REJECTED
+  ADVANCE_PAID
+  EVENT_COMPLETED
+  AWAITING_ADMIN_REVIEW
+  PAYMENT_APPROVED
+  PAYMENT_HELD
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  PARTIAL
+  REFUNDED
+}
+
+enum AvailabilityStatus {
+  BLOCKED
+}
+
+enum GuestStatus {
+  INVITED
+  CONFIRMED
+  DECLINED
+}
+
+enum TimelineStatus {
+  PENDING
+  COMPLETED
+}
+
+enum TimelinePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum LeadStatus {
+  PENDING
+  RESPONDED
+  CONVERTED
+  CLOSED
 }
