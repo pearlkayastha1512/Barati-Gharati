@@ -58,7 +58,10 @@ export const acceptBooking = async (id: string) => {
   const response = await api.patch(`/bookings/${id}/accept`);
   return response.data;
 };
-
+export const completeBookingEvent = async (id: string) => {
+  const response = await api.patch(`/bookings/${id}/complete-event`);
+  return response.data;
+};
 export const rejectBooking = async (id: string, cancellationReason: string) => {
   const response = await api.patch(`/bookings/${id}/reject`, { cancellationReason });
   return response.data;

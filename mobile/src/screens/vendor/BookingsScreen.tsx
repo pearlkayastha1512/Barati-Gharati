@@ -26,11 +26,13 @@ export default function BookingsScreen() {
   }, [fetchBookings]);
 
   const totalCount = bookings.length;
-  const pendingCount = bookings.filter((b) => b.status === "Pending").length;
+  const pendingCount = bookings.filter(
+  (b) => b.status === "Pending" || b.status === "Accepted"
+).length;
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
   const totalRevenue = bookings
-    .filter((b) => b.status === "Completed")
-    .reduce((sum, b) => sum + b.amount, 0);
+  .filter((b) => b.paymentStatus === "paid" || b.paymentStatus === "partial")
+  .reduce((sum, b) => sum + b.advancePaid, 0);
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =

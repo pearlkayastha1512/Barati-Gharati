@@ -9,21 +9,79 @@ import {
 } from "../api/vendorServices.api";
 
 export type ServiceCategory =
-  | "Photographer"
-  | "Caterer"
-  | "Decorator"
   | "Venue"
+  | "Photographer"
+  | "Videographer"
+  | "Decorator"
   | "Makeup Artist"
-  | "DJ / Music"
+  | "Mehendi Artist"
+  | "Caterer"
+  | "Cake Designer"
+  | "DJ"
+  | "Live Band"
+  | "Entertainment"
+  | "Wedding Planner"
+  | "Transportation"
+  | "Accommodation"
+  | "Invitation Designer"
+  | "Bridal Wear"
+  | "Groom Wear"
+  | "Jewellery"
+  | "Florist"
+  | "Pandit / Priest"
+  | "Event Planner"
+  | "Birthday Planner"
+  | "Kids Party Planner"
+  | "Balloon Decorator"
+  | "Theme Decorator"
+  | "Kids Entertainer"
+  | "Magician"
+  | "Anchor / Emcee"
+  | "Choreographer"
+  | "Party Supplies"
+  | "Return Gifts"
+  | "Gift Hampers"
+  | "Sound and Lighting"
+  | "Photo Booth"
+  | "Event Security"
   | "Other";
 
 export const SERVICE_CATEGORIES: ServiceCategory[] = [
-  "Photographer",
-  "Caterer",
-  "Decorator",
   "Venue",
+  "Photographer",
+  "Videographer",
+  "Decorator",
   "Makeup Artist",
-  "DJ / Music",
+  "Mehendi Artist",
+  "Caterer",
+  "Cake Designer",
+  "DJ",
+  "Live Band",
+  "Entertainment",
+  "Wedding Planner",
+  "Transportation",
+  "Accommodation",
+  "Invitation Designer",
+  "Bridal Wear",
+  "Groom Wear",
+  "Jewellery",
+  "Florist",
+  "Pandit / Priest",
+  "Event Planner",
+  "Birthday Planner",
+  "Kids Party Planner",
+  "Balloon Decorator",
+  "Theme Decorator",
+  "Kids Entertainer",
+  "Magician",
+  "Anchor / Emcee",
+  "Choreographer",
+  "Party Supplies",
+  "Return Gifts",
+  "Gift Hampers",
+  "Sound and Lighting",
+  "Photo Booth",
+  "Event Security",
   "Other",
 ];
 
