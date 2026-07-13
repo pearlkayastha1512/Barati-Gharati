@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, RefreshControl, View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -8,6 +8,8 @@ import { useBookingStore } from "../../store/bookingStore";
 import { BookingStatCard } from "../../components/users/booking/BookingStatCard";
 import { BookingFilterTabs, FilterKey } from "../../components/users/booking/BookingFilterTabs";
 import { BookingListItem } from "../../components/users/booking/BookingListItem";
+import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
+import { Booking } from "../../types/booking";
 import { styles } from "./styles/BookingScreen.styles";
 
 // TODO: import API functions once backend is connected
@@ -15,14 +17,25 @@ import { styles } from "./styles/BookingScreen.styles";
 
 export default function BookingScreen() {
   const navigation = useNavigation<any>();
-  const bookings = useBookingStore((state) => state.bookings);
+  const { bookings, isLoading, error, loadBookings } = useBookingStore();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
+  const [paymentBooking, setPaymentBooking] = useState<Booking | null>(null);
+  const [paymentMode, setPaymentMode] = useState<"advance" | "remaining">("advance");
+
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const totalCount = bookings.length;
-  const upcomingCount = bookings.filter((b) => b.status === "upcoming").length;
-  const pendingCount = bookings.filter((b) => b.status === "pending").length;
-  const completedCount = bookings.filter((b) => b.status === "completed").length;
-  const cancelledCount = bookings.filter((b) => b.status === "cancelled").length;
+  const upcomingCount = bookings.filter(
+    (b) => b.bookingStatus !== "cancelled" && new Date(b.eventDate) >= today,
+  ).length;
+  const pendingCount = bookings.filter((b) => b.bookingStatus === "pending").length;
+  const completedCount = bookings.filter((b) => b.bookingStatus === "completed").length;
+  const cancelledCount = bookings.filter((b) => b.bookingStatus === "cancelled").length;
 
   const counts: Record<FilterKey, number> = {
     All: totalCount,
@@ -32,14 +45,23 @@ export default function BookingScreen() {
     Cancelled: cancelledCount,
   };
 
-  const filteredBookings =
-    activeFilter === "All"
-      ? bookings
-      : bookings.filter((b) => b.status === activeFilter.toLowerCase());
+  const filteredBookings = useMemo(() => {
+    if (activeFilter === "Upcoming") {
+      return bookings.filter(
+        (b) => b.bookingStatus !== "cancelled" && new Date(b.eventDate) >= today,
+      );
+    }
+    if (activeFilter === "All") return bookings;
+    return bookings.filter((b) => b.bookingStatus === activeFilter.toLowerCase());
+  }, [activeFilter, bookings]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadBookings} tintColor="#FF4D6D" />}
+      >
         {/* Hero */}
         <LinearGradient colors={["#6366F1", "#8B5CF6"]} style={styles.heroCard}>
           <View style={styles.heroBadge}>
@@ -115,7 +137,20 @@ export default function BookingScreen() {
           </View>
         </View>
 
-        {filteredBookings.length === 0 ? (
+        {error ? (
+          <View style={styles.errorCard}>
+            <MaterialIcons name="error-outline" size={26} color="#E63B5F" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadBookings}>
+              <Text style={styles.retryText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : isLoading && bookings.length === 0 ? (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#FF4D6D" />
+            <Text style={styles.loadingText}>Loading your bookings...</Text>
+          </View>
+        ) : filteredBookings.length === 0 ? (
           <View style={styles.sectionCard}>
             <View style={styles.emptyState}>
               <MaterialIcons name="event-busy" size={44} color="#ddd" />
@@ -132,11 +167,22 @@ export default function BookingScreen() {
                 key={booking.id}
                 booking={booking}
                 onPress={() => navigation.navigate("BookingDetails", { bookingId: booking.id })}
+                onPay={(mode) => {
+                  setPaymentBooking(booking);
+                  setPaymentMode(mode);
+                }}
               />
             ))}
           </View>
         )}
       </ScrollView>
+      <PaymentCheckoutModal
+        booking={paymentBooking}
+        mode={paymentMode}
+        visible={paymentBooking !== null}
+        onClose={() => setPaymentBooking(null)}
+        onPaid={loadBookings}
+      />
     </SafeAreaView>
   );
 }

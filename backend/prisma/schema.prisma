@@ -31,11 +31,11 @@ model User {
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
 
-  warningCount   Int       @default(0)
-  chatMutedUntil DateTime?
-  isChatFlagged  Boolean   @default(false)
-  isChatBlocked  Boolean   @default(false)
-  isSuspended    Boolean   @default(false)
+  warningCount        Int       @default(0)
+  chatMutedUntil      DateTime?
+  isChatFlagged       Boolean   @default(false)
+  isChatBlocked       Boolean   @default(false)
+  isSuspended         Boolean   @default(false)
   chatLastViolationAt DateTime?
   chatViolationReason String?
 
@@ -66,74 +66,52 @@ model Portfolio {
 }
 
 model Vendor {
-  id                  String               @id @default(uuid())
-  businessName        String
-  description         String?
-  address             String?
-  userId              String               @unique
-  categoryId          String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  coverImage          String?
-  logoUrl             String?
-  status              VendorStatus         @default(PENDING)
-  approvedAt          DateTime?
-  rejectionReason     String?
-  frontendVendorId    Int?                 @unique
-  bankVerified        Boolean              @default(false)
-  businessVerified    Boolean              @default(false)
-  city                String?
-  documentsUploaded   Boolean              @default(false)
-  experience          String?
-  facebook            String?
-  gstNumber           String?
-  gstVerified         Boolean              @default(false)
-  instagram           String?
-  isActive            Boolean              @default(true)
-  linkedin            String?
-  website             String?
-  youtube             String?
-  badge               VendorBadge          @default(BRONZE)
-  monthlyBookingLimit Int                  @default(5)
-  badgePurchasedAt    DateTime?
-  badgePaymentOrderId String?
-  badgePaymentId      String?
-  badgePaymentRefundId String?
+  id                     String       @id @default(uuid())
+  businessName           String
+  description            String?
+  address                String?
+  userId                 String       @unique
+  categoryId             String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  coverImage             String?
+  logoUrl                String?
+  status                 VendorStatus @default(PENDING)
+  approvedAt             DateTime?
+  rejectionReason        String?
+  frontendVendorId       Int?         @unique
+  bankVerified           Boolean      @default(false)
+  businessVerified       Boolean      @default(false)
+  city                   String?
+  documentsUploaded      Boolean      @default(false)
+  experience             String?
+  facebook               String?
+  gstNumber              String?
+  gstVerified            Boolean      @default(false)
+  instagram              String?
+  isActive               Boolean      @default(true)
+  linkedin               String?
+  website                String?
+  youtube                String?
+  badge                  VendorBadge  @default(BRONZE)
+  monthlyBookingLimit    Int          @default(5)
+  badgePurchasedAt       DateTime?
+  badgePaymentOrderId    String?
+  badgePaymentId         String?
+  badgePaymentRefundId   String?
   badgePaymentRefundedAt DateTime?
 
-  rejectionReason String?
-
-  approvedAt DateTime?
-
-  userId String @unique
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  categoryId String?
-
-  category Category? @relation(fields: [categoryId], references: [id])
-
-  packages Package[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  gallery VendorGallery[]
-
-  bookings Booking[]
-
-  availability VendorAvailability[]
-
-  portfolio Portfolio[]
-
-  reviews Review[]
-
-  leads Lead[]
-
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category?            @relation(fields: [categoryId], references: [id])
+  packages      Package[]
+  gallery       VendorGallery[]
+  bookings      Booking[]
+  availability  VendorAvailability[]
+  portfolio     Portfolio[]
+  reviews       Review[]
+  leads         Lead[]
   conversations Conversation[]
-
-  wishlists Wishlist[]
+  wishlists     Wishlist[]
 
   @@index([categoryId])
   @@index([status])

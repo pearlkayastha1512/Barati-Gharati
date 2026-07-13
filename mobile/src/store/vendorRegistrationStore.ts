@@ -275,6 +275,9 @@ import {
   registerVendor,
   RegisterVendorRequest,
 } from "../api/vendor.api";
+import { RazorpaySuccess } from "../types/payment";
+
+export type RegistrationBadge = "bronze" | "silver" | "gold";
 
 interface VendorRegistrationState {
   step: number;
@@ -282,6 +285,7 @@ interface VendorRegistrationState {
   account: VendorAccountInfo;
   business: VendorBusinessInfo;
   gallery: VendorGalleryInfo;
+  selectedBadge: RegistrationBadge;
 
   setAccount: (
     data: VendorAccountInfo
@@ -295,6 +299,8 @@ interface VendorRegistrationState {
     data: VendorGalleryInfo
   ) => void;
 
+  setSelectedBadge: (badge: RegistrationBadge) => void;
+
   goToStep: (
     step: number
   ) => void;
@@ -303,7 +309,7 @@ interface VendorRegistrationState {
 
   prevStep: () => void;
 
-  submitRegistration: () => Promise<any>;
+  submitRegistration: (payment?: RazorpaySuccess) => Promise<any>;
 
   reset: () => void;
 }
@@ -339,6 +345,7 @@ export const useVendorRegistrationStore =
       business: initialBusiness,
 
       gallery: initialGallery,
+      selectedBadge: "bronze",
 
       setAccount: (data) =>
         set({
@@ -354,6 +361,8 @@ export const useVendorRegistrationStore =
         set({
           gallery: data,
         }),
+
+      setSelectedBadge: (selectedBadge) => set({ selectedBadge }),
 
       goToStep: (step) =>
         set({
@@ -376,10 +385,12 @@ export const useVendorRegistrationStore =
           ),
         })),
 
-      submitRegistration: async () => {
+      submitRegistration: async (payment) => {
         const {
           account,
           business,
+          gallery,
+          selectedBadge,
         } = get();
 
         const payload: RegisterVendorRequest =
@@ -409,22 +420,19 @@ export const useVendorRegistrationStore =
 
             description:
               business.description,
-          };
 
-        console.log(
-          "SENDING:",
-          payload
-        );
+            profileImage: gallery.profileImageUri ?? undefined,
+            coverImage: gallery.coverImageUri ?? undefined,
+            selectedBadge: selectedBadge.toUpperCase() as "BRONZE" | "SILVER" | "GOLD",
+            badgePaymentOrderId: payment?.razorpay_order_id,
+            badgePaymentId: payment?.razorpay_payment_id,
+            badgePaymentSignature: payment?.razorpay_signature,
+          };
 
         const response =
           await registerVendor(
             payload
           );
-
-        console.log(
-          "BACKEND RESPONSE:",
-          response
-        );
 
         set({
           step: 5,
@@ -445,6 +453,7 @@ export const useVendorRegistrationStore =
 
           gallery:
             initialGallery,
+          selectedBadge: "bronze",
         }),
     })
   );

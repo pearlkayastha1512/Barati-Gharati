@@ -4,8 +4,10 @@ import {
   Get,
   Param,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import {
   ApiBearerAuth,
@@ -30,6 +32,49 @@ export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,
   ) {}
+
+  @Post('mobile-callback')
+  mobileCallback(
+    @Body()
+    body: {
+      razorpay_order_id?: string;
+      razorpay_payment_id?: string;
+      razorpay_signature?: string;
+      error?: { description?: string } | string;
+    },
+    @Res() response: Response,
+  ) {
+    const payload = {
+      type:
+        body.razorpay_order_id &&
+        body.razorpay_payment_id &&
+        body.razorpay_signature
+          ? 'success'
+          : 'failed',
+      data: {
+        razorpay_order_id:
+          body.razorpay_order_id ?? '',
+        razorpay_payment_id:
+          body.razorpay_payment_id ?? '',
+        razorpay_signature:
+          body.razorpay_signature ?? '',
+      },
+      message:
+        typeof body.error === 'string'
+          ? body.error
+          : body.error?.description ??
+            'Payment could not be completed.',
+    };
+
+    const serialized = JSON.stringify(payload).replace(
+      /</g,
+      '\\u003c',
+    );
+
+    response
+      .type('html')
+      .send(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:sans-serif;text-align:center;padding:48px;color:#6c2d45}</style></head><body><p>Returning to Barati Gharati…</p><script>window.ReactNativeWebView.postMessage(JSON.stringify(${serialized}));</script></body></html>`);
+  }
 
   // ==========================
   // CREATE ORDER

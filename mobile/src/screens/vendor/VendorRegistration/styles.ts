@@ -95,6 +95,15 @@ export const styles = StyleSheet.create({
   },
   reviewRowLabel: { fontSize: 12, color: "#999" },
   reviewRowValue: { fontSize: 13, fontWeight: "600", color: "#333", flexShrink: 1, textAlign: "right" },
+  badgeHeadingRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  badgeSubtitle: { color: "#777", fontSize: 12, lineHeight: 17, marginTop: -5, marginBottom: 12 },
+  badgeGrid: { gap: 10 },
+  badgePlan: { borderWidth: 1, borderRadius: 14, padding: 15 },
+  badgePlanActive: { borderWidth: 2, elevation: 2 },
+  badgePlanHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  badgePlanName: { fontSize: 16, fontWeight: "800" },
+  badgePrice: { color: "#222", fontSize: 23, fontWeight: "900", marginTop: 12 },
+  badgeLimit: { color: "#666", fontSize: 12, fontWeight: "600", marginTop: 7 },
 
   // Document card (available for future use, not wired into current flow)
   documentCard: {

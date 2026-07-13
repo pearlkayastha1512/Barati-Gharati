@@ -76,12 +76,14 @@ async function bootstrap() {
     );
 
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'https://wedding-planner-liart.vercel.app',
-    ],
-    credentials: true,
-  });
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:8081',
+    'http://192.168.29.132:8081',
+    'https://wedding-planner-liart.vercel.app',
+  ],
+  credentials: true,
+});
 
   // Static files (Invoices, uploads, etc.)
   app.useStaticAssets(

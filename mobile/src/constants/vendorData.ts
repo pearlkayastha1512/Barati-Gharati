@@ -9,6 +9,10 @@ export type Vendor = {
   image: string;
   featured?: boolean;
    priceValue: number;
+  city?: string;
+  description?: string;
+  images?: string[];
+  packages?: { id: string | number; name: string; price: number }[];
 };
 
 export const CATEGORIES = [

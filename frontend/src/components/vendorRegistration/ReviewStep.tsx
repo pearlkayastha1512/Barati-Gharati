@@ -18,11 +18,6 @@ import {
 } from "@/constants/vendor-badges";
 import { createVendorRegistrationBadgeOrderApi } from "@/services/api/payment.api";
 
-type PaidBadge = Extract<
-  VendorBadge,
-  "silver" | "gold"
->;
-
 type RazorpayResponse = {
   razorpay_order_id: string;
   razorpay_payment_id: string;
@@ -61,10 +56,16 @@ declare global {
 }
 
 const badgePlans: Array<{
-  badge: PaidBadge;
+  badge: VendorBadge;
   price: number;
   className: string;
 }> = [
+  {
+    badge: "bronze",
+    price: 0,
+    className:
+      "border-amber-300 bg-amber-50 text-amber-900",
+  },
   {
     badge: "silver",
     price: 999,
@@ -103,7 +104,7 @@ export default function ReviewStep() {
     nextStep,
   } = useVendorRegistrationStore();
   const [selectedBadge, setSelectedBadge] =
-    useState<PaidBadge>("silver");
+    useState<VendorBadge>("bronze");
   const [isSubmitting, setIsSubmitting] =
     useState(false);
   const [error, setError] = useState("");
@@ -125,7 +126,7 @@ export default function ReviewStep() {
 
 
 const submitRegistration = async (
-  payment: RazorpayResponse
+  payment?: RazorpayResponse
 ) => {
   const result = await registerVendorApi({
     ownerName: formData.ownerName,
@@ -152,14 +153,15 @@ const submitRegistration = async (
 
     selectedBadge:
       selectedBadge.toUpperCase() as
+        | "BRONZE"
         | "SILVER"
         | "GOLD",
     badgePaymentOrderId:
-      payment.razorpay_order_id,
+      payment?.razorpay_order_id,
     badgePaymentId:
-      payment.razorpay_payment_id,
+      payment?.razorpay_payment_id,
     badgePaymentSignature:
-      payment.razorpay_signature,
+      payment?.razorpay_signature,
   });
 
   if (!result.ok) {
@@ -176,9 +178,23 @@ const handleSubmit = async () => {
   setError("");
   setIsSubmitting(true);
 
+  if (selectedBadge === "bronze") {
+    try {
+      await submitRegistration();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Vendor registration failed."
+      );
+      setIsSubmitting(false);
+    }
+    return;
+  }
+
   const order =
     await createVendorRegistrationBadgeOrderApi(
-      selectedBadge
+      selectedBadge as "silver" | "gold"
     );
 
   if (!order.ok || !order.data) {
@@ -331,15 +347,15 @@ const handleSubmit = async () => {
           <ShieldCheck className="text-rose-600" />
           <div>
             <h3 className="text-xl font-semibold text-gray-700">
-              Vendor Badge Payment
+              Choose Your Vendor Badge
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Choose a paid badge to submit your vendor registration.
+              Start free with Bronze or choose a paid plan for a higher monthly booking limit.
             </p>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
           {badgePlans.map((plan) => {
             const active =
               selectedBadge === plan.badge;
@@ -377,10 +393,9 @@ const handleSubmit = async () => {
                 </div>
 
                 <p className="mt-4 text-3xl font-black">
-                  ₹
-                  {plan.price.toLocaleString(
-                    "en-IN"
-                  )}
+                  {plan.price === 0
+                    ? "Free"
+                    : `₹${plan.price.toLocaleString("en-IN")}`}
                 </p>
 
                 <p className="mt-3 text-sm font-medium text-gray-600">
@@ -476,8 +491,12 @@ const handleSubmit = async () => {
             <CheckCircle2 size={20} />
           )}
           {isSubmitting
-            ? "Processing Payment"
-            : "Pay & Submit Registration"}
+            ? selectedBadge === "bronze"
+              ? "Submitting Registration"
+              : "Processing Payment"
+            : selectedBadge === "bronze"
+              ? "Submit Registration"
+              : "Pay & Submit Registration"}
         </button>
       </div>
     </div>

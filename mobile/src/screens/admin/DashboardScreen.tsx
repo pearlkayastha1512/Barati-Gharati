@@ -1,21 +1,15 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
-
-const statCards = [
-  { label: 'Vendors', value: '1', sub: 'Registered Vendors', icon: 'people-outline' },
-  { label: 'Customers', value: '1', sub: 'Registered Customers', icon: 'person-outline' },
-  { label: 'Bookings', value: '8', sub: 'Platform Bookings', icon: 'calendar-outline' },
-  { label: 'Revenue', value: '₹20,060', sub: 'Advance Collected', icon: 'wallet-outline' },
-];
+import { useAdminStore } from '../../store/adminStore';
 
 const quickActions = [
-  { title: 'Vendor Management', desc: 'Approve and manage vendors.', icon: 'checkmark-circle-outline' },
-  { title: 'Bookings', desc: 'Monitor all bookings.', icon: 'calendar-outline' },
-  { title: 'Notifications', desc: 'Send platform announcements.', icon: 'notifications-outline' },
-  { title: 'Settings', desc: 'Configure platform settings.', icon: 'settings-outline' },
+  { title: 'Vendor Management', desc: 'Approve and manage vendors.', icon: 'checkmark-circle-outline', route: 'VendorManagement' },
+  { title: 'Bookings', desc: 'Monitor all bookings.', icon: 'calendar-outline', route: 'Bookings' },
+  { title: 'Notifications', desc: 'Send platform announcements.', icon: 'notifications-outline', route: 'Notifications' },
+  { title: 'Settings', desc: 'Configure platform settings.', icon: 'settings-outline', route: 'Settings' },
 ];
 
 const bannerStats = [
@@ -26,8 +20,36 @@ const bannerStats = [
 ];
 
 export default function DashboardScreen({ navigation }: any) {
+  const {
+    dashboard,
+    isDashboardLoading,
+    dashboardError,
+    loadDashboard,
+  } = useAdminStore();
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const statCards = [
+    { label: 'Vendors', value: dashboard.totalVendors.toString(), sub: 'Registered Vendors', icon: 'people-outline' },
+    { label: 'Customers', value: dashboard.totalCustomers.toString(), sub: 'Registered Customers', icon: 'person-outline' },
+    { label: 'Bookings', value: dashboard.totalBookings.toString(), sub: 'Platform Bookings', icon: 'calendar-outline' },
+    { label: 'Revenue', value: `₹${dashboard.totalRevenue.toLocaleString('en-IN')}`, sub: 'Advance Collected', icon: 'wallet-outline' },
+  ];
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ padding: 16 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={isDashboardLoading}
+          onRefresh={loadDashboard}
+          tintColor={colors.blue}
+        />
+      }
+    >
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Ionicons name="menu" size={26} color={colors.textDark} />
@@ -67,6 +89,18 @@ export default function DashboardScreen({ navigation }: any) {
         </View>
       </LinearGradient>
 
+      {dashboardError && (
+        <View style={styles.errorCard} accessibilityRole="alert">
+          <View style={styles.errorCopy}>
+            <Ionicons name="alert-circle-outline" size={20} color={colors.red} />
+            <Text style={styles.errorText}>{dashboardError}</Text>
+          </View>
+          <TouchableOpacity onPress={loadDashboard} disabled={isDashboardLoading}>
+            <Text style={styles.retryText}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Stat Cards */}
       <View style={styles.statGrid}>
         {statCards.map((s, i) => (
@@ -87,7 +121,11 @@ export default function DashboardScreen({ navigation }: any) {
 
       <View style={styles.actionGrid}>
         {quickActions.map((a, i) => (
-          <TouchableOpacity key={i} style={styles.actionCard}>
+          <TouchableOpacity
+            key={i}
+            style={styles.actionCard}
+            onPress={() => navigation.navigate(a.route)}
+          >
             <View style={styles.actionIconBox}>
               <Ionicons name={a.icon as any} size={18} color={colors.white} />
             </View>
@@ -125,6 +163,14 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 12, gap: 8,
   },
   bannerMiniLabel: { color: colors.white, fontSize: 12, fontWeight: '700' },
+  errorCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: 12, padding: 12, marginBottom: 16, borderRadius: 12,
+    borderWidth: 1, borderColor: colors.red, backgroundColor: colors.redBg,
+  },
+  errorCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  errorText: { flex: 1, color: colors.red, fontSize: 12 },
+  retryText: { color: colors.red, fontSize: 12, fontWeight: '800' },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   statCard: {
     width: '47%', backgroundColor: colors.white, borderRadius: 14,

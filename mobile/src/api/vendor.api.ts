@@ -96,6 +96,42 @@
 //   return response.data;
 // };
 import api from "./axios";
+import { Vendor } from "../constants/vendorData";
+
+type BackendVendor = {
+  id: number;
+  name: string;
+  category: string;
+  city: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  image: string;
+  images?: string[];
+  featured?: boolean;
+  description?: string;
+  packages?: { id: string | number; name: string; price: number }[];
+};
+
+type VendorListApiResponse = { success: boolean; data: BackendVendor[] };
+type VendorApiResponse = { success: boolean; data: BackendVendor };
+
+const normalizeVendor = (vendor: BackendVendor): Vendor => ({
+  id: String(vendor.id),
+  name: vendor.name,
+  category: vendor.category,
+  rating: String(vendor.rating),
+  reviews: String(vendor.reviews),
+  location: vendor.city,
+  city: vendor.city,
+  price: `₹${vendor.price.toLocaleString("en-IN")}`,
+  priceValue: vendor.price,
+  image: vendor.image,
+  images: vendor.images,
+  featured: vendor.featured,
+  description: vendor.description,
+  packages: vendor.packages,
+});
 
 export interface RegisterVendorRequest {
   ownerName: string;
@@ -114,6 +150,12 @@ export interface RegisterVendorRequest {
   linkedin?: string;
   experience?: string;
   gstNumber?: string;
+  profileImage?: string;
+  coverImage?: string;
+  selectedBadge: "BRONZE" | "SILVER" | "GOLD";
+  badgePaymentOrderId?: string;
+  badgePaymentId?: string;
+  badgePaymentSignature?: string;
 }
 
 export interface RegisterVendorResponse {
@@ -131,30 +173,21 @@ export const registerVendor = async (
   return response.data;
 };
 
-export const getAllVendors = async () => {
-  const response = await api.get(
+export const getAllVendors = async (): Promise<Vendor[]> => {
+  const response = await api.get<VendorListApiResponse>(
     "/vendor/all",
   );
-
-  return response.data;
+  return response.data.data.map(normalizeVendor);
 };
 
 export const getVendorById = async (
   id: string,
-) => {
-  const response = await api.get(
+): Promise<Vendor> => {
+  const response = await api.get<VendorApiResponse>(
     `/vendor/${id}`,
   );
 
-  return response.data;
-};
-
-export const getMyVendorProfile = async () => {
-  const response = await api.get(
-    "/vendor/profile",
-  );
-
-  return response.data;
+  return normalizeVendor(response.data.data);
 };
 
 export const updateVendorProfile = async (
@@ -270,3 +303,6 @@ export const getVendorDashboard = async () => {
 
   return response.data;
 };
+
+
+

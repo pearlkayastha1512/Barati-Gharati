@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Share, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Share, Alert } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useFavoritesStore } from "../../store/favoritesStore";
-import { DUMMY_VENDORS } from "../../constants/vendorData";
+import { Vendor } from "../../constants/vendorData";
+import { getVendorById } from "../../api/vendor.api";
 import { AmenityItem } from "../../components/users/vendors/AmenityItem";
 import { ReviewSummary } from "../../components/users/vendors/ReviewSummary";
 import { styles } from "./styles/VendorDetailsScreen.styles";
@@ -14,6 +15,8 @@ import { useAuthStore } from "../../store/authStore";
 import { BookVendorModal } from "../../components/users/vendors/BookVendorModal";
 import { useBookingStore } from "../../store/bookingStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Booking } from "../../types/booking";
+import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
 
 // TODO: import API functions once backend is connected
 // import { getVendorById } from "../../api/vendor.api";
@@ -29,6 +32,19 @@ const DUMMY_AMENITIES: { icon: keyof typeof MaterialIcons.glyphMap; label: strin
   { icon: "wifi", label: "Wi-Fi" },
 ];
 
+const EMPTY_VENDOR: Vendor = {
+  id: "",
+  name: "",
+  category: "",
+  rating: "0",
+  reviews: "0",
+  location: "",
+  price: "₹0",
+  priceValue: 0,
+  image: "",
+  packages: [],
+};
+
 export default function VendorDetailsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -37,13 +53,26 @@ export default function VendorDetailsScreen() {
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const { user } = useAuthStore();
   const [bookModalVisible, setBookModalVisible] = useState(false);
+  const [newBookingForPayment, setNewBookingForPayment] = useState<Booking | null>(null);
 const addBooking = useBookingStore((state) => state.addBooking);
- const vendor = DUMMY_VENDORS.find((v) => v.id === vendorId) ?? DUMMY_VENDORS[0];
+ const [vendorData, setVendorData] = useState<Vendor | null>(null);
+ const [vendorLoading, setVendorLoading] = useState(true);
+ const [vendorError, setVendorError] = useState<string | null>(null);
+ const vendor = vendorData ?? EMPTY_VENDOR;
+
+ useEffect(() => {
+   let active = true;
+   setVendorLoading(true);
+   setVendorError(null);
+   getVendorById(String(vendorId))
+     .then((data) => active && setVendorData(data))
+     .catch(() => active && setVendorError("Vendor details load nahi ho sakin."))
+     .finally(() => active && setVendorLoading(false));
+   return () => { active = false; };
+ }, [vendorId]);
 
 // TODO: replace with vendor.packages once Package API is connected
-const vendorPackages = [
-  { name: "Basic", price: Math.round(vendor.priceValue ?? 0) || 100 },
-];
+const vendorPackages = vendor.packages ?? [];
   const currentUserId = user?.id ?? "guest";
 
   // TODO: replace with a real fetch:
@@ -97,7 +126,7 @@ const handleSendInquiry = async () => {
   };
 
   // TODO: replace with vendor.description once available from backend
-  const aboutText = `${vendor.name} is one of the region's most trusted wedding ${vendor.category.toLowerCase()} providers, offering exceptional service and unforgettable experiences for your special day.`;
+  const aboutText = vendor.description || `${vendor.name} is one of the region's most trusted ${vendor.category.toLowerCase()} providers.`;
 
   const handleShare = async () => {
     try {
@@ -109,6 +138,14 @@ const handleSendInquiry = async () => {
     }
   };
   
+
+  if (vendorLoading) {
+    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color="#C2185B" /></View></SafeAreaView>;
+  }
+
+  if (vendorError || !vendorData) {
+    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}><Text style={{ color: "#C2185B", textAlign: "center" }}>{vendorError ?? "Vendor not found."}</Text><TouchableOpacity onPress={() => navigation.goBack()}><Text style={{ marginTop: 16, fontWeight: "700" }}>Go Back</Text></TouchableOpacity></View></SafeAreaView>;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -250,25 +287,69 @@ const handleSendInquiry = async () => {
         onClose={() => setBookModalVisible(false)}
         vendorName={vendor.name}
         packages={vendorPackages}
-        onSubmit={(data) => {
-          addBooking({
-            vendorId: vendor.id,
-            vendorName: vendor.name,
-            vendorCategory: vendor.category,
-            date: data.weddingDate,
-            time: "",
-            image: vendor.image,
-            brideName: data.brideName,
-            groomName: data.groomName,
-            phone: data.phone,
-            email: data.email,
+        onSubmit={async (data) => {
+          if (!user) {
+            Alert.alert("Login Required", "Please login before creating a booking.");
+            return false;
+          }
+
+          const [day, month, year] = data.weddingDate.split("-").map(Number);
+          const eventDate = new Date(Date.UTC(year, month - 1, day)).toISOString();
+          const booking = await addBooking({
+            bookingNumber: `WD${new Date().getFullYear()}${Math.random().toString(16).slice(2, 10).toUpperCase()}`,
+            customerId: user.id,
+            vendorId: Number(vendor.id),
+            customerName: user.name,
+            customerEmail: data.email,
+            customerPhone: data.phone,
+            partnerName: data.groomName || data.brideName,
             partnerEmail: data.partnerEmail,
             partnerPhone: data.partnerPhone,
             partnerOccupation: data.partnerOccupation,
-            weddingTheme: data.weddingTheme,
+            vendorName: vendor.name,
+            category: vendor.category,
             packageName: data.packageName,
-            estimatedPrice: data.estimatedPrice,
+            eventType: data.eventType,
+            eventDate,
+            eventTime: "",
+            venue: vendor.name,
+            city: vendor.city ?? vendor.location,
+            contactAddress: data.address,
+            contactState: data.state,
+            contactCountry: data.country,
+            weddingTheme: data.weddingTheme,
+            guests: data.guests,
+            brideName: data.brideName,
+            groomName: data.groomName,
+            eventTitle: data.eventTitle,
+            primaryPersonName: data.primaryPersonName,
+            primaryPersonAge: data.primaryPersonAge,
+            eventTheme: data.weddingTheme,
+            specialRequirements: data.specialRequirements,
+            amount: data.estimatedPrice,
+            advancePaid: 0,
+            remainingAmount: data.estimatedPrice,
+            paymentStatus: "pending",
+            bookingStatus: "pending",
           });
+
+          if (!booking) {
+            Alert.alert("Booking Failed", useBookingStore.getState().error ?? "Please try again.");
+            return false;
+          }
+
+          setNewBookingForPayment(booking);
+          return true;
+        }}
+      />
+      <PaymentCheckoutModal
+        booking={newBookingForPayment}
+        mode="advance"
+        visible={newBookingForPayment !== null}
+        onClose={() => setNewBookingForPayment(null)}
+        onPaid={async () => {
+          await useBookingStore.getState().loadBookings();
+          setNewBookingForPayment(null);
           navigation.getParent()?.navigate("CoupleTabs", { screen: "Bookings" });
         }}
       />
