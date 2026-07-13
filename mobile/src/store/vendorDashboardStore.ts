@@ -115,34 +115,42 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
       ]);
 
       const now = new Date();
-      const confirmedOrAccepted = bookings.filter(
-        (b) => b.bookingStatus === "accepted" || b.bookingStatus === "completed"
+
+      const convertedStatuses = ["accepted", "completed", "event_completed"];
+      const isRevenueCounted = (b: BackendBooking) =>
+  b.paymentStatus === "paid" || b.paymentStatus === "partial";
+
+      const confirmedOrAccepted = bookings.filter((b) =>
+        convertedStatuses.includes(b.bookingStatus)
       );
 
       const thisMonthBookings = bookings.filter((b) => isSameMonth(new Date(b.eventDate), now));
-      const thisMonthRevenue = thisMonthBookings.reduce((sum, b) => sum + b.amount, 0);
+
+      const thisMonthRevenue = thisMonthBookings
+        .filter(isRevenueCounted)
+        .reduce((sum, b) => sum + b.advancePaid, 0);
 
       const upcoming = confirmedOrAccepted
         .filter((b) => new Date(b.eventDate) >= now)
         .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 
       const revenueToday = bookings
-        .filter((b) => isSameDay(new Date(b.eventDate), now))
-        .reduce((sum, b) => sum + b.amount, 0);
+        .filter((b) => isRevenueCounted(b) && isSameDay(new Date(b.createdAt), now))
+        .reduce((sum, b) => sum + b.advancePaid, 0);
 
       const revenueThisWeek = bookings
-        .filter((b) => isSameWeek(new Date(b.eventDate), now))
-        .reduce((sum, b) => sum + b.amount, 0);
+        .filter((b) => isRevenueCounted(b) && isSameWeek(new Date(b.createdAt), now))
+        .reduce((sum, b) => sum + b.advancePaid, 0);
 
       const revenueThisYear = bookings
-        .filter((b) => isSameYear(new Date(b.eventDate), now))
-        .reduce((sum, b) => sum + b.amount, 0);
+        .filter((b) => isRevenueCounted(b) && isSameYear(new Date(b.createdAt), now))
+        .reduce((sum, b) => sum + b.advancePaid, 0);
 
       const uniqueCustomers = new Set(bookings.map((b) => b.customerId)).size;
 
       const conversionRate =
-        dashboard.totalBookings > 0
-          ? Math.round((dashboard.confirmedBookings / dashboard.totalBookings) * 100)
+        bookings.length > 0
+          ? Math.round((confirmedOrAccepted.length / bookings.length) * 100)
           : 0;
 
       set({

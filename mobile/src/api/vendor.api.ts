@@ -189,6 +189,13 @@ export const getVendorById = async (
 
   return normalizeVendor(response.data.data);
 };
+export const getMyVendorProfile = async () => {
+  const response = await api.get(
+    "/vendor/profile",
+  );
+
+  return response.data;
+};
 
 export const updateVendorProfile = async (
   data: any,

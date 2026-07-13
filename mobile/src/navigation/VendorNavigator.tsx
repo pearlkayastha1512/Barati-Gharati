@@ -17,6 +17,7 @@ import AnalyticsScreen from "../screens/vendor/VendorAnalyticsScreen";
 import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorChatbotScreen from "../screens/vendor/VendorChatbotScreen";
 import VendorEditProfileScreen from "../screens/vendor/VendorEditProfileScreen";
+import UpgradePlanScreen from "../screens/vendor/UpgradePlanScreen";
 
 import { COLORS } from "../constants/theme";
 
@@ -72,6 +73,10 @@ export default function VendorNavigator() {
   <Stack.Screen name="Earnings" component={EarningsScreen} />
   <Stack.Screen name="Analytics" component={AnalyticsScreen} />
   <Stack.Screen name="Settings" component={VendorSettingsScreen} />
+  <Stack.Screen
+  name="UpgradePlan"
+  component={UpgradePlanScreen}
+/>
   <Stack.Screen
   name="VendorEditProfile"
   component={VendorEditProfileScreen}

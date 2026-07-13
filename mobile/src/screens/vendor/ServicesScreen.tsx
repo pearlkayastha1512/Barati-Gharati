@@ -1,17 +1,16 @@
-
-import { View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/theme";
 import {
-  useVendorServicesStore, VendorServiceRecord, ServiceCategory,
+  useVendorServicesStore, VendorServiceRecord, ServiceCategory, SERVICE_CATEGORIES,
 } from "../../store/vendorServicesStore";
 import { StatCard } from "../../components/vendors/dashboard/StatCard";
 import { ServiceCard } from "../../components/vendors/services/ServiceCard";
 import { ServiceFormModal } from "../../components/vendors/services/ServiceFormModal";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
-import { styles } from "./servicesStyles";
+import { styles } from "./servicesScreenStyles";  // ✅ the one you pasted, has everything
 import React, { useState, useEffect } from "react";
 import { Alert } from "react-native";
 
@@ -24,6 +23,10 @@ export default function ServicesScreen() {
   const [searchText, setSearchText] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editingService, setEditingService] = useState<VendorServiceRecord | null>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | "All">("All");
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+
   const fetchServices = useVendorServicesStore(
   (state) => state.fetchServices
 );
@@ -42,18 +45,24 @@ useEffect(() => {
       ? Math.round(services.reduce((sum, s) => sum + s.price, 0) / services.length)
       : 0;
   const lowestPrice = services.length > 0 ? Math.min(...services.map((s) => s.price)) : 0;
-  const avgRating =
-    services.length > 0
-      ? (services.reduce((sum, s) => sum + s.rating, 0) / services.length).toFixed(1)
-      : "0.0";
+  const servicesWithReviews = services.filter((s) => s.reviewsCount > 0);
+const avgRating =
+  servicesWithReviews.length > 0
+    ? (servicesWithReviews.reduce((sum, s) => sum + s.rating, 0) / servicesWithReviews.length).toFixed(1)
+    : "0.0";
   const totalReviews = services.reduce((sum, s) => sum + s.reviewsCount, 0);
 
-  const filteredServices = services.filter(
-    (s) =>
+  const filteredServices = services.filter((s) => {
+    const matchesSearch =
       !searchText.trim() ||
       s.serviceName.toLowerCase().includes(searchText.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchText.toLowerCase())
-  );
+      s.category.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === "All" || s.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
 
   const openCreateModal = () => {
     setEditingService(null);
@@ -123,6 +132,17 @@ const handleSubmit = async (data: {
               onChangeText={setSearchText}
             />
           </View>
+
+          <TouchableOpacity
+            style={styles.categoryFilterBtn}
+            onPress={() => setCategoryModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.categoryFilterBtnText} numberOfLines={1}>
+              {selectedCategory}
+            </Text>
+            <MaterialCommunityIcons name="chevron-down" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
         </View>
 
         {filteredServices.length === 0 ? (
@@ -181,6 +201,51 @@ const handleSubmit = async (data: {
         onSubmit={handleSubmit}
         initialService={editingService}
       />
+
+      <Modal
+        visible={categoryModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCategoryModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.categoryModalOverlay}
+          activeOpacity={1}
+          onPress={() => setCategoryModalVisible(false)}
+        >
+          <View style={styles.categoryModalCard}>
+            <FlatList
+              data={["All", ...SERVICE_CATEGORIES] as (ServiceCategory | "All")[]}
+              keyExtractor={(item) => item}
+              style={styles.categoryModalList}
+              renderItem={({ item }) => {
+                const isSelected = item === selectedCategory;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.categoryModalItem,
+                      isSelected && styles.categoryModalItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(item);
+                      setCategoryModalVisible(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryModalItemText,
+                        isSelected && styles.categoryModalItemTextSelected,
+                      ]}
+                    >
+                      {item === "All" ? "All Categories" : item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }

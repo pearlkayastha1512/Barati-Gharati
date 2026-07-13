@@ -15,83 +15,219 @@ alignItems:"center"
 },
 
 container:{
-padding:20,
-paddingBottom:40
+ paddingHorizontal:16,
+ paddingBottom:30
 },
 
-hero:{
-borderRadius:24,
-padding:22,
+// ===== Hero / cover section =====
+
+heroWrapper:{
 marginBottom:18
 },
 
+coverContainer:{
+height:150,
+borderTopLeftRadius:20,
+borderTopRightRadius:20,
+overflow:"hidden",
+backgroundColor:COLORS.gradientStart
+},
+
+coverImage:{
+width:"100%",
+height:"100%"
+},
+
+coverOverlay:{
+position:"absolute",
+left:0,
+right:0,
+bottom:0,
+height:60
+},
+
 topRow:{
+position:"absolute",
+top:14,
+left:16,
 flexDirection:"row",
 alignItems:"center"
 },
 
 tag:{
-marginLeft:10,
+marginLeft:8,
 color:"#fff",
 fontWeight:"700",
-fontSize:15
+fontSize:14
+},
+
+logoContainer:{
+alignItems:"center",
+marginTop:-40
+},
+
+logo:{
+width:80,
+height:80,
+borderRadius:40,
+borderWidth:4,
+borderColor:"#fff"
+},
+
+logoPlaceholder:{
+width:80,
+height:80,
+borderRadius:40,
+backgroundColor:"#fff",
+borderWidth:4,
+borderColor:"#fff",
+justifyContent:"center",
+alignItems:"center",
+shadowColor:"#000",
+shadowOpacity:0.1,
+shadowRadius:6,
+shadowOffset:{
+ width:0,
+ height:2
+},
+elevation:3
+},
+
+heroContent:{
+backgroundColor:"#fff",
+borderBottomLeftRadius:20,
+borderBottomRightRadius:20,
+paddingHorizontal:20,
+paddingTop:10,
+paddingBottom:20,
+alignItems:"center",
+shadowColor:"#000",
+shadowOpacity:0.05,
+shadowRadius:8,
+shadowOffset:{
+ width:0,
+ height:4
+},
+elevation:2
 },
 
 businessName:{
-fontSize:28,
+fontSize:21,
 fontWeight:"800",
-color:"#fff",
-marginTop:16
+color:"#1a1a1a",
+marginTop:6,
+textAlign:"center"
 },
 
 description:{
-marginTop:10,
-color:"#fff",
-fontSize:15,
-lineHeight:22
+marginTop:6,
+color:"#666",
+fontSize:13,
+lineHeight:18,
+textAlign:"center"
 },
 
 tags:{
 flexDirection:"row",
 flexWrap:"wrap",
-marginTop:16
+justifyContent:"center",
+marginTop:14
 },
 
 badge:{
-backgroundColor:"rgba(255,255,255,0.25)",
-color:"#fff",
+backgroundColor:"#F1F3F5",
+color:"#444",
 paddingHorizontal:12,
 paddingVertical:6,
-borderRadius:20,
-marginRight:8,
-marginBottom:8,
-overflow:"hidden",
-fontWeight:"600"
+borderRadius:15,
+marginRight:6,
+marginBottom:6,
+fontSize:12,
+fontWeight:"700",
+overflow:"hidden"
 },
 
-ratingBox:{
-marginTop:18
+badge_bronze:{
+backgroundColor:"#F3E1D3",
+color:"#8B5A2B"
 },
 
-rating:{
-fontSize:22,
+badge_silver:{
+backgroundColor:"#E8E9EB",
+color:"#5C6066"
+},
+
+badge_gold:{
+backgroundColor:"#FBEEC1",
+color:"#8A6D1D"
+},
+
+statsRow:{
+flexDirection:"row",
+alignItems:"center",
+justifyContent:"space-between",
+width:"100%",
+marginTop:18,
+paddingTop:16,
+borderTopWidth:0.5,
+borderTopColor:"#eee"
+},
+
+statBox:{
+alignItems:"flex-start"
+},
+
+statValue:{
+fontSize:20,
 fontWeight:"800",
-color:"#fff"
+color:"#1a1a1a"
 },
 
-ratingText:{
-color:"#fff",
-marginTop:4
+statLabel:{
+fontSize:12,
+color:"#888",
+marginTop:2
 },
+
+statusPill:{
+flexDirection:"row",
+alignItems:"center",
+backgroundColor:"#DCFCE7",
+paddingHorizontal:12,
+paddingVertical:7,
+borderRadius:20
+},
+
+statusDot:{
+width:7,
+height:7,
+borderRadius:4,
+backgroundColor:"#15803D",
+marginRight:6
+},
+
+statusText:{
+color:"#15803D",
+fontWeight:"700",
+fontSize:12
+},
+
+// ===== Cards =====
 
 card:{
 backgroundColor:"#fff",
-borderRadius:18,
-padding:18,
-marginBottom:16,
+borderRadius:16,
+padding:15,
+marginBottom:12,
+
 shadowColor:"#000",
-shadowOpacity:0.05,
-shadowRadius:8,
+shadowOpacity:0.06,
+shadowRadius:6,
+shadowOffset:{
+ width:0,
+ height:3
+},
+
 elevation:2
 },
 
@@ -120,30 +256,34 @@ fontWeight:"700"
 },
 
 heading:{
-fontSize:18,
-fontWeight:"700",
-marginBottom:15,
+fontSize:16,
+fontWeight:"800",
+marginBottom:10,
 color:"#222"
 },
 
 infoRow:{
 flexDirection:"row",
 justifyContent:"space-between",
-marginBottom:14
+alignItems:"center",
+paddingVertical:8,
+borderBottomWidth:0.5,
+borderBottomColor:"#eee"
 },
 
 infoTitle:{
-fontSize:15,
-color:"#777"
+fontSize:13,
+color:"#888",
+fontWeight:"600"
 },
 
 infoValue:{
-fontSize:15,
-fontWeight:"600",
+fontSize:14,
+fontWeight:"700",
 color:"#222",
 textAlign:"right",
 flex:1,
-marginLeft:20
+marginLeft:15
 },
 
 desc:{
@@ -183,34 +323,14 @@ alignItems:"center",
 marginTop:15,
 marginBottom:30
 },
-coverImage:{
-width:"100%",
-height:170,
-borderRadius:20,
-marginBottom:16
-},
 
-logoContainer:{
+sectionHeader:{
+flexDirection:"row",
 alignItems:"center",
-marginBottom:16
+marginBottom:10,
+gap:8
 },
 
-logo:{
-width:90,
-height:90,
-borderRadius:45,
-borderWidth:3,
-borderColor:"#fff"
-},
-
-logoPlaceholder:{
-width:90,
-height:90,
-borderRadius:45,
-backgroundColor:"rgba(255,255,255,0.25)",
-justifyContent:"center",
-alignItems:"center"
-},
 imagePicker:{
 height:130,
 width:130,
@@ -221,12 +341,12 @@ justifyContent:"center",
 alignItems:"center",
 alignSelf:"center",
 marginBottom:20,
-overflow:"hidden",
+overflow:"hidden"
 },
 
 previewImage:{
 width:"100%",
-height:"100%",
+height:"100%"
 },
 
 coverPicker:{
@@ -237,12 +357,12 @@ borderColor:"#ddd",
 justifyContent:"center",
 alignItems:"center",
 marginBottom:20,
-overflow:"hidden",
+overflow:"hidden"
 },
 
 coverPreview:{
 width:"100%",
-height:"100%",
+height:"100%"
 },
 
 buttonText:{

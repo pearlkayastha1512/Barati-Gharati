@@ -114,25 +114,31 @@ export function ServiceFormModal({ visible, onClose, onSubmit, initialService }:
 
             {categoryPickerOpen && (
               <View style={styles.dropdownList}>
-                {SERVICE_CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setCategory(cat);
-                      setCategoryPickerOpen(false);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.dropdownItemText,
-                        cat === category && { color: COLORS.primary, fontWeight: "700" },
-                      ]}
+                <ScrollView
+                  style={styles.dropdownScroll}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator
+                >
+                  {SERVICE_CATEGORIES.map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setCategory(cat);
+                        setCategoryPickerOpen(false);
+                      }}
                     >
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          cat === category && { color: COLORS.primary, fontWeight: "700" },
+                        ]}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
 
@@ -227,6 +233,7 @@ const styles = StyleSheet.create({
   dropdownList: {
     backgroundColor: COLORS.background, borderRadius: RADIUS.md, marginTop: 4, overflow: "hidden",
   },
+  dropdownScroll: { maxHeight: 220 },
   dropdownItem: { paddingHorizontal: 14, paddingVertical: 10 },
   dropdownItemText: { fontSize: 13, color: COLORS.text },
   imageBox: {
