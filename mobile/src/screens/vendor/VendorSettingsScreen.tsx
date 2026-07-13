@@ -1,20 +1,34 @@
-import React, { useState } from "react";
-import { ScrollView, View, Text, TextInput, TouchableOpacity, Switch, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Switch,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-import { useAuthStore } from "../../store/authStore";
 import { useVendorSettingsStore } from "../../store/vendorSettingsStore";
+import {
+  getMyVendorProfile,
+  updateVendorProfile,
+} from "../../api/vendor.api";
+
 import { styles } from "./vendorSettingsStyles";
 import { COLORS } from "../../constants/theme";
 
 const GRADIENT_START = COLORS.gradientStart;
 const GRADIENT_END = COLORS.gradientEnd;
+
 export default function VendorSettingsScreen() {
+
   const navigation = useNavigation<any>();
-  const { user } = useAuthStore();
+
   const {
     businessVisibility,
     acceptNewBookings,
@@ -24,269 +38,469 @@ export default function VendorSettingsScreen() {
     paymentAlerts,
     customerMessageAlerts,
     marketingEmails,
-    isSavingAccount,
-    isChangingPassword,
     toggleSetting,
-    updateAccount,
     submitPasswordChange,
+    isChangingPassword,
   } = useVendorSettingsStore();
 
-  const [ownerName, setOwnerName] = useState(user?.name ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [vendorProfile,setVendorProfile] = useState<any>(null);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [ownerName,setOwnerName] = useState("");
+  const [email,setEmail] = useState("");
+  const [phone,setPhone] = useState("");
 
- const handleSaveAccount = async () => {
-  // TODO: Call Update Account API here when backend is ready.
-  // Example:
-  // await updateVendorAccount({ ownerName, email, phone });
+  const [currentPassword,setCurrentPassword] = useState("");
+  const [newPassword,setNewPassword] = useState("");
+  const [confirmPassword,setConfirmPassword] = useState("");
 
-  const result = await updateAccount({ ownerName, email, phone });
+  const [saving,setSaving] = useState(false);
 
-  Alert.alert(
-    result.success ? "Success" : "Error",
-    result.success ? "Account updated successfully." : result.message
-  );
-};
 
-  const handleChangePassword = async () => {
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    Alert.alert("Error", "Please fill in all password fields.");
-    return;
-  }
+  useEffect(()=>{
+    loadVendorProfile();
+  },[]);
 
-  if (newPassword !== confirmPassword) {
-    Alert.alert("Error", "New password and confirm password do not match.");
-    return;
-  }
 
-  // TODO: Call Change Password API here when backend is ready.
-  // Example:
-  // await changePassword({ currentPassword, newPassword });
+  const loadVendorProfile = async()=>{
 
-  const result = await submitPasswordChange(currentPassword, newPassword);
+    try{
 
-  Alert.alert(
-    result.success ? "Success" : "Error",
-    result.success ? "Password changed successfully." : result.message
-  );
+      const response = await getMyVendorProfile();
 
-  if (result.success) {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  }
-};
+      const data = response.data;
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Hero header */}
-        <LinearGradient
-          colors={[GRADIENT_START, GRADIENT_END]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroCard}
-        >
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
-          </TouchableOpacity>
+      setVendorProfile(data);
 
-          <View style={styles.heroPill}>
-            <MaterialCommunityIcons name="cog-outline" size={13} color="#fff" />
-            <Text style={styles.heroPillText}>Vendor Settings</Text>
-          </View>
-          <Text style={styles.heroTitle}>{user?.name ?? "Your Business"}</Text>
-          <Text style={styles.heroSubtitle}>
-            Manage your business preferences, notifications and security settings.
-          </Text>
-        </LinearGradient>
+      setOwnerName(data?.businessName ?? "");
+      setEmail(data?.user?.email ?? "");
+      setPhone(data?.user?.phone ?? "");
 
-        {/* Account */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <Text style={styles.sectionSubtitle}>Update your business and contact details.</Text>
+    }
+    catch(error){
+      console.log("Vendor profile error",error);
+    }
 
-          <TextInput
-            style={styles.input}
-            placeholder="Business / Owner Name"
-            placeholderTextColor="#999"
-            value={ownerName}
-            onChangeText={setOwnerName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Phone"
-            placeholderTextColor="#999"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
+  };
 
-          <TouchableOpacity
-           style={[styles.primaryButton, { backgroundColor: COLORS.primary }]}
-            onPress={handleSaveAccount}
-            disabled={isSavingAccount}
-          >
-            <Text style={styles.primaryButtonText}>{isSavingAccount ? "Saving..." : "Save Account"}</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Change Password */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Change Password</Text>
-          <Text style={styles.sectionSubtitle}>Update your account password.</Text>
+  const handleSaveAccount = async()=>{
 
-          <TextInput
-            style={styles.input}
-            placeholder="Current Password"
-            placeholderTextColor="#999"
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="New Password"
-            placeholderTextColor="#999"
-            value={newPassword}
-            onChangeText={setNewPassword}
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            placeholderTextColor="#999"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
+    try{
 
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: COLORS.primary }]}
-            onPress={handleChangePassword}
-            disabled={isChangingPassword}
-          >
-            <Text style={styles.primaryButtonText}>{isChangingPassword ? "Changing..." : "Change Password"}</Text>
-          </TouchableOpacity>
-        </View>
+      setSaving(true);
 
-        {/* Business Preferences — local-only, no backend fields exist for these yet */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Business Preferences</Text>
-          <Text style={styles.sectionSubtitle}>Control how your business appears to customers.</Text>
+      await updateVendorProfile({
+        ownerName,
+        email,
+        phone,
+        businessName: ownerName,
+      });
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Business Visibility</Text>
-              <Text style={styles.toggleSubtext}>Show your business to customers.</Text>
-            </View>
-            <Switch value={businessVisibility} onValueChange={() => toggleSetting("businessVisibility")} />
-          </View>
+      Alert.alert(
+        "Success",
+        "Business profile updated successfully"
+      );
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Accept New Bookings</Text>
-              <Text style={styles.toggleSubtext}>Allow customers to send new booking requests.</Text>
-            </View>
-            <Switch value={acceptNewBookings} onValueChange={() => toggleSetting("acceptNewBookings")} />
-          </View>
+      loadVendorProfile();
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Display Pricing Publicly</Text>
-              <Text style={styles.toggleSubtext}>Show service prices on your public profile.</Text>
-            </View>
-            <Switch value={displayPricingPublicly} onValueChange={() => toggleSetting("displayPricingPublicly")} />
-          </View>
+    }
+    catch(error){
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Availability Calendar</Text>
-              <Text style={styles.toggleSubtext}>Display your available dates to customers.</Text>
-            </View>
-            <Switch value={availabilityCalendarVisible} onValueChange={() => toggleSetting("availabilityCalendarVisible")} />
-          </View>
-        </View>
+      console.log(error);
 
-        {/* Notifications — local-only, no backend preference fields exist yet */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <Text style={styles.sectionSubtitle}>Choose which notifications you want to receive.</Text>
+      Alert.alert(
+        "Error",
+        "Unable to update profile"
+      );
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>New Booking Notifications</Text>
-              <Text style={styles.toggleSubtext}>Receive alerts whenever a customer books your service.</Text>
-            </View>
-            <Switch value={newBookingNotifications} onValueChange={() => toggleSetting("newBookingNotifications")} />
-          </View>
+    }
+    finally{
+      setSaving(false);
+    }
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Payment Alerts</Text>
-              <Text style={styles.toggleSubtext}>Get notified whenever a payment is received.</Text>
-            </View>
-            <Switch value={paymentAlerts} onValueChange={() => toggleSetting("paymentAlerts")} />
-          </View>
+  };
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Customer Messages</Text>
-              <Text style={styles.toggleSubtext}>Receive notifications for new customer chats.</Text>
-            </View>
-            <Switch value={customerMessageAlerts} onValueChange={() => toggleSetting("customerMessageAlerts")} />
-          </View>
 
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleLabel}>Marketing Emails</Text>
-              <Text style={styles.toggleSubtext}>Receive promotional offers and platform updates.</Text>
-            </View>
-            <Switch value={marketingEmails} onValueChange={() => toggleSetting("marketingEmails")} />
-          </View>
-        </View>
+  const handleChangePassword = async()=>{
 
-        {/* Danger Zone */}
-        <View style={styles.dangerSection}>
-          <Text style={styles.dangerTitle}>Danger Zone</Text>
-          <Text style={styles.dangerText}>Deactivating your business hides it from customers. Existing bookings remain unaffected.</Text>
+    if(!currentPassword || !newPassword || !confirmPassword){
+      Alert.alert(
+        "Error",
+        "Please fill all password fields"
+      );
+      return;
+    }
 
-          <View style={styles.statusRow}>
-            <View>
-              <Text style={styles.statusLabel}>Business Status</Text>
-              <Text style={styles.statusSubtext}>Customers can only book active businesses.</Text>
-            </View>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusBadgeText}>Active</Text>
-            </View>
-          </View>
+    if(newPassword !== confirmPassword){
+      Alert.alert(
+        "Error",
+        "Passwords do not match"
+      );
+      return;
+    }
 
-          <TouchableOpacity
-            style={styles.dangerButton}
-            onPress={() =>
-              Alert.alert(
-                "Not available yet",
-                "Deactivating your business isn't connected to the backend yet."
-              )
-            }
-          >
-            <Text style={styles.dangerButtonText}>Deactivate Business</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+
+    const result = await submitPasswordChange(
+      currentPassword,
+      newPassword
+    );
+
+
+    Alert.alert(
+      result.success ? "Success":"Error",
+      result.success
+      ? "Password changed successfully"
+      : result.message
+    );
+
+
+    if(result.success){
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+
+  };
+
+
+  return(
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["top"]}
+    >
+
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      showsVerticalScrollIndicator={false}
+    >
+
+    <LinearGradient
+      colors={[GRADIENT_START,GRADIENT_END]}
+      start={{x:0,y:0}}
+      end={{x:1,y:1}}
+      style={styles.heroCard}
+    >
+
+      <TouchableOpacity
+        onPress={()=>navigation.goBack()}
+        style={styles.backButton}
+      >
+        <MaterialCommunityIcons
+          name="arrow-left"
+          size={20}
+          color="#fff"
+        />
+      </TouchableOpacity>
+
+
+      <View style={styles.heroPill}>
+        <MaterialCommunityIcons
+          name="cog-outline"
+          size={13}
+          color="#fff"
+        />
+        <Text style={styles.heroPillText}>
+          Vendor Settings
+        </Text>
+      </View>
+
+
+      <Text style={styles.heroTitle}>
+        {vendorProfile?.businessName ?? "Your Business"}
+      </Text>
+
+
+      <Text style={styles.heroSubtitle}>
+        Manage your business preferences, notifications and security settings.
+      </Text>
+
+    </LinearGradient>
+
+
+
+    {/* ACCOUNT */}
+
+    <View style={styles.section}>
+
+      <Text style={styles.sectionTitle}>
+        Account
+      </Text>
+
+      <Text style={styles.sectionSubtitle}>
+        Update your business and contact details.
+      </Text>
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="Business Name"
+        placeholderTextColor="#999"
+        value={ownerName}
+        onChangeText={setOwnerName}
+      />
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor="#999"
+        value={email}
+        editable={false}
+      />
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="Phone"
+        placeholderTextColor="#999"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+
+
+      <TouchableOpacity
+        style={[
+          styles.primaryButton,
+          {backgroundColor:COLORS.primary}
+        ]}
+        onPress={handleSaveAccount}
+        disabled={saving}
+      >
+
+        <Text style={styles.primaryButtonText}>
+          {saving ? "Saving..." : "Save Account"}
+        </Text>
+
+      </TouchableOpacity>
+
+    </View>
+
+
+
+
+    {/* PASSWORD */}
+
+    <View style={styles.section}>
+
+      <Text style={styles.sectionTitle}>
+        Change Password
+      </Text>
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="Current Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+      />
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="New Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={newPassword}
+        onChangeText={setNewPassword}
+      />
+
+
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
+
+      <TouchableOpacity
+        style={[
+          styles.primaryButton,
+          {backgroundColor:COLORS.primary}
+        ]}
+        onPress={handleChangePassword}
+        disabled={isChangingPassword}
+      >
+
+        <Text style={styles.primaryButtonText}>
+          {isChangingPassword
+          ?"Changing..."
+          :"Change Password"}
+        </Text>
+
+      </TouchableOpacity>
+
+    </View>
+
+
+
+
+    {/* BUSINESS SETTINGS */}
+
+    <View style={styles.section}>
+
+      <Text style={styles.sectionTitle}>
+        Business Preferences
+      </Text>
+
+
+      <SettingToggle
+        title="Business Visibility"
+        subtitle="Show your business to customers."
+        value={businessVisibility}
+        onPress={()=>toggleSetting("businessVisibility")}
+      />
+
+
+      <SettingToggle
+        title="Accept New Bookings"
+        subtitle="Allow new booking requests."
+        value={acceptNewBookings}
+        onPress={()=>toggleSetting("acceptNewBookings")}
+      />
+
+
+      <SettingToggle
+        title="Display Pricing Publicly"
+        subtitle="Show service prices."
+        value={displayPricingPublicly}
+        onPress={()=>toggleSetting("displayPricingPublicly")}
+      />
+
+
+      <SettingToggle
+        title="Availability Calendar"
+        subtitle="Show available dates."
+        value={availabilityCalendarVisible}
+        onPress={()=>toggleSetting("availabilityCalendarVisible")}
+      />
+
+    </View>
+
+
+
+
+    {/* NOTIFICATIONS */}
+
+    <View style={styles.section}>
+
+      <Text style={styles.sectionTitle}>
+        Notifications
+      </Text>
+
+
+      <SettingToggle
+        title="Booking Notifications"
+        subtitle="Receive booking alerts."
+        value={newBookingNotifications}
+        onPress={()=>toggleSetting("newBookingNotifications")}
+      />
+
+
+      <SettingToggle
+        title="Payment Alerts"
+        subtitle="Payment updates."
+        value={paymentAlerts}
+        onPress={()=>toggleSetting("paymentAlerts")}
+      />
+
+
+      <SettingToggle
+        title="Customer Messages"
+        subtitle="Chat notifications."
+        value={customerMessageAlerts}
+        onPress={()=>toggleSetting("customerMessageAlerts")}
+      />
+
+
+      <SettingToggle
+        title="Marketing Emails"
+        subtitle="Offers and updates."
+        value={marketingEmails}
+        onPress={()=>toggleSetting("marketingEmails")}
+      />
+
+    </View>
+
+
+
+
+    {/* DANGER */}
+
+    <View style={styles.dangerSection}>
+
+      <Text style={styles.dangerTitle}>
+        Danger Zone
+      </Text>
+
+      <Text style={styles.dangerText}>
+        Deactivating hides your business from customers.
+      </Text>
+
+
+      <TouchableOpacity
+        style={styles.dangerButton}
+        onPress={()=>
+          Alert.alert(
+            "Coming Soon",
+            "Business deactivation will be available later"
+          )
+        }
+      >
+
+        <Text style={styles.dangerButtonText}>
+          Deactivate Business
+        </Text>
+
+      </TouchableOpacity>
+
+    </View>
+
+
+    </ScrollView>
+
     </SafeAreaView>
   );
+
+}
+
+
+
+function SettingToggle({
+  title,
+  subtitle,
+  value,
+  onPress
+}:any){
+
+return(
+<View style={styles.toggleRow}>
+
+<View style={{flex:1}}>
+
+<Text style={styles.toggleLabel}>
+{title}
+</Text>
+
+<Text style={styles.toggleSubtext}>
+{subtitle}
+</Text>
+
+</View>
+
+
+<Switch
+value={value}
+onValueChange={onPress}
+/>
+
+
+</View>
+);
+
 }

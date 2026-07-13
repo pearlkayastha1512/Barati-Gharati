@@ -58,6 +58,7 @@ export function PortfolioUploadModal({ visible, editItem, onClose, onSubmit }: P
       setCategory(null);
       setDescription("");
       setImageUri(null);
+      setCategoryPickerOpen(false);
     }
 
     setCategoryPickerOpen(false);

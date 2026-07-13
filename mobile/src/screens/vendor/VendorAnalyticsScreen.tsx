@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,18 +15,25 @@ import { styles } from "./vendorAnalyticsStyles";
 export default function VendorAnalyticsScreen() {
   const navigation = useNavigation<any>();
   const {
-    profileViews,
     customers,
     growthPercent,
     rating,
     monthlyBookings,
+    monthlyRevenue,
     totalBookingsThisYear,
     bestRevenueMonth,
     topServices,
     insights,
+    fetchAnalytics,
   } = useVendorAnalyticsStore();
 
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
   const bookingChartData = monthlyBookings.map((m) => ({ month: m.month, amount: m.count }));
+  const revenueChartData = monthlyRevenue.map((m) => ({ month: m.month, amount: m.amount }));
+  const hasRevenue = monthlyRevenue.some((m) => m.amount > 0);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -54,10 +61,15 @@ export default function VendorAnalyticsScreen() {
 
         {/* Stat Cards */}
         <View style={styles.grid}>
-          <StatCard icon="eye-outline" label="Profile Views" value={String(profileViews)} sublabel="All time" />
           <StatCard icon="account-group-outline" label="Customers" value={String(customers)} sublabel="Total customers" />
-          <StatCard icon="trending-up" label="Growth" value={`+${growthPercent}%`} sublabel="This period" />
-          <StatCard icon="star-outline" label="Rating" value={rating.toFixed(1)} sublabel="Average rating" />
+          <StatCard
+            icon="trending-up"
+            label="Growth"
+            value={`${growthPercent > 0 ? "+" : ""}${growthPercent}%`}
+            sublabel="vs last month"
+          />
+          <StatCard icon="star-outline" label="Rating" value={rating > 0 ? rating.toFixed(1) : "—"} sublabel="Average rating" />
+          <StatCard icon="calendar-check-outline" label="This Year" value={String(totalBookingsThisYear)} sublabel="Bookings" />
         </View>
 
         {/* Booking Trend */}
@@ -81,9 +93,13 @@ export default function VendorAnalyticsScreen() {
             </View>
           </View>
           <Text style={styles.chartCardSubtitle}>Monthly earnings overview</Text>
-          <View style={styles.emptyChartBox}>
-            <Text style={styles.emptyChartText}>No revenue available yet.</Text>
-          </View>
+          {hasRevenue ? (
+            <RevenueBarChart data={revenueChartData} />
+          ) : (
+            <View style={styles.emptyChartBox}>
+              <Text style={styles.emptyChartText}>No revenue available yet.</Text>
+            </View>
+          )}
         </View>
 
         {/* Top Performing Services */}

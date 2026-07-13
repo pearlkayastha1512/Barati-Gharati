@@ -25,6 +25,7 @@ export const markNotificationRead = async (id: string, isRead: boolean): Promise
 export const deleteNotification = async (id: string): Promise<void> => {
   await api.delete(`/notifications/${id}`);
 };
+//temporary for chceking
 export const createTestNotification = async () => {
   const response = await api.post("/notifications", {
     title: "Test Notification",

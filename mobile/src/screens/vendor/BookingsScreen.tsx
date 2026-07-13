@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,38 +8,41 @@ import { useVendorBookingsStore, VendorBookingRecord } from "../../store/vendorB
 import { StatCard } from "../../components/vendors/dashboard/StatCard";
 import { StatusFilterDropdown, StatusFilter } from "../../components/vendors/bookings/StatusFilterDropdown";
 import { BookingRow } from "../../components/vendors/bookings/BookingRow";
-import { BookingDetailsCard } from "../../components/vendors/bookings/BookingDetailsCard";
+import { BookingDetailsModal } from "../../components/vendors/bookings/BookingDetailsModal";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
 import { styles } from "./bookingsStyles";
 
 export default function BookingsScreen() {
   const bookings = useVendorBookingsStore((state) => state.bookings);
-  const fetchBookings = useVendorBookingsStore((state) => state.fetchBookings); // add
-  console.log("fetchBookings =", fetchBookings);
+  const fetchBookings = useVendorBookingsStore((state) => state.fetchBookings);
+
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Status");
   const [selectedBooking, setSelectedBooking] = useState<VendorBookingRecord | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
 
- useEffect(() => {
-  console.log("Bookings Screen Mounted");
-  fetchBookings();
-}, [fetchBookings]);
-   const totalCount = bookings.length;
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  const totalCount = bookings.length;
   const pendingCount = bookings.filter((b) => b.status === "Pending").length;
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
   const totalRevenue = bookings
     .filter((b) => b.status === "Completed")
     .reduce((sum, b) => sum + b.amount, 0);
-const filteredBookings = bookings.filter((booking) => {
-  const matchesSearch =
-    booking.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-    booking.eventType.toLowerCase().includes(searchText.toLowerCase());
 
-  const matchesStatus =
-    statusFilter === "All Status" || booking.status === statusFilter;
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesSearch =
+      booking.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
+      booking.eventType.toLowerCase().includes(searchText.toLowerCase());
 
-  return matchesSearch && matchesStatus;
-});
+    const matchesStatus =
+      statusFilter === "All Status" || booking.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
@@ -97,14 +100,21 @@ const filteredBookings = bookings.filter((booking) => {
               <BookingRow
                 key={booking.id}
                 booking={booking}
-                onPress={() => setSelectedBooking(booking)}
+                onPress={() => {
+                  setSelectedBooking(booking);
+                  setDetailsVisible(true);
+                }}
               />
             ))
           )}
         </View>
-
-        <BookingDetailsCard booking={selectedBooking} />
       </ScrollView>
+
+      <BookingDetailsModal
+        visible={detailsVisible}
+        booking={selectedBooking}
+        onClose={() => setDetailsVisible(false)}
+      />
     </SafeAreaView>
   );
 }

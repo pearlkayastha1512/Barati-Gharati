@@ -10,7 +10,7 @@ export type VendorBookingRecord = {
   date: string;
   amount: number;
   status: VendorBookingStatus;
-  // extra fields kept for BookingDetailsCard, in case it needs them later
+
   packageName: string;
   advancePaid: number;
   remainingAmount: number;
@@ -18,6 +18,27 @@ export type VendorBookingRecord = {
   eventTime: string;
   customerEmail: string;
   customerPhone: string;
+
+  venue: string;
+  city: string;
+  guests: number;
+
+  brideName: string;
+  groomName: string;
+  eventTitle: string;
+  primaryPersonName: string;
+  primaryPersonAge: number | null;
+  eventTheme: string;
+
+  partnerName: string;
+  partnerEmail: string;
+  partnerPhone: string;
+  partnerOccupation: string;
+
+  contactAddress: string;
+  contactState: string;
+  contactCountry: string;
+  specialRequirements: string;
 };
 
 interface VendorBookingsState {
@@ -62,52 +83,58 @@ const mapBooking = (b: BackendBooking): VendorBookingRecord => ({
   eventTime: b.eventTime,
   customerEmail: b.customerEmail,
   customerPhone: b.customerPhone,
+
+  venue: b.venue,
+  city: b.city,
+  guests: b.guests,
+
+  brideName: b.brideName,
+  groomName: b.groomName,
+  eventTitle: b.eventTitle,
+  primaryPersonName: b.primaryPersonName,
+  primaryPersonAge: b.primaryPersonAge,
+  eventTheme: b.eventTheme,
+
+  partnerName: b.partnerName,
+  partnerEmail: b.partnerEmail,
+  partnerPhone: b.partnerPhone,
+  partnerOccupation: b.partnerOccupation,
+
+  contactAddress: b.contactAddress,
+  contactState: b.contactState,
+  contactCountry: b.contactCountry,
+  specialRequirements: b.specialRequirements,
 });
 
 export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => ({
   bookings: [],
   isLoading: false,
 
- fetchBookings: async () => {
-  console.log("fetchBookings() called");
+  fetchBookings: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await getMyBookings();
+      set({ bookings: data.map(mapBooking), isLoading: false });
+    } catch (error) {
+      console.log("FETCH VENDOR BOOKINGS ERROR =>", error);
+      set({ isLoading: false });
+    }
+  },
 
-  try {
-    set({ isLoading: true });
-
-    const data = await getMyBookings();
-
-    console.log("Fetched Data:", data);
-
-    set({
-      bookings: data.map(mapBooking),
-      isLoading: false,
-    });
-  } catch (error) {
-    console.log("FETCH VENDOR BOOKINGS ERROR =>", error);
-    set({ isLoading: false });
-  }
-},
-
-  // Only Pending -> Accepted / Rejected transitions are vendor-controlled
-  // (Confirmed/Cancelled happen from the customer side via /confirm and /cancel)
   updateStatus: async (id, status) => {
     const previous = get().bookings;
-
     set((state) => ({
       bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
     }));
-
     try {
       if (status === "Accepted") {
         await acceptBooking(id);
       } else if (status === "Rejected") {
         await rejectBooking(id, "Rejected by vendor");
-      } else {
-        console.log(`updateStatus("${status}") has no vendor-side API call — ignoring`);
       }
     } catch (error) {
       console.log("UPDATE BOOKING STATUS ERROR =>", error);
-      set({ bookings: previous }); // rollback
+      set({ bookings: previous });
     }
   },
 }));

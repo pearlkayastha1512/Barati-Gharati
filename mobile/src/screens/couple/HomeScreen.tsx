@@ -114,9 +114,9 @@ export default function HomeScreen() {
               <MaterialIcons name="notifications-none" size={24} color="#333" />
               <View style={styles.badge} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-              <Image source={{ uri: "https://i.pravatar.cc/100" }} style={styles.avatar} />
-            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={styles.avatarPlaceholder}>
+  <MaterialIcons name="account-circle" size={36} color="#C2185B" />
+</TouchableOpacity>
           </View>
         </View>
 
@@ -125,7 +125,7 @@ export default function HomeScreen() {
           {/* <Text style={styles.weddingLabel}>Good Morning 🌸</Text> */}
           
           <Text style={[styles.weddingDate, { color: "#fff", fontSize: 22 }]}>Welcome back, {user?.name ?? "Guest"} 👋</Text>
-          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 6 }}>
+          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 8 }}>
             Continue planning your dream wedding with trusted vendors.
           </Text>
 

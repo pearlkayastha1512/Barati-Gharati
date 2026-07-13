@@ -16,20 +16,41 @@ export type BackendBooking = {
   venue: string;
   city: string;
   guests: number;
+  vendorId: number;
+
+  brideName: string;
+  groomName: string;
+  eventTitle: string;
+  primaryPersonName: string;
+  primaryPersonAge: number | null;
+  eventTheme: string;
+
+  partnerName: string;
+  partnerEmail: string;
+  partnerPhone: string;
+  partnerOccupation: string;
+
+  contactAddress: string;
+  contactState: string;
+  contactCountry: string;
+  weddingTheme: string;
+  specialRequirements: string;
+
   amount: number;
   advancePaid: number;
   remainingAmount: number;
   paymentStatus: string;
   bookingStatus: string;
+
+  adminApproved: boolean;
+  adminApprovedAt: string | null;
+
   createdAt: string;
   updatedAt: string;
 };
 
 export const getMyBookings = async (): Promise<BackendBooking[]> => {
   const response = await api.get("/bookings");
-
-  console.log(JSON.stringify(response.data, null, 2));
-
   return response.data.data;
 };
 
