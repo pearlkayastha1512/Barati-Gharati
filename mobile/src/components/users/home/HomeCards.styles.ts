@@ -84,4 +84,5 @@ export const styles = StyleSheet.create({
   quickActionSubtitle: { fontSize: 11, color: "#999", marginTop: 4, lineHeight: 15 },
   quickActionOpenRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   quickActionOpen: { fontSize: 12, fontWeight: "700", color: "#C2185B", marginRight: 4 },
+  
 });

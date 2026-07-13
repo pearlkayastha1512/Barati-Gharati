@@ -32,18 +32,17 @@ export default function ReviewsScreen() {
     useState<VendorReviewRecord | null>(null);
 
   useEffect(() => {
-    const loadReviews = async () => {
-      try {
-        const profile = await getMyVendorProfile();
+  const loadReviews = async () => {
+    try {
+      const profile = await getMyVendorProfile();
+      await fetchReviews(profile.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-        await fetchReviews(profile.id);
-      } catch (error) {
-        console.log("Failed to load reviews", error);
-      }
-    };
-
-    loadReviews();
-  }, []);
+  loadReviews();
+}, [fetchReviews]);
 
   const totalReviews = reviews.length;
 

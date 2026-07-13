@@ -11,6 +11,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./VendorSidebar.styles";
+import ContactSupportModal from "../ContactSupportModal";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.75;
@@ -40,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
 export function VendorSidebar({ visible, onClose }: Props) {
   const navigation = useNavigation<any>();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
+  const [supportVisible,setSupportVisible] = React.useState(false);
 
   useEffect(() => {
     Animated.timing(translateX, {
@@ -95,9 +97,14 @@ export function VendorSidebar({ visible, onClose }: Props) {
           <View style={styles.supportBox}>
             <Text style={styles.supportTitle}>Vendor Support</Text>
             <Text style={styles.supportSubtitle}>Need help managing your business?</Text>
-            <TouchableOpacity style={styles.supportButton}>
-              <Text style={styles.supportButtonText}>Contact Support</Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+  style={styles.supportButton}
+  onPress={() => setSupportVisible(true)}
+>
+  <Text style={styles.supportButtonText}>
+    Contact Support
+  </Text>
+</TouchableOpacity>
           </View>
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -106,6 +113,10 @@ export function VendorSidebar({ visible, onClose }: Props) {
           </TouchableOpacity>
         </Animated.View>
       </Pressable>
+      <ContactSupportModal
+  visible={supportVisible}
+  onClose={()=>setSupportVisible(false)}
+/>
     </Modal>
   );
 }

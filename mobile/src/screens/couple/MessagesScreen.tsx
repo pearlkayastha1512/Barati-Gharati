@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -11,6 +11,11 @@ export default function MessagesScreen() {
   const navigation = useNavigation<any>();
   const conversations = useMessagesStore((state) => state.conversations);
   const [searchText, setSearchText] = useState("");
+  const fetchConversations = useMessagesStore((state) => state.fetchConversations);
+
+useEffect(() => {
+  fetchConversations();
+}, []);
 
   const filteredConversations = conversations.filter((c) =>
     c.vendorName.toLowerCase().includes(searchText.toLowerCase())

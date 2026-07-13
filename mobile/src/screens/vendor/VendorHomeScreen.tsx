@@ -95,22 +95,39 @@ export default function VendorHomeScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => setSidebarVisible(true)}
-            style={styles.menuButton}
-          >
-            <MaterialCommunityIcons name="menu" size={22} color={COLORS.text} />
-          </TouchableOpacity>
+  <TouchableOpacity
+    onPress={() => setSidebarVisible(true)}
+    style={styles.menuButton}
+  >
+    <MaterialCommunityIcons
+      name="menu"
+      size={22}
+      color={COLORS.text}
+    />
+  </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>Vendor Dashboard</Text>
-            <Text style={styles.headerSubtitle}>Manage your wedding business.</Text>
-          </View>
+  <View style={styles.headerContent}>
+    <Text style={styles.headerTitle}>
+      Vendor Dashboard
+    </Text>
 
-          <TouchableOpacity style={styles.bellButton}>
-            <MaterialCommunityIcons name="bell-outline" size={20} color={COLORS.primary} />
-          </TouchableOpacity>
-        </View>
+    <Text style={styles.headerSubtitle}>
+      Manage your wedding business.
+    </Text>
+  </View>
+
+  <TouchableOpacity
+    style={styles.bellButton}
+    activeOpacity={0.8}
+    onPress={() => navigation.navigate("VendorNotifications")}
+  >
+    <MaterialCommunityIcons
+      name="bell-outline"
+      size={24}
+      color="#E91E63"
+    />
+  </TouchableOpacity>
+</View>
 
         <LinearGradient
           colors={[COLORS.gradientStart, COLORS.gradientEnd]}
@@ -269,6 +286,17 @@ export default function VendorHomeScreen() {
       </ScrollView>
 
       <VendorSidebar visible={sidebarVisible} onClose={() => setSidebarVisible(false)} />
+        <TouchableOpacity
+  style={styles.chatbotButton}
+  activeOpacity={0.8}
+  onPress={() => navigation.navigate("VendorChatbot")}
+>
+  <MaterialCommunityIcons
+    name="robot-happy-outline"
+    size={30}
+    color="#fff"
+  />
+</TouchableOpacity>
     </SafeAreaView>
   );
 }
