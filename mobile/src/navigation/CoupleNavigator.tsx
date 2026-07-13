@@ -15,6 +15,7 @@ import WishlistScreen from "../screens/couple/WishlistScreen";
 import MessagesScreen from "../screens/couple/MessagesScreen";
 import ChatScreen from "../screens/couple/ChatScreen";
 import VendorRegistrationScreen from "../screens/vendor/VendorRegistration/VendorRegistrationScreen";
+import BookingDetailsScreen from "../screens/couple/BookingDetailsScreen";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator(); // NEW
 
@@ -65,6 +66,7 @@ export default function CoupleNavigator() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} /> 
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="Wishlist" component={WishlistScreen} />  
+      <Stack.Screen name="BookingDetails" component={BookingDetailsScreen} />
       
     </Stack.Navigator>
   );

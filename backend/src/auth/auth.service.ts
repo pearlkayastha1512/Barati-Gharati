@@ -106,8 +106,16 @@ export class AuthService {
     }
 
     if (dto.selectedBadge === VendorBadge.BRONZE) {
+      return;
+    }
+
+    if (
+      !dto.badgePaymentOrderId ||
+      !dto.badgePaymentId ||
+      !dto.badgePaymentSignature
+    ) {
       throw new BadRequestException(
-        'Please select a paid badge plan to register as a vendor',
+        'Badge payment details are required for paid plans',
       );
     }
 
@@ -410,7 +418,11 @@ const user =
             this.badgeLimits[
               registerVendorDto.selectedBadge
             ],
-          badgePurchasedAt: new Date(),
+          badgePurchasedAt:
+            registerVendorDto.selectedBadge ===
+            VendorBadge.BRONZE
+              ? null
+              : new Date(),
           badgePaymentOrderId:
             registerVendorDto.badgePaymentOrderId,
           badgePaymentId:

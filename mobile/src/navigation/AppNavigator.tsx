@@ -7,6 +7,7 @@ import OnboardingScreen from "../screens/onboarding/OnboardingScreen";
 import CoupleNavigator from "./CoupleNavigator";
 import VendorNavigator from "./VendorNavigator";
 import AuthNavigator from "./AuthNavigator"; // Uncomment later
+import AdminDrawerNavigator from "./AdminDrawerNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Vendor"
           component={VendorNavigator}
+        />
+
+        <Stack.Screen
+          name="Admin"
+          component={AdminDrawerNavigator}
         />
       </Stack.Navigator>
     </NavigationContainer>

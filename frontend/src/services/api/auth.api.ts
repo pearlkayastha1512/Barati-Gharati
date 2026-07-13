@@ -88,10 +88,10 @@ export interface VendorRegisterRequest {
   profileImage: string;
   coverImage: string;
 
-  selectedBadge: "SILVER" | "GOLD";
-  badgePaymentOrderId: string;
-  badgePaymentId: string;
-  badgePaymentSignature: string;
+  selectedBadge: "BRONZE" | "SILVER" | "GOLD";
+  badgePaymentOrderId?: string;
+  badgePaymentId?: string;
+  badgePaymentSignature?: string;
 }
 
 export async function uploadVendorRegistrationImageApi(

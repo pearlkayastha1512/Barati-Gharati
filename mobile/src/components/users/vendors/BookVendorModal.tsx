@@ -14,6 +14,10 @@ type Props = {
   vendorName: string;
   packages: PackageOption[]; // the vendor's uploaded services (e.g. DJ, Catering, Decor plans)
   onSubmit: (data: {
+    eventType: string;
+    eventTitle: string;
+    primaryPersonName: string;
+    primaryPersonAge?: number;
     brideName: string;
     groomName: string;
     phone: string;
@@ -23,12 +27,24 @@ type Props = {
     partnerOccupation: string;
     weddingTheme: string;
     weddingDate: string;
+    guests: number;
+    address: string;
+    state: string;
+    country: string;
+    specialRequirements: string;
     packageName: string;
     estimatedPrice: number;
-  }) => void;
+  }) => Promise<boolean>;
 };
 
 const WEDDING_THEMES = ["Traditional", "Royal", "Minimal"];
+const EVENT_TYPES = [
+  "Wedding", "Engagement", "Anniversary", "Birthday", "Kids Birthday",
+  "Baby Shower", "Birth Celebration", "Naming Ceremony", "Mundan",
+  "Housewarming", "Retirement Party", "Graduation Party", "Corporate Event",
+  "Other Celebration",
+];
+const COUPLE_EVENTS = ["Wedding", "Engagement", "Anniversary"];
 
 // --- small date helpers (dd-mm-yyyy <-> Date), kept local to this file ---
 function parseDMY(value: string): Date | null {
@@ -72,7 +88,7 @@ function DatePickerField({
 
   return (
     <View>
-      <Text style={styles.label}>💍 Wedding Date</Text>
+      <Text style={styles.label}>Event Date</Text>
       <TouchableOpacity style={styles.input} onPress={() => setShowPicker(true)}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Text style={{ color: value ? "#1A1A1A" : "#999", fontSize: 14 }}>
@@ -236,6 +252,11 @@ function ServicePackagePicker({
 }
 
 export function BookVendorModal({ visible, onClose, vendorName, packages, onSubmit }: Props) {
+  const [eventType, setEventType] = useState("Wedding");
+  const [eventTypeOpen, setEventTypeOpen] = useState(false);
+  const [eventTitle, setEventTitle] = useState("");
+  const [primaryPersonName, setPrimaryPersonName] = useState("");
+  const [primaryPersonAge, setPrimaryPersonAge] = useState("");
   const [brideName, setBrideName] = useState("");
   const [groomName, setGroomName] = useState("");
   const [phone, setPhone] = useState("");
@@ -245,14 +266,24 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
   const [partnerOccupation, setPartnerOccupation] = useState("");
   const [weddingTheme, setWeddingTheme] = useState("");
   const [weddingDate, setWeddingDate] = useState("");
+  const [guests, setGuests] = useState("");
+  const [address, setAddress] = useState("");
+  const [contactState, setContactState] = useState("");
+  const [country, setCountry] = useState("");
+  const [specialRequirements, setSpecialRequirements] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(packages[0]?.name ?? "");
 
   const selectedPackagePrice = packages.find((p) => p.name === selectedPackage)?.price ?? 0;
 
   const requiredFieldsFilled =
-    brideName.trim() && groomName.trim() && phone.trim() && email.trim() && weddingDate.trim() && selectedPackage;
+    primaryPersonName.trim() && phone.trim() && email.trim() && weddingDate.trim() && selectedPackage;
 
   const resetForm = () => {
+    setEventType("Wedding");
+    setEventTitle("");
+    setPrimaryPersonName("");
+    setPrimaryPersonAge("");
     setBrideName("");
     setGroomName("");
     setPhone("");
@@ -262,12 +293,22 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
     setPartnerOccupation("");
     setWeddingTheme("");
     setWeddingDate("");
+    setGuests("");
+    setAddress("");
+    setContactState("");
+    setCountry("");
+    setSpecialRequirements("");
     setSelectedPackage(packages[0]?.name ?? "");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!requiredFieldsFilled) return;
-    onSubmit({
+    setSubmitting(true);
+    const created = await onSubmit({
+      eventType,
+      eventTitle: eventTitle.trim(),
+      primaryPersonName: primaryPersonName.trim(),
+      primaryPersonAge: primaryPersonAge ? Number(primaryPersonAge) : undefined,
       brideName: brideName.trim(),
       groomName: groomName.trim(),
       phone: phone.trim(),
@@ -277,9 +318,16 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
       partnerOccupation: partnerOccupation.trim(),
       weddingTheme: weddingTheme.trim(),
       weddingDate: weddingDate.trim(),
+      guests: Number(guests) || 0,
+      address: address.trim(),
+      state: contactState.trim(),
+      country: country.trim(),
+      specialRequirements: specialRequirements.trim(),
       packageName: selectedPackage,
       estimatedPrice: selectedPackagePrice,
     });
+    setSubmitting(false);
+    if (!created) return;
     resetForm();
     onClose();
   };
@@ -300,17 +348,65 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formScroll} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.formScroll}
+            contentContainerStyle={styles.formContent}
+            showsVerticalScrollIndicator
+            nestedScrollEnabled
+            scrollEnabled={!eventTypeOpen}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ marginBottom: 14 }}>
+              <Text style={styles.label}>Event Type</Text>
+              <TouchableOpacity style={styles.input} onPress={() => setEventTypeOpen((open) => !open)}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text>{eventType}</Text>
+                  <MaterialIcons name={eventTypeOpen ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={18} color="#666" />
+                </View>
+              </TouchableOpacity>
+              {eventTypeOpen && (
+                <ScrollView
+                  style={styles.dropdownBox}
+                  contentContainerStyle={styles.dropdownContent}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {EVENT_TYPES.map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      style={styles.dropdownOption}
+                      onPress={() => {
+                        setEventType(type);
+                        setEventTypeOpen(false);
+                      }}
+                    >
+                      <Text style={{ color: type === eventType ? "#C2185B" : "#333", fontWeight: type === eventType ? "700" : "400" }}>
+                        {type}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+
             <View style={styles.row}>
               <View style={styles.halfField}>
-                <Text style={styles.label}>👰 Bride Name</Text>
-                <TextInput style={styles.input} placeholder="Bride Name" placeholderTextColor="#999" value={brideName} onChangeText={setBrideName} />
+                <Text style={styles.label}>Celebrant / Primary Person *</Text>
+                <TextInput style={styles.input} placeholder="Name of the person being celebrated" placeholderTextColor="#999" value={primaryPersonName} onChangeText={setPrimaryPersonName} />
               </View>
               <View style={styles.halfField}>
-                <Text style={styles.label}>🤵 Groom Name</Text>
-                <TextInput style={styles.input} placeholder="Groom Name" placeholderTextColor="#999" value={groomName} onChangeText={setGroomName} />
+                <Text style={styles.label}>Event Title</Text>
+                <TextInput style={styles.input} placeholder="Aarav's Birthday, Annual Party..." placeholderTextColor="#999" value={eventTitle} onChangeText={setEventTitle} />
               </View>
             </View>
+
+            {["Birthday", "Kids Birthday", "Birth Celebration", "Naming Ceremony", "Mundan", "Retirement Party"].includes(eventType) && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={styles.label}>Age (Optional)</Text>
+                <TextInput style={styles.input} placeholder="Age" placeholderTextColor="#999" value={primaryPersonAge} onChangeText={setPrimaryPersonAge} keyboardType="number-pad" />
+              </View>
+            )}
 
             <View style={styles.row}>
               <View style={styles.halfField}>
@@ -323,26 +419,42 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
               </View>
             </View>
 
-            <View style={styles.row}>
-              <View style={styles.halfField}>
-                <Text style={styles.label}>Partner Email</Text>
-                <TextInput style={styles.input} placeholder="Partner Email" placeholderTextColor="#999" value={partnerEmail} onChangeText={setPartnerEmail} keyboardType="email-address" autoCapitalize="none" />
+            {COUPLE_EVENTS.includes(eventType) && <>
+              <View style={styles.optionalSection}>
+                <Text style={styles.optionalTitle}>Couple Details</Text>
+                <Text style={styles.optionalSubtitle}>Optional for this booking</Text>
               </View>
-              <View style={styles.halfField}>
-                <Text style={styles.label}>Partner Phone</Text>
-                <TextInput style={styles.input} placeholder="Partner Phone" placeholderTextColor="#999" value={partnerPhone} onChangeText={setPartnerPhone} keyboardType="phone-pad" />
+              <View style={styles.row}>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Bride Name (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Bride Name" placeholderTextColor="#999" value={brideName} onChangeText={setBrideName} />
+                </View>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Groom Name (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Groom Name" placeholderTextColor="#999" value={groomName} onChangeText={setGroomName} />
+                </View>
               </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.halfField}>
-                <Text style={styles.label}>Partner Occupation</Text>
-                <TextInput style={styles.input} placeholder="Partner Occupation" placeholderTextColor="#999" value={partnerOccupation} onChangeText={setPartnerOccupation} />
+              <View style={styles.row}>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Partner Email (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Partner Email" placeholderTextColor="#999" value={partnerEmail} onChangeText={setPartnerEmail} keyboardType="email-address" autoCapitalize="none" />
+                </View>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Partner Phone (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Partner Phone" placeholderTextColor="#999" value={partnerPhone} onChangeText={setPartnerPhone} keyboardType="phone-pad" />
+                </View>
               </View>
-              <View style={styles.halfField}>
-                <ThemeDropdown value={weddingTheme} onSelect={setWeddingTheme} />
+              <View style={styles.row}>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Partner Occupation (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Partner Occupation" placeholderTextColor="#999" value={partnerOccupation} onChangeText={setPartnerOccupation} />
+                </View>
+                <View style={styles.halfField}>
+                  <Text style={styles.label}>Event Theme (Optional)</Text>
+                  <TextInput style={styles.input} placeholder="Traditional, superhero, floral..." placeholderTextColor="#999" value={weddingTheme} onChangeText={setWeddingTheme} />
+                </View>
               </View>
-            </View>
+            </>}
 
             <View style={styles.row}>
               <View style={styles.halfField}>
@@ -356,6 +468,33 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
                 />
               </View>
             </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>👥 Guests</Text>
+                <TextInput style={styles.input} placeholder="Number of guests" placeholderTextColor="#999" value={guests} onChangeText={setGuests} keyboardType="number-pad" />
+              </View>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>🏛 Vendor</Text>
+                <View style={[styles.input, styles.readonlyInput]}><Text style={styles.readonlyText}>{vendorName}</Text></View>
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>Address</Text>
+                <TextInput style={styles.input} placeholder="Address" placeholderTextColor="#999" value={address} onChangeText={setAddress} />
+              </View>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>State</Text>
+                <TextInput style={styles.input} placeholder="State" placeholderTextColor="#999" value={contactState} onChangeText={setContactState} />
+              </View>
+            </View>
+
+            <Text style={styles.label}>Country</Text>
+            <TextInput style={[styles.input, { marginBottom: 14 }]} placeholder="Country" placeholderTextColor="#999" value={country} onChangeText={setCountry} />
+            <Text style={styles.label}>Special Requirements</Text>
+            <TextInput style={[styles.input, styles.requirementsInput]} multiline placeholder="Decoration, catering, entertainment, accessibility..." placeholderTextColor="#999" value={specialRequirements} onChangeText={setSpecialRequirements} />
           </ScrollView>
 
           <View style={styles.priceRow}>
@@ -364,17 +503,17 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
           </View>
 
           <TouchableOpacity
-            style={[styles.submitButton, !requiredFieldsFilled && styles.submitButtonDisabled]}
+            style={[styles.submitButton, (!requiredFieldsFilled || submitting) && styles.submitButtonDisabled]}
             onPress={handleSubmit}
-            disabled={!requiredFieldsFilled}
+            disabled={!requiredFieldsFilled || submitting}
           >
             <Text style={styles.submitButtonText}>
-              {requiredFieldsFilled ? "Confirm Booking" : "Fill all required fields"}
+              {submitting ? "Processing..." : requiredFieldsFilled ? "Confirm Booking" : "Fill all required fields"}
             </Text>
           </TouchableOpacity>
           {!requiredFieldsFilled && (
             <Text style={styles.validationHint}>
-              Please fill in Bride Name, Groom Name, Phone, Email, Wedding Date, and a Package to continue.
+              Please fill in Primary Person, Phone, Email, Event Date, and a Package to continue.
             </Text>
           )}
         </View>

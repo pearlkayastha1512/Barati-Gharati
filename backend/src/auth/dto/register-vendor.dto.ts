@@ -127,14 +127,17 @@ export class RegisterVendorDto {
   selectedBadge!: VendorBadge;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  badgePaymentOrderId!: string;
+  badgePaymentOrderId?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  badgePaymentId!: string;
+  badgePaymentId?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  badgePaymentSignature!: string;
+  badgePaymentSignature?: string;
 }

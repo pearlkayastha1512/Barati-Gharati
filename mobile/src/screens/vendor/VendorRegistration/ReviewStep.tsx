@@ -88,7 +88,9 @@ import {
   View,
   Text,
   Alert,
+  TouchableOpacity,
 } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import { useVendorRegistrationStore } from "../../../store/vendorRegistrationStore";
 
@@ -98,34 +100,46 @@ import { ReviewCard } from "../../../components/vendors/vendorRegistration/Revie
 import { UploadImageCard } from "../../../components/vendors/vendorRegistration/UploadImageCard";
 
 import { styles } from "./styles";
+import { BadgePaymentModal } from "../../../components/vendors/vendorRegistration/BadgePaymentModal";
+import { RazorpaySuccess } from "../../../types/payment";
+
+const badgePlans = [
+  { badge: "bronze" as const, label: "Bronze", price: 0, limit: 5, color: "#B7791F", background: "#FFF7E6" },
+  { badge: "silver" as const, label: "Silver", price: 999, limit: 15, color: "#64748B", background: "#F1F5F9" },
+  { badge: "gold" as const, label: "Gold", price: 1999, limit: 50, color: "#A16207", background: "#FEF9C3" },
+];
 
 export default function ReviewStep() {
   const {
   account,
   business,
   gallery,
+  selectedBadge,
+  setSelectedBadge,
   prevStep,
   submitRegistration,
 } = useVendorRegistrationStore();
 
   const [submitting, setSubmitting] =
     useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+
+  const completeRegistration = async (payment?: RazorpaySuccess) => {
+    const response = await submitRegistration(payment);
+    console.log("Vendor registration response:", response);
+    Alert.alert("Success", "Vendor registration submitted successfully.");
+  };
 
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
 
-     const response = await submitRegistration();
-
-console.log(
-  "Vendor registration response:",
-  response,
-);
-
-      Alert.alert(
-        "Success",
-        "Vendor registration submitted successfully.",
-      );
+      if (selectedBadge === "bronze") {
+        await completeRegistration();
+      } else {
+        setSubmitting(false);
+        setPaymentOpen(true);
+      }
     } catch (error: any) {
       console.log(
         "Vendor registration failed:",
@@ -230,16 +244,72 @@ console.log(
         </View>
       </View>
 
+      <View style={styles.reviewCard}>
+        <View style={styles.badgeHeadingRow}>
+          <MaterialIcons name="verified-user" size={22} color="#E4005A" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.reviewCardTitle}>Choose Your Vendor Badge</Text>
+            <Text style={styles.badgeSubtitle}>Start free with Bronze or choose a paid plan for more monthly bookings.</Text>
+          </View>
+        </View>
+
+        <View style={styles.badgeGrid}>
+          {badgePlans.map((plan) => {
+            const active = selectedBadge === plan.badge;
+            return (
+              <TouchableOpacity
+                key={plan.badge}
+                disabled={submitting}
+                onPress={() => setSelectedBadge(plan.badge)}
+                style={[
+                  styles.badgePlan,
+                  { backgroundColor: plan.background, borderColor: active ? "#E4005A" : plan.color },
+                  active && styles.badgePlanActive,
+                ]}
+              >
+                <View style={styles.badgePlanHeader}>
+                  <Text style={[styles.badgePlanName, { color: plan.color }]}>{plan.label} Badge</Text>
+                  {active && <MaterialIcons name="check-circle" size={20} color="#E4005A" />}
+                </View>
+                <Text style={styles.badgePrice}>{plan.price === 0 ? "Free" : `₹${plan.price.toLocaleString("en-IN")}`}</Text>
+                <Text style={styles.badgeLimit}>Up to {plan.limit} bookings per month</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
       <NavigationButtons
         onPrevious={prevStep}
         onNext={handleSubmit}
         nextLabel={
           submitting
             ? "Submitting..."
-            : "Submit Registration"
+            : selectedBadge === "bronze"
+              ? "Submit Registration"
+              : "Pay & Submit Registration"
         }
         nextDisabled={submitting}
       />
+      {selectedBadge !== "bronze" && (
+        <BadgePaymentModal
+          visible={paymentOpen}
+          badge={selectedBadge}
+          ownerName={account.ownerName}
+          email={account.businessEmail}
+          phone={account.phone}
+          onClose={() => setPaymentOpen(false)}
+          onPaid={async (payment) => {
+            setSubmitting(true);
+            try {
+              await completeRegistration(payment);
+            } catch (error) {
+              setSubmitting(false);
+              throw error;
+            }
+          }}
+        />
+      )}
     </ScrollView>
   );
 }

@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { VendorCard } from "../../components/users/vendors/VendorCard";
 import { CategoryChips } from "../../components/users/vendors/CategoryChips";
 import { CityPicker } from "../../components/users/vendors/CityPicker";
 import { SortPicker, SortOption } from "../../components/users/vendors/SortPicker";
-import { DUMMY_VENDORS } from "../../constants/vendorData";
+import { Vendor } from "../../constants/vendorData";
+import { getAllVendors } from "../../api/vendor.api";
 import { styles } from "../../components/users/vendors/VendorList.styles";
 
 // TODO: import API functions once backend is connected
@@ -23,6 +24,25 @@ export default function VendorListScreen() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [searchText, setSearchText] = useState(route?.params?.search ?? "");
   const [sortBy, setSortBy] = useState<SortOption>("Popularity");
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadVendors = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      setVendors(await getAllVendors());
+    } catch {
+      setLoadError("Vendors load nahi ho sake.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadVendors();
+  }, []);
 
   // TODO: replace DUMMY_VENDORS with API-backed state:
   // const [vendors, setVendors] = useState([]);
@@ -39,7 +59,7 @@ export default function VendorListScreen() {
   //   fetchVendors();
   // }, [activeCategory, selectedCity, searchText, sortBy]);
 
-  const filteredVendors = DUMMY_VENDORS.filter((vendor) => {
+  const filteredVendors = vendors.filter((vendor) => {
     const matchesCategory = !activeCategory || vendor.category === activeCategory;
     const matchesCity = selectedCity === "All Cities" || vendor.location === selectedCity;
     const matchesSearch =
@@ -106,13 +126,23 @@ export default function VendorListScreen() {
         data={filteredVendors}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30 }}
-        ListEmptyComponent={
+        refreshing={loading}
+        onRefresh={loadVendors}
+        ListEmptyComponent={loading ? (
+          <ActivityIndicator size="large" color="#C2185B" />
+        ) : loadError ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons name="error-outline" size={40} color="#C2185B" />
+            <Text style={styles.emptyStateText}>{loadError}</Text>
+            <TouchableOpacity onPress={loadVendors}><Text style={styles.emptyStateSubtext}>Try Again</Text></TouchableOpacity>
+          </View>
+        ) : (
           <View style={styles.emptyState}>
             <MaterialIcons name="search-off" size={40} color="#ccc" />
             <Text style={styles.emptyStateText}>No vendors found</Text>
             <Text style={styles.emptyStateSubtext}>Try a different category or search term</Text>
           </View>
-        }
+        )}
         renderItem={({ item }) => (
           <VendorCard
             vendor={item}

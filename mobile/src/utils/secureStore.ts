@@ -26,10 +26,32 @@
 // };
 
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
 import { STORAGE_KEYS } from "../constants/storage";
 
 import { User } from "../types/user";
+
+const webStorage = {
+  setItem: async (key: string, value: string) => {
+    localStorage.setItem(key, value);
+  },
+  getItem: async (key: string) => {
+    return localStorage.getItem(key);
+  },
+  deleteItem: async (key: string) => {
+    localStorage.removeItem(key);
+  },
+};
+
+const storage =
+  Platform.OS === "web"
+    ? webStorage
+    : {
+        setItem: SecureStore.setItemAsync,
+        getItem: SecureStore.getItemAsync,
+        deleteItem: SecureStore.deleteItemAsync,
+      };
 
 /* ============================
    Access Token
@@ -38,20 +60,20 @@ import { User } from "../types/user";
 export const saveToken = async (
   token: string,
 ) => {
-  await SecureStore.setItemAsync(
+  await storage.setItem(
     STORAGE_KEYS.ACCESS_TOKEN,
     token,
   );
 };
 
 export const getToken = async () => {
-  return SecureStore.getItemAsync(
+  return storage.getItem(
     STORAGE_KEYS.ACCESS_TOKEN,
   );
 };
 
 export const deleteToken = async () => {
-  await SecureStore.deleteItemAsync(
+  await storage.deleteItem(
     STORAGE_KEYS.ACCESS_TOKEN,
   );
 };
@@ -63,14 +85,14 @@ export const deleteToken = async () => {
 export const saveUser = async (
   user: User,
 ) => {
-  await SecureStore.setItemAsync(
+  await storage.setItem(
     STORAGE_KEYS.USER,
     JSON.stringify(user),
   );
 };
 
 export const getUser = async (): Promise<User | null> => {
-  const value = await SecureStore.getItemAsync(
+  const value = await storage.getItem(
     STORAGE_KEYS.USER,
   );
 
@@ -82,7 +104,7 @@ export const getUser = async (): Promise<User | null> => {
 };
 
 export const deleteUser = async () => {
-  await SecureStore.deleteItemAsync(
+  await storage.deleteItem(
     STORAGE_KEYS.USER,
   );
 };
@@ -102,7 +124,7 @@ export const clearSession = async () => {
 
 export const saveOnboardingStatus =
   async () => {
-    await SecureStore.setItemAsync(
+    await storage.setItem(
       STORAGE_KEYS.ONBOARDING_COMPLETED,
       "true",
     );
@@ -110,7 +132,7 @@ export const saveOnboardingStatus =
 
 export const getOnboardingStatus =
   async () => {
-    return SecureStore.getItemAsync(
+    return storage.getItem(
       STORAGE_KEYS.ONBOARDING_COMPLETED,
     );
   };

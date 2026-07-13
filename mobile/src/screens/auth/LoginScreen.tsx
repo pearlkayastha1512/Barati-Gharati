@@ -222,7 +222,10 @@ import {
   TouchableRipple,
 } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigation } from "@react-navigation/native";
+import {
+  StackActions,
+  useNavigation,
+} from "@react-navigation/native";
 import { login } from "../../api/auth.api";
 import { useAuthStore } from "../../store/authStore";
 
@@ -276,17 +279,26 @@ export default function LoginScreen() {
       // }
 
       // navigation.replace("Couple");
+      const appNavigation =
+        navigation.getParent() ?? navigation;
+
       if (response.user.role === UserRole.VENDOR) {
-  navigation.replace("Vendor");
-  return;
-}
+        appNavigation.dispatch(
+          StackActions.replace("Vendor"),
+        );
+        return;
+      }
 
-if (response.user.role === UserRole.ADMIN) {
-  navigation.replace("Admin");
-  return;
-}
+      if (response.user.role === UserRole.ADMIN) {
+        appNavigation.dispatch(
+          StackActions.replace("Admin"),
+        );
+        return;
+      }
 
-navigation.replace("Couple");
+      appNavigation.dispatch(
+        StackActions.replace("Couple"),
+      );
     } catch (error: any) {
   console.log(
     "ERROR =>",

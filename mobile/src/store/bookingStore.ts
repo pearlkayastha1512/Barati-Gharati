@@ -1,47 +1,112 @@
+import { AxiosError } from "axios";
 import { create } from "zustand";
 
-export type BookingStatus = "upcoming" | "pending" | "completed" | "cancelled";
+import {
+  cancelBooking,
+  createBooking,
+  getBookingById,
+  getMyBookings,
+} from "../api/bookings.api";
+import { Booking, CreateBookingInput } from "../types/booking";
 
-export type Booking = {
-  id: string;
-  vendorId: string;
-  vendorName: string;
-  vendorCategory: string;
-  date: string;
-  time: string;
-  status: BookingStatus;
-  image: string;
-  brideName: string;
-  groomName: string;
-  phone: string;
-  email: string;
-  partnerEmail?: string;
-  partnerPhone?: string;
-  partnerOccupation?: string;
-  weddingTheme?: string;
-  packageName: string;
-  estimatedPrice: number;
-};
-
-type NewBookingInput = Omit<Booking, "id" | "status">;
+export type { Booking, BookingStatus } from "../types/booking";
 
 interface BookingState {
   bookings: Booking[];
-  addBooking: (input: NewBookingInput) => void;
+  selectedBooking: Booking | null;
+  isLoading: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  loadBookings: () => Promise<void>;
+  loadBooking: (id: string) => Promise<void>;
+  addBooking: (input: CreateBookingInput) => Promise<Booking | null>;
+  cancel: (id: string, reason: string) => Promise<boolean>;
+  clearError: () => void;
 }
 
-// TODO: once backend is connected, replace local state with API-backed state:
-// - on mount, fetch via getBookings() and populate `bookings`
-// - addBooking should call createBooking(input), then append the returned item
+const errorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof AxiosError) {
+    const message = error.response?.data?.message;
+    if (Array.isArray(message)) return message.join(" ");
+    if (typeof message === "string") return message;
+    if (!error.response) return "Backend server se connection nahi ho pa raha hai.";
+  }
+  return fallback;
+};
+
 export const useBookingStore = create<BookingState>((set) => ({
   bookings: [],
+  selectedBooking: null,
+  isLoading: false,
+  isSubmitting: false,
+  error: null,
 
-  addBooking: (input) => {
-    const newBooking: Booking = {
-      id: Date.now().toString(),
-      status: "pending",
-      ...input,
-    };
-    set((state) => ({ bookings: [newBooking, ...state.bookings] }));
+  clearError: () => set({ error: null }),
+
+  loadBookings: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const bookings = await getMyBookings();
+      set({ bookings, isLoading: false });
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: errorMessage(error, "Bookings load nahi ho sakin."),
+      });
+    }
+  },
+
+  loadBooking: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const selectedBooking = await getBookingById(id);
+      set({ selectedBooking, isLoading: false });
+    } catch (error) {
+      set({
+        selectedBooking: null,
+        isLoading: false,
+        error: errorMessage(error, "Booking details load nahi ho sakin."),
+      });
+    }
+  },
+
+  addBooking: async (input) => {
+    set({ isSubmitting: true, error: null });
+    try {
+      const booking = await createBooking(input);
+      set((state) => ({
+        bookings: [booking, ...state.bookings],
+        isSubmitting: false,
+      }));
+      return booking;
+    } catch (error) {
+      set({
+        isSubmitting: false,
+        error: errorMessage(error, "Booking create nahi ho saki."),
+      });
+      return null;
+    }
+  },
+
+  cancel: async (id, reason) => {
+    set({ isSubmitting: true, error: null });
+    try {
+      const updated = await cancelBooking(id, reason);
+      set((state) => ({
+        bookings: state.bookings.map((booking) =>
+          booking.id === id ? updated : booking,
+        ),
+        selectedBooking:
+          state.selectedBooking?.id === id ? updated : state.selectedBooking,
+        isSubmitting: false,
+      }));
+      return true;
+    } catch (error) {
+      set({
+        isSubmitting: false,
+        error: errorMessage(error, "Booking cancel nahi ho saki."),
+      });
+      return false;
+    }
   },
 }));
