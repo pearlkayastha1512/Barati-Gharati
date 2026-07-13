@@ -8,6 +8,7 @@ import {getMyVendorProfile} from "../../api/vendor.api";
 import {COLORS} from "../../constants/theme";
 import {styles} from "./vendorProfileStyles";
 
+
 export default function VendorProfileScreen(){
 
 const navigation=useNavigation<any>();
@@ -36,6 +37,7 @@ loadProfile();
 },[])
 );
 
+
 if(loading){
 return(
 <SafeAreaView style={styles.center}>
@@ -44,48 +46,78 @@ return(
 );
 }
 
+const badgeKey=(profile?.badge || "BRONZE").toLowerCase();
+
 return(
 <SafeAreaView style={styles.safeArea}>
 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
 
-<LinearGradient colors={[COLORS.gradientStart,COLORS.gradientEnd]} style={styles.hero}>
+<View style={styles.heroWrapper}>
 
+{/* Cover */}
+<View style={styles.coverContainer}>
 {profile?.coverImage?
-<Image source={{uri:profile.coverImage}} style={styles.coverImage}/>
-:null}
+<Image source={{uri:profile.coverImage}} style={styles.coverImage} resizeMode="cover"/>
+:
+<LinearGradient colors={[COLORS.gradientStart,COLORS.gradientEnd]} style={styles.coverImage}/>
+}
+<LinearGradient colors={["transparent","rgba(0,0,0,0.35)"]} style={styles.coverOverlay}/>
 
 <View style={styles.topRow}>
-<MaterialCommunityIcons name="store-outline" size={28} color="#fff"/>
+<MaterialCommunityIcons name="store-outline" size={22} color="#fff"/>
 <Text style={styles.tag}>Vendor Profile</Text>
 </View>
+</View>
 
+{/* Avatar overlapping cover */}
 <View style={styles.logoContainer}>
 {profile?.logoUrl?
 <Image source={{uri:profile.logoUrl}} style={styles.logo}/>
 :
 <View style={styles.logoPlaceholder}>
-<MaterialCommunityIcons name="store" size={40} color="#fff"/>
+<MaterialCommunityIcons name="store" size={36} color={COLORS.primary}/>
 </View>}
 </View>
 
+{/* Info card below cover */}
+<View style={styles.heroContent}>
+
 <Text style={styles.businessName}>{profile?.businessName}</Text>
 
-<Text style={styles.description}>
-{profile?.description || "No business description"}
-</Text>
+{profile?.description?
+<Text style={styles.description}>{profile.description}</Text>
+:null}
 
 <View style={styles.tags}>
-<Text style={styles.badge}>📍 {profile?.city || profile?.address || "-"}</Text>
-<Text style={styles.badge}>{profile?.category?.name || "-"}</Text>
-<Text style={styles.badge}>{profile?.badge || "BRONZE"}</Text>
+{(profile?.city || profile?.address)?
+<Text style={styles.badge}>📍 {profile?.city || profile?.address}</Text>
+:null}
+
+{profile?.category?.name?
+<Text style={styles.badge}>{profile.category.name}</Text>
+:null}
+
+<Text style={[styles.badge, (styles as any)[`badge_${badgeKey}`]]}>
+{profile?.badge || "BRONZE"}
+</Text>
 </View>
 
-<View style={styles.ratingBox}>
-<Text style={styles.rating}>Bookings {profile?.currentMonthBookings}/{profile?.monthlyBookingLimit}</Text>
-<Text style={styles.ratingText}>{profile?.status}</Text>
+<View style={styles.statsRow}>
+<View style={styles.statBox}>
+<Text style={styles.statValue}>
+{profile?.currentMonthBookings ?? 0}/{profile?.monthlyBookingLimit ?? "-"}
+</Text>
+<Text style={styles.statLabel}>Bookings this month</Text>
 </View>
 
-</LinearGradient>
+<View style={styles.statusPill}>
+<View style={styles.statusDot}/>
+<Text style={styles.statusText}>{profile?.status || "PENDING"}</Text>
+</View>
+</View>
+
+</View>
+</View>
 
 <View style={styles.card}>
 <View style={{flex:1}}>

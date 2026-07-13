@@ -7,11 +7,13 @@ import {
   Animated,
   Dimensions,
   Pressable,
+  Image,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./VendorSidebar.styles";
 import ContactSupportModal from "../ContactSupportModal";
+import Logo from "../../../../assets/Barati_Gharati_Logo-removebg-preview.png";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.75;
@@ -36,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: "account-balance-wallet", label: "Earnings", route: "Earnings" },
   { icon: "bar-chart", label: "Analytics", route: "Analytics" },
   { icon: "settings", label: "Settings", route: "Settings" },
+  { icon: "workspace-premium", label: "Upgrade Plan", route: "UpgradePlan" },
 ];
 
 export function VendorSidebar({ visible, onClose }: Props) {
@@ -77,9 +80,22 @@ export function VendorSidebar({ visible, onClose }: Props) {
           onStartShouldSetResponder={() => true}
         >
           <View style={styles.header}>
-            <Text style={styles.logoText}>Barati Gharati</Text>
-            <Text style={styles.sectionLabel}>BUSINESS</Text>
-          </View>
+
+<Image
+source={Logo}
+style={{
+width:170,
+height:60,
+resizeMode:"contain",
+marginBottom:8
+}}
+/>
+
+<Text style={styles.sectionLabel}>
+BUSINESS
+</Text>
+
+</View>
 
           <View style={styles.navList}>
             {NAV_ITEMS.map((item) => (
@@ -119,4 +135,4 @@ export function VendorSidebar({ visible, onClose }: Props) {
 />
     </Modal>
   );
-}
+} 
