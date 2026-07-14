@@ -38,48 +38,21 @@ function Row({ label, value }: { label: string; value?: string | number | null }
 }
 
 export function BookingDetailsModal({ visible, booking, onClose }: Props) {
+  // ALL hooks must be called unconditionally, before any early return.
   const updateStatus = useVendorBookingsStore((state) => state.updateStatus);
-  const [actionLoading, setActionLoading] = useState<"accept" | "reject" | "complete" | null>(null);
+  const fetchBookings = useVendorBookingsStore((state) => state.fetchBookings);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [refreshingModal, setRefreshingModal] = useState(false);
 
   if (!booking) return null;
+
   const statusStyle = STATUS_COLORS[booking.status];
 
-  const showAcceptReject = booking.status === "Pending" && booking.adminApproved;
   const showWaitingBanner = booking.status === "Pending" && !booking.adminApproved;
-  const showCompleteAction = booking.status === "Accepted";
-
-  const handleAccept = async () => {
-    setActionLoading("accept");
-    try {
-      await updateStatus(booking.id, "Accepted");
-      onClose();
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleReject = () => {
-    Alert.alert(
-      "Reject Booking",
-      "Are you sure you want to reject this booking?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reject",
-          style: "destructive",
-          onPress: async () => {
-            setActionLoading("reject");
-            try {
-              await updateStatus(booking.id, "Rejected");
-              onClose();
-            } finally {
-              setActionLoading(null);
-            }
-          },
-        },
-      ]
-    );
-  };
+  const showConfirmingBanner = booking.status === "Pending" && booking.adminApproved;
+  const eventHasOccurred = new Date(booking.eventDateRaw) <= new Date();
+const showCompleteAction = booking.status === "Accepted" && eventHasOccurred;
+const showUpcomingBanner = booking.status === "Accepted" && !eventHasOccurred;
 
   const handleComplete = () => {
     Alert.alert(
@@ -90,17 +63,25 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
         {
           text: "Mark Completed",
           onPress: async () => {
-            setActionLoading("complete");
+            setActionLoading(true);
             try {
               await updateStatus(booking.id, "Completed");
               onClose();
+            } catch {
+              Alert.alert("Error", "Failed to mark event as complete.");
             } finally {
-              setActionLoading(null);
+              setActionLoading(false);
             }
           },
         },
       ]
     );
+  };
+
+  const handleRefresh = async () => {
+    setRefreshingModal(true);
+    await fetchBookings();
+    setRefreshingModal(false);
   };
 
   return (
@@ -179,48 +160,44 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
               <View style={styles.pendingApprovalBanner}>
                 <MaterialCommunityIcons name="clock-outline" size={16} color={COLORS.textMuted} />
                 <Text style={styles.pendingApprovalText}>
-                  Waiting for admin approval before you can respond.
+                  Waiting for admin approval.
                 </Text>
               </View>
             )}
+            {showUpcomingBanner && (
+  <View style={styles.pendingApprovalBanner}>
+    <MaterialCommunityIcons name="calendar-clock" size={16} color={COLORS.textMuted} />
+    <Text style={styles.pendingApprovalText}>
+      You can mark this event complete on or after {booking.date}.
+    </Text>
+  </View>
+)}
+
+            {showConfirmingBanner && (
+              <View style={styles.pendingApprovalBanner}>
+                <MaterialCommunityIcons name="progress-clock" size={16} color={COLORS.textMuted} />
+                <Text style={styles.pendingApprovalText}>
+                  Confirming this booking...
+                </Text>
+                <TouchableOpacity onPress={handleRefresh} disabled={refreshingModal}>
+                  {refreshingModal ? (
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  ) : (
+                    <Text style={{ color: COLORS.primary, fontWeight: "700", fontSize: 12 }}>Refresh</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
-
-          {showAcceptReject && (
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.acceptBtn]}
-                onPress={handleAccept}
-                disabled={actionLoading !== null}
-              >
-                {actionLoading === "accept" ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.actionBtnText}>Accept Booking</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.rejectBtn]}
-                onPress={handleReject}
-                disabled={actionLoading !== null}
-              >
-                {actionLoading === "reject" ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.actionBtnText}>Reject</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
 
           {showCompleteAction && (
             <View style={styles.actionsRow}>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.completeBtn]}
                 onPress={handleComplete}
-                disabled={actionLoading !== null}
+                disabled={actionLoading}
               >
-                {actionLoading === "complete" ? (
+                {actionLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <Text style={styles.actionBtnText}>Mark Event as Completed</Text>
@@ -277,12 +254,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
-  },
-  acceptBtn: {
-    backgroundColor: "#16A34A",
-  },
-  rejectBtn: {
-    backgroundColor: "#DC2626",
   },
   completeBtn: {
     backgroundColor: COLORS.primary,
