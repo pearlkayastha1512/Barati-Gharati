@@ -13,7 +13,7 @@ export function ExpenseCard({ expense, onDelete }: Props) {
   return (
     <View style={styles.expenseCard}>
       <View style={styles.expenseIconCircle}>
-        <MaterialIcons name="receipt-long" size={18} color="#22B07D" />
+        <MaterialIcons name="receipt-long" size={18} color="#FF4D6D" />
       </View>
       <View style={{ flex: 1, marginLeft: 12 }}>
         <Text style={styles.expenseTitle}>{expense.title}</Text>
@@ -25,7 +25,7 @@ export function ExpenseCard({ expense, onDelete }: Props) {
       <View style={{ alignItems: "flex-end" }}>
         <Text style={styles.expenseAmount}>₹{expense.amount.toLocaleString("en-IN")}</Text>
         <TouchableOpacity onPress={onDelete}>
-          <MaterialIcons name="delete-outline" size={18} color="#ccc" />
+          <MaterialIcons name="delete-outline" size={18} color="#E63B5F" />
         </TouchableOpacity>
       </View>
     </View>

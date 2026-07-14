@@ -15,17 +15,17 @@ export function SecurityToggleItem({ icon, title, description, value, onToggle }
   return (
     <View style={styles.securityItem}>
       <View style={styles.securityIconCircle}>
-        <MaterialIcons name={icon} size={18} color="#666" />
+        <MaterialIcons name={icon} size={18} color="#ff4d6d" />
       </View>
-      <View style={{ marginLeft: 12, flex: 1 }}>
+      <View style={styles.securityCopy}>
         <Text style={styles.securityTitle}>{title}</Text>
         <Text style={styles.securityDescription}>{description}</Text>
       </View>
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: "#e0e0e0", true: "#C2185B" }}
-        thumbColor="#fff"
+        trackColor={{ false: "#ffcad3", true: "#ff4d6d" }}
+        thumbColor="#fffef7"
       />
     </View>
   );

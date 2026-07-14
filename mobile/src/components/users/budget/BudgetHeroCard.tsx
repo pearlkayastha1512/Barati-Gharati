@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { styles } from "../../../screens/couple/styles/BudgetScreen.styles";
 
 type Props = {
@@ -15,9 +16,15 @@ export function BudgetHeroCard({ totalBudget, totalSpent, transactionCount, onEd
   const percentUsed = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
   return (
-    <View style={styles.heroCard}>
+    <LinearGradient
+      colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+      locations={[0, 0.28, 0.68, 1]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.heroCard}
+    >
       <View style={styles.heroBadge}>
-        <MaterialIcons name="account-balance-wallet" size={14} color="#fff" />
+        <MaterialIcons name="account-balance-wallet" size={14} color="#6C2D45" />
         <Text style={styles.heroBadgeText}>Wedding Budget</Text>
       </View>
 
@@ -30,7 +37,7 @@ export function BudgetHeroCard({ totalBudget, totalSpent, transactionCount, onEd
         <View style={styles.heroOverviewHeader}>
           <Text style={styles.heroOverviewTitle}>₹ Budget Overview</Text>
           <TouchableOpacity onPress={onEditBudget}>
-            <MaterialIcons name="edit" size={18} color="#fff" />
+            <MaterialIcons name="edit" size={18} color="#FF4D6D" />
           </TouchableOpacity>
         </View>
 
@@ -61,6 +68,6 @@ export function BudgetHeroCard({ totalBudget, totalSpent, transactionCount, onEd
           </View>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }

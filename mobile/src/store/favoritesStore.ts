@@ -1,33 +1,63 @@
 import { create } from "zustand";
+import {
+  addWishlistVendor,
+  getWishlist,
+  removeWishlistVendor,
+} from "../api/wishlist.api";
+import type { WishlistItem } from "../api/wishlist.api";
 
 interface FavoritesState {
   favoriteIds: Set<string>;
-  toggleFavorite: (vendorId: string) => void;
+  items: WishlistItem[];
+  isLoading: boolean;
+  loadFavorites: () => Promise<void>;
+  toggleFavorite: (vendorId: string) => Promise<void>;
   isFavorite: (vendorId: string) => boolean;
-  clearAllFavorites: () => void;
+  clearAllFavorites: () => Promise<void>;
 }
 
-// TODO: once backend is connected, replace local Set with API-backed state:
-// - on mount, fetch current favorites via getFavorites() and populate favoriteIds
-// - toggleFavorite should call POST /favorites or DELETE /favorites/:vendorId
-//   and only update local state after the request succeeds (or optimistically,
-//   with rollback on failure — same pattern used in ChecklistScreen)
+const toFavoriteIds = (items: WishlistItem[]) =>
+  new Set(items.map((item) => String(item.vendorId)));
+
 export const useFavoritesStore = create<FavoritesState>((set, get) => ({
   favoriteIds: new Set(),
+  items: [],
+  isLoading: false,
 
-  toggleFavorite: (vendorId) => {
-    set((state) => {
-      const updated = new Set(state.favoriteIds);
-      if (updated.has(vendorId)) {
-        updated.delete(vendorId);
+  loadFavorites: async () => {
+    set({ isLoading: true });
+    try {
+      const items = await getWishlist();
+      set({ items, favoriteIds: toFavoriteIds(items), isLoading: false });
+    } catch {
+      set({ isLoading: false });
+    }
+  },
+
+  toggleFavorite: async (vendorId) => {
+    try {
+      if (get().favoriteIds.has(vendorId)) {
+        await removeWishlistVendor(vendorId);
       } else {
-        updated.add(vendorId);
+        await addWishlistVendor(vendorId);
       }
-      return { favoriteIds: updated };
-    });
+
+      const items = await getWishlist();
+      set({ items, favoriteIds: toFavoriteIds(items) });
+    } catch {
+      // Keep the server-confirmed snapshot if a toggle request fails.
+    }
   },
 
   isFavorite: (vendorId) => get().favoriteIds.has(vendorId),
 
-  clearAllFavorites: () => set({ favoriteIds: new Set() }),
+  clearAllFavorites: async () => {
+    try {
+      const vendorIds = get().items.map((item) => String(item.vendorId));
+      await Promise.all(vendorIds.map(removeWishlistVendor));
+      set({ items: [], favoriteIds: new Set() });
+    } catch {
+      await get().loadFavorites();
+    }
+  },
 }));

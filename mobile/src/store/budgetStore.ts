@@ -1,4 +1,10 @@
 import { create } from "zustand";
+import {
+  createExpense,
+  deleteExpense,
+  getBudgetData,
+  saveBudget,
+} from "../api/budget.api";
 
 export type Expense = {
   id: string;
@@ -12,29 +18,58 @@ export type Expense = {
 interface BudgetState {
   totalBudget: number;
   expenses: Expense[];
-  setTotalBudget: (amount: number) => void;
-  addExpense: (expense: Omit<Expense, "id">) => void;
-  removeExpense: (id: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  loadBudget: () => Promise<void>;
+  setTotalBudget: (amount: number) => Promise<void>;
+  addExpense: (expense: Omit<Expense, "id">) => Promise<void>;
+  removeExpense: (id: string) => Promise<void>;
 }
 
-// TODO: once backend is connected, replace local state with API-backed state:
-// - on mount, fetch via getBudgetSummary() (returns { totalBudget, expenses })
-// - setTotalBudget should call createOrUpdateBudget({ totalBudget })
-// - addExpense should call createExpense(expense), then append the returned item
-// - removeExpense should call deleteExpense(id) — optimistic update with rollback on failure
 export const useBudgetStore = create<BudgetState>((set) => ({
   totalBudget: 0,
   expenses: [],
+  isLoading: false,
+  error: null,
 
-  setTotalBudget: (amount) => set({ totalBudget: amount }),
-
-  addExpense: (expense) => {
-    const newExpense: Expense = { id: Date.now().toString(), ...expense };
-    set((state) => ({ expenses: [newExpense, ...state.expenses] }));
+  loadBudget: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await getBudgetData();
+      set({ ...data, isLoading: false });
+    } catch {
+      set({ isLoading: false, error: "Budget load nahi ho saka." });
+    }
   },
 
-  removeExpense: (id) => {
-    set((state) => ({ expenses: state.expenses.filter((e) => e.id !== id) }));
+  setTotalBudget: async (amount) => {
+    try {
+      await saveBudget(amount);
+      set({ totalBudget: amount, error: null });
+    } catch {
+      set({ error: "Budget save nahi ho saka." });
+    }
+  },
+
+  addExpense: async (expense) => {
+    try {
+      const newExpense = await createExpense(expense);
+      set((state) => ({ expenses: [newExpense, ...state.expenses], error: null }));
+    } catch {
+      set({ error: "Expense add nahi ho saka." });
+    }
+  },
+
+  removeExpense: async (id) => {
+    try {
+      await deleteExpense(id);
+      set((state) => ({
+        expenses: state.expenses.filter((expense) => expense.id !== id),
+        error: null,
+      }));
+    } catch {
+      set({ error: "Expense delete nahi ho saka." });
+    }
   },
 }));
 

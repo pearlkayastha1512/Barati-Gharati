@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { VendorCard } from "../../components/users/vendors/VendorCard";
 import { WishlistStatCard } from "../../components/users/wishlist/WishlistStatCard";
 import { useFavoritesStore } from "../../store/favoritesStore";
-import { DUMMY_VENDORS } from "../../constants/vendorData";
+import { useBookingStore } from "../../store/bookingStore";
 import { styles } from "./styles/WishlistScreen.styles";
 
 // TODO: import API functions once backend is connected
@@ -14,24 +14,44 @@ import { styles } from "./styles/WishlistScreen.styles";
 
 export default function WishlistScreen() {
   const navigation = useNavigation<any>();
-  const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
+  const wishlistItems = useFavoritesStore((state) => state.items);
+  const loadFavorites = useFavoritesStore((state) => state.loadFavorites);
   const clearAllFavorites = useFavoritesStore((state) => state.clearAllFavorites);
+  const bookings = useBookingStore((state) => state.bookings);
+  const loadBookings = useBookingStore((state) => state.loadBookings);
   const [sortBy, setSortBy] = useState<"Latest Saved" | "Highest Rated" | "Price">("Latest Saved");
 
-  // TODO: replace this local filter with a real fetch once favorites live on the backend:
-  // const [savedVendors, setSavedVendors] = useState([]);
-  // useEffect(() => {
-  //   const load = async () => {
-  //     const res = await getFavorites();
-  //     setSavedVendors(res.data);
-  //   };
-  //   load();
-  // }, []);
-  const savedVendors = DUMMY_VENDORS.filter((vendor) => favoriteIds.has(vendor.id));
+  useFocusEffect(
+    useCallback(() => {
+      void Promise.all([loadFavorites(), loadBookings()]);
+    }, [loadBookings, loadFavorites]),
+  );
 
-  // TODO: "Ready to Book" should reflect vendors saved but with no active/past booking —
-  // needs a real join against the Booking table once connected. Hardcoded to 0 for now.
-  const readyToBookCount = 0;
+  const savedVendors = wishlistItems.map((item) => ({
+    id: String(item.vendorId),
+    name: item.vendorName,
+    category: item.category,
+    rating: String(item.rating),
+    reviews: "0",
+    location: item.city,
+    city: item.city,
+    price: `₹${item.startingPrice.toLocaleString("en-IN")}`,
+    priceValue: item.startingPrice,
+    image: item.image,
+  }));
+
+  const bookedVendorIds = new Set(
+    bookings
+      .filter((booking) => !["cancelled", "rejected"].includes(booking.bookingStatus))
+      .map((booking) => String(booking.vendorId)),
+  );
+  const readyToBookCount = savedVendors.filter(
+    (vendor) => !bookedVendorIds.has(vendor.id),
+  ).length;
+  const recentCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentlyAddedCount = wishlistItems.filter(
+    (item) => new Date(item.addedAt).getTime() >= recentCutoff,
+  ).length;
   const highRatedCount = savedVendors.filter((v) => parseFloat(v.rating) >= 4.5).length;
 
   const handleClearWishlist = () => {
@@ -41,8 +61,7 @@ export default function WishlistScreen() {
       {
         text: "Clear",
         style: "destructive",
-        // TODO: call clearFavorites() API once connected
-        onPress: () => clearAllFavorites(),
+        onPress: () => void clearAllFavorites(),
       },
     ]);
   };
@@ -79,9 +98,8 @@ export default function WishlistScreen() {
               <Text style={styles.heroSummaryValue}>{savedVendors.length}</Text>
             </View>
             <View style={styles.heroSummaryRow}>
-              {/* TODO: "Recently Added" — count of favorites added in the last 7 days, needs a timestamp on the favorite record from the backend */}
               <Text style={styles.heroSummaryLabel}>Recently Added</Text>
-              <Text style={styles.heroSummaryValue}>0</Text>
+              <Text style={styles.heroSummaryValue}>{recentlyAddedCount}</Text>
             </View>
             <View style={styles.heroSummaryRow}>
               <Text style={styles.heroSummaryLabel}>Ready to Book</Text>

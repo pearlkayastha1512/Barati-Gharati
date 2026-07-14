@@ -10,6 +10,7 @@ import {
   VENDOR_BADGE_LABELS,
   VENDOR_BADGE_LIMITS,
 } from "@/constants/vendor-badges";
+import { isSupportedImageSrc } from "@/lib/image-url";
 
 interface Props {
   vendor: StoredVendor | null;
@@ -69,7 +70,7 @@ export default function VendorDetailsModal({
 
           <div className="flex items-center gap-6">
             <div className="relative h-28 w-28 overflow-hidden rounded-3xl bg-gray-100">
-              {vendor.profileImage ? (
+              {isSupportedImageSrc(vendor.profileImage) ? (
                 <Image
                   src={vendor.profileImage}
                   alt={vendor.businessName}

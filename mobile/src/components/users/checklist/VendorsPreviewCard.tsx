@@ -2,21 +2,29 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useBookingStore } from "../../../store/bookingStore";
 import { styles } from "../../../screens/couple/styles/ChecklistScreen.styles";
-// TODO: replace with categories actually booked, derived from the same source
-// as WeddingProgressChecklist.tsx once a real getWeddingProgress() endpoint exists
+
 const VENDOR_CATEGORIES = [
-  { key: "Venue", done: false },
-  { key: "Photographer", done: false },
-  { key: "Decorator", done: false },
-  { key: "Makeup", done: false },
-  { key: "Caterer", done: false },
-  { key: "DJ", done: false },
+  { key: "Venue", aliases: ["venue"] },
+  { key: "Photography", aliases: ["photography", "photographer"] },
+  { key: "Decorator", aliases: ["decorator", "decoration"] },
+  { key: "Makeup", aliases: ["makeup", "makeup artist"] },
+  { key: "Caterer", aliases: ["caterer", "catering"] },
+  { key: "DJ", aliases: ["dj"] },
 ];
 
 export function VendorsPreviewCard() {
   const navigation = useNavigation<any>();
-  const bookedCount = VENDOR_CATEGORIES.filter((c) => c.done).length;
+  const bookings = useBookingStore((state) => state.bookings);
+  const bookedCategories = bookings
+    .filter((booking) => !["cancelled", "rejected"].includes(booking.bookingStatus))
+    .map((booking) => booking.category.trim().toLowerCase());
+  const categories = VENDOR_CATEGORIES.map((category) => ({
+    ...category,
+    done: category.aliases.some((alias) => bookedCategories.includes(alias)),
+  }));
+  const bookedCount = categories.filter((category) => category.done).length;
 
   return (
     <TouchableOpacity
@@ -35,12 +43,12 @@ export function VendorsPreviewCard() {
       <Text style={styles.previewBigValue}>{bookedCount} / {VENDOR_CATEGORIES.length} Booked</Text>
 
       <View style={{ marginTop: 10 }}>
-        {VENDOR_CATEGORIES.slice(0, 3).map((cat) => (
+        {categories.slice(0, 3).map((cat) => (
           <View key={cat.key} style={styles.previewVendorRow}>
             <MaterialIcons
               name={cat.done ? "check-circle" : "radio-button-unchecked"}
               size={16}
-              color={cat.done ? "#C2185B" : "#ccc"}
+              color={cat.done ? "#ff4d6d" : "#d9b9c4"}
             />
             <Text style={styles.previewVendorText}>{cat.key}</Text>
           </View>

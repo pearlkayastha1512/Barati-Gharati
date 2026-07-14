@@ -24,8 +24,19 @@ function CoupleTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#C2185B",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: "#ff4d6d",
+        tabBarInactiveTintColor: "#8d6171",
+        tabBarStyle: {
+          backgroundColor: "#fffef7",
+          borderTopColor: "#ffcad3",
+          height: 66,
+          paddingTop: 6,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
         tabBarIcon: ({ color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
 

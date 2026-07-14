@@ -15,8 +15,10 @@ export function BudgetPreviewCard() {
   const expenses = useBudgetStore((state) => state.expenses);
 
   const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const remaining = totalBudget - spent;
-  const percentSpent = totalBudget > 0 ? Math.round((spent / totalBudget) * 100) : 0;
+  const remaining = Math.max(totalBudget - spent, 0);
+  const percentSpent = totalBudget > 0
+    ? Math.min(Math.round((spent / totalBudget) * 100), 100)
+    : 0;
 
   return (
     <TouchableOpacity
@@ -25,8 +27,8 @@ export function BudgetPreviewCard() {
       activeOpacity={0.8}
     >
       <View style={styles.previewCardHeader}>
-        <View style={[styles.previewIconCircle, { backgroundColor: "#E8F8F0" }]}>
-          <MaterialIcons name="account-balance-wallet" size={18} color="#22B07D" />
+        <View style={[styles.previewIconCircle, { backgroundColor: "#fff8d8" }]}>
+          <MaterialIcons name="account-balance-wallet" size={18} color="#ff4d6d" />
         </View>
         <Text style={styles.previewCardTitle}>Wedding Budget</Text>
       </View>
@@ -41,7 +43,7 @@ export function BudgetPreviewCard() {
       </View>
 
       <View style={styles.progressBarTrack}>
-        <View style={[styles.progressBarFill, { width: `${percentSpent}%`, backgroundColor: "#22B07D" }]} />
+        <View style={[styles.progressBarFill, { width: `${percentSpent}%`, backgroundColor: "#ff4d6d" }]} />
       </View>
       <Text style={styles.previewFootnote}>{percentSpent}% of total budget used</Text>
     </TouchableOpacity>

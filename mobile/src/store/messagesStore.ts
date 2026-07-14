@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { AxiosError } from "axios";
 import {
   getConversations,
   createConversation,
@@ -57,7 +58,10 @@ interface MessagesState {
 
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
-  sendMessage: (conversationId: string, text: string) => Promise<void>;
+  sendMessage: (
+    conversationId: string,
+    text: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   addIncomingMessage: (conversationId: string, message: ChatMessage) => void;
   startConversation: (vendorId: string, vendorName?: string, vendorImage?: string) => Promise<string>;
 }
@@ -95,7 +99,9 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
 
   sendMessage: async (conversationId, text) => {
     const conversation = get().conversations.find((c) => c.id === conversationId);
-    if (!conversation) return;
+    if (!conversation) {
+      return { success: false, error: "Conversation nahi mili." };
+    }
 
     try {
       await sendMessageApi({
@@ -105,8 +111,31 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       });
       // The real message comes back via the socket "newMessage" event,
       // which ChatScreen listens for and appends via addIncomingMessage.
+      return { success: true };
     } catch (error) {
       console.log("SEND MESSAGE ERROR =>", error);
+      if (error instanceof AxiosError) {
+        const responseMessage = error.response?.data?.message;
+        const message = Array.isArray(responseMessage)
+          ? responseMessage.join(" ")
+          : responseMessage;
+
+        if (typeof message === "string" && message.trim()) {
+          return { success: false, error: message };
+        }
+
+        if (!error.response) {
+          return {
+            success: false,
+            error: "Backend server se connection nahi ho pa raha hai.",
+          };
+        }
+      }
+
+      return {
+        success: false,
+        error: "Message send nahi ho saka. Please try again.",
+      };
     }
   },
 

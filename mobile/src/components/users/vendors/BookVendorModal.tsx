@@ -94,7 +94,7 @@ function DatePickerField({
           <Text style={{ color: value ? "#1A1A1A" : "#999", fontSize: 14 }}>
             {value || "dd-mm-yyyy"}
           </Text>
-          <MaterialIcons name="calendar-today" size={16} color="#C2185B" />
+          <MaterialIcons name="calendar-today" size={16} color="#FF4D6D" />
         </View>
       </TouchableOpacity>
 
@@ -114,7 +114,7 @@ function DatePickerField({
           style={{ alignSelf: "flex-end", paddingVertical: 6, paddingHorizontal: 4 }}
           onPress={() => setShowPicker(false)}
         >
-          <Text style={{ color: "#C2185B", fontWeight: "700" }}>Done</Text>
+          <Text style={{ color: "#FF4D6D", fontWeight: "700" }}>Done</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -165,10 +165,10 @@ function ThemeDropdown({
                   borderBottomColor: "#F1F1F1",
                 }}
               >
-                <Text style={{ fontSize: 13, color: isActive ? "#C2185B" : "#333", fontWeight: isActive ? "700" : "400" }}>
+                <Text style={{ fontSize: 13, color: isActive ? "#FF4D6D" : "#3F1D2F", fontWeight: isActive ? "700" : "400" }}>
                   {theme}
                 </Text>
-                {isActive && <MaterialIcons name="check" size={16} color="#C2185B" />}
+                {isActive && <MaterialIcons name="check" size={16} color="#FF4D6D" />}
               </TouchableOpacity>
             );
           })}
@@ -344,7 +344,7 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
               </Text>
             </View>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#666" />
+              <MaterialIcons name="close" size={22} color="#3F1D2F" />
             </TouchableOpacity>
           </View>
 
@@ -381,7 +381,7 @@ export function BookVendorModal({ visible, onClose, vendorName, packages, onSubm
                         setEventTypeOpen(false);
                       }}
                     >
-                      <Text style={{ color: type === eventType ? "#C2185B" : "#333", fontWeight: type === eventType ? "700" : "400" }}>
+                      <Text style={{ color: type === eventType ? "#FF4D6D" : "#3F1D2F", fontWeight: type === eventType ? "700" : "400" }}>
                         {type}
                       </Text>
                     </TouchableOpacity>

@@ -274,6 +274,7 @@ import {
 import {
   registerVendor,
   RegisterVendorRequest,
+  uploadVendorRegistrationImage,
 } from "../api/vendor.api";
 import { RazorpaySuccess } from "../types/payment";
 
@@ -393,6 +394,22 @@ export const useVendorRegistrationStore =
           selectedBadge,
         } = get();
 
+        const [profileImage, coverImage] = await Promise.all([
+          gallery.profileImageUri
+            ? uploadVendorRegistrationImage(gallery.profileImageUri)
+            : Promise.resolve(undefined),
+          gallery.coverImageUri
+            ? uploadVendorRegistrationImage(gallery.coverImageUri)
+            : Promise.resolve(undefined),
+        ]);
+
+        set({
+          gallery: {
+            profileImageUri: profileImage ?? null,
+            coverImageUri: coverImage ?? null,
+          },
+        });
+
         const payload: RegisterVendorRequest =
           {
             ownerName:
@@ -421,8 +438,8 @@ export const useVendorRegistrationStore =
             description:
               business.description,
 
-            profileImage: gallery.profileImageUri ?? undefined,
-            coverImage: gallery.coverImageUri ?? undefined,
+            profileImage,
+            coverImage,
             selectedBadge: selectedBadge.toUpperCase() as "BRONZE" | "SILVER" | "GOLD",
             badgePaymentOrderId: payment?.razorpay_order_id,
             badgePaymentId: payment?.razorpay_payment_id,

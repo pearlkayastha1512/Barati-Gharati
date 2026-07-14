@@ -162,6 +162,58 @@ export interface RegisterVendorResponse {
   message: string;
 }
 
+interface VendorRegistrationImageResponse {
+  success: boolean;
+  message: string;
+  image: string;
+}
+
+const getImageUploadMetadata = (uri: string) => {
+  const cleanUri = uri.split("?")[0];
+  const rawExtension = cleanUri.split(".").pop()?.toLowerCase();
+  const extension = ["png", "webp", "jpg", "jpeg"].includes(rawExtension ?? "")
+    ? rawExtension
+    : "jpg";
+  const type = extension === "png"
+    ? "image/png"
+    : extension === "webp"
+      ? "image/webp"
+      : "image/jpeg";
+
+  return { extension, type };
+};
+
+export const uploadVendorRegistrationImage = async (
+  uri: string,
+): Promise<string> => {
+  if (/^https:\/\//i.test(uri)) return uri;
+
+  const { extension, type } = getImageUploadMetadata(uri);
+  const formData = new FormData();
+
+  formData.append("image", {
+    uri,
+    name: `vendor-registration-${Date.now()}.${extension}`,
+    type,
+  } as any);
+
+  const response = await api.post<VendorRegistrationImageResponse>(
+    "/auth/register/vendor/image",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+
+  if (!response.data.image) {
+    throw new Error("Image upload failed");
+  }
+
+  return response.data.image;
+};
+
 export const registerVendor = async (
   data: RegisterVendorRequest,
 ): Promise<RegisterVendorResponse> => {
@@ -310,6 +362,5 @@ export const getVendorDashboard = async () => {
 
   return response.data;
 };
-
 
 

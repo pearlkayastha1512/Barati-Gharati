@@ -13,10 +13,10 @@ export function ProfileQuickActionRow({ icon, label, onPress }: Props) {
   return (
     <TouchableOpacity style={styles.quickActionRow} onPress={onPress}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <MaterialIcons name={icon} size={20} color="#666" />
+        <MaterialIcons name={icon} size={20} color="#FF4D6D" />
         <Text style={styles.quickActionLabel}>{label}</Text>
       </View>
-      <MaterialIcons name="chevron-right" size={20} color="#ccc" />
+      <MaterialIcons name="chevron-right" size={20} color="#8D6171" />
     </TouchableOpacity>
   );
 }

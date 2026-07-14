@@ -90,7 +90,7 @@ export default function VendorListScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={22} color="#333" />
+          <MaterialIcons name="arrow-back" size={22} color="#3F1D2F" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Wedding Vendors</Text>
         <View style={{ width: 40 }} />
@@ -100,10 +100,10 @@ export default function VendorListScreen() {
       {/* Search */}
       <View style={styles.searchRow}>
         <View style={styles.searchInputWrapper}>
-          <MaterialIcons name="search" size={20} color="#999" />
+          <MaterialIcons name="search" size={20} color="#8D6171" />
           <TextInput
             placeholder="Search vendors, venues, photographers..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#8D6171"
             style={styles.searchInput}
             value={searchText}
             onChangeText={setSearchText}
@@ -129,16 +129,16 @@ export default function VendorListScreen() {
         refreshing={loading}
         onRefresh={loadVendors}
         ListEmptyComponent={loading ? (
-          <ActivityIndicator size="large" color="#C2185B" />
+          <ActivityIndicator size="large" color="#FF4D6D" />
         ) : loadError ? (
           <View style={styles.emptyState}>
-            <MaterialIcons name="error-outline" size={40} color="#C2185B" />
+            <MaterialIcons name="error-outline" size={40} color="#FF4D6D" />
             <Text style={styles.emptyStateText}>{loadError}</Text>
             <TouchableOpacity onPress={loadVendors}><Text style={styles.emptyStateSubtext}>Try Again</Text></TouchableOpacity>
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <MaterialIcons name="search-off" size={40} color="#ccc" />
+            <MaterialIcons name="search-off" size={40} color="#FFCAD3" />
             <Text style={styles.emptyStateText}>No vendors found</Text>
             <Text style={styles.emptyStateSubtext}>Try a different category or search term</Text>
           </View>

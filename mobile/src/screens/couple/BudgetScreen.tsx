@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useBudgetStore } from "../../store/budgetStore";
 import { BudgetHeroCard } from "../../components/users/budget/BudgetHeroCard";
 import { BudgetStatCard } from "../../components/users/budget/BudgetStatCard";
@@ -13,23 +13,17 @@ import { styles } from "./styles/BudgetScreen.styles";
 import { MonthlyExpenseChart } from "../../components/users/budget/MonthlyExpenseChart";
 import { EditBudgetModal } from "../../components/users/budget/EditBudgetModal";
 
-// TODO: import API functions once backend is connected
-// import { getBudgetSummary, createOrUpdateBudget, createExpense, deleteExpense } from "../../api/budget.api";
-
 export default function BudgetScreen() {
   const navigation = useNavigation<any>();
-  const { totalBudget, expenses, addExpense, removeExpense, setTotalBudget } = useBudgetStore();
+  const { totalBudget, expenses, addExpense, removeExpense, setTotalBudget, loadBudget } = useBudgetStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [editBudgetModalVisible, setEditBudgetModalVisible] = useState(false);
 
-  // TODO: fetch on mount once backend connected
-  // useEffect(() => {
-  //   const load = async () => {
-  //     const res = await getBudgetSummary();
-  //     // populate store from res.data
-  //   };
-  //   load();
-  // }, []);
+  useFocusEffect(
+    useCallback(() => {
+      void loadBudget();
+    }, [loadBudget]),
+  );
 
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = totalBudget - totalSpent;
@@ -45,7 +39,7 @@ export default function BudgetScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={22} color="#333" />
+          <MaterialIcons name="arrow-back" size={22} color="#3F1D2F" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Wedding Budget</Text>
       </View>
@@ -61,32 +55,32 @@ export default function BudgetScreen() {
         <View style={styles.statsGrid}>
           <BudgetStatCard
             icon="account-balance-wallet"
-            iconColor="#22B07D"
-            iconBg="#E8F8F0"
+            iconColor="#FF4D6D"
+            iconBg="#FFE6EB"
             label="Total Budget"
             value={`₹${totalBudget.toLocaleString("en-IN")}`}
             sublabel="Wedding Budget"
           />
           <BudgetStatCard
             icon="trending-down"
-            iconColor="#E53935"
-            iconBg="#FDEAEA"
+            iconColor="#FF4D6D"
+            iconBg="#FFE6EB"
             label="Spent"
             value={`₹${totalSpent.toLocaleString("en-IN")}`}
             sublabel={`${percentUsed}% of budget used`}
           />
           <BudgetStatCard
             icon="savings"
-            iconColor="#3B82F6"
-            iconBg="#EAF1FE"
+            iconColor="#FF4D6D"
+            iconBg="#FFE6EB"
             label="Remaining"
             value={`₹${remaining.toLocaleString("en-IN")}`}
             sublabel="Available Budget"
           />
           <BudgetStatCard
             icon="receipt-long"
-            iconColor="#D9A404"
-            iconBg="#FEF6E0"
+            iconColor="#FF4D6D"
+            iconBg="#FFE6EB"
             label="Transactions"
             value={`${expenses.length}`}
             sublabel="Expenses Added"
@@ -98,7 +92,7 @@ export default function BudgetScreen() {
           <View style={styles.managerTopRow}>
             <View>
               <View style={styles.managerTitleRow}>
-                <MaterialIcons name="request-quote" size={20} color="#22B07D" />
+                <MaterialIcons name="request-quote" size={20} color="#FF4D6D" />
                 <Text style={styles.managerTitle}>Expense Manager</Text>
               </View>
               <Text style={styles.managerSubtitle}>Add and manage your wedding expenses.</Text>

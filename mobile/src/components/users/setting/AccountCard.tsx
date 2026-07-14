@@ -13,9 +13,9 @@ function InfoRow({ icon, label, value }: { icon: keyof typeof MaterialIcons.glyp
   return (
     <View style={styles.infoRow}>
       <View style={styles.infoIconCircle}>
-        <MaterialIcons name={icon} size={18} color="#666" />
+        <MaterialIcons name={icon} size={18} color="#ff4d6d" />
       </View>
-      <View style={{ marginLeft: 12 }}>
+      <View style={styles.infoCopy}>
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value || "-"}</Text>
       </View>

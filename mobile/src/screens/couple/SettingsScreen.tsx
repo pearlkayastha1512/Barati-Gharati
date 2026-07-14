@@ -100,7 +100,7 @@ useEffect(() => {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={22} color="#333" />
+          <MaterialIcons name="arrow-back" size={22} color="#3f1d2f" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
@@ -180,15 +180,18 @@ useEffect(() => {
               value={security.loginAlerts}
               onToggle={() => toggleSecurity("loginAlerts")}
             />
-            <TouchableOpacity style={styles.securityItem} onPress={() => setPasswordModalVisible(true)}>
-  <View style={styles.securityIconCircle}>
-    <MaterialIcons name="lock-outline" size={18} color="#666" />
-  </View>
-  <View style={{ marginLeft: 12, flex: 1 }}>
-    <Text style={styles.securityTitle}>Change Password</Text>
-  </View>
-  <MaterialIcons name="chevron-right" size={20} color="#ccc" />
-</TouchableOpacity>
+            <TouchableOpacity
+              style={styles.securityItem}
+              onPress={() => setPasswordModalVisible(true)}
+            >
+              <View style={styles.securityIconCircle}>
+                <MaterialIcons name="lock-outline" size={18} color="#ff4d6d" />
+              </View>
+              <View style={styles.securityCopy}>
+                <Text style={styles.securityTitle}>Change Password</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color="#ff8fa1" />
+            </TouchableOpacity>
           </View>
         </View>
 

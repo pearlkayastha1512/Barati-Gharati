@@ -26,7 +26,7 @@ export function VendorCard({ vendor, onViewProfile, onBookNow }: Props) {
           <MaterialIcons
             name={favorited ? "favorite" : "favorite-border"}
             size={16}
-            color="#C2185B"
+            color="#FF4D6D"
           />
         </TouchableOpacity>
         {vendor.featured && (
@@ -45,7 +45,7 @@ export function VendorCard({ vendor, onViewProfile, onBookNow }: Props) {
         <Text style={styles.cardName}>{vendor.name}</Text>
 
         <View style={styles.cardLocationRow}>
-          <MaterialIcons name="location-on" size={13} color="#999" />
+          <MaterialIcons name="location-on" size={13} color="#8D6171" />
           <Text style={styles.cardLocation}>{vendor.location}</Text>
         </View>
 
