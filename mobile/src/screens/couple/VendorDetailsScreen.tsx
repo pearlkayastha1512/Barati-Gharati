@@ -18,9 +18,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Booking } from "../../types/booking";
 import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
 
-// TODO: import API functions once backend is connected
-// import { getVendorById } from "../../api/vendor.api";
-
 // TODO: replace with real amenities data once the Vendor model/API supports it
 const DUMMY_AMENITIES: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
   { icon: "local-parking", label: "Parking" },
@@ -54,37 +51,25 @@ export default function VendorDetailsScreen() {
   const { user } = useAuthStore();
   const [bookModalVisible, setBookModalVisible] = useState(false);
   const [newBookingForPayment, setNewBookingForPayment] = useState<Booking | null>(null);
-const addBooking = useBookingStore((state) => state.addBooking);
- const [vendorData, setVendorData] = useState<Vendor | null>(null);
- const [vendorLoading, setVendorLoading] = useState(true);
- const [vendorError, setVendorError] = useState<string | null>(null);
- const vendor = vendorData ?? EMPTY_VENDOR;
+  const addBooking = useBookingStore((state) => state.addBooking);
+  const [vendorData, setVendorData] = useState<Vendor | null>(null);
+  const [vendorLoading, setVendorLoading] = useState(true);
+  const [vendorError, setVendorError] = useState<string | null>(null);
+  const vendor = vendorData ?? EMPTY_VENDOR;
 
- useEffect(() => {
-   let active = true;
-   setVendorLoading(true);
-   setVendorError(null);
-   getVendorById(String(vendorId))
-     .then((data) => active && setVendorData(data))
-     .catch(() => active && setVendorError("Vendor details load nahi ho sakin."))
-     .finally(() => active && setVendorLoading(false));
-   return () => { active = false; };
- }, [vendorId]);
+  useEffect(() => {
+    let active = true;
+    setVendorLoading(true);
+    setVendorError(null);
+    getVendorById(String(vendorId))
+      .then((data) => active && setVendorData(data))
+      .catch(() => active && setVendorError("Vendor details load nahi ho sakin."))
+      .finally(() => active && setVendorLoading(false));
+    return () => { active = false; };
+  }, [vendorId]);
 
-// TODO: replace with vendor.packages once Package API is connected
-const vendorPackages = vendor.packages ?? [];
+  const vendorPackages = vendor.packages ?? [];
   const currentUserId = user?.id ?? "guest";
-
-  // TODO: replace with a real fetch:
-  // const [vendor, setVendor] = useState(null);
-  // useEffect(() => {
-  //   const load = async () => {
-  //     const res = await getVendorById(vendorId);
-  //     setVendor(res.data);
-  //   };
-  //   load();
-  // }, [vendorId]);
-
 
   const favorited = isFavorite(vendor.id);
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
@@ -99,51 +84,51 @@ const vendorPackages = vendor.packages ?? [];
 
   const startConversation = useMessagesStore((state) => state.startConversation);
 
- const handleMessageVendor = async () => {
-  try {
-    const conversationId = await startConversation(
-      vendor.backendId ?? vendor.id,
-      vendor.name,
-      vendor.image,
-    );
-    navigation.getParent()?.navigate("Chat", { conversationId });
-  } catch (error: any) {
-    const responseMessage = error?.response?.data?.message;
-    const message = Array.isArray(responseMessage)
-      ? responseMessage.join(" ")
-      : responseMessage;
+  const handleMessageVendor = async () => {
+    try {
+      const conversationId = await startConversation(
+        vendor.backendId ?? vendor.id,
+        vendor.name,
+        vendor.image,
+      );
+      navigation.getParent()?.navigate("Chat", { conversationId });
+    } catch (error: any) {
+      const responseMessage = error?.response?.data?.message;
+      const message = Array.isArray(responseMessage)
+        ? responseMessage.join(" ")
+        : responseMessage;
 
-    Alert.alert(
-      "Chat unavailable",
-      typeof message === "string" && message.trim()
-        ? message
-        : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
-    );
-  }
-};
+      Alert.alert(
+        "Chat unavailable",
+        typeof message === "string" && message.trim()
+          ? message
+          : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
+      );
+    }
+  };
 
-const handleSendInquiry = async () => {
-  try {
-    const conversationId = await startConversation(
-      vendor.backendId ?? vendor.id,
-      vendor.name,
-      vendor.image,
-    );
-    navigation.getParent()?.navigate("Chat", { conversationId });
-  } catch (error: any) {
-    const responseMessage = error?.response?.data?.message;
-    const message = Array.isArray(responseMessage)
-      ? responseMessage.join(" ")
-      : responseMessage;
+  const handleSendInquiry = async () => {
+    try {
+      const conversationId = await startConversation(
+        vendor.backendId ?? vendor.id,
+        vendor.name,
+        vendor.image,
+      );
+      navigation.getParent()?.navigate("Chat", { conversationId });
+    } catch (error: any) {
+      const responseMessage = error?.response?.data?.message;
+      const message = Array.isArray(responseMessage)
+        ? responseMessage.join(" ")
+        : responseMessage;
 
-    Alert.alert(
-      "Chat unavailable",
-      typeof message === "string" && message.trim()
-        ? message
-        : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
-    );
-  }
-};
+      Alert.alert(
+        "Chat unavailable",
+        typeof message === "string" && message.trim()
+          ? message
+          : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
+      );
+    }
+  };
 
   const handleDeleteReview = () => {
     if (!userReview) return;
@@ -153,7 +138,6 @@ const handleSendInquiry = async () => {
     ]);
   };
 
-  // TODO: replace with vendor.description once available from backend
   const aboutText = vendor.description || `${vendor.name} is one of the region's most trusted ${vendor.category.toLowerCase()} providers.`;
 
   const handleShare = async () => {
@@ -165,7 +149,6 @@ const handleSendInquiry = async () => {
       console.log("Share failed:", error);
     }
   };
-  
 
   if (vendorLoading) {
     return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color="#FF4D6D" /></View></SafeAreaView>;
@@ -227,11 +210,22 @@ const handleSendInquiry = async () => {
         </View>
       </ImageBackground>
 
-      {/* Gallery */}
+      {/* Gallery — real portfolio images from vendor.images */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Gallery</Text>
-        {/* TODO: replace with vendor.gallery.map(...) once VendorGallery data is available */}
-        <Text style={styles.emptyText}>This vendor hasn't uploaded any portfolio yet.</Text>
+        {vendor.images && vendor.images.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
+            {vendor.images.map((uri, index) => (
+              <Image
+                key={`${uri}-${index}`}
+                source={{ uri }}
+                style={{ width: 140, height: 100, borderRadius: 12, marginRight: 10 }}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <Text style={styles.emptyText}>This vendor hasn't uploaded any portfolio yet.</Text>
+        )}
       </View>
 
       {/* About */}
@@ -247,11 +241,30 @@ const handleSendInquiry = async () => {
         </View>
       </View>
 
-      {/* Services */}
-      {/* TODO: replace with vendor.services.map(...) once Package/Service data is available from backend */}
+      {/* Services — real packages from vendor.packages */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Services</Text>
-        <Text style={styles.emptyText}>Services will appear here once added by the vendor.</Text>
+        {vendorPackages.length > 0 ? (
+          vendorPackages.map((pkg) => (
+            <View
+              key={pkg.id}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: "#FFCAD3",
+              }}
+            >
+              <Text style={{ fontSize: 14, color: "#3F1D2F", fontWeight: "600" }}>{pkg.name}</Text>
+              <Text style={{ fontSize: 14, color: "#FF4D6D", fontWeight: "700" }}>
+                ₹{pkg.price.toLocaleString("en-IN")}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>Services will appear here once added by the vendor.</Text>
+        )}
       </View>
 
       {/* Customer Reviews */}
@@ -296,8 +309,6 @@ const handleSendInquiry = async () => {
             {userReview.text ? <Text style={styles.myReviewText}>{userReview.text}</Text> : null}
           </View>
         )}
-
-        {/* TODO: list other users' reviews below via getReviewsForVendor(vendor.id).map(...) once available */}
       </View>
 
       {/* Send Inquiry — quick contact CTA above Book Now */}
@@ -395,9 +406,8 @@ const handleSendInquiry = async () => {
           }
         }}
       />
-    
+
       </ScrollView>
     </SafeAreaView>
   );
 }
- 
