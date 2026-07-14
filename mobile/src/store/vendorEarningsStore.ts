@@ -17,7 +17,7 @@ export type Transaction = {
   status: string;
 };
 
-export type PayoutBooking = {
+export type PendingPaymentBooking = {
   id: string;
   customerName: string;
   eventDate: string;
@@ -32,25 +32,16 @@ interface VendorEarningsState {
   pendingAmount: number;
   averageBooking: number;
 
-  highestMonth: {
-    month: string;
-    amount: number;
-  };
-
-  lowestMonth: {
-    month: string;
-    amount: number;
-  };
-
+  highestMonth: { month: string; amount: number };
+  lowestMonth: { month: string; amount: number };
   monthlyAverage: number;
-
   monthlyRevenue: MonthlyRevenue[];
 
-  nextPayout: {
-    amount: number;
-    scheduledDate: string;
-    includedPayments: number;
-    bookings: PayoutBooking[];
+  pendingPayments: {
+    totalAmount: number;
+    count: number;
+    nextExpectedDate: string;
+    bookings: PendingPaymentBooking[];
   };
 
   recentTransactions: Transaction[];
@@ -61,26 +52,9 @@ interface VendorEarningsState {
   fetchEarnings: () => Promise<void>;
 }
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const REVENUE_BOOKING_STATUSES = [
-  "accepted",
-  "completed",
-  "event_completed",
-];
+const EXCLUDED_BOOKING_STATUSES = ["cancelled", "rejected"];
 
 export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
   totalRevenue: 0,
@@ -88,27 +62,15 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
   pendingAmount: 0,
   averageBooking: 0,
 
-  highestMonth: {
-    month: "",
-    amount: 0,
-  },
-
-  lowestMonth: {
-    month: "",
-    amount: 0,
-  },
-
+  highestMonth: { month: "", amount: 0 },
+  lowestMonth: { month: "", amount: 0 },
   monthlyAverage: 0,
+  monthlyRevenue: MONTHS.map((m) => ({ month: m, amount: 0 })),
 
-  monthlyRevenue: MONTHS.map((m) => ({
-    month: m,
-    amount: 0,
-  })),
-
-  nextPayout: {
-    amount: 0,
-    scheduledDate: "",
-    includedPayments: 0,
+  pendingPayments: {
+    totalAmount: 0,
+    count: 0,
+    nextExpectedDate: "",
     bookings: [],
   },
 
@@ -118,15 +80,12 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
   error: null,
 
   fetchEarnings: async () => {
-    set({
-      isLoading: true,
-      error: null,
-    });
+    set({ isLoading: true, error: null });
 
     try {
       const bookings = await getMyBookings();
-      const revenueBookings = bookings.filter((booking: any) =>
-        REVENUE_BOOKING_STATUSES.includes(booking.bookingStatus)
+      const revenueBookings = bookings.filter(
+        (booking: any) => !EXCLUDED_BOOKING_STATUSES.includes(booking.bookingStatus)
       );
 
       let totalRevenue = 0;
@@ -134,12 +93,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
       let pendingAmount = 0;
 
       const now = new Date();
-
-      const monthlyRevenue: MonthlyRevenue[] = MONTHS.map((m) => ({
-        month: m,
-        amount: 0,
-      }));
-
+      const monthlyRevenue: MonthlyRevenue[] = MONTHS.map((m) => ({ month: m, amount: 0 }));
       const transactions: Transaction[] = [];
 
       revenueBookings.forEach((booking: any) => {
@@ -152,8 +106,6 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
           pendingAmount += balance;
         }
 
-        // Use createdAt (when the payment/booking activity actually happened),
-        // not eventDate (the wedding date, which is often months in the future).
         const paymentDate = new Date(booking.createdAt);
 
         if (
@@ -164,12 +116,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
         }
 
         const monthIndex = paymentDate.getMonth();
-
-        if (
-          monthIndex >= 0 &&
-          monthIndex < 12 &&
-          paymentDate.getFullYear() === now.getFullYear()
-        ) {
+        if (monthIndex >= 0 && monthIndex < 12 && paymentDate.getFullYear() === now.getFullYear()) {
           monthlyRevenue[monthIndex].amount += paid;
         }
 
@@ -185,68 +132,47 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
         });
       });
 
-      transactions.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       const averageBooking =
-        revenueBookings.length > 0
-          ? Math.round(totalRevenue / revenueBookings.length)
-          : 0;
+        revenueBookings.length > 0 ? Math.round(totalRevenue / revenueBookings.length) : 0;
+
+      const monthsWithActivity = monthlyRevenue.filter((m) => m.amount > 0);
 
       const highestMonth =
-        [...monthlyRevenue].sort((a, b) => b.amount - a.amount)[0] || {
-          month: "",
-          amount: 0,
-        };
+        [...monthsWithActivity].sort((a, b) => b.amount - a.amount)[0] || { month: "—", amount: 0 };
 
       const lowestMonth =
-        [...monthlyRevenue].sort((a, b) => a.amount - b.amount)[0] || {
-          month: "",
-          amount: 0,
-        };
+        [...monthsWithActivity].sort((a, b) => a.amount - b.amount)[0] || { month: "—", amount: 0 };
 
-      const monthlyAverage =
-        monthlyRevenue.reduce((sum, m) => sum + m.amount, 0) / 12;
+      const monthlyAverage = monthlyRevenue.reduce((sum, m) => sum + m.amount, 0) / 12;
 
-      // Bookings with an outstanding balance — these make up the upcoming payout.
       const pendingBookings = revenueBookings.filter(
         (booking: any) => booking.paymentStatus !== "paid"
       );
 
-      const payoutBookings: PayoutBooking[] = pendingBookings.map(
-        (booking: any) => ({
-          id: booking.id,
-          customerName: booking.customerName,
-          eventDate: new Date(booking.eventDate).toLocaleDateString("en-GB"),
-          advance: Number(booking.advancePaid),
-          remaining: Number(booking.remainingAmount),
-          status: booking.paymentStatus === "partial" ? "Partial" : "Pending",
-        })
-      );
+      const pendingPaymentBookings: PendingPaymentBooking[] = pendingBookings.map((booking: any) => ({
+        id: booking.id,
+        customerName: booking.customerName,
+        eventDate: new Date(booking.eventDate).toLocaleDateString("en-GB"),
+        advance: Number(booking.advancePaid),
+        remaining: Number(booking.remainingAmount),
+        status: booking.paymentStatus === "partial" ? "Partial" : "Pending",
+      }));
 
-      // Dynamic scheduled date: earliest upcoming event date among pending
-      // bookings, since the remaining balance is typically expected around
-      // the event. Falls back to 7 days from today if there are none.
       const upcomingEventDates = pendingBookings
         .map((b: any) => new Date(b.eventDate))
         .filter((d: Date) => d >= now)
         .sort((a: Date, b: Date) => a.getTime() - b.getTime());
 
-      const scheduledDate =
+      const nextExpectedDate =
         upcomingEventDates.length > 0
           ? upcomingEventDates[0].toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "long",
               year: "numeric",
             })
-          : new Date(
-              now.getTime() + 7 * 24 * 60 * 60 * 1000
-            ).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            });
+          : "—";
 
       set({
         totalRevenue,
@@ -257,27 +183,21 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
         highestMonth,
         lowestMonth,
         monthlyAverage: Math.round(monthlyAverage),
-
         monthlyRevenue,
 
-        nextPayout: {
-          amount: pendingAmount,
-          scheduledDate,
-          includedPayments: pendingBookings.length,
-          bookings: payoutBookings,
+        pendingPayments: {
+          totalAmount: pendingAmount,
+          count: pendingBookings.length,
+          nextExpectedDate,
+          bookings: pendingPaymentBookings,
         },
 
         recentTransactions: transactions,
-
         isLoading: false,
       });
     } catch (error) {
       console.log("Failed to fetch earnings", error);
-
-      set({
-        isLoading: false,
-        error: "Failed to load earnings",
-      });
+      set({ isLoading: false, error: "Failed to load earnings" });
     }
   },
 }));

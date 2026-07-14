@@ -119,6 +119,59 @@ export default function VendorSettingsScreen() {
     }
 
   };
+  const handleBusinessStatus = () => {
+
+  const isActive = vendorProfile?.isActive;
+
+  Alert.alert(
+    isActive ? "Deactivate Business" : "Activate Business",
+
+    isActive
+      ? "Your business will be hidden from customers."
+      : "Your business will become visible to customers.",
+
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: isActive ? "Deactivate" : "Activate",
+        style: isActive ? "destructive" : "default",
+
+        onPress: async () => {
+
+          try {
+
+            await updateVendorProfile({
+              isActive: !isActive,
+            });
+
+            Alert.alert(
+              "Success",
+              isActive
+                ? "Business deactivated successfully."
+                : "Business activated successfully."
+            );
+
+            await loadVendorProfile();
+
+          } catch (error) {
+
+            console.log(error);
+
+            Alert.alert(
+              "Error",
+              "Unable to update business status."
+            );
+
+          }
+
+        },
+      },
+    ]
+  );
+};
 
 
   const handleChangePassword = async()=>{
@@ -441,23 +494,27 @@ export default function VendorSettingsScreen() {
       <Text style={styles.dangerText}>
         Deactivating hides your business from customers.
       </Text>
+      <Text
+  style={{
+    color: vendorProfile?.isActive ? "green" : "red",
+    fontWeight: "700",
+    marginTop: 8,
+  }}
+>
+  Status: {vendorProfile?.isActive ? "Active" : "Inactive"}
+</Text>
 
 
       <TouchableOpacity
-        style={styles.dangerButton}
-        onPress={()=>
-          Alert.alert(
-            "Coming Soon",
-            "Business deactivation will be available later"
-          )
-        }
-      >
-
-        <Text style={styles.dangerButtonText}>
-          Deactivate Business
-        </Text>
-
-      </TouchableOpacity>
+  style={styles.dangerButton}
+  onPress={handleBusinessStatus}
+>
+  <Text style={styles.dangerButtonText}>
+    {vendorProfile?.isActive
+      ? "Deactivate Business"
+      : "Activate Business"}
+  </Text>
+</TouchableOpacity>
 
     </View>
 

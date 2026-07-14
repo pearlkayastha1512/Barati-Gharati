@@ -13,6 +13,7 @@ import { SectionCard } from "../../components/vendors/dashboard/SectionCard";
 import { EmptyState } from "../../components/vendors/dashboard/EmptyState";
 import { BlockDateModal } from "../../components/vendors/calendar/BlockDateModal";
 import { styles } from "./vendorCalendarStyles";
+import { COLORS } from "../../constants/theme";   // add this import
 
 export default function VendorCalendarScreen() {
   const navigation = useNavigation<any>();
@@ -34,9 +35,16 @@ export default function VendorCalendarScreen() {
   }, []);
 
   const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
   const stats = useMemo(
     () => getMonthStats(today.getFullYear(), today.getMonth()),
     [blockedDates, bookedDates]
+  );
+
+  const eventsToday = useMemo(
+    () => upcomingEvents.filter((e) => e.date === todayStr).length,
+    [upcomingEvents, todayStr]
   );
 
   const markedDates = useMemo(() => {
@@ -74,12 +82,12 @@ export default function VendorCalendarScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Hero header */}
-        <LinearGradient
-          colors={[CAL_COLORS.primary, CAL_COLORS.primaryDark]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroCard}
-        >
+      <LinearGradient
+  colors={[CAL_COLORS.gradientStart, CAL_COLORS.gradientEnd]}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={styles.heroCard}
+>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
           </TouchableOpacity>
@@ -97,7 +105,7 @@ export default function VendorCalendarScreen() {
         {/* Stat Cards */}
         <View style={styles.grid}>
           <StatCard icon="calendar-check-outline" label="Events" value={`${bookedDates.length}`} sublabel="This Month" />
-          <StatCard icon="clock-outline" label="Today" value="0" sublabel="Events Today" />
+          <StatCard icon="clock-outline" label="Today" value={`${eventsToday}`} sublabel="Events Today" />
           <StatCard icon="cancel" label="Blocked" value={`${stats.blockedDays}`} sublabel="This Month" />
           <StatCard icon="check-circle-outline" label="Available" value={`${stats.availableDays}`} sublabel="This Month" />
         </View>

@@ -1,51 +1,67 @@
 export const COLORS = {
-  primary: "#F40672",
-  primaryDark: "#D90465",
-  primaryHover: "#C9005D",
-  primaryDeep: "#B40053",
+  // Brand
+  primary: "#E4005A",
+  primaryDark: "#C90055",
+  primaryHover: "#D10059",
+  primaryDeep: "#A90047",
 
-  gradientStart: "#FFF6CC",
-  gradientEnd: "#F40672",
-  gradientBg: "#FFF8EE",
+  // Hero gradients
+  gradientStart: "#E4005A",
+  gradientMiddle: "#F35A55",
+  gradientEnd: "#FF9F1A",
+  gradientBg: "#FFF7F4",
 
-  marigold: "#FFB400",
-  marigoldBright: "#FFC93C",
+  // Accent
+  marigold: "#FFB000",
+  marigoldBright: "#FFC542",
 
-  background: "#FFF9F2",
+  // Backgrounds
+  background: "#FFF8F5",
   surface: "#FFFFFF",
 
-  primaryLight: "#FFE5F0",
+  // Cards
+  primaryLight: "#FFE5EF",
+  secondaryLight: "#FFF2E4",
 
-  text: "#3C1D2E",
-  textHeading: "#431B30",
-  textMuted: "#8A7180",
-  textLight: "#B39BA7",
+  // Text
+  text: "#3B2130",
+  textHeading: "#42192F",
+  textMuted: "#7D6A74",
+  textLight: "#B69EA9",
 
-  border: "#F5DFC6",
+  // Borders
+  border: "#F3E2D8",
+  borderYellowSoft: "#FFE6B3",
+  borderYellowPale: "#FFF4D8",
+  borderDivider: "#EFE5E0",
+  borderEmptyState: "#F4DDD1",
 
-  success: "#22C55E",
-  successLight: "#EAF9F1",
-  warning: "#FFB400",
-  warningLight: "#FFF3D6",
+  // Status
+  success: "#16A34A",
+  successLight: "#E8F8EC",
+
+  warning: "#F59E0B",
+  warningLight: "#FFF4D8",
+
   danger: "#EF4444",
 
-  star: "#FFC93C",
+  // Rating
+  star: "#FFC542",
+
+  // Navigation
+  textNav: "#472536",
+  textSupportHeading: "#6B4A5C",
+
+  // Hover
+  hoverDeep: "#B1004A",
+  yellowHover: "#FFE199",
+  pinkHover: "#FFD8E8",
+
+  panelCreamYellow: "#FFF8E6",
+  headerWhite: "#FFFFFF",
 
   white: "#FFFFFF",
   black: "#000000",
-
-  // --- Added: keys referenced by calendarTheme.ts (CAL_COLORS) ---
-  borderYellowSoft: "#FFE9B3",
-  borderYellowPale: "#FFF3D6",
-  yellowHover: "#FFE29A",
-  panelCreamYellow: "#FFF8E1",
-  headerWhite: "#FFFFFF",
-  pinkHover: "#FFD6E8",
-  textSupportHeading: "#6B4A5C",
-  textNav: "#3C1D2E",
-  borderDivider: "#F0E6E0",
-  borderEmptyState: "#F5DFC6",
-  hoverDeep: "#B40053",
 };
 
 export const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 };
