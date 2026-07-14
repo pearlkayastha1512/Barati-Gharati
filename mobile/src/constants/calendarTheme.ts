@@ -7,6 +7,8 @@ export const CAL_COLORS = {
   primaryDark: COLORS.primaryDark,
   primaryHover: COLORS.primaryHover,
   primaryDeep: COLORS.primaryDeep,
+   gradientStart: COLORS.gradientStart,   // add this
+  gradientEnd: COLORS.gradientEnd,       // add this
 
   marigold: COLORS.marigold,
   marigoldBright: COLORS.marigoldBright,

@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, Modal, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -31,7 +31,7 @@ export default function VendorEarningsScreen() {
     lowestMonth,
     monthlyAverage,
     monthlyRevenue,
-    nextPayout,
+    pendingPayments,
     recentTransactions,
     fetchEarnings,
     isLoading,
@@ -136,23 +136,27 @@ export default function VendorEarningsScreen() {
           <RevenueBarChart data={monthlyRevenue} />
         </SectionCard>
 
-        {/* Next Payout */}
-        <SectionCard title="Next Payout">
+        {/* Pending Payments */}
+        <SectionCard title="Pending Payments">
           <View style={styles.payoutIconRow}>
             <View style={styles.payoutIconBox}>
               <MaterialCommunityIcons name="wallet-outline" size={18} color={CAL_COLORS.primary} />
             </View>
-            <Text style={styles.payoutLabel}>Expected Settlement</Text>
+            <Text style={styles.payoutLabel}>Outstanding Balance</Text>
           </View>
-          <Text style={styles.payoutAmount}>{formatCurrency(nextPayout.amount)}</Text>
+          <Text style={styles.payoutAmount}>{formatCurrency(pendingPayments.totalAmount)}</Text>
           <View style={styles.payoutDateRow}>
             <MaterialCommunityIcons name="calendar-outline" size={14} color={CAL_COLORS.bodyRose} />
-            <Text style={styles.payoutDateText}>Scheduled on {nextPayout.scheduledDate}</Text>
+            <Text style={styles.payoutDateText}>
+              {pendingPayments.nextExpectedDate !== "—"
+                ? `Next event needing payment: ${pendingPayments.nextExpectedDate}`
+                : "No upcoming events with pending balance"}
+            </Text>
           </View>
 
           <View style={styles.includedPaymentsRow}>
-            <Text style={styles.includedPaymentsLabel}>Included Payments</Text>
-            <Text style={styles.includedPaymentsValue}>{nextPayout.includedPayments}</Text>
+            <Text style={styles.includedPaymentsLabel}>Bookings with Balance Due</Text>
+            <Text style={styles.includedPaymentsValue}>{pendingPayments.count}</Text>
           </View>
 
           <TouchableOpacity
@@ -185,7 +189,7 @@ export default function VendorEarningsScreen() {
         </SectionCard>
       </ScrollView>
 
-      {/* Next Payout Details Modal */}
+      {/* Pending Payments Details Modal */}
       <Modal
         visible={payoutModalVisible}
         animationType="fade"
@@ -198,9 +202,9 @@ export default function VendorEarningsScreen() {
             {/* Header */}
             <View style={payoutModalStyles.headerRow}>
               <View>
-                <Text style={payoutModalStyles.title}>Upcoming Payout</Text>
+                <Text style={payoutModalStyles.title}>Pending Payments</Text>
                 <Text style={payoutModalStyles.subtitle}>
-                  Advance payments included in your next settlement.
+                  Balances customers still owe, sorted by upcoming event date.
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setPayoutModalVisible(false)}>
@@ -213,20 +217,20 @@ export default function VendorEarningsScreen() {
               <View style={payoutModalStyles.summaryCard}>
                 <View style={payoutModalStyles.summaryIconRow}>
                   <MaterialCommunityIcons name="wallet-outline" size={16} color={CAL_COLORS.primary} />
-                  <Text style={payoutModalStyles.summaryLabel}>Total Upcoming Payout</Text>
+                  <Text style={payoutModalStyles.summaryLabel}>Total Outstanding</Text>
                 </View>
                 <Text style={payoutModalStyles.summaryValue}>
-                  {formatCurrency(nextPayout.amount)}
+                  {formatCurrency(pendingPayments.totalAmount)}
                 </Text>
               </View>
 
               <View style={payoutModalStyles.summaryCard}>
                 <View style={payoutModalStyles.summaryIconRow}>
                   <MaterialCommunityIcons name="calendar-outline" size={16} color="#16A34A" />
-                  <Text style={payoutModalStyles.summaryLabel}>Settlement Date</Text>
+                  <Text style={payoutModalStyles.summaryLabel}>Next Event Due</Text>
                 </View>
                 <Text style={payoutModalStyles.summaryValueDark}>
-                  {nextPayout.scheduledDate}
+                  {pendingPayments.nextExpectedDate}
                 </Text>
               </View>
             </View>
@@ -244,7 +248,7 @@ export default function VendorEarningsScreen() {
                 </View>
 
                 <ScrollView style={{ maxHeight: 240 }}>
-                  {(nextPayout.bookings ?? []).map((b) => (
+                  {(pendingPayments.bookings ?? []).map((b) => (
                     <View key={b.id} style={payoutModalStyles.tableRow}>
                       <Text style={[payoutModalStyles.td, payoutModalStyles.tdBold, { width: 140 }]}>{b.id}</Text>
                       <Text style={[payoutModalStyles.td, { width: 110 }]}>{b.customerName}</Text>
@@ -267,8 +271,8 @@ export default function VendorEarningsScreen() {
             {/* Footer */}
             <View style={payoutModalStyles.footerRow}>
               <View>
-                <Text style={payoutModalStyles.footerLabel}>Total Settlement</Text>
-                <Text style={payoutModalStyles.footerValue}>{formatCurrency(nextPayout.amount)}</Text>
+                <Text style={payoutModalStyles.footerLabel}>Total Outstanding</Text>
+                <Text style={payoutModalStyles.footerValue}>{formatCurrency(pendingPayments.totalAmount)}</Text>
               </View>
               <TouchableOpacity
                 style={payoutModalStyles.closeButton}
@@ -283,5 +287,3 @@ export default function VendorEarningsScreen() {
     </SafeAreaView>
   );
 }
-
-// Add these to a new file (e.g. payoutModalStyles.ts) or inline via StyleSheet.create
