@@ -1,8 +1,8 @@
-import React from "react";
-import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, RADIUS, SPACING } from "../../../constants/theme";
-import { VendorBookingRecord } from "../../../store/vendorBookingsStore";
+import { VendorBookingRecord, useVendorBookingsStore } from "../../../store/vendorBookingsStore";
 
 const STATUS_COLORS: Record<VendorBookingRecord["status"], { bg: string; text: string }> = {
   Pending: { bg: COLORS.warningLight, text: COLORS.warning },
@@ -38,8 +38,70 @@ function Row({ label, value }: { label: string; value?: string | number | null }
 }
 
 export function BookingDetailsModal({ visible, booking, onClose }: Props) {
+  const updateStatus = useVendorBookingsStore((state) => state.updateStatus);
+  const [actionLoading, setActionLoading] = useState<"accept" | "reject" | "complete" | null>(null);
+
   if (!booking) return null;
   const statusStyle = STATUS_COLORS[booking.status];
+
+  const showAcceptReject = booking.status === "Pending" && booking.adminApproved;
+  const showWaitingBanner = booking.status === "Pending" && !booking.adminApproved;
+  const showCompleteAction = booking.status === "Accepted";
+
+  const handleAccept = async () => {
+    setActionLoading("accept");
+    try {
+      await updateStatus(booking.id, "Accepted");
+      onClose();
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = () => {
+    Alert.alert(
+      "Reject Booking",
+      "Are you sure you want to reject this booking?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reject",
+          style: "destructive",
+          onPress: async () => {
+            setActionLoading("reject");
+            try {
+              await updateStatus(booking.id, "Rejected");
+              onClose();
+            } finally {
+              setActionLoading(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleComplete = () => {
+    Alert.alert(
+      "Mark Event as Completed",
+      "Confirm that this event has taken place?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Mark Completed",
+          onPress: async () => {
+            setActionLoading("complete");
+            try {
+              await updateStatus(booking.id, "Completed");
+              onClose();
+            } finally {
+              setActionLoading(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -112,7 +174,60 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
                 <Text style={[styles.statusPillText, { color: statusStyle.text }]}>{booking.status}</Text>
               </View>
             </View>
+
+            {showWaitingBanner && (
+              <View style={styles.pendingApprovalBanner}>
+                <MaterialCommunityIcons name="clock-outline" size={16} color={COLORS.textMuted} />
+                <Text style={styles.pendingApprovalText}>
+                  Waiting for admin approval before you can respond.
+                </Text>
+              </View>
+            )}
           </ScrollView>
+
+          {showAcceptReject && (
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.acceptBtn]}
+                onPress={handleAccept}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === "accept" ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.actionBtnText}>Accept Booking</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.rejectBtn]}
+                onPress={handleReject}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === "reject" ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.actionBtnText}>Reject</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {showCompleteAction && (
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.completeBtn]}
+                onPress={handleComplete}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === "complete" ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.actionBtnText}>Mark Event as Completed</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -132,4 +247,49 @@ const styles = StyleSheet.create({
   notesText: { fontSize: 13, color: COLORS.text, lineHeight: 19, marginTop: 2 },
   statusPill: { borderRadius: RADIUS.md, paddingHorizontal: 8, paddingVertical: 3 },
   statusPillText: { fontSize: 11, fontWeight: "700" },
+
+  pendingApprovalBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+    padding: SPACING.sm,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.md,
+    gap: 8,
+  },
+  pendingApprovalText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    flex: 1,
+  },
+
+  actionsRow: {
+    flexDirection: "row",
+    gap: SPACING.sm,
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  actionBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  acceptBtn: {
+    backgroundColor: "#16A34A",
+  },
+  rejectBtn: {
+    backgroundColor: "#DC2626",
+  },
+  completeBtn: {
+    backgroundColor: COLORS.primary,
+  },
+  actionBtnText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 });

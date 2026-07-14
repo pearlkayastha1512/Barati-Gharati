@@ -25,12 +25,19 @@ export function ServiceCard({
 
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>{service.serviceName}</Text>
-          <View style={styles.ratingRow}>
-            <MaterialCommunityIcons name="star" size={13} color="#F5A623" />
-            <Text style={styles.ratingText}>{service.rating.toFixed(0)}</Text>
-          </View>
-        </View>
+  <Text style={styles.title} numberOfLines={1}>{service.serviceName}</Text>
+  {service.reviewsCount > 0 ? (
+    <View style={styles.ratingRow}>
+      <MaterialCommunityIcons name="star" size={13} color="#F5A623" />
+      <Text style={styles.ratingText}>{service.rating.toFixed(1)}</Text>
+    </View>
+  ) : (
+    <View style={styles.ratingRow}>
+      <MaterialCommunityIcons name="star-outline" size={13} color={COLORS.textLight} />
+      <Text style={[styles.ratingText, { color: COLORS.textLight }]}>New</Text>
+    </View>
+  )}
+</View>
 
         <Text style={styles.category}>{service.category}</Text>
 

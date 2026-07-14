@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getMyBookings, acceptBooking, rejectBooking, BackendBooking } from "../api/vendorBookings.api";
+import { getMyBookings, acceptBooking, rejectBooking, completeBookingEvent, BackendBooking } from "../api/vendorBookings.api";
 
 export type VendorBookingStatus = "Pending" | "Accepted" | "Completed" | "Cancelled" | "Rejected";
 
@@ -18,6 +18,7 @@ export type VendorBookingRecord = {
   eventTime: string;
   customerEmail: string;
   customerPhone: string;
+  adminApproved: boolean; 
 
   venue: string;
   city: string;
@@ -51,10 +52,15 @@ interface VendorBookingsState {
 const mapStatus = (backendStatus: string): VendorBookingStatus => {
   switch (backendStatus) {
     case "pending":
+    case "awaiting_admin_review":
       return "Pending";
+    case "advance_paid":
     case "accepted":
+    case "payment_approved":
+    case "payment_held":
       return "Accepted";
-    case "completed": // service maps CONFIRMED -> 'completed'
+    case "completed":
+    case "event_completed":
       return "Completed";
     case "cancelled":
       return "Cancelled";
@@ -76,6 +82,8 @@ const mapBooking = (b: BackendBooking): VendorBookingRecord => ({
   }),
   amount: b.amount,
   status: mapStatus(b.bookingStatus),
+
+  adminApproved: b.adminApproved, 
   packageName: b.packageName,
   advancePaid: b.advancePaid,
   remainingAmount: b.remainingAmount,
@@ -122,19 +130,21 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
   },
 
   updateStatus: async (id, status) => {
-    const previous = get().bookings;
-    set((state) => ({
-      bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
-    }));
-    try {
-      if (status === "Accepted") {
-        await acceptBooking(id);
-      } else if (status === "Rejected") {
-        await rejectBooking(id, "Rejected by vendor");
-      }
-    } catch (error) {
-      console.log("UPDATE BOOKING STATUS ERROR =>", error);
-      set({ bookings: previous });
+  const previous = get().bookings;
+  set((state) => ({
+    bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
+  }));
+  try {
+    if (status === "Accepted") {
+      await acceptBooking(id);
+    } else if (status === "Rejected") {
+      await rejectBooking(id, "Rejected by vendor");
+    } else if (status === "Completed") {
+      await completeBookingEvent(id);
     }
-  },
+  } catch (error) {
+    console.log("UPDATE BOOKING STATUS ERROR =>", error);
+    set({ bookings: previous });
+  }
+},
 }));

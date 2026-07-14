@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
@@ -8,6 +7,8 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -33,7 +34,10 @@ export default function NotificationsScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+  style={styles.safeArea}
+  edges={["top","left","right"]}
+>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
