@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import { Avatar, Button, Card, Divider, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -6,6 +6,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 
 import { useSettingsStore } from "../../store/settingsStore";
+import { useBudgetStore } from "../../store/budgetStore";
+import { useBookingStore } from "../../store/bookingStore";
 import { ProfileStatTile } from "../../components/users/profile/ProfileStatTile";
 import { ProfileInfoSection } from "../../components/users/profile/ProfileInfoSection";
 import { ProfileQuickActionRow } from "../../components/users/profile/ProfileQuickActionRow";
@@ -13,13 +15,21 @@ import { Alert } from "react-native";
 import { useAuthStore } from "../../store/authStore";
 import { styles } from "./styles/ProfileScreen.styles";
 
-// TODO: Replace local Zustand data with getProfile() API response.
+// TODO: Replace local Zustand profile data (name/gender/partner/contact fields) with getProfile() API response.
+// Event date, venue, guest count, budget below are pulled from real stores (useBookingStore, useBudgetStore).
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
 
   const { profile } = useSettingsStore();
   const { logout, user } = useAuthStore();
+  const totalBudget = useBudgetStore((state) => state.totalBudget);
+  const bookings = useBookingStore((state) => state.bookings);
+  const loadBookings = useBookingStore((state) => state.loadBookings);
+
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
 
   const displayName = user?.name || profile.fullName || "User";
 
@@ -31,40 +41,41 @@ export default function ProfileScreen() {
       .slice(0, 2)
       .toUpperCase() || "U";
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await logout();
+  // Real upcoming event, from the nearest active (non-cancelled/rejected) booking —
+  // NOT profile.weddingDate/profile.venue, which are just manually-typed settings fields.
+  const activeBookings = bookings.filter(
+    (booking) => !["cancelled", "rejected"].includes(booking.bookingStatus),
+  );
+  const upcomingBooking = activeBookings
+    .filter((booking) => new Date(booking.eventDate).getTime() >= new Date().setHours(0, 0, 0, 0))
+    .sort(
+      (first, second) => new Date(first.eventDate).getTime() - new Date(second.eventDate).getTime(),
+    )[0];
 
-              navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: "Auth",
-                  },
-                ],
-              });
-            } catch (error) {
-              Alert.alert(
-                "Error",
-                "Unable to logout."
-              );
-            }
-          },
+  const eventDateLabel = upcomingBooking
+    ? new Date(upcomingBooking.eventDate).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : undefined;
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+            navigation.reset({ index: 0, routes: [{ name: "Auth" }] });
+          } catch (error) {
+            Alert.alert("Error", "Unable to logout.");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const sections = [
@@ -89,10 +100,18 @@ export default function ProfileScreen() {
     {
       title: "Wedding Information",
       rows: [
-        { label: "Wedding Date", value: profile.weddingDate },
-        { label: "Venue", value: profile.venue },
-        { label: "Guest Count", value: profile.guestCount },
-        { label: "Theme", value: profile.theme },
+        // Event date, venue, guest count now come from the actual booking, not manually
+        // typed settings fields — matches what the vendor confirmed on Book Now.
+        { label: "Event Date", value: eventDateLabel },
+        { label: "Venue", value: upcomingBooking?.venue },
+        {
+          label: "Guest Count",
+          value: upcomingBooking?.guests ? String(upcomingBooking.guests) : undefined,
+        },
+        {
+          label: "Theme",
+          value: upcomingBooking?.weddingTheme || upcomingBooking?.eventTheme || profile.theme,
+        },
       ],
     },
     {
@@ -105,6 +124,20 @@ export default function ProfileScreen() {
       ],
     },
   ];
+
+  // Profile completion % — real count of filled vs total fields across all sections.
+  const allRows = sections.flatMap((section) => section.rows);
+  const filledCount = allRows.filter(
+    (row) => row.value !== undefined && row.value !== null && row.value !== "",
+  ).length;
+  const completionPercent = allRows.length > 0 ? Math.round((filledCount / allRows.length) * 100) : 0;
+
+  // Budget — real totalBudget from useBudgetStore, formatted as ₹X.XL / ₹X.XK.
+  const formatBudget = (amount: number) => {
+    if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
+    if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`;
+    return `₹${amount}`;
+  };
 
   const stats: {
     icon: keyof typeof MaterialIcons.glyphMap;
@@ -119,8 +152,8 @@ export default function ProfileScreen() {
       iconBg: "#FFE6EB",
       iconColor: "#FF4D6D",
       label: "Profile",
-      value: "100%",
-      sublabel: "Completed",
+      value: `${completionPercent}%`,
+      sublabel: completionPercent === 100 ? "Completed" : "Incomplete",
     },
     {
       icon: "favorite",
@@ -135,15 +168,15 @@ export default function ProfileScreen() {
       iconBg: "#FFE6EB",
       iconColor: "#FF4D6D",
       label: "Wedding",
-      value: profile.weddingDate || "--",
-      sublabel: "Not Set",
+      value: eventDateLabel || "--",
+      sublabel: eventDateLabel ? "Upcoming" : "Not Set",
     },
     {
       icon: "account-balance-wallet",
       iconBg: "#FFE6EB",
       iconColor: "#FF4D6D",
       label: "Budget",
-      value: "₹10.0L",
+      value: formatBudget(totalBudget),
       sublabel: "Planning",
     },
   ];
@@ -152,9 +185,7 @@ export default function ProfileScreen() {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: 120,
-      }}
+      contentContainerStyle={{ paddingBottom: 120 }}
     >
       <LinearGradient
         colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
@@ -170,36 +201,20 @@ export default function ProfileScreen() {
             style={styles.avatar}
             labelStyle={{ color: "#FF4D6D", fontWeight: "700" }}
           />
-
           <View style={{ marginLeft: 14 }}>
-            <Text style={styles.heroName}>
-              {displayName}
-            </Text>
-
+            <Text style={styles.heroName}>{displayName}</Text>
             <Text style={styles.heroRole}>Customer</Text>
           </View>
         </View>
 
         <View style={styles.heroInfoRow}>
-          <MaterialIcons
-            name="verified-user"
-            size={16}
-            color="#6C2D45"
-          />
-          <Text style={styles.heroInfoText}>
-            Profile Verified
-          </Text>
+          <MaterialIcons name="verified-user" size={16} color="#6C2D45" />
+          <Text style={styles.heroInfoText}>Profile Verified</Text>
         </View>
 
         <View style={styles.heroInfoRow}>
-          <MaterialIcons
-            name="event"
-            size={16}
-            color="#6C2D45"
-          />
-          <Text style={styles.heroInfoText}>
-            {profile.weddingDate || "Wedding date"}
-          </Text>
+          <MaterialIcons name="event" size={16} color="#6C2D45" />
+          <Text style={styles.heroInfoText}>{eventDateLabel || "Event date"}</Text>
         </View>
 
         <Button
@@ -207,11 +222,7 @@ export default function ProfileScreen() {
           icon="pencil"
           style={styles.editButton}
           labelStyle={styles.editButtonLabel}
-          onPress={() =>
-            navigation.navigate("Settings", {
-              openEditModal: true,
-            })
-          }
+          onPress={() => navigation.navigate("Settings", { openEditModal: true })}
         >
           Edit Profile
         </Button>
@@ -219,22 +230,13 @@ export default function ProfileScreen() {
 
       <View style={styles.statsGrid}>
         {stats.map((item) => (
-          <ProfileStatTile
-            key={item.label}
-            {...item}
-          />
+          <ProfileStatTile key={item.label} {...item} />
         ))}
       </View>
 
       {sections.map((section) => (
-        <View
-          key={section.title}
-          style={styles.sectionRow}
-        >
-          <ProfileInfoSection
-            title={section.title}
-            rows={section.rows}
-          />
+        <View key={section.title} style={styles.sectionRow}>
+          <ProfileInfoSection title={section.title} rows={section.rows} />
         </View>
       ))}
 
@@ -255,20 +257,11 @@ export default function ProfileScreen() {
         </Card>
       </View>
 
-      <Button
-        mode="contained"
-        style={styles.becomeVendorButton}
-        onPress={() => navigation.navigate("BecomeVendor")}
-      >
+      <Button mode="contained" style={styles.becomeVendorButton} onPress={() => navigation.navigate("BecomeVendor")}>
         Become a Vendor
       </Button>
 
-      <Button
-        mode="outlined"
-        style={styles.logoutButton}
-        textColor="#E53935"
-        onPress={handleLogout}
-      >
+      <Button mode="outlined" style={styles.logoutButton} textColor="#E53935" onPress={handleLogout}>
         Logout
       </Button>
     </ScrollView>

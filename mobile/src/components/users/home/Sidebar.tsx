@@ -6,16 +6,17 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  Image,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../../../store/authStore";
 import { styles } from "./Sidebar.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.75;
+const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
 
 type Props = {
   visible: boolean;
@@ -32,7 +33,7 @@ type NavItem = {
 // (Home, Vendors, Bookings, Budget, Profile live in the tab bar — no need to duplicate here)
 const NAV_ITEMS: NavItem[] = [
   { icon: "check-circle-outline", label: "Wedding Planner", route: "Checklist" },
-   { icon: "chat-bubble-outline", label: "Messages", route: "Messages" },
+  { icon: "chat-bubble-outline", label: "Messages", route: "Messages" },
   { icon: "notifications-none", label: "Notifications", route: "Notifications" },
   { icon: "settings", label: "Settings", route: "Settings" },
   { icon: "help-outline", label: "Help & Support", route: "HelpSupport" },
@@ -67,20 +68,22 @@ export function Sidebar({ visible, onClose }: Props) {
     navigation.navigate(item.route);
   };
 
- const handleLogout = async () => {
-  try {
-    onClose();
+  const handleLogout = async () => {
+    try {
+      onClose();
+      await logout();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Auth" }],
+      });
+    } catch (error) {
+      console.log("Logout failed:", error);
+    }
+  };
 
-    await logout();
+  const displayName = user?.name || "Guest";
+  const initial = displayName.charAt(0).toUpperCase();
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Auth" }],
-    });
-  } catch (error) {
-    console.log("Logout failed:", error);
-  }
-};
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
@@ -88,48 +91,62 @@ export function Sidebar({ visible, onClose }: Props) {
           style={[styles.sidebar, { transform: [{ translateX }] }]}
           onStartShouldSetResponder={() => true}
         >
-          {/* User info header */}
-          <View style={styles.userHeader}>
-            <Image
-              // TODO: replace with user?.avatarUrl once available from getUserProfile()
-              source={{ uri: "https://i.pravatar.cc/100" }}
-              style={styles.avatar}
-            />
-            <Text style={styles.userName}>{user?.name || "Guest"}</Text>
-            <Text style={styles.userEmail}>{user?.email || ""}</Text>
-          </View>
+          {/* Gradient header — matches HomeScreen hero card theme */}
+          <LinearGradient
+            colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+            locations={[0, 0.28, 0.68, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.header}
+          >
+            <View style={styles.userHeader}>
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarInitial}>{initial}</Text>
+              </View>
+              <Text style={styles.userName}>{displayName}</Text>
+              <Text style={styles.userEmail}>{user?.email || ""}</Text>
+            </View>
+          </LinearGradient>
 
-          {/* Secondary nav — items not already in the bottom tab bar */}
-          <View style={styles.navList}>
-            {NAV_ITEMS.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={styles.navItem}
-                onPress={() => handleNavigate(item)}
-              >
-                <MaterialIcons name={item.icon} size={22} color="#C2185B" />
-                <Text style={styles.navItemText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionLabel}>Menu</Text>
+            <View style={styles.navList}>
+              {NAV_ITEMS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={styles.navItem}
+                  onPress={() => handleNavigate(item)}
+                >
+                  <View style={styles.navIconCircle}>
+                    <MaterialIcons name={item.icon} size={19} color="#FF4D6D" />
+                  </View>
+                  <Text style={styles.navItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <View style={styles.divider} />
 
-            {/* Legal / info links */}
-            {INFO_ITEMS.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={styles.navItem}
-                onPress={() => handleNavigate(item)}
-              >
-                <MaterialIcons name={item.icon} size={22} color="#999" />
-                <Text style={styles.infoItemText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+            <Text style={styles.sectionLabel}>Legal</Text>
+            <View style={styles.infoList}>
+              {INFO_ITEMS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={styles.infoItem}
+                  onPress={() => handleNavigate(item)}
+                >
+                  <View style={styles.infoIconCircle}>
+                    <MaterialIcons name={item.icon} size={15} color="#8D6171" />
+                  </View>
+                  <Text style={styles.infoItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
 
           {/* Logout */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <MaterialIcons name="logout" size={20} color="#C2185B" />
+            <MaterialIcons name="logout" size={18} color="#E63B5F" />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </Animated.View>

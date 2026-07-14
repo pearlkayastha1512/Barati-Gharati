@@ -8,6 +8,7 @@ import { WishlistStatCard } from "../../components/users/wishlist/WishlistStatCa
 import { useFavoritesStore } from "../../store/favoritesStore";
 import { useBookingStore } from "../../store/bookingStore";
 import { styles } from "./styles/WishlistScreen.styles";
+import { LinearGradient } from "expo-linear-gradient";
 
 // TODO: import API functions once backend is connected
 // import { getFavorites, clearFavorites } from "../../api/favorites.api";
@@ -77,9 +78,15 @@ export default function WishlistScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Hero */}
-        <View style={styles.heroCard}>
+        <LinearGradient
+          colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+          locations={[0, 0.28, 0.68, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
           <View style={styles.heroBadge}>
-            <MaterialIcons name="auto-awesome" size={14} color="#fff" />
+            <MaterialIcons name="auto-awesome" size={14} color="#6C2D45" />
             <Text style={styles.heroBadgeText}>Your Wishlist</Text>
           </View>
 
@@ -90,7 +97,7 @@ export default function WishlistScreen() {
 
           <View style={styles.heroSummaryBox}>
             <View style={styles.heroSummaryHeader}>
-              <MaterialIcons name="bookmark" size={16} color="#fff" />
+              <MaterialIcons name="bookmark" size={16} color="#3F1D2F" />
               <Text style={styles.heroSummaryTitle}>Wishlist Summary</Text>
             </View>
             <View style={styles.heroSummaryRow}>
@@ -110,16 +117,16 @@ export default function WishlistScreen() {
           <TouchableOpacity
             style={styles.exploreButton}
             onPress={() =>
-  navigation.navigate("CoupleTabs", {
-    screen: "Vendors",
-    params: { screen: "VendorList" },
-  })
-}
+              navigation.navigate("CoupleTabs", {
+                screen: "Vendors",
+                params: { screen: "VendorList" },
+              })
+            }
           >
             <Text style={styles.exploreButtonText}>Explore More Vendors</Text>
-            <MaterialIcons name="arrow-forward" size={16} color="#C2185B" />
+            <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
           </TouchableOpacity>
-        </View>
+        </LinearGradient>
 
         {/* Stat cards */}
         <View style={styles.statsGrid}>
