@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -17,11 +18,8 @@ import AnalyticsScreen from "../screens/vendor/VendorAnalyticsScreen";
 import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorChatbotScreen from "../screens/vendor/VendorChatbotScreen";
 import VendorEditProfileScreen from "../screens/vendor/VendorEditProfileScreen";
-<<<<<<< HEAD
 import UpgradePlanScreen from "../screens/vendor/UpgradePlanScreen";
-=======
 import VendorChatScreen from "../screens/vendor/VendorChatScreen";
->>>>>>> 00c9715 (Corrected some bugs)
 
 import { COLORS } from "../constants/theme";
 

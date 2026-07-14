@@ -1,6 +1,6 @@
-// import { Platform } from "react-native";
+ import { Platform } from "react-native";
 
-// const ENV_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+ const ENV_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const BASE_URL =
   ENV_BASE_URL ||
