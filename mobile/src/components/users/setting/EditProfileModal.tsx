@@ -37,7 +37,7 @@ const Field = ({
     <TextInput
       style={styles.fieldInput}
       placeholder={placeholder}
-      placeholderTextColor="#bbb"
+      placeholderTextColor="#b78a9a"
       value={value}
       onChangeText={onChange}
     />
@@ -86,7 +86,7 @@ export function EditProfileModal({
             <Text style={styles.addExpenseTitle}>Edit Profile</Text>
 
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#333" />
+              <MaterialIcons name="close" size={22} color="#6c2d45" />
             </TouchableOpacity>
           </View>
 

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getMyReviews } from "../api/review.api";
 
 export type Review = {
   id: string;
@@ -11,6 +12,7 @@ export type Review = {
 
 interface ReviewState {
   reviews: Review[];
+  loadMyReviews: () => Promise<void>;
   addReview: (vendorId: string, userId: string, rating: number, text: string) => void;
   updateReview: (reviewId: string, rating: number, text: string) => void;
   deleteReview: (reviewId: string) => void;
@@ -26,6 +28,24 @@ interface ReviewState {
 // - deleteReview should call deleteReview(reviewId) — optimistic update with rollback on failure
 export const useReviewStore = create<ReviewState>((set, get) => ({
   reviews: [],
+
+  loadMyReviews: async () => {
+    try {
+      const reviews = await getMyReviews();
+      set({
+        reviews: reviews.map((review) => ({
+          id: review.id,
+          vendorId: String(review.vendorId),
+          userId: review.customerId,
+          rating: review.rating,
+          text: review.comment ?? "",
+          date: review.createdAt,
+        })),
+      });
+    } catch {
+      // Keep the last successful snapshot when a refresh fails.
+    }
+  },
 
   addReview: (vendorId, userId, rating, text) => {
     const newReview: Review = {

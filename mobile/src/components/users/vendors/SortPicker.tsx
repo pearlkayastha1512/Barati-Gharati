@@ -24,9 +24,9 @@ export function SortPicker({ selectedSort, onSelect }: Props) {
   return (
     <>
       <TouchableOpacity style={styles.sortPill} onPress={() => setVisible(true)}>
-        <MaterialIcons name="swap-vert" size={16} color="#333" />
+        <MaterialIcons name="swap-vert" size={16} color="#FF4D6D" />
         <Text style={styles.sortPillText}>{selectedSort}</Text>
-        <MaterialIcons name="arrow-drop-down" size={18} color="#333" />
+        <MaterialIcons name="arrow-drop-down" size={18} color="#8D6171" />
       </TouchableOpacity>
 
       <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
@@ -53,7 +53,7 @@ export function SortPicker({ selectedSort, onSelect }: Props) {
                     {item}
                   </Text>
                   {item === selectedSort && (
-                    <MaterialIcons name="check" size={18} color="#C2185B" />
+                    <MaterialIcons name="check" size={18} color="#FF4D6D" />
                   )}
                 </TouchableOpacity>
               )}

@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Modal, TouchableOpacity, Platform } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Priority } from "../../../store/checklistStore";
+import type { ChecklistItem, Priority } from "../../../store/checklistStore";
 import { styles } from "../../../screens/couple/styles/ChecklistScreen.styles";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: { task: string; description?: string; priority: Priority; dueDate?: string }) => void;
+  onSubmit: (data: { task: string; description?: string; priority: Priority; dueDate: string }) => void | Promise<void>;
+  initialItem?: ChecklistItem | null;
 };
 
 const PRIORITIES: Priority[] = ["Low", "Medium", "High"];
@@ -21,20 +22,36 @@ function formatDate(date: Date) {
   return `${dd}-${mm}-${yyyy}`;
 }
 
-export function AddPlannerTaskModal({ visible, onClose, onSubmit }: Props) {
+function parseDisplayDate(value?: string) {
+  if (!value) return null;
+  const [dd, mm, yyyy] = value.split("-").map(Number);
+  const date = new Date(yyyy, mm - 1, dd);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function AddPlannerTaskModal({ visible, onClose, onSubmit, initialItem }: Props) {
   const [task, setTask] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("Medium");
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleSubmit = () => {
-    if (!task.trim()) return;
-    onSubmit({
+  useEffect(() => {
+    if (!visible) return;
+    setTask(initialItem?.task ?? "");
+    setDescription(initialItem?.description ?? "");
+    setPriority(initialItem?.priority ?? "Medium");
+    setDueDate(parseDisplayDate(initialItem?.dueDate));
+    setShowDatePicker(false);
+  }, [initialItem, visible]);
+
+  const handleSubmit = async () => {
+    if (!task.trim() || !dueDate) return;
+    await onSubmit({
       task: task.trim(),
       description: description.trim() || undefined,
       priority,
-      dueDate: dueDate ? formatDate(dueDate) : undefined,
+      dueDate: formatDate(dueDate),
     });
     setTask("");
     setDescription("");
@@ -55,7 +72,15 @@ export function AddPlannerTaskModal({ visible, onClose, onSubmit }: Props) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Add Planner Task</Text>
+            <View style={styles.modalTitleRow}>
+              <View style={styles.modalTitleIcon}>
+                <MaterialIcons name={initialItem ? "edit-calendar" : "event-note"} size={20} color="#ff4d6d" />
+              </View>
+              <View style={styles.modalTitleCopy}>
+                <Text style={styles.modalTitle}>{initialItem ? "Edit Planner Task" : "Add Planner Task"}</Text>
+                <Text style={styles.modalSubtitle}>Keep your wedding plan on schedule.</Text>
+              </View>
+            </View>
             <TouchableOpacity onPress={onClose}>
               <MaterialIcons name="close" size={22} color="#666" />
             </TouchableOpacity>
@@ -63,20 +88,24 @@ export function AddPlannerTaskModal({ visible, onClose, onSubmit }: Props) {
 
           <TextInput
             mode="outlined"
-            placeholder="Task title"
+            label="Task title"
             value={task}
             onChangeText={setTask}
             style={styles.modalInput}
+            outlineColor="#ffb3bf"
+            activeOutlineColor="#ff4d6d"
           />
 
           <TextInput
             mode="outlined"
-            placeholder="Description"
+            label="Description"
             value={description}
             onChangeText={setDescription}
             multiline
             numberOfLines={3}
             style={[styles.modalInput, styles.modalTextArea]}
+            outlineColor="#ffb3bf"
+            activeOutlineColor="#ff4d6d"
           />
 
           <View style={styles.modalRow}>
@@ -99,11 +128,14 @@ export function AddPlannerTaskModal({ visible, onClose, onSubmit }: Props) {
             <View pointerEvents="none">
               <TextInput
                 mode="outlined"
+                label="Due date"
                 placeholder="dd-mm-yyyy"
                 value={dueDate ? formatDate(dueDate) : ""}
                 style={styles.modalInput}
                 right={<TextInput.Icon icon="calendar" />}
                 editable={false}
+                outlineColor="#ffb3bf"
+                activeOutlineColor="#ff4d6d"
               />
             </View>
           </TouchableOpacity>
@@ -119,16 +151,17 @@ export function AddPlannerTaskModal({ visible, onClose, onSubmit }: Props) {
           )}
 
           <View style={styles.modalButtonRow}>
-            <Button mode="outlined" onPress={onClose} style={styles.modalCancelButton}>
+            <Button mode="outlined" onPress={onClose} style={styles.modalCancelButton} textColor="#7a4a5c">
               Cancel
             </Button>
             <Button
               mode="contained"
               onPress={handleSubmit}
               style={styles.modalAddButton}
-              disabled={!task.trim()}
+              buttonColor="#ff4d6d"
+              disabled={!task.trim() || !dueDate}
             >
-              Add Task
+              {initialItem ? "Save Changes" : "Add Task"}
             </Button>
           </View>
         </View>

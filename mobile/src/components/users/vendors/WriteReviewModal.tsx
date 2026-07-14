@@ -36,7 +36,7 @@ export function WriteReviewModal({ visible, onClose, onSubmit, initialRating = 0
           <View style={styles.header}>
             <Text style={styles.title}>{isEditing ? "Edit Review" : "Write Review"}</Text>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#666" />
+              <MaterialIcons name="close" size={22} color="#3F1D2F" />
             </TouchableOpacity>
           </View>
 
@@ -58,7 +58,7 @@ export function WriteReviewModal({ visible, onClose, onSubmit, initialRating = 0
           <TextInput
             style={styles.textArea}
             placeholder="Share your experience..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#8D6171"
             value={reviewText}
             onChangeText={setReviewText}
             multiline

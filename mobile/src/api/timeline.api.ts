@@ -39,6 +39,8 @@ type CreateTimelinePayload = {
   priority?: BackendPriority;
 };
 
+export type UpdateTimelinePayload = Partial<CreateTimelinePayload>;
+
 export const getTimeline = async (): Promise<ApiListResponse> => {
   const response = await api.get<ApiListResponse>("/timeline");
   return response.data;
@@ -56,6 +58,14 @@ export const updateTimelineStatus = async (
   status: BackendStatus
 ): Promise<ApiItemResponse> => {
   const response = await api.patch<ApiItemResponse>(`/timeline/${id}/status`, { status });
+  return response.data;
+};
+
+export const updateTimelineItem = async (
+  id: string,
+  payload: UpdateTimelinePayload,
+): Promise<ApiItemResponse> => {
+  const response = await api.patch<ApiItemResponse>(`/timeline/${id}`, payload);
   return response.data;
 };
 

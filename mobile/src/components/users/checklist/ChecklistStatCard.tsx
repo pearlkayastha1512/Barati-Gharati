@@ -15,7 +15,7 @@ export function ChecklistStatCard({ icon, label, value, sublabel }: Props) {
     <View style={styles.statCard}>
       <View style={styles.statCardTopRow}>
         <View style={styles.statIconCircle}>
-          <MaterialIcons name={icon} size={18} color="#C2185B" />
+          <MaterialIcons name={icon} size={19} color="#ff4d6d" />
         </View>
         <View style={styles.liveBadge}>
           <Text style={styles.liveBadgeText}>Live</Text>

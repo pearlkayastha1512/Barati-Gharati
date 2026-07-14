@@ -27,8 +27,8 @@ export function BudgetInsights({ expenses, totalBudget, totalSpent }: Props) {
       <Text style={styles.sectionTitle}>Budget Insights</Text>
       <Text style={styles.sectionSubtitle}>Smart insights from your wedding expenses.</Text>
 
-      <View style={[styles.insightItem, { backgroundColor: "#E8F8F0" }]}>
-        <MaterialIcons name="trending-up" size={18} color="#22B07D" />
+      <View style={[styles.insightItem, { backgroundColor: "#FFE6EB" }]}>
+        <MaterialIcons name="trending-up" size={18} color="#FF4D6D" />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.insightLabel}>Highest Spending</Text>
           <Text style={styles.insightValue}>
@@ -37,24 +37,24 @@ export function BudgetInsights({ expenses, totalBudget, totalSpent }: Props) {
         </View>
       </View>
 
-      <View style={[styles.insightItem, { backgroundColor: "#EAF1FE" }]}>
-        <MaterialIcons name="show-chart" size={18} color="#3B82F6" />
+      <View style={[styles.insightItem, { backgroundColor: "#FFF5F7" }]}>
+        <MaterialIcons name="show-chart" size={18} color="#FF4D6D" />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.insightLabel}>Average Expense</Text>
           <Text style={styles.insightValue}>₹{Math.round(average).toLocaleString("en-IN")}</Text>
         </View>
       </View>
 
-      <View style={[styles.insightItem, { backgroundColor: "#FEF6E0" }]}>
-        <MaterialIcons name="warning-amber" size={18} color="#D9A404" />
+      <View style={[styles.insightItem, { backgroundColor: "#FFE6EB" }]}>
+        <MaterialIcons name="warning-amber" size={18} color="#6C2D45" />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.insightLabel}>Budget Health</Text>
           <Text style={styles.insightValue}>{percentUsed}% of your budget has been used.</Text>
         </View>
       </View>
 
-      <View style={[styles.insightItem, { backgroundColor: "#F3E8FE" }]}>
-        <MaterialIcons name="lightbulb-outline" size={18} color="#9333EA" />
+      <View style={[styles.insightItem, { backgroundColor: "#FFF5F7" }]}>
+        <MaterialIcons name="lightbulb-outline" size={18} color="#FF4D6D" />
         <View style={{ marginLeft: 10, flex: 1 }}>
           <Text style={styles.insightLabel}>Recommendation</Text>
           <Text style={styles.insightValue}>{recommendation}</Text>

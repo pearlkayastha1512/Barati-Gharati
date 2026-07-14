@@ -64,7 +64,7 @@ export function DangerZone({
           <MaterialIcons
             name="logout"
             size={18}
-            color="#22B07D"
+            color="#6c2d45"
           />
 
           <Text style={styles.logoutButtonText}>

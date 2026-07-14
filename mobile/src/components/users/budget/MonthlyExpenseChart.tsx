@@ -32,7 +32,7 @@ export function MonthlyExpenseChart({ expenses }: Props) {
           <Text style={[styles.sectionSubtitle, { marginHorizontal: 0 }]}>Monthly wedding spending.</Text>
         </View>
         <View style={styles.liveBadge}>
-          <MaterialIcons name="trending-up" size={12} color="#22B07D" />
+          <MaterialIcons name="trending-up" size={12} color="#FF4D6D" />
           <Text style={[styles.liveBadgeText, { marginLeft: 3 }]}>₹{totalSpent.toLocaleString("en-IN")}</Text>
         </View>
       </View>
@@ -45,7 +45,7 @@ export function MonthlyExpenseChart({ expenses }: Props) {
               style={{
                 width: "60%",
                 height: Math.max(4, (amount / maxAmount) * 80),
-                backgroundColor: amount > 0 ? "#22B07D" : "#eee",
+                backgroundColor: amount > 0 ? "#FF4D6D" : "#FFE6EB",
                 borderRadius: 4,
               }}
             />
@@ -54,7 +54,7 @@ export function MonthlyExpenseChart({ expenses }: Props) {
       </View>
       <View style={{ flexDirection: "row" }}>
         {MONTHS.map((month) => (
-          <Text key={month} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "#999" }}>
+          <Text key={month} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "#8D6171" }}>
             {month}
           </Text>
         ))}
@@ -63,14 +63,14 @@ export function MonthlyExpenseChart({ expenses }: Props) {
       {/* Highest / Lowest */}
       <View style={{ flexDirection: "row", marginTop: 20, gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 12, color: "#999" }}>Highest Expense</Text>
-          <Text style={{ fontSize: 15, fontWeight: "700", color: "#333", marginTop: 4 }}>
+          <Text style={{ fontSize: 12, color: "#8D6171" }}>Highest Expense</Text>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: "#3F1D2F", marginTop: 4 }}>
             {highest !== null ? `₹${highest.toLocaleString("en-IN")}` : "-"}
           </Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 12, color: "#999" }}>Lowest Expense</Text>
-          <Text style={{ fontSize: 15, fontWeight: "700", color: "#333", marginTop: 4 }}>
+          <Text style={{ fontSize: 12, color: "#8D6171" }}>Lowest Expense</Text>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: "#3F1D2F", marginTop: 4 }}>
             {lowest !== null ? `₹${lowest.toLocaleString("en-IN")}` : "-"}
           </Text>
         </View>

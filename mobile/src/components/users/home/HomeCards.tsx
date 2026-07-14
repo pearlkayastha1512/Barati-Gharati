@@ -13,7 +13,7 @@ type CategoryProps = {
 export function Category({ icon, label, onPress }: CategoryProps) {
   return (
     <TouchableOpacity style={styles.categoryItem} onPress={onPress}>
-      <MaterialIcons name={icon} size={28} color="#C2185B" />
+      <MaterialIcons name={icon} size={28} color="#ff4d6d" />
       <Text style={styles.categoryText}>{label}</Text>
     </TouchableOpacity>
   );
@@ -46,7 +46,7 @@ export function VendorCard({
         <MaterialIcons
           name={favorited ? "favorite" : "favorite-border"}
           size={18}
-          color="#C2185B"
+          color="#ff4d6d"
         />
       </TouchableOpacity>
       <View style={{ paddingHorizontal: 15, paddingTop: 12, paddingBottom: 15 }}>

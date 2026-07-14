@@ -3,6 +3,7 @@ import {
   getTimeline,
   createTimelineItem,
   updateTimelineStatus,
+  updateTimelineItem,
   deleteTimelineItem,
   BackendTimelineItem,
   BackendPriority,
@@ -63,6 +64,7 @@ interface ChecklistState {
   fetchChecklist: () => Promise<void>;
   addItem: (input: NewChecklistItemInput) => Promise<void>;
   toggleItem: (id: string) => Promise<void>;
+  updateItem: (id: string, input: NewChecklistItemInput) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
 }
 
@@ -113,6 +115,25 @@ export const useChecklistStore = create<ChecklistState>((set, get) => ({
     } catch (error) {
       console.log("TOGGLE TIMELINE ITEM ERROR =>", error);
       set({ items: previousItems });
+    }
+  },
+
+  updateItem: async (id, input) => {
+    try {
+      const response = await updateTimelineItem(id, {
+        title: input.task,
+        description: input.description,
+        priority: input.priority ? priorityToBackend(input.priority) : undefined,
+        date: input.dueDate ? toIsoDate(input.dueDate) : undefined,
+      });
+
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.id === id ? mapFromBackend(response.data) : item
+        ),
+      }));
+    } catch (error) {
+      console.log("UPDATE TIMELINE ITEM ERROR =>", error);
     }
   },
 

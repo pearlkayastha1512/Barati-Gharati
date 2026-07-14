@@ -12,15 +12,15 @@ type Props = {
 export function ToggleRow({ label, description, value, onToggle }: Props) {
   return (
     <View style={styles.toggleRow}>
-      <View style={{ flex: 1, marginRight: 12 }}>
+      <View style={styles.toggleCopy}>
         <Text style={styles.toggleLabel}>{label}</Text>
         {!!description && <Text style={styles.toggleDescription}>{description}</Text>}
       </View>
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: "#e0e0e0", true: "#C2185B" }}
-        thumbColor="#fff"
+        trackColor={{ false: "#ffcad3", true: "#ff4d6d" }}
+        thumbColor="#fffef7"
       />
     </View>
   );

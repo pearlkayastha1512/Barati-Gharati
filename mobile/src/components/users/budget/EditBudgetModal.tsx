@@ -32,7 +32,7 @@ export function EditBudgetModal({ visible, onClose, currentBudget, onSubmit }: P
           <View style={styles.header}>
             <Text style={styles.title}>Edit Total Budget</Text>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#666" />
+              <MaterialIcons name="close" size={22} color="#3F1D2F" />
             </TouchableOpacity>
           </View>
 
@@ -40,7 +40,7 @@ export function EditBudgetModal({ visible, onClose, currentBudget, onSubmit }: P
           <TextInput
             style={styles.input}
             placeholder="e.g. 1000000"
-            placeholderTextColor="#999"
+            placeholderTextColor="#B8919F"
             value={amount}
             onChangeText={setAmount}
             keyboardType="number-pad"

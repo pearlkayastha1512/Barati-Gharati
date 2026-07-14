@@ -116,32 +116,32 @@ export default function ProfileScreen() {
   }[] = [
     {
       icon: "person",
-      iconBg: "#E3ECFF",
-      iconColor: "#3A6FE8",
+      iconBg: "#FFE6EB",
+      iconColor: "#FF4D6D",
       label: "Profile",
       value: "100%",
       sublabel: "Completed",
     },
     {
       icon: "favorite",
-      iconBg: "#FDEEF3",
-      iconColor: "#C2185B",
+      iconBg: "#FFE6EB",
+      iconColor: "#FF4D6D",
       label: "Partner",
       value: profile.partnerName ? "Added" : "Pending",
       sublabel: "Information",
     },
     {
       icon: "event-available",
-      iconBg: "#E8F8F0",
-      iconColor: "#22B07D",
+      iconBg: "#FFE6EB",
+      iconColor: "#FF4D6D",
       label: "Wedding",
       value: profile.weddingDate || "--",
       sublabel: "Not Set",
     },
     {
       icon: "account-balance-wallet",
-      iconBg: "#FEF6E0",
-      iconColor: "#D9A404",
+      iconBg: "#FFE6EB",
+      iconColor: "#FF4D6D",
       label: "Budget",
       value: "₹10.0L",
       sublabel: "Planning",
@@ -157,7 +157,8 @@ export default function ProfileScreen() {
       }}
     >
       <LinearGradient
-        colors={["#3AB6E8", "#3A6FE8"]}
+        colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+        locations={[0, 0.28, 0.68, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.heroCard}
@@ -167,7 +168,7 @@ export default function ProfileScreen() {
             size={64}
             label={initials}
             style={styles.avatar}
-            labelStyle={{ color: "#3A6FE8", fontWeight: "700" }}
+            labelStyle={{ color: "#FF4D6D", fontWeight: "700" }}
           />
 
           <View style={{ marginLeft: 14 }}>
@@ -183,7 +184,7 @@ export default function ProfileScreen() {
           <MaterialIcons
             name="verified-user"
             size={16}
-            color="#fff"
+            color="#6C2D45"
           />
           <Text style={styles.heroInfoText}>
             Profile Verified
@@ -194,7 +195,7 @@ export default function ProfileScreen() {
           <MaterialIcons
             name="event"
             size={16}
-            color="#fff"
+            color="#6C2D45"
           />
           <Text style={styles.heroInfoText}>
             {profile.weddingDate || "Wedding date"}

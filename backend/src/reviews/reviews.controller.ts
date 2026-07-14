@@ -33,6 +33,11 @@ export class ReviewsController {
     return this.reviewsService.findAll();
   }
 
+  @Get('mine')
+  findMine(@CurrentUser('sub') userId: string) {
+    return this.reviewsService.findMine(userId);
+  }
+
   @Get('vendor/:vendorId')
   findByVendor(@Param('vendorId') vendorId: string) {
     return this.reviewsService.findByVendor(vendorId);

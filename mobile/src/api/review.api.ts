@@ -1,6 +1,16 @@
 import api from "./axios";
 import { VendorReviewRecord } from "../types/vendorReview";
 
+export type CustomerReviewRecord = VendorReviewRecord & {
+  customerId: string;
+  vendorId: number;
+};
+
+export const getMyReviews = async (): Promise<CustomerReviewRecord[]> => {
+  const response = await api.get<CustomerReviewRecord[]>("/reviews/mine");
+  return response.data;
+};
+
 export const getReviewsByVendor = async (
   vendorId: string,
 ): Promise<VendorReviewRecord[]> => {

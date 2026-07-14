@@ -66,7 +66,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
           <View style={styles.addExpenseHeader}>
             <Text style={styles.addExpenseTitle}>Change Password</Text>
             <TouchableOpacity onPress={resetAndClose}>
-              <MaterialIcons name="close" size={22} color="#333" />
+              <MaterialIcons name="close" size={22} color="#6c2d45" />
             </TouchableOpacity>
           </View>
 
@@ -74,7 +74,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
           <TextInput
             style={styles.fieldInput}
             placeholder="Enter current password"
-            placeholderTextColor="#bbb"
+            placeholderTextColor="#b78a9a"
             secureTextEntry
             value={currentPassword}
             onChangeText={setCurrentPassword}
@@ -84,7 +84,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
           <TextInput
             style={styles.fieldInput}
             placeholder="Enter new password"
-            placeholderTextColor="#bbb"
+            placeholderTextColor="#b78a9a"
             secureTextEntry
             value={newPassword}
             onChangeText={setNewPassword}
@@ -94,7 +94,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
           <TextInput
             style={styles.fieldInput}
             placeholder="Re-enter new password"
-            placeholderTextColor="#bbb"
+            placeholderTextColor="#b78a9a"
             secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}

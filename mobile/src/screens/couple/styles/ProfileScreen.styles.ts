@@ -1,65 +1,66 @@
 import { StyleSheet } from "react-native";
 
+const shadow = {
+  shadowColor: "#FF4D6D",
+  shadowOpacity: 0.07,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+};
+
 export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FAFAFA", paddingTop: 50 },
-
-  heroCard: { marginHorizontal: 20, borderRadius: 20, padding: 20, marginBottom: 16 },
+  container: { flex: 1, backgroundColor: "#FFF5F7", paddingTop: 50 },
+  heroCard: {
+    marginHorizontal: 20, borderRadius: 28, padding: 22, marginBottom: 18,
+    borderWidth: 1, borderColor: "#FF9AAA", shadowColor: "#FF4D6D",
+    shadowOpacity: 0.2, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 6,
+  },
   heroTopRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  avatar: { backgroundColor: "#fff" },
-  heroName: { fontSize: 20, fontWeight: "700", color: "#fff" },
-  heroRole: { fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 2 },
+  avatar: { backgroundColor: "#FFFEF7", borderWidth: 2, borderColor: "rgba(255,255,255,0.9)" },
+  heroName: { fontSize: 22, fontWeight: "800", color: "#3F1D2F" },
+  heroRole: { fontSize: 13, color: "#7A4A5C", marginTop: 2 },
   heroInfoRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  heroInfoText: { fontSize: 13, color: "#fff", marginLeft: 8 },
-  editButton: { marginTop: 12, backgroundColor: "#fff", borderRadius: 10, alignSelf: "flex-start" },
-  editButtonLabel: { color: "#3A6FE8", fontWeight: "700" },
-
+  heroInfoText: { fontSize: 13, color: "#6C2D45", marginLeft: 8 },
+  editButton: { marginTop: 12, backgroundColor: "#FF4D6D", borderRadius: 14, alignSelf: "flex-start" },
+  editButtonLabel: { color: "#FFFFFF", fontWeight: "700" },
   statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginHorizontal: 20,
-    marginBottom: 16,
+    flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between",
+    marginHorizontal: 20, marginBottom: 16,
   },
   statTile: {
-    width: "48%",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 12,
-    elevation: 1,
+    width: "48%", backgroundColor: "rgba(255,255,255,0.94)", borderRadius: 22,
+    padding: 15, marginBottom: 12, borderWidth: 1, borderColor: "#FFB3BF", ...shadow,
   },
   statIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
+    width: 38, height: 38, borderRadius: 14, justifyContent: "center", alignItems: "center", marginBottom: 8,
   },
-  statValue: { fontSize: 18, fontWeight: "700", color: "#333" },
-  statLabel: { fontSize: 12, color: "#666", marginTop: 2 },
-  statSublabel: { fontSize: 11, color: "#999" },
-
+  statValue: { fontSize: 18, fontWeight: "800", color: "#3F1D2F" },
+  statLabel: { fontSize: 12, color: "#6C2D45", marginTop: 2, fontWeight: "600" },
+  statSublabel: { fontSize: 11, color: "#8D6171" },
   sectionRow: { marginHorizontal: 20, marginBottom: 16 },
-  sectionCard: { backgroundColor: "#fff", borderRadius: 16, padding: 16, elevation: 1 },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#C2185B", marginBottom: 12 },
-
-  infoRow: { paddingVertical: 6 },
-  infoLabel: { fontSize: 12, color: "#999" },
-  infoValue: { fontSize: 14, fontWeight: "600", color: "#333", marginTop: 2 },
-  infoValueEmpty: { color: "#bbb", fontWeight: "500" },
-  rowDivider: { marginVertical: 4 },
-
-  quickActionsCard: { backgroundColor: "#fff", borderRadius: 16, elevation: 1 },
-  quickActionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+  sectionCard: {
+    backgroundColor: "rgba(255,255,255,0.94)", borderRadius: 22, padding: 18,
+    borderWidth: 1, borderColor: "#FFB3BF", ...shadow,
   },
-  quickActionLabel: { fontSize: 14, color: "#333", marginLeft: 12, fontWeight: "500" },
-
-  becomeVendorButton: { marginHorizontal: 20, borderRadius: 10, marginBottom: 12 },
-  logoutButton: { marginHorizontal: 20, borderRadius: 10, borderColor: "#E53935" },
+  sectionTitle: { fontSize: 16, fontWeight: "800", color: "#3F1D2F", marginBottom: 12 },
+  infoRow: { paddingVertical: 7 },
+  infoLabel: { fontSize: 12, color: "#8D6171" },
+  infoValue: { fontSize: 14, fontWeight: "600", color: "#3F1D2F", marginTop: 2 },
+  infoValueEmpty: { color: "#B8919F", fontWeight: "500" },
+  rowDivider: { marginVertical: 4, backgroundColor: "#FFCAD3" },
+  quickActionsCard: {
+    backgroundColor: "rgba(255,255,255,0.94)", borderRadius: 22,
+    borderWidth: 1, borderColor: "#FFB3BF", overflow: "hidden", ...shadow,
+  },
+  quickActionRow: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    paddingVertical: 15, paddingHorizontal: 16,
+  },
+  quickActionLabel: { fontSize: 14, color: "#3F1D2F", marginLeft: 12, fontWeight: "600" },
+  becomeVendorButton: {
+    marginHorizontal: 20, borderRadius: 14, marginBottom: 12, backgroundColor: "#FF4D6D",
+  },
+  logoutButton: {
+    marginHorizontal: 20, borderRadius: 14, borderColor: "#E63B5F", backgroundColor: "#FFFEF7",
+  },
 });

@@ -63,9 +63,15 @@ export default function BookingScreen() {
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadBookings} tintColor="#FF4D6D" />}
       >
         {/* Hero */}
-        <LinearGradient colors={["#6366F1", "#8B5CF6"]} style={styles.heroCard}>
+        <LinearGradient
+          colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+          locations={[0, 0.28, 0.68, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
           <View style={styles.heroBadge}>
-            <MaterialIcons name="auto-awesome" size={14} color="#fff" />
+            <MaterialIcons name="auto-awesome" size={14} color="#6C2D45" />
             <Text style={styles.heroBadgeText}>Booking Management</Text>
           </View>
 
@@ -79,7 +85,7 @@ export default function BookingScreen() {
             onPress={() => navigation.navigate("Vendors", { screen: "VendorList" })}
           >
             <Text style={styles.bookMoreButtonText}>Book More Vendors</Text>
-            <MaterialIcons name="arrow-forward" size={16} color="#6366F1" />
+            <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </LinearGradient>
 
@@ -87,32 +93,32 @@ export default function BookingScreen() {
         <View style={styles.statsGrid}>
           <BookingStatCard
             icon="event"
-            iconBg="#E3ECFF"
-            iconColor="#6366F1"
+            iconBg="#FFE6EB"
+            iconColor="#FF4D6D"
             label="Total Bookings"
             value={totalCount}
             sublabel="All vendor bookings"
           />
           <BookingStatCard
             icon="schedule"
-            iconBg="#FEF6E0"
-            iconColor="#D9A404"
+            iconBg="#FFE6EB"
+            iconColor="#FF4D6D"
             label="Upcoming"
             value={upcomingCount}
             sublabel="Scheduled bookings"
           />
           <BookingStatCard
             icon="check-circle"
-            iconBg="#E8F8F0"
-            iconColor="#22B07D"
+            iconBg="#FFE6EB"
+            iconColor="#FF4D6D"
             label="Completed"
             value={completedCount}
             sublabel="Successfully completed"
           />
           <BookingStatCard
             icon="cancel"
-            iconBg="#FDECEC"
-            iconColor="#E53935"
+            iconBg="#FFE6EB"
+            iconColor="#FF4D6D"
             label="Cancelled"
             value={cancelledCount}
             sublabel="Cancelled bookings"
@@ -130,9 +136,9 @@ export default function BookingScreen() {
               <Text style={styles.sectionSubtitle}>Organize and track all your vendor bookings.</Text>
             </View>
             <TouchableOpacity style={styles.sortPill}>
-              <MaterialIcons name="tune" size={14} color="#666" />
+              <MaterialIcons name="tune" size={14} color="#8D6171" />
               <Text style={styles.sortPillText}>Sort: Latest</Text>
-              <MaterialIcons name="arrow-drop-down" size={16} color="#666" />
+              <MaterialIcons name="arrow-drop-down" size={16} color="#8D6171" />
             </TouchableOpacity>
           </View>
         </View>

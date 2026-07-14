@@ -15,9 +15,9 @@ export function CityPicker({ selectedCity, onSelect }: Props) {
   return (
     <>
       <TouchableOpacity style={styles.cityPill} onPress={() => setVisible(true)}>
-        <MaterialIcons name="location-on" size={16} color="#333" />
+        <MaterialIcons name="location-on" size={16} color="#FF4D6D" />
         <Text style={styles.cityPillText}>{selectedCity}</Text>
-        <MaterialIcons name="arrow-drop-down" size={20} color="#333" />
+        <MaterialIcons name="arrow-drop-down" size={20} color="#8D6171" />
       </TouchableOpacity>
 
       <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
@@ -44,7 +44,7 @@ export function CityPicker({ selectedCity, onSelect }: Props) {
                     {item}
                   </Text>
                   {item === selectedCity && (
-                    <MaterialIcons name="check" size={18} color="#C2185B" />
+                    <MaterialIcons name="check" size={18} color="#FF4D6D" />
                   )}
                 </TouchableOpacity>
               )}

@@ -8,6 +8,7 @@ import {
   VENDOR_BADGE_COLORS,
   VENDOR_BADGE_LABELS,
 } from "@/constants/vendor-badges";
+import { isSupportedImageSrc } from "@/lib/image-url";
 
 interface Props {
   vendors: StoredVendor[];
@@ -86,7 +87,7 @@ export default function VendorTable({
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-4">
                     <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-                      {vendor.profileImage ? (
+                      {isSupportedImageSrc(vendor.profileImage) ? (
                         <Image
                           src={vendor.profileImage}
                           alt={vendor.businessName}

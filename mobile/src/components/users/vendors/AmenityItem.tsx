@@ -11,7 +11,7 @@ type Props = {
 export function AmenityItem({ icon, label }: Props) {
   return (
     <View style={styles.amenityItem}>
-      <MaterialIcons name={icon} size={18} color="#C2185B" />
+      <MaterialIcons name={icon} size={18} color="#FF4D6D" />
       <Text style={styles.amenityText}>{label}</Text>
     </View>
   );

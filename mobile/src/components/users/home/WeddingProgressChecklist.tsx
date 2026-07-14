@@ -1,22 +1,28 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { styles } from "../../../screens/couple/styles/HomeScreen.styles";
 
-// TODO: replace with categories actually booked/confirmed by the user,
-// derived from getBudgetSummary() or a dedicated getWeddingProgress() endpoint —
-// each category should be marked "done" once a vendor in that category is booked
 const VENDOR_CATEGORIES = [
-  { key: "Venue", done: false },
-  { key: "Photographer", done: false },
-  { key: "Decorator", done: false },
-  { key: "Makeup", done: false },
-  { key: "Caterer", done: false },
-  { key: "DJ", done: false },
+  { key: "Venue", aliases: ["venue"] },
+  { key: "Photography", aliases: ["photography", "photographer"] },
+  { key: "Decorator", aliases: ["decorator", "decoration"] },
+  { key: "Makeup", aliases: ["makeup", "makeup artist"] },
+  { key: "Caterer", aliases: ["caterer", "catering"] },
+  { key: "DJ", aliases: ["dj"] },
 ];
 
-export function WeddingProgressChecklist() {
-  const doneCount = VENDOR_CATEGORIES.filter((c) => c.done).length;
+type Props = {
+  bookedCategories: string[];
+};
+
+export function WeddingProgressChecklist({ bookedCategories }: Props) {
+  const normalizedBookings = bookedCategories.map((category) => category.trim().toLowerCase());
+  const categories = VENDOR_CATEGORIES.map((category) => ({
+    ...category,
+    done: category.aliases.some((alias) => normalizedBookings.includes(alias)),
+  }));
+  const doneCount = categories.filter((category) => category.done).length;
   const percent = Math.round((doneCount / VENDOR_CATEGORIES.length) * 100);
 
   return (
@@ -29,21 +35,21 @@ export function WeddingProgressChecklist() {
         <Text style={styles.weddingProgressPercent}>{percent}%</Text>
       </View>
       <View style={styles.progressBarTrack}>
-        <View style={[styles.progressBarFill, { width: `${percent}%`, backgroundColor: "#C2185B" }]} />
+        <View style={[styles.progressBarFill, { width: `${percent}%`, backgroundColor: "#ff4d6d" }]} />
       </View>
 
       <View style={{ marginTop: 14 }}>
-        {VENDOR_CATEGORIES.map((cat) => (
-          <TouchableOpacity key={cat.key} style={styles.weddingProgressItem}>
+        {categories.map((cat) => (
+          <View key={cat.key} style={styles.weddingProgressItem}>
             <MaterialIcons
               name={cat.done ? "check-circle" : "radio-button-unchecked"}
               size={20}
-              color={cat.done ? "#C2185B" : "#ccc"}
+              color={cat.done ? "#ff4d6d" : "#ffcad3"}
             />
             <Text style={[styles.weddingProgressItemText, cat.done && styles.weddingProgressItemDone]}>
               {cat.key}
             </Text>
-          </TouchableOpacity>
+          </View>
         ))}
       </View>
     </View>

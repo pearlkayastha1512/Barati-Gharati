@@ -68,7 +68,7 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
           <View style={styles.addExpenseHeader}>
             <Text style={styles.addExpenseTitle}>Add Expense</Text>
             <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={22} color="#333" />
+              <MaterialIcons name="close" size={22} color="#3F1D2F" />
             </TouchableOpacity>
           </View>
 
@@ -77,7 +77,7 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
             <TextInput
               style={styles.fieldInput}
               placeholder="Invitation Cards"
-              placeholderTextColor="#bbb"
+              placeholderTextColor="#B8919F"
               value={title}
               onChangeText={setTitle}
             />
@@ -85,8 +85,8 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
             <Text style={styles.fieldLabel}>Category</Text>
             <TouchableOpacity style={styles.fieldInput} onPress={() => setCategoryPickerOpen((v) => !v)}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: "#333" }}>{category}</Text>
-                <MaterialIcons name={categoryPickerOpen ? "arrow-drop-up" : "arrow-drop-down"} size={20} color="#666" />
+                <Text style={{ color: "#3F1D2F" }}>{category}</Text>
+                <MaterialIcons name={categoryPickerOpen ? "arrow-drop-up" : "arrow-drop-down"} size={20} color="#8D6171" />
               </View>
             </TouchableOpacity>
             {categoryPickerOpen && (
@@ -100,7 +100,7 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
                       setCategoryPickerOpen(false);
                     }}
                   >
-                    <Text style={{ color: cat === category ? "#C2185B" : "#333" }}>{cat}</Text>
+                    <Text style={{ color: cat === category ? "#FF4D6D" : "#3F1D2F" }}>{cat}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -110,7 +110,7 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
             <TextInput
               style={styles.fieldInput}
               placeholder="0"
-              placeholderTextColor="#bbb"
+              placeholderTextColor="#B8919F"
               keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}
@@ -119,8 +119,8 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
             <Text style={styles.fieldLabel}>Expense Date</Text>
             <TouchableOpacity style={styles.fieldInput} onPress={() => setDatePickerOpen(true)}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: "#333" }}>{formatDate(date)}</Text>
-                <MaterialIcons name="calendar-today" size={18} color="#666" />
+                <Text style={{ color: "#3F1D2F" }}>{formatDate(date)}</Text>
+                <MaterialIcons name="calendar-today" size={18} color="#FF4D6D" />
               </View>
             </TouchableOpacity>
             {datePickerOpen && (
@@ -137,7 +137,7 @@ export function AddExpenseModal({ visible, onClose, onSubmit }: Props) {
             <TextInput
               style={[styles.fieldInput, { height: 80, textAlignVertical: "top" }]}
               placeholder="Enter any additional notes..."
-              placeholderTextColor="#bbb"
+              placeholderTextColor="#B8919F"
               multiline
               value={note}
               onChangeText={setNote}

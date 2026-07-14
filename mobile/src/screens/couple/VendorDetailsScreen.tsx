@@ -140,11 +140,11 @@ const handleSendInquiry = async () => {
   
 
   if (vendorLoading) {
-    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color="#C2185B" /></View></SafeAreaView>;
+    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color="#FF4D6D" /></View></SafeAreaView>;
   }
 
   if (vendorError || !vendorData) {
-    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}><Text style={{ color: "#C2185B", textAlign: "center" }}>{vendorError ?? "Vendor not found."}</Text><TouchableOpacity onPress={() => navigation.goBack()}><Text style={{ marginTop: 16, fontWeight: "700" }}>Go Back</Text></TouchableOpacity></View></SafeAreaView>;
+    return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}><Text style={{ color: "#E63B5F", textAlign: "center" }}>{vendorError ?? "Vendor not found."}</Text><TouchableOpacity onPress={() => navigation.goBack()}><Text style={{ marginTop: 16, fontWeight: "700", color: "#FF4D6D" }}>Go Back</Text></TouchableOpacity></View></SafeAreaView>;
   }
 
   return (
@@ -152,7 +152,7 @@ const handleSendInquiry = async () => {
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         <ImageBackground source={{ uri: vendor.image }} style={styles.heroImage}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={22} color="#333" />
+          <MaterialIcons name="arrow-back" size={22} color="#3F1D2F" />
         </TouchableOpacity>
 
         <View style={styles.heroOverlay}>
@@ -181,7 +181,7 @@ const handleSendInquiry = async () => {
               <MaterialIcons
                 name={favorited ? "favorite" : "favorite-border"}
                 size={16}
-                color={favorited ? "#C2185B" : "#333"}
+                color={favorited ? "#FF4D6D" : "#3F1D2F"}
               />
               <Text style={[styles.saveButtonText, favorited && styles.saveButtonTextActive]}>
                 {favorited ? "Saved" : "Save"}
@@ -248,7 +248,7 @@ const handleSendInquiry = async () => {
               <Text style={styles.myReviewLabel}>Your Review</Text>
               <View style={styles.myReviewActions}>
                 <TouchableOpacity onPress={() => setReviewModalVisible(true)} style={styles.myReviewIconButton}>
-                  <MaterialIcons name="edit" size={16} color="#666" />
+                  <MaterialIcons name="edit" size={16} color="#8D6171" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleDeleteReview} style={styles.myReviewIconButton}>
                   <MaterialIcons name="delete-outline" size={16} color="#E53935" />
@@ -274,7 +274,7 @@ const handleSendInquiry = async () => {
 
       {/* Send Inquiry — quick contact CTA above Book Now */}
       <TouchableOpacity style={styles.sendInquiryButton} onPress={handleSendInquiry}>
-        <MaterialIcons name="chat-bubble-outline" size={18} color="#C2185B" />
+        <MaterialIcons name="chat-bubble-outline" size={18} color="#FF4D6D" />
         <Text style={styles.sendInquiryButtonText}>Send Inquiry</Text>
       </TouchableOpacity>
 

@@ -300,17 +300,15 @@ export default function LoginScreen() {
         StackActions.replace("Couple"),
       );
     } catch (error: any) {
-  console.log(
-    "ERROR =>",
-    JSON.stringify(error?.response?.data, null, 2)
-  );
+      const isNetworkError = !error?.response;
 
-  Alert.alert(
-    "Error",
-    error?.response?.data?.message ??
-      "Something went wrong."
-  );
-}finally {
+      Alert.alert(
+        "Login Failed",
+        isNetworkError
+          ? "Backend server se connect nahi ho pa raha. Please check that the backend is running and your phone and laptop are on the same Wi-Fi."
+          : error.response.data?.message ?? "Something went wrong.",
+      );
+    } finally {
       setLoading(false);
     }
   };
