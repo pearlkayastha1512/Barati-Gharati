@@ -157,29 +157,23 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   startConversation: async (vendorId, vendorName, vendorImage) => {
     const existing = get().conversations.find((c) => c.vendorId === vendorId);
     if (existing) {
-      console.log("Found existing local conversation:", existing.id);
       return existing.id;
     }
 
-    // TEMPORARY: create a conversation locally instead of hitting the backend,
-    // since real vendors don't exist in the DB yet. Remove this once vendor
-    // registration is live and swap back to the real createConversation() call.
-    const localConversation: Conversation = {
-      id: `local-${vendorId}-${Date.now()}`,
-      vendorId,
-      vendorUserId: vendorId,
-      vendorName: vendorName ?? "Vendor",
-      vendorAvatar: vendorImage ?? "https://i.pravatar.cc/100",
-      lastMessage: "",
-      lastMessageTime: "",
-      messages: [],
-    };
+    const created = await createConversation(vendorId);
+    const data = await getConversations();
+    const mapped = data.map(mapConversation);
 
-    set((state) => ({
-      conversations: [...state.conversations, localConversation],
-    }));
+    set({ conversations: mapped });
 
-    console.log("Created LOCAL conversation:", localConversation.id);
-    return localConversation.id;
+    const conversation = mapped.find((item) => item.id === created.id);
+
+    if (!conversation) {
+      throw new Error(
+        `Conversation with ${vendorName ?? "vendor"} could not be loaded.`,
+      );
+    }
+
+    return conversation.id;
   },
 }));

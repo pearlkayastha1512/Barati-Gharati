@@ -126,6 +126,18 @@
 import api from "@/lib/axios";
 import { Service } from "@/types/service";
 
+function getErrorMessage(error: any, fallback: string) {
+  const message = error?.response?.data?.message;
+
+  if (Array.isArray(message)) {
+    return message.join(" ");
+  }
+
+  return typeof message === "string" && message.trim()
+    ? message
+    : fallback;
+}
+
 export async function getServicesApi() {
   try {
     const { data } = await api.get("/packages");
@@ -217,6 +229,42 @@ export async function createServiceApi(
   }
 }
 
+export async function uploadServiceImageApi(
+  file: File
+): Promise<{
+  ok: boolean;
+  image?: string;
+  error?: string;
+}> {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const { data } = await api.post(
+      "/packages/upload-image",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return {
+      ok: true,
+      image: data?.image,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(
+        error,
+        "Unable to upload service image."
+      ),
+    };
+  }
+}
+
 export async function updateServiceApi(
   service: Service
 ) {
@@ -266,5 +314,4 @@ export async function deleteServiceApi(
     };
   }
 }
-
 

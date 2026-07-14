@@ -9,10 +9,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
 import { VendorStatus } from '@prisma/client';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class PackagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cloudinary: CloudinaryService,
+  ) {}
 
   private mapService(pkg: any) {
     return {
@@ -45,6 +49,7 @@ export class PackagesService {
       reviews: pkg.reviews.length,
 
       image:
+        pkg.image ||
         pkg.vendor.logoUrl ||
         pkg.vendor.coverImage ||
         'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800',
@@ -107,6 +112,8 @@ console.log("===================================");
 
         description: dto.description,
 
+        image: dto.image,
+
         price: dto.price,
 
         categoryId: category.id,
@@ -126,6 +133,42 @@ console.log("===================================");
     });
 
     return this.mapService(pkg);
+  }
+
+  async uploadImage(
+    userId: string,
+    file: Express.Multer.File,
+  ) {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: {
+        userId,
+      },
+    });
+
+    if (!vendor) {
+      throw new ForbiddenException(
+        'Only vendors can upload service images',
+      );
+    }
+
+    if (vendor.status !== VendorStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Vendor is not approved by admin',
+      );
+    }
+
+    if (!file) {
+      throw new BadRequestException('Service image is required');
+    }
+
+    const uploaded = (await this.cloudinary.uploadImage(file)) as {
+      secure_url: string;
+    };
+
+    return {
+      success: true,
+      image: uploaded.secure_url,
+    };
   }
 
   async findAll(categoryId?: string) {
@@ -292,6 +335,8 @@ console.log("===================================");
         title: dto.name,
 
         description: dto.description,
+
+        image: dto.image,
 
         price: dto.price,
 
@@ -573,7 +618,6 @@ console.log("===================================");
 //   );
 // }
 // }
-
 
 
 

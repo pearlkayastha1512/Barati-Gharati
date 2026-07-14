@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -18,6 +19,7 @@ import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorChatbotScreen from "../screens/vendor/VendorChatbotScreen";
 import VendorEditProfileScreen from "../screens/vendor/VendorEditProfileScreen";
 import UpgradePlanScreen from "../screens/vendor/UpgradePlanScreen";
+import VendorChatScreen from "../screens/vendor/VendorChatScreen";
 
 import { COLORS } from "../constants/theme";
 
@@ -81,5 +83,6 @@ export default function VendorNavigator() {
   name="VendorEditProfile"
   component={VendorEditProfileScreen}
 />
+  <Stack.Screen name="VendorChat" component={VendorChatScreen} />
 </Stack.Navigator>
   );}

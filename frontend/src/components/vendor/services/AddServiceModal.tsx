@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 import { useServiceStore } from "@/store/serviceStore";
 import { VENDOR_CATEGORIES } from "@/constants/categories";
+import { uploadServiceImageApi } from "@/services/api/service.api";
 
 interface AddServiceModalProps {
   open: boolean;
@@ -36,6 +37,9 @@ export default function AddServiceModal({
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -44,10 +48,17 @@ export default function AddServiceModal({
 
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
-
-    setImage(url);
+    setImageFile(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
   };
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
 
   useEffect(() => {
     if (!open) return;
@@ -71,10 +82,13 @@ export default function AddServiceModal({
       // NEW
       setImage("");
     }
+
+    setImageFile(null);
+    setImagePreviewUrl("");
   }, [open, selectedService]);
 
   const handleSave = async () => {
-    if (!name || !category || !description || !duration || !price || !image) {
+    if (!name || !category || !description || !duration || !price || (!image && !imageFile)) {
       toast.error("Please fill all fields.");
       return;
     }
@@ -84,59 +98,80 @@ export default function AddServiceModal({
       return;
     }
 
-    if (selectedService) {
-      const success = await updateExistingService({
-        ...selectedService,
-        name,
-        category,
-        description,
-        duration,
-        price: Number(price),
-        image,
-        includes: selectedService.includes ?? [],
-      });
+    setIsSaving(true);
 
-      if (!success) {
-        toast.error("Unable to update service.");
-        return;
+    try {
+      let savedImage = image;
+
+      if (imageFile) {
+        const upload = await uploadServiceImageApi(imageFile);
+
+        if (!upload.ok || !upload.image) {
+          toast.error(upload.error ?? "Unable to upload service image.");
+          return;
+        }
+
+        savedImage = upload.image;
       }
 
-      toast.success("Service updated.");
-    } else {
-      const success = await addService({
-        id: "",
-        vendorId: 0,
-        name,
-        category,
-        description,
-        duration,
-        price: Number(price),
-        rating: 5,
-        reviews: 0,
-        image,
-        includes: [],
-        status: "active",
-        createdAt: "",
-        updatedAt: "",
-      });
+      if (selectedService) {
+        const success = await updateExistingService({
+          ...selectedService,
+          name,
+          category,
+          description,
+          duration,
+          price: Number(price),
+          image: savedImage,
+          includes: selectedService.includes ?? [],
+        });
 
-      if (!success) {
-        toast.error("Unable to create service.");
-        return;
+        if (!success) {
+          toast.error("Unable to update service.");
+          return;
+        }
+
+        toast.success("Service updated.");
+      } else {
+        const success = await addService({
+          id: "",
+          vendorId: 0,
+          name,
+          category,
+          description,
+          duration,
+          price: Number(price),
+          rating: 5,
+          reviews: 0,
+          image: savedImage,
+          includes: [],
+          status: "active",
+          createdAt: "",
+          updatedAt: "",
+        });
+
+        if (!success) {
+          toast.error("Unable to create service.");
+          return;
+        }
+
+        toast.success("Service created.");
       }
 
-      toast.success("Service created.");
+      await loadMyServices();
+      setName("");
+      setCategory("");
+      setDescription("");
+      setDuration("");
+      setPrice("");
+      setImage("");
+      setImageFile(null);
+      setImagePreviewUrl("");
+      setSelectedService(null);
+      onClose();
+    } finally {
+      setIsSaving(false);
     }
-
-    await loadMyServices();
-    setName("");
-    setCategory("");
-    setDescription("");
-    setDuration("");
-    setPrice("");
-    setImage("");
-    setSelectedService(null);
-    onClose();
   };
 
 
@@ -272,10 +307,10 @@ export default function AddServiceModal({
 
   <div className="rounded-2xl border-2 border-dashed border-gray-300 p-5">
 
-    {image ? (
+    {imagePreviewUrl || image ? (
       <div className="relative mx-auto h-56 w-full overflow-hidden rounded-xl">
         <img
-          src={image}
+          src={imagePreviewUrl || image}
           alt="Preview"
           className="h-full w-full object-cover"
         />
@@ -290,6 +325,7 @@ export default function AddServiceModal({
       type="file"
       accept="image/*"
       onChange={handleImageChange}
+      disabled={isSaving}
       className="mt-5 block w-full text-sm"
     />
 
@@ -311,9 +347,12 @@ export default function AddServiceModal({
 
           <button
             onClick={handleSave}
-            className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white hover:bg-[#e4005a]"
+            disabled={isSaving}
+            className="rounded-xl bg-[#e4005a] px-6 py-3 font-semibold text-white hover:bg-[#e4005a] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {selectedService
+            {isSaving
+              ? "Uploading..."
+              : selectedService
               ? "Update Service"
               : "Save Service"}
           </button>

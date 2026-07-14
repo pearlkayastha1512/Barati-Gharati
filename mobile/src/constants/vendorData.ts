@@ -1,5 +1,7 @@
 export type Vendor = {
   id: string;
+  backendId?: string;
+  userId?: string;
   name: string;
   category: string;
   rating: string;

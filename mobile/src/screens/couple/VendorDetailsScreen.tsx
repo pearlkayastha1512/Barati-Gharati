@@ -100,21 +100,49 @@ const vendorPackages = vendor.packages ?? [];
   const startConversation = useMessagesStore((state) => state.startConversation);
 
  const handleMessageVendor = async () => {
-  const conversationId = await startConversation(vendor.id, vendor.name, vendor.image);
-  if (!conversationId) {
-    Alert.alert("Error", "Couldn't start conversation. Please try again.");
-    return;
+  try {
+    const conversationId = await startConversation(
+      vendor.backendId ?? vendor.id,
+      vendor.name,
+      vendor.image,
+    );
+    navigation.getParent()?.navigate("Chat", { conversationId });
+  } catch (error: any) {
+    const responseMessage = error?.response?.data?.message;
+    const message = Array.isArray(responseMessage)
+      ? responseMessage.join(" ")
+      : responseMessage;
+
+    Alert.alert(
+      "Chat unavailable",
+      typeof message === "string" && message.trim()
+        ? message
+        : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
+    );
   }
-  navigation.getParent()?.navigate("Chat", { conversationId });
 };
 
 const handleSendInquiry = async () => {
-  const conversationId = await startConversation(vendor.id, vendor.name, vendor.image);
-  if (!conversationId) {
-    Alert.alert("Error", "Couldn't start conversation. Please try again.");
-    return;
+  try {
+    const conversationId = await startConversation(
+      vendor.backendId ?? vendor.id,
+      vendor.name,
+      vendor.image,
+    );
+    navigation.getParent()?.navigate("Chat", { conversationId });
+  } catch (error: any) {
+    const responseMessage = error?.response?.data?.message;
+    const message = Array.isArray(responseMessage)
+      ? responseMessage.join(" ")
+      : responseMessage;
+
+    Alert.alert(
+      "Chat unavailable",
+      typeof message === "string" && message.trim()
+        ? message
+        : "Conversation start nahi ho saki. Advance payment aur admin approval check karein.",
+    );
   }
-  navigation.getParent()?.navigate("Chat", { conversationId });
 };
 
   const handleDeleteReview = () => {
