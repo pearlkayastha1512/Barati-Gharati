@@ -193,7 +193,16 @@ model Package {
   id          String   @id @default(uuid())
   title       String
   description String?
+<<<<<<< HEAD
   price       Decimal  @db.Decimal(10, 2)
+=======
+  image       String?
+  price       Decimal   @db.Decimal(10, 2)
+  vendorId    String
+  categoryId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+>>>>>>> 00c9715 (Corrected some bugs)
   inclusions  String[]
 
   vendorId String

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
   Query,
 } from '@nestjs/common';
 
@@ -14,7 +16,10 @@ import {
   ApiBearerAuth,
   ApiTags,
   ApiQuery,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { Role } from '@prisma/client';
 
@@ -27,6 +32,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { imageFileFilter } from '../common/file-filter';
 
 @ApiTags('Packages')
 @Controller('packages')
@@ -93,6 +99,37 @@ export class PackagesController {
     return this.packagesService.create(user.sub, dto);
   }
 
+  @Post('upload-image')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+      fileFilter: imageFileFilter,
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  uploadImage(
+    @CurrentUser() user: { sub: string },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.packagesService.uploadImage(user.sub, file);
+  }
+
   @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -124,4 +161,3 @@ export class PackagesController {
   }
 
 }
-

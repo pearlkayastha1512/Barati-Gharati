@@ -34,8 +34,10 @@ export const getConversations = async (): Promise<BackendConversation[]> => {
   return response.data;
 };
 
-export const createConversation = async (vendorId: string) => {
-  const response = await api.post("/chat/conversation", { vendorId });
+export const createConversation = async (
+  vendorId: string,
+): Promise<{ id: string }> => {
+  const response = await api.post<{ id: string }>("/chat/conversation", { vendorId });
   return response.data;
 };
 

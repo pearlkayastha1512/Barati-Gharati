@@ -4,6 +4,7 @@ import {
   getMessages,
   sendMessage,
 } from "../api/vendorChatDetailApi";
+import { AxiosError } from "axios";
 
 interface VendorChatDetailState {
   messages: ChatMessage[];
@@ -18,7 +19,7 @@ interface VendorChatDetailState {
     conversationId: string,
     receiverId: string,
     message: string
-  ) => Promise<void>;
+  ) => Promise<{ success: boolean; error?: string }>;
 
   addIncomingMessage: (
     message: ChatMessage
@@ -34,6 +35,7 @@ export const useVendorChatDetailStore =
     fetchMessages: async (conversationId) => {
       set({
         loading: true,
+        messages: [],
       });
 
       try {
@@ -58,19 +60,44 @@ export const useVendorChatDetailStore =
       receiverId,
       message
     ) => {
-      const newMessage =
-        await sendMessage(
+      try {
+        const newMessage = await sendMessage(
           conversationId,
           receiverId,
           message
         );
 
-      set({
-        messages: [
-          ...get().messages,
-          newMessage,
-        ],
-      });
+        set({
+          messages: get().messages.some((item) => item.id === newMessage.id)
+            ? get().messages
+            : [...get().messages, newMessage],
+        });
+
+        return { success: true };
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          const responseMessage = error.response?.data?.message;
+          const message = Array.isArray(responseMessage)
+            ? responseMessage.join(" ")
+            : responseMessage;
+
+          if (typeof message === "string" && message.trim()) {
+            return { success: false, error: message };
+          }
+
+          if (!error.response) {
+            return {
+              success: false,
+              error: "Backend server se connection nahi ho pa raha hai.",
+            };
+          }
+        }
+
+        return {
+          success: false,
+          error: "Message send nahi ho saka. Please try again.",
+        };
+      }
     },
 
     addIncomingMessage: (message) => {

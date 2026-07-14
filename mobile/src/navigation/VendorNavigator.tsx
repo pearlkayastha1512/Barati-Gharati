@@ -17,7 +17,11 @@ import AnalyticsScreen from "../screens/vendor/VendorAnalyticsScreen";
 import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorChatbotScreen from "../screens/vendor/VendorChatbotScreen";
 import VendorEditProfileScreen from "../screens/vendor/VendorEditProfileScreen";
+<<<<<<< HEAD
 import UpgradePlanScreen from "../screens/vendor/UpgradePlanScreen";
+=======
+import VendorChatScreen from "../screens/vendor/VendorChatScreen";
+>>>>>>> 00c9715 (Corrected some bugs)
 
 import { COLORS } from "../constants/theme";
 
@@ -81,5 +85,6 @@ export default function VendorNavigator() {
   name="VendorEditProfile"
   component={VendorEditProfileScreen}
 />
+  <Stack.Screen name="VendorChat" component={VendorChatScreen} />
 </Stack.Navigator>
   );}

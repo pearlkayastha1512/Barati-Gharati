@@ -100,6 +100,8 @@ import { Vendor } from "../constants/vendorData";
 
 type BackendVendor = {
   id: number;
+  backendId?: string;
+  userId?: string;
   name: string;
   category: string;
   city: string;
@@ -118,6 +120,8 @@ type VendorApiResponse = { success: boolean; data: BackendVendor };
 
 const normalizeVendor = (vendor: BackendVendor): Vendor => ({
   id: String(vendor.id),
+  backendId: vendor.backendId,
+  userId: vendor.userId,
   name: vendor.name,
   category: vendor.category,
   rating: String(vendor.rating),
@@ -362,5 +366,4 @@ export const getVendorDashboard = async () => {
 
   return response.data;
 };
-
 
