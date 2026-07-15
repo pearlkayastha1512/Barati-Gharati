@@ -1,6 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AboutUsScreen from "../screens/couple/AboutUsScreen";
+import PrivacyPolicyScreen from "../screens/couple/PrivacyPolicyScreen";
+import TermsConditionsScreen from "../screens/couple/TermsConditionsScreen";
+import RefundPolicyScreen from "../screens/couple/RefundPolicyScreen";
 
 import HomeScreen from "../screens/couple/HomeScreen";
 import VendorStackNavigator from "./VendorStackNavigator";
@@ -78,6 +82,10 @@ export default function CoupleNavigator() {
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="Wishlist" component={WishlistScreen} />  
       <Stack.Screen name="BookingDetails" component={BookingDetailsScreen} />
+      <Stack.Screen name="AboutUs" component={AboutUsScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
+      <Stack.Screen name="RefundPolicy" component={RefundPolicyScreen} />
       
     </Stack.Navigator>
   );

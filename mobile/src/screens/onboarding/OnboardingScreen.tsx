@@ -8,6 +8,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 
 import styles from "./Onboarding.styles";
@@ -48,8 +49,13 @@ export default function OnboardingScreen() {
     });
   };
 
+  const isLastSlide = currentIndex === onboardingData.length - 1;
+
   return (
     <View style={styles.container}>
+      <View style={styles.blobTopRight} />
+      <View style={styles.blobBottomLeft} />
+
       <FlatList
         ref={flatListRef}
         data={onboardingData}
@@ -60,7 +66,9 @@ export default function OnboardingScreen() {
         onMomentumScrollEnd={onScroll}
         renderItem={({ item }) => (
           <View style={styles.slide}>
-            <Image source={item.image} style={styles.image} />
+            <View style={styles.imageCard}>
+              <Image source={item.image} style={styles.image} />
+            </View>
 
             <Text style={styles.title}>{item.title}</Text>
 
@@ -85,33 +93,37 @@ export default function OnboardingScreen() {
         </View>
 
         <View style={styles.buttonRow}>
-          {currentIndex !== onboardingData.length - 1 ? (
+          {!isLastSlide ? (
             <>
-              <TouchableOpacity onPress={skip}>
+              <TouchableOpacity onPress={skip} style={styles.skipButton}>
                 <Text style={styles.skipText}>Skip</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.nextButton}
-                onPress={nextSlide}
-              >
-                <Text style={styles.nextText}>Next</Text>
+              <TouchableOpacity onPress={nextSlide} activeOpacity={0.9}>
+                <LinearGradient
+                  colors={["#E01267", "#F5A623"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.nextButton}
+                >
+                  <Text style={styles.nextText}>Next</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </>
           ) : (
             <TouchableOpacity
-              style={[
-                styles.nextButton,
-                {
-                  width: "100%",
-                  alignItems: "center",
-                },
-              ]}
               onPress={nextSlide}
+              activeOpacity={0.9}
+              style={{ width: "100%" }}
             >
-              <Text style={styles.nextText}>
-                Get Started
-              </Text>
+              <LinearGradient
+                colors={["#E01267", "#F5A623"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.nextButton, styles.nextButtonFull]}
+              >
+                <Text style={styles.nextText}>Get Started</Text>
+              </LinearGradient>
             </TouchableOpacity>
           )}
         </View>

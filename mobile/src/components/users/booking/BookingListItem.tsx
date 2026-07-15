@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system/legacy";
@@ -7,6 +7,7 @@ import * as Sharing from "expo-sharing";
 import { Booking } from "../../../types/booking";
 import { styles } from "../../../screens/couple/styles/BookingScreen.styles";
 import { downloadBookingInvoice } from "../../../api/bookings.api";
+import { getVendorById } from "../../../api/vendor.api";
 
 const STATUS_COLORS: Record<Booking["bookingStatus"], { bg: string; text: string }> = {
   pending: { bg: "#FFF3B0", text: "#6C2D45" },
@@ -20,6 +21,8 @@ const STATUS_COLORS: Record<Booking["bookingStatus"], { bg: string; text: string
   rejected: { bg: "#FFE6EB", text: "#E63B5F" },
   cancelled: { bg: "#FFE6EB", text: "#E63B5F" },
 };
+
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800";
 
 const prettyStatus = (value: string) =>
   value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -61,6 +64,22 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export function BookingListItem({ booking, onPress, onPay }: { booking: Booking; onPress: () => void; onPay: (mode: "advance" | "remaining") => void }) {
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [vendorImage, setVendorImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getVendorById(String(booking.vendorId))
+      .then((vendor) => {
+        if (active && vendor?.image) setVendorImage(vendor.image);
+      })
+      .catch(() => {
+        // silently fall back to the placeholder below if the vendor lookup fails
+      });
+    return () => {
+      active = false;
+    };
+  }, [booking.vendorId]);
+
   const statusStyle = STATUS_COLORS[booking.bookingStatus];
   const canPayAdvance = booking.advancePaid <= 0 && booking.bookingStatus === "pending" && booking.paymentStatus !== "paid";
   const canPayRemaining = booking.bookingStatus === "payment_approved" && booking.remainingAmount > 0;
@@ -113,7 +132,7 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
   return (
     <View style={styles.bookingCard}>
       <Image
-        source={{ uri: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800" }}
+        source={{ uri: vendorImage ?? FALLBACK_IMAGE }}
         style={styles.bookingHeroImage}
       />
 

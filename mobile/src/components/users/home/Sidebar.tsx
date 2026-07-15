@@ -40,10 +40,12 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 // Legal/info links — separated visually from the main nav list
+// Legal/info links — separated visually from the main nav list
 const INFO_ITEMS: NavItem[] = [
   { icon: "info-outline", label: "About Us", route: "AboutUs" },
   { icon: "privacy-tip", label: "Privacy Policy", route: "PrivacyPolicy" },
-  { icon: "description", label: "Terms of Service", route: "TermsOfService" },
+  { icon: "description", label: "Terms & Conditions", route: "TermsConditions" },
+  { icon: "assignment-return", label: "Refund Policy", route: "RefundPolicy" },
 ];
 
 export function Sidebar({ visible, onClose }: Props) {

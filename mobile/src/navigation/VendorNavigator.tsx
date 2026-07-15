@@ -21,6 +21,11 @@ import VendorEditProfileScreen from "../screens/vendor/VendorEditProfileScreen";
 import UpgradePlanScreen from "../screens/vendor/UpgradePlanScreen";
 import VendorChatScreen from "../screens/vendor/VendorChatScreen";
 
+import AboutUsScreen from "../screens/couple/AboutUsScreen";
+import PrivacyPolicyScreen from "../screens/couple/PrivacyPolicyScreen";
+import TermsConditionsScreen from "../screens/couple/TermsConditionsScreen";
+import RefundPolicyScreen from "../screens/couple/RefundPolicyScreen";
+
 import { COLORS } from "../constants/theme";
 
 const Tab = createBottomTabNavigator();
@@ -84,5 +89,9 @@ export default function VendorNavigator() {
   component={VendorEditProfileScreen}
 />
   <Stack.Screen name="VendorChat" component={VendorChatScreen} />
+  <Stack.Screen name="AboutUs" component={AboutUsScreen} />
+  <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+  <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
+  <Stack.Screen name="RefundPolicy" component={RefundPolicyScreen} />
 </Stack.Navigator>
   );}
