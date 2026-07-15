@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -83,6 +85,12 @@ export class PortfolioService {
     dto: CreatePortfolioDto,
     file: Express.Multer.File,
   ) {
+    if (!file?.buffer) {
+      throw new BadRequestException(
+        "Please select a valid portfolio image.",
+      );
+    }
+
     const vendor =
       await this.prisma.vendor.findUnique({
         where: {
@@ -96,10 +104,24 @@ export class PortfolioService {
       );
     }
 
-    const uploaded =
-      (await this.cloudinary.uploadImage(
-        file,
-      )) as any;
+    let uploaded: any;
+
+    try {
+      uploaded =
+        await this.cloudinary.uploadImage(
+          file,
+        );
+    } catch {
+      throw new ServiceUnavailableException(
+        "Portfolio image upload failed. Please try again.",
+      );
+    }
+
+    if (!uploaded?.secure_url) {
+      throw new ServiceUnavailableException(
+        "Portfolio image upload failed. Please try again.",
+      );
+    }
 
     const categories =
       this.normalizeCategories(

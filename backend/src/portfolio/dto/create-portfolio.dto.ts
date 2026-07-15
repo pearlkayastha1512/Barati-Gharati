@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { Transform } from "class-transformer";
 
 export enum PortfolioCategory {
   WEDDING = "Wedding",
@@ -25,6 +26,20 @@ export class CreatePortfolioDto {
   category!: PortfolioCategory;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return value;
+  })
   @IsArray()
   @IsEnum(PortfolioCategory, {
     each: true,

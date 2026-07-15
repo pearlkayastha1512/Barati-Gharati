@@ -29,7 +29,10 @@ interface PortfolioStore {
 
   addPortfolio: (
     formData: FormData
-  ) => Promise<boolean>;
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
 
   updateExistingPortfolio: (
     portfolio: Portfolio
@@ -114,13 +117,13 @@ export const usePortfolioStore =
     addPortfolio: async (
       formData
     ) => {
-      const success =
+      const result =
         await createPortfolio(
           formData
         );
 
-      if (!success) {
-        return false;
+      if (!result.success) {
+        return result;
       }
 
       const portfolio =
@@ -134,7 +137,7 @@ export const usePortfolioStore =
           : [],
       });
 
-      return true;
+      return { success: true };
     },
 
     // ==========================================

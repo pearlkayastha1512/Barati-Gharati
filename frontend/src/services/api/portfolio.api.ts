@@ -1,5 +1,21 @@
 import api from "@/lib/axios";
 
+function getApiError(
+  error: any,
+  fallback: string
+) {
+  const message =
+    error.response?.data?.message;
+
+  if (Array.isArray(message)) {
+    return message.join(" ");
+  }
+
+  return typeof message === "string"
+    ? message
+    : fallback;
+}
+
 export async function getMyPortfolioApi() {
   try {
     const { data } = await api.get("/portfolio/my");
@@ -46,13 +62,7 @@ export async function createPortfolioApi(
   try {
     const { data } = await api.post(
       "/portfolio",
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "multipart/form-data",
-        },
-      }
+      formData
     );
 
     return {
@@ -62,9 +72,12 @@ export async function createPortfolioApi(
   } catch (error: any) {
     return {
       ok: false,
-      error:
-        error.response?.data?.message ??
-        "Unable to upload portfolio.",
+      error: getApiError(
+        error,
+        error.response
+          ? "Unable to upload portfolio."
+          : "Backend server se connection nahi ho pa raha hai."
+      ),
     };
   }
 }

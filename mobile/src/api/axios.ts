@@ -47,6 +47,13 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
+    if (
+      typeof FormData !== "undefined" &&
+      config.data instanceof FormData
+    ) {
+      config.headers.delete("Content-Type");
+    }
+
     const token = await getToken();
 
     if (token) {

@@ -7,6 +7,7 @@ import {
   IndianRupee,
   Star,
   Clock3,
+  ImageIcon,
 } from "lucide-react";
 
 import { Service } from "@/types/service";
@@ -32,18 +33,47 @@ export default function ServiceCard({
     onEdit();
   };
 
+  const safeImage = (() => {
+    try {
+      const url = new URL(service.image);
+
+      if (
+        url.protocol !== "https:" ||
+        ![
+          "res.cloudinary.com",
+          "images.unsplash.com",
+        ].includes(url.hostname)
+      ) {
+        return null;
+      }
+
+      return url.toString();
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
       {/* Image */}
 
       <div className="relative h-48 overflow-hidden rounded-2xl">
-        <Image
-          src={service.image}
-          alt={service.name}
-          fill
-          className="object-cover transition duration-300 hover:scale-105"
-        />
+        {safeImage ? (
+          <Image
+            src={safeImage}
+            alt={service.name}
+            fill
+            className="object-cover transition duration-300 hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#fff1f4] to-[#fff7e3] text-[#b85f7b]">
+            <ImageIcon size={34} />
+            <span className="mt-2 text-sm font-semibold">
+              Upload service image
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Details */}

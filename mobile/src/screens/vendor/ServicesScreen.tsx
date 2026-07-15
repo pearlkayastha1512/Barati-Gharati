@@ -81,14 +81,17 @@ const handleSubmit = async (data: {
   price: number;
   image: string | null;
 }) => {
-  if (editingService) {
-    await updateService(editingService.id, data);
-  } else {
-    await addService(data);
+  const result = editingService
+    ? await updateService(editingService.id, data)
+    : await addService(data);
+
+  if (!result.success) {
+    return result;
   }
 
   setModalVisible(false);
   setEditingService(null);
+  return result;
 };
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
