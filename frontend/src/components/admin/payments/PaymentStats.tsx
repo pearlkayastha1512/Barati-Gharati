@@ -24,7 +24,7 @@ export default function PaymentStats({
 
       totalRevenue: bookings.reduce(
         (sum, booking) =>
-          sum + booking.advancePaid,
+          sum + (booking.platformCommission ?? 0),
         0
       ),
 
@@ -53,7 +53,7 @@ export default function PaymentStats({
       />
 
       <Card
-        title="Revenue"
+        title="Platform Revenue"
         value={`₹${stats.totalRevenue.toLocaleString(
           "en-IN"
         )}`}

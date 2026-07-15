@@ -25,6 +25,8 @@ import {
   resetChatWarningsApi,
   suspendChatUserApi,
 } from "@/services/api/admin.api";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 type ApiModerationResponse = {
   data?: ChatModerationUser[];
@@ -53,6 +55,9 @@ const statusLabel: Record<
 };
 
 export default function ChatModerationPage() {
+  const currentAdmin = useAuthStore((state) => state.user);
+  const canModerate = hasAdminPermission(currentAdmin, "chat.moderate");
+  const canSuspend = hasAdminPermission(currentAdmin, "accounts.suspend");
   const [users, setUsers] = useState<
     ChatModerationUser[]
   >([]);
@@ -277,7 +282,7 @@ export default function ChatModerationPage() {
                     </td>
 
                     <td className="px-5 py-5">
-                      <div className="flex min-w-[360px] flex-wrap gap-2">
+                      {canModerate ? <div className="flex min-w-[360px] flex-wrap gap-2">
                         <ActionButton
                           label="30 min"
                           icon={Clock}
@@ -335,7 +340,7 @@ export default function ChatModerationPage() {
                             )
                           }
                         />
-                        <ActionButton
+                        {canSuspend && <ActionButton
                           label="Suspend"
                           icon={UserX}
                           tone="dark"
@@ -349,7 +354,7 @@ export default function ChatModerationPage() {
                               "Account suspended."
                             )
                           }
-                        />
+                        />}
                         <ActionButton
                           label="Reset"
                           icon={RotateCcw}
@@ -364,7 +369,7 @@ export default function ChatModerationPage() {
                             )
                           }
                         />
-                      </div>
+                      </div> : <span className="text-sm text-slate-500">View only</span>}
                     </td>
                   </tr>
                 ))

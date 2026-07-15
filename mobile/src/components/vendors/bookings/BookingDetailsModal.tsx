@@ -58,29 +58,6 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
     }
   };
 
-  const handleReject = () => {
-    Alert.alert(
-      "Reject Booking",
-      "Are you sure you want to reject this booking?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reject",
-          style: "destructive",
-          onPress: async () => {
-            setActionLoading("reject");
-            try {
-              await updateStatus(booking.id, "Rejected");
-              onClose();
-            } finally {
-              setActionLoading(null);
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const handleComplete = () => {
     Alert.alert(
       "Mark Event as Completed",
@@ -163,10 +140,22 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
 
             <Section title="Payment">
               <Row label="Total Amount" value={`₹${booking.amount.toLocaleString("en-IN")}`} />
-              <Row label="Advance Paid" value={`₹${booking.advancePaid.toLocaleString("en-IN")}`} />
+              <Row label="Customer Advance" value={`₹${booking.advancePaid.toLocaleString("en-IN")}`} />
+              <Row label="Platform Fee" value={`- ₹${booking.platformCommission.toLocaleString("en-IN")}`} />
+              <Row label="Your Net Advance" value={`₹${booking.vendorNetAmount.toLocaleString("en-IN")}`} />
+              <Row label="Release Status" value={booking.payoutStatus?.replaceAll("_", " ") ?? "Pending"} />
               <Row label="Remaining" value={`₹${booking.remainingAmount.toLocaleString("en-IN")}`} />
               <Row label="Payment Status" value={booking.paymentStatus} />
             </Section>
+
+            {booking.adminApproved && !booking.vendorAcknowledgedAt && (
+              <View style={styles.releaseBanner}>
+                <MaterialCommunityIcons name="shield-check-outline" size={18} color="#166534" />
+                <Text style={styles.releaseBannerText}>
+                  Admin approved this booking. The net advance is released in the test ledger. Please acknowledge to continue.
+                </Text>
+              </View>
+            )}
 
             <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
               <Text style={styles.detailLabel}>Status</Text>
@@ -195,21 +184,10 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
                 {actionLoading === "accept" ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.actionBtnText}>Accept Booking</Text>
+                  <Text style={styles.actionBtnText}>Acknowledge &amp; Accept</Text>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.rejectBtn]}
-                onPress={handleReject}
-                disabled={actionLoading !== null}
-              >
-                {actionLoading === "reject" ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.actionBtnText}>Reject</Text>
-                )}
-              </TouchableOpacity>
             </View>
           )}
 
@@ -261,6 +239,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     flex: 1,
+  },
+  releaseBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "#ECFDF3",
+    borderColor: "#86EFAC",
+    borderWidth: 1,
+    padding: SPACING.sm,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.sm,
+  },
+  releaseBannerText: {
+    flex: 1,
+    color: "#166534",
+    fontSize: 12,
+    lineHeight: 18,
   },
 
   actionsRow: {

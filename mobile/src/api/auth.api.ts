@@ -70,6 +70,9 @@ export const login = async (
 
       createdAt: backendUser.createdAt,
       updatedAt: backendUser.updatedAt,
+      adminRole: backendUser.adminRole,
+      permissions: backendUser.permissions,
+      mustChangePassword: backendUser.mustChangePassword,
     },
   };
 };

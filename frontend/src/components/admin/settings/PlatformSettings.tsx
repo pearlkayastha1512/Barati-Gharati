@@ -7,6 +7,8 @@ import {
   getPlatformSettingsApi,
   updatePlatformSettingsApi,
 } from "@/services/api/admin.api";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 type PlatformSettingsState = {
   allowVendorRegistration: boolean;
@@ -67,6 +69,8 @@ function saveStoredSettings(
 }
 
 export default function PlatformSettings() {
+  const user = useAuthStore((state) => state.user);
+  const canEdit = hasAdminPermission(user, "settings.manage");
   const [settings, setSettings] =
     useState<PlatformSettingsState>(
       defaultSettings
@@ -110,6 +114,7 @@ export default function PlatformSettings() {
   const toggleSetting = async (
     key: keyof PlatformSettingsState
   ) => {
+    if (!canEdit) return;
     const nextSettings = {
       ...settings,
       [key]: !settings[key],
@@ -162,6 +167,7 @@ export default function PlatformSettings() {
               "allowVendorRegistration"
             )
           }
+          disabled={!canEdit}
         />
 
         <Setting
@@ -174,6 +180,7 @@ export default function PlatformSettings() {
               "allowCustomerRegistration"
             )
           }
+          disabled={!canEdit}
         />
 
         <Setting
@@ -182,6 +189,7 @@ export default function PlatformSettings() {
           onChange={() =>
             void toggleSetting("enableReviews")
           }
+          disabled={!canEdit}
         />
 
         <Setting
@@ -190,6 +198,7 @@ export default function PlatformSettings() {
           onChange={() =>
             void toggleSetting("enablePayments")
           }
+          disabled={!canEdit}
         />
 
         <Setting
@@ -200,6 +209,7 @@ export default function PlatformSettings() {
               "maintenanceMode"
             )
           }
+          disabled={!canEdit}
         />
 
       </div>
@@ -212,10 +222,12 @@ function Setting({
   title,
   checked = false,
   onChange,
+  disabled = false,
 }: {
   title: string;
   checked?: boolean;
   onChange: () => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-5">
@@ -228,7 +240,8 @@ function Setting({
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-5 w-5"
+        disabled={disabled}
+        className="h-5 w-5 disabled:cursor-not-allowed disabled:opacity-50"
       />
 
     </div>

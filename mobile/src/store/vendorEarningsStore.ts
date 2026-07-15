@@ -125,8 +125,11 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
 
     try {
       const bookings = await getMyBookings();
-      const revenueBookings = bookings.filter((booking: any) =>
-        REVENUE_BOOKING_STATUSES.includes(booking.bookingStatus)
+      const revenueBookings = bookings.filter(
+        (booking: any) =>
+          REVENUE_BOOKING_STATUSES.includes(booking.bookingStatus) &&
+          (booking.payoutStatus === "released" ||
+            booking.payoutStatus === "settled")
       );
 
       let totalRevenue = 0;
@@ -144,7 +147,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
 
       revenueBookings.forEach((booking: any) => {
         const total = Number(booking.amount);
-        const paid = Number(booking.advancePaid);
+        const paid = Number(booking.vendorNetAmount ?? 0);
         const balance = Number(booking.remainingAmount);
 
         totalRevenue += paid;
@@ -219,7 +222,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
           id: booking.id,
           customerName: booking.customerName,
           eventDate: new Date(booking.eventDate).toLocaleDateString("en-GB"),
-          advance: Number(booking.advancePaid),
+          advance: Number(booking.vendorNetAmount ?? 0),
           remaining: Number(booking.remainingAmount),
           status: booking.paymentStatus === "partial" ? "Partial" : "Pending",
         })

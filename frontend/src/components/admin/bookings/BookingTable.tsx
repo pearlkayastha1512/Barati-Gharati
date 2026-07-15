@@ -3,6 +3,8 @@
 import { Check, Eye, PauseCircle } from "lucide-react";
 
 import { Booking } from "@/types/booking";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 interface Props {
   bookings: Booking[];
@@ -23,6 +25,11 @@ export default function BookingTable({
   onApprovePayment,
   onHoldPayment,
 }: Props) {
+  const user = useAuthStore((state) => state.user);
+  const canReleaseAdvance =
+    hasAdminPermission(user, "payments.approve") &&
+    hasAdminPermission(user, "payouts.release");
+  const canApprovePayment = hasAdminPermission(user, "payments.approve");
   if (bookings.length === 0) {
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-20 text-center shadow-sm">
@@ -169,7 +176,7 @@ export default function BookingTable({
 
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-2">
-                    {booking.paymentStatus ===
+                    {canReleaseAdvance && booking.paymentStatus ===
                       "partial" &&
                       !booking.adminApproved && (
                         <button
@@ -183,7 +190,7 @@ export default function BookingTable({
                         </button>
                       )}
 
-                    {booking.bookingStatus ===
+                    {canApprovePayment && booking.bookingStatus ===
                       "awaiting_admin_review" && (
                         <>
                           <button

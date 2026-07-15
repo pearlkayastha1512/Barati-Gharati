@@ -76,6 +76,25 @@ export interface Booking {
 
   advancePaid: number;
 
+  platformCommission?: number;
+
+  vendorNetAmount?: number;
+
+  payoutStatus?:
+    | "held_for_admin_review"
+    | "release_processing"
+    | "released"
+    | "settled"
+    | "failed"
+    | "refunded"
+    | null;
+
+  payoutSimulated?: boolean;
+
+  payoutReleasedAt?: string | null;
+
+  vendorAcknowledgedAt?: string | null;
+
   remainingAmount: number;
 
   paymentStatus: PaymentStatus;

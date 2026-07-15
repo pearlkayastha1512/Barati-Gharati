@@ -15,41 +15,66 @@ import {
   LogOut,
   ChevronRight,
   ShieldAlert,
+  UserCog,
+  FilePenLine,
+  ClipboardList,
 } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
 import { useAuthStore } from "@/store/authStore";
+import {
+  ADMIN_ROLE_LABELS,
+  hasAdminPermission,
+} from "@/lib/adminAccess";
 
 const menuItems = [
   {
     title: "Dashboard",
     href: "/admin",
     icon: LayoutDashboard,
+    permission: "dashboard.view",
+  },
+  {
+    title: "Admin Accounts",
+    href: "/admin/admins",
+    icon: UserCog,
+    permission: "admins.manage",
+  },
+  {
+    title: "Audit Logs",
+    href: "/admin/audit-logs",
+    icon: ClipboardList,
+    permission: "audit.view",
   },
   {
     title: "Vendor Management",
     href: "/admin/vendors",
     icon: Users,
+    permission: "vendors.view",
   },
   {
     title: "Customer Management",
     href: "/admin/customers",
     icon: UserRound,
+    permission: "customers.view",
   },
   {
     title: "Bookings",
     href: "/admin/bookings",
     icon: CalendarCheck2,
+    permission: "bookings.view",
   },
   {
     title: "Payments",
     href: "/admin/payments",
     icon: Wallet,
+    permission: "payments.view",
   },
   {
     title: "Reviews",
     href: "/admin/reviews",
     icon: Star,
+    permission: "reviews.view",
   },
   // {
   //   title: "Email History",
@@ -60,11 +85,19 @@ const menuItems = [
     title: "Notifications",
     href: "/admin/notifications",
     icon: Bell,
+    permission: "notifications.view",
   },
   {
     title: "Chat Moderation",
     href: "/admin/chat-moderation",
     icon: ShieldAlert,
+    permission: "chat.view",
+  },
+  {
+    title: "Content",
+    href: "/admin/content",
+    icon: FilePenLine,
+    permission: "content.view",
   },
 //   {
 //     title: "Analytics",
@@ -75,6 +108,7 @@ const menuItems = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
+    permission: "settings.view",
   },
 ];
 
@@ -83,7 +117,10 @@ export default function AdminSidebar() {
 
   const router = useRouter();
 
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
+  const visibleMenuItems = menuItems.filter((item) =>
+    hasAdminPermission(user, item.permission),
+  );
 
   const handleLogout = () => {
     logout();
@@ -108,7 +145,7 @@ export default function AdminSidebar() {
           </p>
 
           <div className="space-y-2">
-            {menuItems.map((item) => {
+            {visibleMenuItems.map((item) => {
               const Icon = item.icon;
 
               const active =
@@ -149,11 +186,13 @@ export default function AdminSidebar() {
         <div className="border-t border-[#ffcad3] p-5">
           <div className="rounded-3xl border border-[#ffb3bf] bg-[#ffe6eb] p-5 shadow-sm">
             <h3 className="font-semibold text-[#6c2d45]">
-              Platform Status
+              {user?.adminRole
+                ? ADMIN_ROLE_LABELS[user.adminRole]
+                : "Super Admin"}
             </h3>
 
             <p className="mt-2 text-sm text-[#8d6171]">
-              Monitor vendors, customers, bookings and payments.
+              Only assigned modules and actions are available for this login.
             </p>
 
             {/* <button className="mt-5 w-full rounded-2xl bg-slate-800 py-3 font-semibold text-white transition hover:bg-slate-700">

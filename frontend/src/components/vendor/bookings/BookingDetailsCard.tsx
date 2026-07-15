@@ -148,10 +148,35 @@ export default function BookingDetailsCard() {
 
         <Item
           icon={<Wallet size={18} />}
-          label="Advance Paid"
+          label="Customer Advance"
           value={`₹${selectedBooking.advancePaid.toLocaleString(
             "en-IN"
           )}`}
+        />
+
+        <Item
+          icon={<Wallet size={18} />}
+          label="Platform Fee"
+          value={`- ₹${(selectedBooking.platformCommission ?? 0).toLocaleString(
+            "en-IN"
+          )}`}
+        />
+
+        <Item
+          icon={<Wallet size={18} />}
+          label="Your Net Advance"
+          value={`₹${(selectedBooking.vendorNetAmount ?? 0).toLocaleString(
+            "en-IN"
+          )}`}
+        />
+
+        <Item
+          icon={<Wallet size={18} />}
+          label="Release Status"
+          value={
+            selectedBooking.payoutStatus?.replaceAll("_", " ") ??
+            "Pending"
+          }
         />
 
         <Item
@@ -169,6 +194,13 @@ export default function BookingDetailsCard() {
           Customer contact details will unlock after admin approves this booking.
         </div>
       )}
+
+      {canViewCustomerContact &&
+        !selectedBooking.vendorAcknowledgedAt && (
+          <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
+            Admin released your net advance in the test ledger. Acknowledge and accept this booking to continue.
+          </div>
+        )}
 
       <DetailsSection title="Event Details">
         <Item

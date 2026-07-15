@@ -20,6 +20,7 @@ import {
   VendorBadge,
   VendorStatus,
 } from '@prisma/client';
+import { PayoutsService } from '../payouts/payouts.service';
 
 @Injectable()
 export class PaymentService {
@@ -28,6 +29,7 @@ export class PaymentService {
     private readonly invoiceService: InvoiceService,
     private readonly mailService: MailService,
     private readonly notificationsService: NotificationsService,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   private getRazorpay() {
@@ -536,8 +538,7 @@ export class PaymentService {
       dto.signature,
     );
 
-    const updatedBooking =
-      await this.prisma.booking.update({
+    await this.prisma.booking.update({
   where: {
     id: booking.id,
   },
@@ -549,6 +550,12 @@ export class PaymentService {
   status: BookingStatus.ADVANCE_PAID,
 }
 });
+
+await this.payoutsService.ensureAdvancePayout(
+  booking.id,
+  requiredAdvance,
+  dto.paymentId,
+);
 
 // Fetch complete booking details for invoice
 const completedBooking =
@@ -564,6 +571,7 @@ const completedBooking =
           category: true,
         },
       },
+      payout: true,
     },
   });
 

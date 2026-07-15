@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/store/authStore";
+import { AdminRole } from "@/lib/adminAccess";
 
 const API_URL = `${
   process.env.NEXT_PUBLIC_API_URL ??
@@ -83,6 +84,96 @@ export async function getAllUsersApi() {
 
 export async function getAllBookingsApi() {
   return requestAdmin("/bookings");
+}
+
+export type AdminAccount = {
+  id: string;
+  name: string;
+  email: string;
+  adminRole: AdminRole | null;
+  adminPermissions: string[];
+  permissions?: string[];
+  adminIsActive: boolean;
+  mustChangePassword: boolean;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type AdminRoleDefinition = {
+  role: AdminRole;
+  label: string;
+  permissions: string[];
+};
+
+export async function getAdminAccountsApi() {
+  return requestAdmin("/admins");
+}
+
+export async function changeOwnAdminPasswordApi(password: string) {
+  return requestAdmin("/access/password", {
+    method: "PATCH",
+    body: JSON.stringify({ password }),
+  });
+}
+
+export async function getAdminRoleDefinitionsApi() {
+  return requestAdmin("/admins/roles");
+}
+
+export async function createAdminAccountApi(data: {
+  name: string;
+  email: string;
+  password: string;
+  adminRole: AdminRole;
+  permissions?: string[];
+}) {
+  return requestAdmin("/admins", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateAdminAccountApi(
+  id: string,
+  data: {
+    name?: string;
+    adminRole?: AdminRole;
+    permissions?: string[];
+    adminIsActive?: boolean;
+  },
+) {
+  return requestAdmin(`/admins/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function resetAdminPasswordApi(
+  id: string,
+  password: string,
+) {
+  return requestAdmin(`/admins/${id}/password`, {
+    method: "PATCH",
+    body: JSON.stringify({ password }),
+  });
+}
+
+export async function getAdminAuditLogsApi() {
+  return requestAdmin("/audit-logs");
+}
+
+export async function getSiteContentApi() {
+  return requestAdmin("/content");
+}
+
+export async function updateSiteContentApi(
+  slug: string,
+  data: { title: string; content: string },
+) {
+  return requestAdmin(`/content/${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function approveBookingApi(

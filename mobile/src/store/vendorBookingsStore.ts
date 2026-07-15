@@ -13,6 +13,12 @@ export type VendorBookingRecord = {
 
   packageName: string;
   advancePaid: number;
+  platformCommission: number;
+  vendorNetAmount: number;
+  payoutStatus: string | null;
+  payoutSimulated: boolean;
+  payoutReleasedAt: string | null;
+  vendorAcknowledgedAt: string | null;
   remainingAmount: number;
   paymentStatus: string;
   eventTime: string;
@@ -54,11 +60,12 @@ const mapStatus = (backendStatus: string): VendorBookingStatus => {
     case "pending":
     case "awaiting_admin_review":
       return "Pending";
-    case "advance_paid":
     case "accepted":
     case "payment_approved":
     case "payment_held":
       return "Accepted";
+    case "advance_paid":
+      return "Pending";
     case "completed":
     case "event_completed":
       return "Completed";
@@ -86,6 +93,12 @@ const mapBooking = (b: BackendBooking): VendorBookingRecord => ({
   adminApproved: b.adminApproved, 
   packageName: b.packageName,
   advancePaid: b.advancePaid,
+  platformCommission: b.platformCommission ?? 0,
+  vendorNetAmount: b.vendorNetAmount ?? 0,
+  payoutStatus: b.payoutStatus,
+  payoutSimulated: b.payoutSimulated,
+  payoutReleasedAt: b.payoutReleasedAt,
+  vendorAcknowledgedAt: b.vendorAcknowledgedAt,
   remainingAmount: b.remainingAmount,
   paymentStatus: b.paymentStatus,
   eventTime: b.eventTime,
@@ -145,6 +158,7 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
   } catch (error) {
     console.log("UPDATE BOOKING STATUS ERROR =>", error);
     set({ bookings: previous });
+    throw error;
   }
 },
 }));

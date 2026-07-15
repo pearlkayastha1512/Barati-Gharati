@@ -43,7 +43,7 @@ export default function BookingStats() {
           "cancelled"
             ? sum
             : sum +
-              booking.advancePaid,
+              (booking.vendorNetAmount ?? 0),
         0
       );
 

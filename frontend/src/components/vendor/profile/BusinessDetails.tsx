@@ -323,7 +323,7 @@ export default function BusinessDetails() {
     ).length;
 
     const revenue = bookings.reduce(
-      (sum, booking) => sum + booking.advancePaid,
+      (sum, booking) => sum + (booking.vendorNetAmount ?? 0),
       0
     );
 

@@ -164,6 +164,36 @@ export default function BookingDetailsModal({
             />
 
             <Info
+              label="Platform Revenue"
+              value={`₹${(booking.platformCommission ?? 0).toLocaleString(
+                "en-IN"
+              )}`}
+            />
+
+            <Info
+              label="Vendor Net Advance"
+              value={`₹${(booking.vendorNetAmount ?? 0).toLocaleString(
+                "en-IN"
+              )}`}
+            />
+
+            <Info
+              label="Advance Release"
+              value={
+                booking.payoutStatus?.replaceAll("_", " ") ?? "Not created"
+              }
+            />
+
+            <Info
+              label="Vendor Acknowledgement"
+              value={
+                booking.vendorAcknowledgedAt
+                  ? new Date(booking.vendorAcknowledgedAt).toLocaleString()
+                  : "Pending"
+              }
+            />
+
+            <Info
               label="Remaining Amount"
               value={`₹${booking.remainingAmount.toLocaleString(
                 "en-IN"

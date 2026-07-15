@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../constants/colors';
+import { adminTheme } from '../../constants/adminTheme';
 
 type Props = {
   icon: string;
@@ -26,11 +26,17 @@ export default function StatCard({ icon, iconColor, iconBg, label, value }: Prop
 const styles = StyleSheet.create({
   card: {
     width: '47%',
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    padding: 14,
+    backgroundColor: adminTheme.surface,
+    borderRadius: 20,
+    padding: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: adminTheme.border,
+    shadowColor: adminTheme.shadow,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+    minWidth: 0,
   },
   iconBox: {
     width: 36,
@@ -40,6 +46,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
   },
-  label: { fontSize: 12, color: colors.textGray, marginBottom: 4 },
-  value: { fontSize: 24, fontWeight: '800', color: colors.textDark },
+  label: { fontSize: 12, lineHeight: 18, color: adminTheme.muted, marginBottom: 4 },
+  value: { fontSize: 24, lineHeight: 31, fontWeight: '800', color: adminTheme.ink },
 });

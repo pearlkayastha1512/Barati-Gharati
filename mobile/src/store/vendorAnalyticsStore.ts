@@ -43,7 +43,9 @@ function computeAnalytics(bookings: BackendBooking[]) {
   const currentMonthIndex = now.getMonth();
 
   const activeBookings = bookings.filter(
-    (b) => !INACTIVE_STATUSES.includes(b.bookingStatus)
+    (b) =>
+      !INACTIVE_STATUSES.includes(b.bookingStatus) &&
+      (b.payoutStatus === "released" || b.payoutStatus === "settled")
   );
 
   const uniqueCustomers = new Set(
@@ -61,7 +63,7 @@ function computeAnalytics(bookings: BackendBooking[]) {
 
     const monthIdx = eventDate.getMonth();
     monthlyBookingCounts[monthIdx].count += 1;
-    monthlyRevenueTotals[monthIdx].amount += b.advancePaid || 0;
+    monthlyRevenueTotals[monthIdx].amount += b.vendorNetAmount || 0;
     totalBookingsThisYear += 1;
   });
 
@@ -86,7 +88,7 @@ function computeAnalytics(bookings: BackendBooking[]) {
     const key = b.packageName || "Unnamed Package";
     const existing = serviceMap.get(key) ?? { bookings: 0, revenue: 0 };
     existing.bookings += 1;
-    existing.revenue += b.advancePaid || 0;
+    existing.revenue += b.vendorNetAmount || 0;
     serviceMap.set(key, existing);
   });
 
