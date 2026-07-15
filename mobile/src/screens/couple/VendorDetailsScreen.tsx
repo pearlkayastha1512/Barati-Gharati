@@ -1,11 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Share, Alert } from "react-native";
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  ImageBackground,
+  Share,
+  Alert,
+  Modal,
+  Dimensions,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useFavoritesStore } from "../../store/favoritesStore";
 import { Vendor } from "../../constants/vendorData";
 import { getVendorById } from "../../api/vendor.api";
-import { AmenityItem } from "../../components/users/vendors/AmenityItem";
+import { getVendorPortfolio } from "../../api/portfolio.api";
 import { ReviewSummary } from "../../components/users/vendors/ReviewSummary";
 import { styles } from "./styles/VendorDetailsScreen.styles";
 import { WriteReviewModal } from "../../components/users/vendors/WriteReviewModal";
@@ -18,16 +30,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Booking } from "../../types/booking";
 import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
 
-// TODO: replace with real amenities data once the Vendor model/API supports it
-const DUMMY_AMENITIES: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
-  { icon: "local-parking", label: "Parking" },
-  { icon: "hotel", label: "Luxury Rooms" },
-  { icon: "event-seat", label: "AC Banquet" },
-  { icon: "park", label: "Outdoor Lawn" },
-  { icon: "restaurant", label: "Catering" },
-  { icon: "auto-awesome", label: "Decoration" },
-  { icon: "wifi", label: "Wi-Fi" },
-];
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+interface PortfolioItem {
+  id: string;
+  vendorId: number;
+  title: string;
+  category: string;
+  categories: string[];
+  description: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const EMPTY_VENDOR: Vendor = {
   id: "",
@@ -57,6 +72,11 @@ export default function VendorDetailsScreen() {
   const [vendorError, setVendorError] = useState<string | null>(null);
   const vendor = vendorData ?? EMPTY_VENDOR;
 
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [portfolioLoading, setPortfolioLoading] = useState(true);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
   useEffect(() => {
     let active = true;
     setVendorLoading(true);
@@ -65,6 +85,16 @@ export default function VendorDetailsScreen() {
       .then((data) => active && setVendorData(data))
       .catch(() => active && setVendorError("Vendor details load nahi ho sakin."))
       .finally(() => active && setVendorLoading(false));
+    return () => { active = false; };
+  }, [vendorId]);
+
+  useEffect(() => {
+    let active = true;
+    setPortfolioLoading(true);
+    getVendorPortfolio(Number(vendorId))
+      .then((data: PortfolioItem[]) => active && setPortfolioItems(data))
+      .catch(() => active && setPortfolioItems([]))
+      .finally(() => active && setPortfolioLoading(false));
     return () => { active = false; };
   }, [vendorId]);
 
@@ -150,6 +180,13 @@ export default function VendorDetailsScreen() {
     }
   };
 
+  const openViewer = (index: number) => {
+    setViewerIndex(index);
+    setViewerVisible(true);
+  };
+
+  const activePortfolioItem = portfolioItems[viewerIndex];
+
   if (vendorLoading) {
     return <SafeAreaView style={styles.safeArea}><View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color="#FF4D6D" /></View></SafeAreaView>;
   }
@@ -210,17 +247,24 @@ export default function VendorDetailsScreen() {
         </View>
       </ImageBackground>
 
-      {/* Gallery — real portfolio images from vendor.images */}
+      {/* Gallery — real portfolio items uploaded by the vendor */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Gallery</Text>
-        {vendor.images && vendor.images.length > 0 ? (
+        {portfolioLoading ? (
+          <ActivityIndicator size="small" color="#FF4D6D" style={{ marginTop: 12 }} />
+        ) : portfolioItems.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
-            {vendor.images.map((uri, index) => (
-              <Image
-                key={`${uri}-${index}`}
-                source={{ uri }}
-                style={{ width: 140, height: 100, borderRadius: 12, marginRight: 10 }}
-              />
+            {portfolioItems.map((item, index) => (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.85}
+                onPress={() => openViewer(index)}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={{ width: 140, height: 100, borderRadius: 12, marginRight: 10 }}
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
         ) : (
@@ -228,17 +272,10 @@ export default function VendorDetailsScreen() {
         )}
       </View>
 
-      {/* About */}
+      {/* About — vendor's own description, no dummy amenities */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>About</Text>
         <Text style={styles.aboutText}>{aboutText}</Text>
-
-        <Text style={[styles.cardTitle, { marginTop: 20 }]}>Amenities</Text>
-        <View style={styles.amenitiesGrid}>
-          {DUMMY_AMENITIES.map((amenity) => (
-            <AmenityItem key={amenity.label} icon={amenity.icon} label={amenity.label} />
-          ))}
-        </View>
       </View>
 
       {/* Services — real packages from vendor.packages */}
@@ -408,6 +445,68 @@ export default function VendorDetailsScreen() {
       />
 
       </ScrollView>
+
+      {/* Full-screen portfolio image viewer */}
+      <Modal
+        visible={viewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.95)" }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <TouchableOpacity
+              style={{ alignSelf: "flex-end", padding: 16 }}
+              onPress={() => setViewerVisible(false)}
+            >
+              <MaterialIcons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              contentOffset={{ x: viewerIndex * SCREEN_WIDTH, y: 0 }}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                setViewerIndex(newIndex);
+              }}
+            >
+              {portfolioItems.map((item) => (
+                <View
+                  key={item.id}
+                  style={{
+                    width: SCREEN_WIDTH,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Image
+                    source={{ uri: item.image }}
+                    style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.65 }}
+                    resizeMode="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+
+            {activePortfolioItem && (
+              <View style={{ padding: 20 }}>
+                {activePortfolioItem.title ? (
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>
+                    {activePortfolioItem.title}
+                  </Text>
+                ) : null}
+                {activePortfolioItem.description ? (
+                  <Text style={{ color: "#ddd", fontSize: 13, marginTop: 6 }}>
+                    {activePortfolioItem.description}
+                  </Text>
+                ) : null}
+              </View>
+            )}
+          </SafeAreaView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

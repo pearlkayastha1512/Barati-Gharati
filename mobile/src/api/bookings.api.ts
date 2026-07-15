@@ -70,3 +70,9 @@ export const cancelBooking = async (id: string, cancellationReason: string) => {
 
   return "data" in response.data ? response.data.data : response.data;
 };
+export const downloadBookingInvoice = async (id: string) => {
+  const response = await api.get(`/invoice/download/${id}`, {
+    responseType: "arraybuffer",
+  });
+  return response.data;
+};
