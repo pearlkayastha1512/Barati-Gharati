@@ -162,7 +162,11 @@ export const styles = StyleSheet.create({
     height: 8,
   },
 
+
   elevation: 12,
+},
+sectionWrap: {
+  paddingHorizontal: SPACING.xl,
 },
 
 logo: {

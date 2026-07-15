@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: "#FFFEF7",
+    backgroundColor: "#FF4D6D",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   avatarInitial: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#FF4D6D",
+    color: "#FFFEF7",
   },
   userName: {
     fontSize: 17,

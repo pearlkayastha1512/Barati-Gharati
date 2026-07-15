@@ -8,12 +8,14 @@ import {
   Dimensions,
   Pressable,
   Image,
+  ScrollView,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./VendorSidebar.styles";
 import ContactSupportModal from "../ContactSupportModal";
 import Logo from "../../../../assets/Barati_Gharati_Logo-removebg-preview.png";
+import { SPACING } from "../../../constants/theme";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.75;
@@ -41,6 +43,15 @@ const NAV_ITEMS: NavItem[] = [
   { icon: "workspace-premium", label: "Upgrade Plan", route: "UpgradePlan" },
 ];
 
+// Legal/info links — same screens used on the couple side, registered
+// separately in VendorNavigator so they work from this stack too.
+const INFO_ITEMS: NavItem[] = [
+  { icon: "info-outline", label: "About Us", route: "AboutUs" },
+  { icon: "privacy-tip", label: "Privacy Policy", route: "PrivacyPolicy" },
+  { icon: "description", label: "Terms & Conditions", route: "TermsConditions" },
+  { icon: "assignment-return", label: "Refund Policy", route: "RefundPolicy" },
+];
+
 export function VendorSidebar({ visible, onClose }: Props) {
   const navigation = useNavigation<any>();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
@@ -56,10 +67,6 @@ export function VendorSidebar({ visible, onClose }: Props) {
 
   const handleNavigate = (item: NavItem) => {
     onClose();
-    // TODO: each of these routes needs to actually exist in VendorNavigator.
-    // Portfolio, Reviews, VendorCalendar, Earnings, Analytics, Settings are
-    // NEW screens — create them or this will throw the same
-    // "not a valid name" error we saw earlier with the couple side.
     navigation.navigate(item.route);
   };
 
@@ -79,45 +86,69 @@ export function VendorSidebar({ visible, onClose }: Props) {
           style={[styles.sidebar, { transform: [{ translateX }] }]}
           onStartShouldSetResponder={() => true}
         >
-        <View style={styles.header}>
-  <Image
-    source={Logo}
-    style={styles.logo}
-    resizeMode="contain"
-  />
+          <View style={styles.header}>
+            <Image
+              source={Logo}
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-  <View style={styles.divider} />
+            <View style={styles.divider} />
 
-  <Text style={styles.sectionLabel}>
-    BUSINESS
-  </Text>
-</View>
+            <Text style={styles.sectionLabel}>
+              BUSINESS
+            </Text>
+          </View>
 
-          <View style={styles.navList}>
-            {NAV_ITEMS.map((item) => (
+          <ScrollView
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 12 }}
+          >
+            <View style={styles.navList}>
+              {NAV_ITEMS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={styles.navItem}
+                  onPress={() => handleNavigate(item)}
+                >
+                  <MaterialIcons name={item.icon} size={22} color="#C2185B" />
+                  <Text style={styles.navItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ paddingHorizontal: SPACING.xl }}>
+              <View style={styles.divider} />
+              <Text style={styles.sectionLabel}>LEGAL</Text>
+            </View>
+
+            <View style={styles.navList}>
+              {INFO_ITEMS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={styles.navItem}
+                  onPress={() => handleNavigate(item)}
+                >
+                  <MaterialIcons name={item.icon} size={22} color="#C2185B" />
+                  <Text style={styles.navItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.supportBox}>
+              <Text style={styles.supportTitle}>Vendor Support</Text>
+              <Text style={styles.supportSubtitle}>Need help managing your business?</Text>
               <TouchableOpacity
-                key={item.label}
-                style={styles.navItem}
-                onPress={() => handleNavigate(item)}
+                style={styles.supportButton}
+                onPress={() => setSupportVisible(true)}
               >
-                <MaterialIcons name={item.icon} size={22} color="#C2185B" />
-                <Text style={styles.navItemText}>{item.label}</Text>
+                <Text style={styles.supportButtonText}>
+                  Contact Support
+                </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={styles.supportBox}>
-            <Text style={styles.supportTitle}>Vendor Support</Text>
-            <Text style={styles.supportSubtitle}>Need help managing your business?</Text>
-            <TouchableOpacity
-  style={styles.supportButton}
-  onPress={() => setSupportVisible(true)}
->
-  <Text style={styles.supportButtonText}>
-    Contact Support
-  </Text>
-</TouchableOpacity>
-          </View>
+            </View>
+          </ScrollView>
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} color="#C2185B" />
@@ -126,9 +157,9 @@ export function VendorSidebar({ visible, onClose }: Props) {
         </Animated.View>
       </Pressable>
       <ContactSupportModal
-  visible={supportVisible}
-  onClose={()=>setSupportVisible(false)}
-/>
+        visible={supportVisible}
+        onClose={()=>setSupportVisible(false)}
+      />
     </Modal>
   );
-} 
+}

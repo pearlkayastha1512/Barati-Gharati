@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { ContactInfoRow } from "../../components/users/helps/ContactInfoRow";
@@ -9,7 +10,7 @@ import { styles } from "./styles/HelpSupportScreen.styles";
 // TODO: replace with real values from a config/API once available
 const CONTACT_INFO = {
   phone: "+91 98765 43210",
-  email: "hello@wedplan.com",
+  email: "baratigharati@gmail.com",
   office: ["Connaught Place,", "New Delhi, India"],
   hours: ["Monday - Saturday", "9:00 AM – 7:00 PM"],
 };
@@ -41,27 +42,42 @@ export default function HelpSupportScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={22} color="#333" />
+          <MaterialIcons name="arrow-back" size={22} color="#3F1D2F" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Help & Support</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Hero */}
+        <LinearGradient
+          colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
+          locations={[0, 0.28, 0.68, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
+          <View style={styles.heroBadge}>
+            <MaterialIcons name="auto-awesome" size={14} color="#6C2D45" />
+            <Text style={styles.heroBadgeText}>We're Here For You</Text>
+          </View>
+
+          <Text style={styles.heroTitle}>We'd Love To Hear{"\n"}From You</Text>
+          <Text style={styles.heroSubtitle}>
+            Questions, feedback, or need a hand planning? Send us a message and our wedding
+            experts will get back to you shortly.
+          </Text>
+        </LinearGradient>
+
         {/* Send Message form */}
         <View style={styles.formCard}>
-          <Text style={styles.formBadge}>SEND MESSAGE</Text>
-          <Text style={styles.formTitle}>
-            We'd Love To Hear{"\n"}
-            <Text style={styles.formTitleAccent}>From You</Text>
-          </Text>
-
           <View style={styles.fieldRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.fieldLabel}>Your Name</Text>
               <TextInput
                 style={styles.fieldInput}
                 placeholder="Your Name"
-                placeholderTextColor="#bbb"
+                placeholderTextColor="#B78A9A"
                 value={name}
                 onChangeText={setName}
               />
@@ -71,7 +87,7 @@ export default function HelpSupportScreen() {
               <TextInput
                 style={styles.fieldInput}
                 placeholder="Email Address"
-                placeholderTextColor="#bbb"
+                placeholderTextColor="#B78A9A"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -86,7 +102,7 @@ export default function HelpSupportScreen() {
               <TextInput
                 style={styles.fieldInput}
                 placeholder="Phone Number"
-                placeholderTextColor="#bbb"
+                placeholderTextColor="#B78A9A"
                 keyboardType="phone-pad"
                 value={phone}
                 onChangeText={setPhone}
@@ -97,7 +113,7 @@ export default function HelpSupportScreen() {
               <TextInput
                 style={styles.fieldInput}
                 placeholder="Subject"
-                placeholderTextColor="#bbb"
+                placeholderTextColor="#B78A9A"
                 value={subject}
                 onChangeText={setSubject}
               />
@@ -108,13 +124,13 @@ export default function HelpSupportScreen() {
           <TextInput
             style={styles.messageInput}
             placeholder="Tell us how we can help..."
-            placeholderTextColor="#bbb"
+            placeholderTextColor="#B78A9A"
             multiline
             value={message}
             onChangeText={setMessage}
           />
 
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend} activeOpacity={0.9}>
             <MaterialIcons name="send" size={18} color="#fff" />
             <Text style={styles.sendButtonText}>Send Message</Text>
           </TouchableOpacity>
