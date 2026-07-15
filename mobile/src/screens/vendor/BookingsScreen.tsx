@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/theme";
-import { useVendorBookingsStore, VendorBookingRecord } from "../../store/vendorBookingsStore";
+import { useVendorBookingsStore } from "../../store/vendorBookingsStore";
 import { StatCard } from "../../components/vendors/dashboard/StatCard";
 import { StatusFilterDropdown, StatusFilter } from "../../components/vendors/bookings/StatusFilterDropdown";
 import { BookingRow } from "../../components/vendors/bookings/BookingRow";
@@ -18,21 +18,33 @@ export default function BookingsScreen() {
 
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Status");
-  const [selectedBooking, setSelectedBooking] = useState<VendorBookingRecord | null>(null);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Always derived live from the store — never a stale snapshot.
+  const selectedBooking = selectedBookingId
+    ? bookings.find((b) => b.id === selectedBookingId) ?? null
+    : null;
 
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchBookings();
+    setRefreshing(false);
+  };
+
   const totalCount = bookings.length;
   const pendingCount = bookings.filter(
-  (b) => b.status === "Pending" || b.status === "Accepted"
-).length;
+    (b) => b.status === "Pending" || b.status === "Accepted"
+  ).length;
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
   const totalRevenue = bookings
-  .filter((b) => b.payoutStatus === "released" || b.payoutStatus === "settled")
-  .reduce((sum, b) => sum + b.vendorNetAmount, 0);
+    .filter((b) => b.paymentStatus === "paid" || b.paymentStatus === "partial")
+    .reduce((sum, b) => sum + b.advancePaid, 0);
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
@@ -52,7 +64,13 @@ export default function BookingsScreen() {
         <Text style={styles.headerSubtitle}>Manage your wedding business.</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} tintColor={COLORS.primary} />
+        }
+      >
         <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.heroCard}>
           <View style={styles.heroPill}>
             <MaterialCommunityIcons name="calendar-month-outline" size={13} color="#fff" />
@@ -103,7 +121,7 @@ export default function BookingsScreen() {
                 key={booking.id}
                 booking={booking}
                 onPress={() => {
-                  setSelectedBooking(booking);
+                  setSelectedBookingId(booking.id);
                   setDetailsVisible(true);
                 }}
               />

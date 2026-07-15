@@ -49,7 +49,10 @@ interface VendorCalendarState {
 
 const todayStr = new Date().toISOString().split("T")[0];
 
-const ACTIVE_BOOKING_STATUSES = ["accepted", "confirmed", "completed"];
+// "accepted" — vendor accepted the booking
+// "completed" — CONFIRMED bookings are mapped to "completed" by the backend
+// "payment_approved" — final payment approved by admin, event is confirmed to have happened
+const ACTIVE_BOOKING_STATUSES = ["accepted", "completed", "payment_approved"];
 
 export const useVendorCalendarStore = create<VendorCalendarState>((set, get) => ({
   selectedDate: todayStr,
@@ -69,27 +72,19 @@ export const useVendorCalendarStore = create<VendorCalendarState>((set, get) => 
 
     try {
       let availability: AvailabilityItem[] = [];
-let bookings: any[] = [];
+      let bookings: any[] = [];
 
-try {
-  availability = await getMyAvailability();
-  console.log(
-    "Availability:",
-    JSON.stringify(availability, null, 2)
-  );
-} catch (e) {
-  console.log("Availability API Error:", e);
-}
+      try {
+        availability = await getMyAvailability();
+      } catch (e) {
+        console.log("Availability API Error:", e);
+      }
 
-try {
-  bookings = await getMyBookings();
-  console.log(
-    "Bookings:",
-    JSON.stringify(bookings, null, 2)
-  );
-} catch (e) {
-  console.log("Bookings API Error:", e);
-}
+      try {
+        bookings = await getMyBookings();
+      } catch (e) {
+        console.log("Bookings API Error:", e);
+      }
 
       const blockedDates: BlockedDate[] = availability
         .filter((item: any) => item.status === "blocked")

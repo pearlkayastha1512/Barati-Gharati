@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getMyBookings, acceptBooking, rejectBooking, completeBookingEvent, BackendBooking } from "../api/vendorBookings.api";
+import { getMyBookings, acceptBooking, completeBookingEvent, BackendBooking } from "../api/vendorBookings.api";
 
 export type VendorBookingStatus = "Pending" | "Accepted" | "Completed" | "Cancelled" | "Rejected";
 
@@ -8,6 +8,7 @@ export type VendorBookingRecord = {
   customerName: string;
   eventType: string;
   date: string;
+  eventDateRaw: string; // ISO date string, used for date comparisons (e.g. "has the event happened yet")
   amount: number;
   status: VendorBookingStatus;
 
@@ -24,7 +25,7 @@ export type VendorBookingRecord = {
   eventTime: string;
   customerEmail: string;
   customerPhone: string;
-  adminApproved: boolean; 
+  adminApproved: boolean;
 
   venue: string;
   city: string;
@@ -58,6 +59,7 @@ interface VendorBookingsState {
 const mapStatus = (backendStatus: string): VendorBookingStatus => {
   switch (backendStatus) {
     case "pending":
+    case "advance_paid":
     case "awaiting_admin_review":
       return "Pending";
     case "accepted":
@@ -87,10 +89,10 @@ const mapBooking = (b: BackendBooking): VendorBookingRecord => ({
     month: "short",
     year: "numeric",
   }),
+  eventDateRaw: b.eventDate,
   amount: b.amount,
   status: mapStatus(b.bookingStatus),
-
-  adminApproved: b.adminApproved, 
+  adminApproved: b.adminApproved,
   packageName: b.packageName,
   advancePaid: b.advancePaid,
   platformCommission: b.platformCommission ?? 0,
@@ -134,7 +136,25 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
   fetchBookings: async () => {
     try {
       set({ isLoading: true });
-      const data = await getMyBookings();
+      let data = await getMyBookings();
+
+      const needsAutoAccept = data.filter(
+        (b) =>
+          b.adminApproved &&
+          (b.bookingStatus === "pending" || b.bookingStatus === "advance_paid")
+      );
+
+      if (needsAutoAccept.length > 0) {
+        await Promise.all(
+          needsAutoAccept.map((b) =>
+            acceptBooking(b.id).catch((err) => {
+              console.log(`AUTO-ACCEPT FAILED for booking ${b.id} =>`, err);
+            })
+          )
+        );
+        data = await getMyBookings();
+      }
+
       set({ bookings: data.map(mapBooking), isLoading: false });
     } catch (error) {
       console.log("FETCH VENDOR BOOKINGS ERROR =>", error);
@@ -143,22 +163,18 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
   },
 
   updateStatus: async (id, status) => {
-  const previous = get().bookings;
-  set((state) => ({
-    bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
-  }));
-  try {
-    if (status === "Accepted") {
-      await acceptBooking(id);
-    } else if (status === "Rejected") {
-      await rejectBooking(id, "Rejected by vendor");
-    } else if (status === "Completed") {
-      await completeBookingEvent(id);
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) => (b.id === id ? { ...b, status } : b)),
+    }));
+    try {
+      if (status === "Completed") {
+        await completeBookingEvent(id);
+      }
+    } catch (error) {
+      console.log("UPDATE BOOKING STATUS ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
     }
-  } catch (error) {
-    console.log("UPDATE BOOKING STATUS ERROR =>", error);
-    set({ bookings: previous });
-    throw error;
-  }
-},
+  },
 }));

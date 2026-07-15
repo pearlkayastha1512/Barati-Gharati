@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { getMyProfile, updateMyProfile, changeMyPassword } from "../api/users.api";
+import { useAuthStore } from "./authStore";
+import { saveUser } from "../utils/secureStore";
 
 export type ProfileData = {
   fullName: string;
@@ -122,6 +124,25 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     try {
       await updateMyProfile(backendPayload);
+
+      // Keep authStore's user object in sync too — ProfileScreen (and anywhere else
+      // that reads user.name/user.phone) was reading stale values from here because
+      // updating this store never touched useAuthStore before.
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        const updatedUser = {
+          ...currentUser,
+          ...(backendPayload.name !== undefined ? { name: backendPayload.name } : {}),
+          ...(backendPayload.phone !== undefined ? { phone: backendPayload.phone } : {}),
+        };
+
+        useAuthStore.setState({ user: updatedUser });
+
+        // Also persist to SecureStore, so the fix survives app restart —
+        // otherwise restoreSession() would pull the old phone/name back out
+        // of SecureStore next time the app launches.
+        await saveUser(updatedUser);
+      }
     } catch (error) {
       console.log("UPDATE PROFILE ERROR =>", error);
       set({ profile: previous }); // rollback

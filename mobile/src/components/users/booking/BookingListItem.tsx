@@ -1,9 +1,12 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 import { Booking } from "../../../types/booking";
 import { styles } from "../../../screens/couple/styles/BookingScreen.styles";
+import { downloadBookingInvoice } from "../../../api/bookings.api";
 
 const STATUS_COLORS: Record<Booking["bookingStatus"], { bg: string; text: string }> = {
   pending: { bg: "#FFF3B0", text: "#6C2D45" },
@@ -28,7 +31,36 @@ const dateLabel = (value: string) => {
     : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
+// Converts a raw arraybuffer to base64 without depending on `global`/`btoa`,
+// which TypeScript's lib types don't recognize in this project.
+const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let result = "";
+  let i = 0;
+  for (; i + 2 < bytes.length; i += 3) {
+    result +=
+      BASE64_CHARS[bytes[i] >> 2] +
+      BASE64_CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)] +
+      BASE64_CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)] +
+      BASE64_CHARS[bytes[i + 2] & 63];
+  }
+  const remaining = bytes.length - i;
+  if (remaining === 1) {
+    result +=
+      BASE64_CHARS[bytes[i] >> 2] + BASE64_CHARS[(bytes[i] & 3) << 4] + "==";
+  } else if (remaining === 2) {
+    result +=
+      BASE64_CHARS[bytes[i] >> 2] +
+      BASE64_CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)] +
+      BASE64_CHARS[(bytes[i + 1] & 15) << 2] +
+      "=";
+  }
+  return result;
+}
+
 export function BookingListItem({ booking, onPress, onPay }: { booking: Booking; onPress: () => void; onPay: (mode: "advance" | "remaining") => void }) {
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const statusStyle = STATUS_COLORS[booking.bookingStatus];
   const canPayAdvance = booking.advancePaid <= 0 && booking.bookingStatus === "pending" && booking.paymentStatus !== "paid";
   const canPayRemaining = booking.bookingStatus === "payment_approved" && booking.remainingAmount > 0;
@@ -48,6 +80,35 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
         : booking.paymentStatus === "partial"
           ? partialLabel
           : "Pay Secure Advance";
+
+  const handleDownloadInvoice = async () => {
+    if (downloadingInvoice) return;
+    setDownloadingInvoice(true);
+    try {
+      const data = await downloadBookingInvoice(String(booking.id));
+      const base64 = arrayBufferToBase64(data);
+      const fileUri = `${FileSystem.cacheDirectory}invoice-${booking.bookingNumber}.pdf`;
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "application/pdf",
+          dialogTitle: "Booking Invoice",
+        });
+      } else {
+        Alert.alert("Invoice Downloaded", `Saved to: ${fileUri}`);
+      }
+    } catch (error) {
+      console.log("DOWNLOAD INVOICE ERROR =>", error);
+      Alert.alert("Download Failed", "Unable to download the invoice. Please try again.");
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
   return (
     <View style={styles.bookingCard}>
@@ -113,10 +174,25 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
         <Text style={[styles.payButtonText, !canPayAdvance && !canPayRemaining && styles.payButtonTextDisabled]}>{paymentLabel}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.viewDetailsButton} onPress={onPress}>
-        <MaterialIcons name="visibility" size={17} color="#FFFFFF" />
-        <Text style={styles.viewDetailsText}>View Details</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <TouchableOpacity style={[styles.viewDetailsButton, { flex: 1 }]} onPress={onPress}>
+          <MaterialIcons name="visibility" size={17} color="#FFFFFF" />
+          <Text style={styles.viewDetailsText}>View Details</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.viewDetailsButton, { flex: 1, opacity: downloadingInvoice ? 0.7 : 1 }]}
+          onPress={handleDownloadInvoice}
+          disabled={downloadingInvoice}
+        >
+          {downloadingInvoice ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <MaterialIcons name="download" size={17} color="#FFFFFF" />
+          )}
+          <Text style={styles.viewDetailsText}>{downloadingInvoice ? "Downloading..." : "Invoice"}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

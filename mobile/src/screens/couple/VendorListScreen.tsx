@@ -9,6 +9,7 @@ import { SortPicker, SortOption } from "../../components/users/vendors/SortPicke
 import { Vendor } from "../../constants/vendorData";
 import { getAllVendors } from "../../api/vendor.api";
 import { styles } from "../../components/users/vendors/VendorList.styles";
+import { CategoryPicker } from "../../components/users/vendors/CategoryPicker";
 
 // TODO: import API functions once backend is connected
 // import { searchVendors, getAllVendors } from "../../api/vendor.api";
@@ -110,10 +111,14 @@ export default function VendorListScreen() {
           />
         </View>
       </View>
-
-      <CityPicker selectedCity={selectedCity} onSelect={setSelectedCity} />
-
-      <CategoryChips activeCategory={activeCategory} onSelect={setActiveCategory} />
+<View style={{ flexDirection: "row", gap: 10, paddingHorizontal: 20, marginBottom: 12 }}>
+  <View style={{ flex: 1 }}>
+    <CityPicker selectedCity={selectedCity} onSelect={setSelectedCity} />
+  </View>
+  <View style={{ flex: 1 }}>
+    <CategoryPicker activeCategory={activeCategory} onSelect={setActiveCategory} />
+  </View>
+</View>
 
       {/* Result count + sort */}
       <View style={styles.resultRow}>

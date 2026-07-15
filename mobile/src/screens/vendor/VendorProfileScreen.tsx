@@ -18,7 +18,6 @@ const [loading,setLoading]=useState(true);
 const loadProfile=async()=>{
 try{
 const res=await getMyVendorProfile();
-console.log(res);
 setProfile(res.data);
 }catch(err){
 console.log(err);
@@ -48,23 +47,33 @@ return(
 
 const badgeKey=(profile?.badge || "BRONZE").toLowerCase();
 
+const hasSocialLinks = !!(profile?.website || profile?.instagram || profile?.facebook || profile?.youtube || profile?.linkedin);
+
 return(
 <SafeAreaView style={styles.safeArea}>
 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
 
 <View style={styles.heroWrapper}>
 
-{/* Cover */}
+{/* Cover — pink-to-orange gradient tint, matching the dashboard hero card */}
 <View style={styles.coverContainer}>
 {profile?.coverImage?
 <Image source={{uri:profile.coverImage}} style={styles.coverImage} resizeMode="cover"/>
 :
-<LinearGradient colors={[COLORS.gradientStart,COLORS.gradientEnd]} style={styles.coverImage}/>
+null
 }
-<LinearGradient colors={["transparent","rgba(0,0,0,0.35)"]} style={styles.coverOverlay}/>
+<LinearGradient
+colors={profile?.coverImage?
+["rgba(228,0,90,0.93)","rgba(255,159,26,0.93)"]
+:
+[COLORS.gradientStart,COLORS.gradientEnd]
+}
+start={{x:0,y:0}} end={{x:1,y:1}}
+style={styles.coverOverlay}
+/>
 
 <View style={styles.topRow}>
-<MaterialCommunityIcons name="store-outline" size={22} color="#fff"/>
+<MaterialCommunityIcons name="store-outline" size={14} color="#fff"/>
 <Text style={styles.tag}>Vendor Profile</Text>
 </View>
 </View>
@@ -75,7 +84,7 @@ return(
 <Image source={{uri:profile.logoUrl}} style={styles.logo}/>
 :
 <View style={styles.logoPlaceholder}>
-<MaterialCommunityIcons name="store" size={36} color={COLORS.primary}/>
+<MaterialCommunityIcons name="store" size={30} color={COLORS.primary}/>
 </View>}
 </View>
 
@@ -85,7 +94,7 @@ return(
 <Text style={styles.businessName}>{profile?.businessName}</Text>
 
 {profile?.description?
-<Text style={styles.description}>{profile.description}</Text>
+<Text style={styles.description} numberOfLines={2}>{profile.description}</Text>
 :null}
 
 <View style={styles.tags}>
@@ -98,7 +107,7 @@ return(
 :null}
 
 <Text style={[styles.badge, (styles as any)[`badge_${badgeKey}`]]}>
-{profile?.badge || "BRONZE"}
+{(profile?.badge || "BRONZE").toUpperCase()} TIER
 </Text>
 </View>
 
@@ -112,7 +121,7 @@ return(
 
 <View style={styles.statusPill}>
 <View style={styles.statusDot}/>
-<Text style={styles.statusText}>{profile?.status || "PENDING"}</Text>
+<Text style={styles.statusText}>{(profile?.status || "PENDING").toUpperCase()}</Text>
 </View>
 </View>
 
@@ -126,56 +135,56 @@ return(
 </View>
 
 <TouchableOpacity style={styles.editBtn} onPress={()=>navigation.navigate("VendorEditProfile",{profile})}>
+<MaterialCommunityIcons name="pencil-outline" size={14} color="#fff"/>
 <Text style={styles.editText}>Edit Profile</Text>
 </TouchableOpacity>
 </View>
 
-<View style={styles.card}>
-<Text style={styles.heading}>Owner Information</Text>
+<SectionCard icon="account-outline" title="Owner Information">
 <Info title="Owner Name" value={profile?.user?.name}/>
 <Info title="Email" value={profile?.user?.email}/>
-<Info title="Phone" value={profile?.user?.phone}/>
-</View>
+<Info title="Phone" value={profile?.user?.phone} last/>
+</SectionCard>
 
-<View style={styles.card}>
-<Text style={styles.heading}>Business Details</Text>
+<SectionCard icon="briefcase-outline" title="Business Details">
 <Info title="Business Name" value={profile?.businessName}/>
 <Info title="Category" value={profile?.category?.name}/>
 <Info title="City" value={profile?.city}/>
 <Info title="Address" value={profile?.address}/>
 <Info title="Experience" value={profile?.experience}/>
-<Info title="GST Number" value={profile?.gstNumber}/>
-</View>
+<Info title="GST Number" value={profile?.gstNumber} last/>
+</SectionCard>
 
-<View style={styles.card}>
-<Text style={styles.heading}>Business Description</Text>
+<SectionCard icon="text-box-outline" title="Business Description">
 <Text style={styles.desc}>{profile?.description || "No description available."}</Text>
-</View>
+</SectionCard>
 
-<View style={styles.card}>
-<Text style={styles.heading}>Social Links</Text>
+{hasSocialLinks?
+<SectionCard icon="link-variant" title="Social Links">
 <Info title="Website" value={profile?.website}/>
 <Info title="Instagram" value={profile?.instagram}/>
 <Info title="Facebook" value={profile?.facebook}/>
 <Info title="Youtube" value={profile?.youtube}/>
-<Info title="LinkedIn" value={profile?.linkedin}/>
-</View>
+<Info title="LinkedIn" value={profile?.linkedin} last/>
+</SectionCard>
+:null}
 
-<View style={styles.card}>
-<Text style={styles.heading}>Vendor Badge</Text>
+<SectionCard icon="medal-outline" title="Vendor Badge">
 <Info title="Badge" value={profile?.badge}/>
-<Info title="Monthly Booking Limit" value={String(profile?.monthlyBookingLimit)}/>
-<Info title="Current Month Bookings" value={String(profile?.currentMonthBookings)}/>
-</View>
+<Info title="Monthly Booking Limit" value={String(profile?.monthlyBookingLimit ?? "—")}/>
+<Info title="Current Month Bookings" value={String(profile?.currentMonthBookings ?? 0)} last/>
+</SectionCard>
 
-<View style={styles.card}>
-<Text style={styles.heading}>Verification</Text>
-<Info title="Status" value={profile?.status}/>
-<Info title="Business Verified" value={profile?.businessVerified?"Yes":"No"}/>
-<Info title="GST Verified" value={profile?.gstVerified?"Yes":"No"}/>
-<Info title="Bank Verified" value={profile?.bankVerified?"Yes":"No"}/>
-<Info title="Documents Uploaded" value={profile?.documentsUploaded?"Yes":"No"}/>
+<SectionCard icon="shield-check-outline" title="Verification">
+<View style={styles.verifyGrid}>
+<VerifyItem label="Business" active={!!profile?.businessVerified}/>
+<VerifyItem label="GST" active={!!profile?.gstVerified}/>
+<VerifyItem label="Bank" active={!!profile?.bankVerified}/>
+<VerifyItem label="Documents" active={!!profile?.documentsUploaded}/>
 </View>
+</SectionCard>
+
+<View style={styles.footerSpacing}/>
 
 </ScrollView>
 </SafeAreaView>
@@ -183,11 +192,44 @@ return(
 
 }
 
-function Info({title,value}:any){
+function SectionCard({icon,title,children}:{icon:any,title:string,children:React.ReactNode}){
 return(
-<View style={styles.infoRow}>
+<View style={styles.card}>
+<View style={styles.sectionHeaderRow}>
+<View style={styles.sectionTitleWrap}>
+<View style={styles.sectionIconWrap}>
+<MaterialCommunityIcons name={icon} size={16} color={COLORS.primary}/>
+</View>
+<Text style={styles.heading}>{title}</Text>
+</View>
+</View>
+{children}
+</View>
+);
+}
+
+function Info({title,value,last}:{title:string,value?:any,last?:boolean}){
+return(
+<View style={[styles.infoRow, last?styles.infoRowLast:null]}>
 <Text style={styles.infoTitle}>{title}</Text>
 <Text style={styles.infoValue}>{value || "—"}</Text>
+</View>
+);
+}
+
+function VerifyItem({label,active}:{label:string,active:boolean}){
+return(
+<View style={styles.verifyItem}>
+<View style={[styles.verifyCard, active?styles.verifyCardOn:styles.verifyCardOff]}>
+<View style={[styles.verifyIconWrap,{backgroundColor: active? "#DFF5E6" : "#EFEFEF"}]}>
+<MaterialCommunityIcons
+name={active?"check-circle":"close-circle-outline"}
+size={16}
+color={active?COLORS.success:COLORS.textLight}
+/>
+</View>
+<Text style={styles.verifyLabel}>{label}</Text>
+</View>
 </View>
 );
 }

@@ -49,8 +49,8 @@ function computeAnalytics(bookings: BackendBooking[]) {
   );
 
   const uniqueCustomers = new Set(
-    activeBookings.map((b) => b.customerEmail || b.customerId)
-  );
+  activeBookings.map((b) => b.customerId)
+);
 
   const monthlyBookingCounts = MONTHS.map((month) => ({ month, count: 0 }));
   const monthlyRevenueTotals = MONTHS.map((month) => ({ month, amount: 0 }));

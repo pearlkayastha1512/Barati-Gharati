@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#FAFAFA" },
+  safeArea: { flex: 1, backgroundColor: "#FFF5F7" },
   scrollContent: { paddingBottom: 100 },
 
   header: {
@@ -15,45 +15,53 @@ export const styles = StyleSheet.create({
     width: 40, height: 40, borderRadius: 20, backgroundColor: "#fff",
     justifyContent: "center", alignItems: "center", elevation: 1, marginRight: 12,
   },
-  headerTitle: { fontSize: 20, fontWeight: "700", color: "#333" },
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#3F1D2F" },
 
-  // Hero
+  // Hero — now a LinearGradient wrapper matching HomeScreen
   heroCard: {
-    backgroundColor: "#C2185B",
     marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 20,
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 26,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: "#FF9AAA",
+    shadowColor: "#FF4D6D",
+    shadowOpacity: 0.15,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
   },
   heroBadge: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "#FFFEF7",
     borderRadius: 20,
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 6,
     marginBottom: 14,
   },
-  heroBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600", marginLeft: 6 },
-  heroTitle: { color: "#fff", fontSize: 24, fontWeight: "800", lineHeight: 30 },
-  heroSubtitle: { color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 10, lineHeight: 18 },
+  heroBadgeText: { color: "#6C2D45", fontSize: 12, fontWeight: "700", marginLeft: 6 },
+  heroTitle: { color: "#3F1D2F", fontSize: 24, fontWeight: "800", lineHeight: 30 },
+  heroSubtitle: { color: "#6C2D45", fontSize: 12, marginTop: 10, lineHeight: 18 },
 
   heroSummaryBox: {
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,254,247,0.55)",
     borderRadius: 16,
     padding: 16,
     marginTop: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.6)",
   },
   heroSummaryHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  heroSummaryTitle: { color: "#fff", fontSize: 14, fontWeight: "700", marginLeft: 6 },
+  heroSummaryTitle: { color: "#3F1D2F", fontSize: 14, fontWeight: "700", marginLeft: 6 },
   heroSummaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  heroSummaryLabel: { color: "rgba(255,255,255,0.85)", fontSize: 12 },
-  heroSummaryValue: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  heroSummaryLabel: { color: "#6C2D45", fontSize: 12 },
+  heroSummaryValue: { color: "#3F1D2F", fontSize: 13, fontWeight: "800" },
 
   exploreButton: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FF4D6D",
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: "center",
@@ -61,7 +69,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 18,
   },
-  exploreButtonText: { color: "#C2185B", fontWeight: "700", fontSize: 14, marginRight: 6 },
+  exploreButtonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14, marginRight: 6 },
 
   // Stat cards
   statsGrid: {

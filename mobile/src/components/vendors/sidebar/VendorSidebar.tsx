@@ -79,22 +79,18 @@ export function VendorSidebar({ visible, onClose }: Props) {
           style={[styles.sidebar, { transform: [{ translateX }] }]}
           onStartShouldSetResponder={() => true}
         >
-          <View style={styles.header}>
+        <View style={styles.header}>
+  <Image
+    source={Logo}
+    style={styles.logo}
+    resizeMode="contain"
+  />
 
-<Image
-source={Logo}
-style={{
-width:170,
-height:60,
-resizeMode:"contain",
-marginBottom:8
-}}
-/>
+  <View style={styles.divider} />
 
-<Text style={styles.sectionLabel}>
-BUSINESS
-</Text>
-
+  <Text style={styles.sectionLabel}>
+    BUSINESS
+  </Text>
 </View>
 
           <View style={styles.navList}>
