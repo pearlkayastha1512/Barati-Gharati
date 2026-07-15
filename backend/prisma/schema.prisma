@@ -46,6 +46,11 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  adminRole          AdminRole?
+  adminPermissions   String[]   @default([])
+  adminIsActive      Boolean    @default(true)
+  mustChangePassword Boolean    @default(false)
+
   vendor              Vendor?
   bookings            Booking[]
   reviews             Review[]
@@ -73,7 +78,25 @@ model User {
 
   customerConversations Conversation[] @relation("CustomerConversations")
 
-  wishlists Wishlist[]
+  wishlists      Wishlist[]
+  adminAuditLogs AdminAuditLog[]
+}
+
+model AdminAuditLog {
+  id String @id @default(uuid())
+
+  actorId String
+  actor   User   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  action     String
+  resource   String
+  resourceId String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([resource])
+  @@index([createdAt])
 }
 
 model Portfolio {
@@ -218,6 +241,15 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PayoutStatus {
+  HELD_FOR_ADMIN_REVIEW
+  RELEASE_PROCESSING
+  RELEASED
+  SETTLED
+  FAILED
+  REFUNDED
+}
+
 enum AvailabilityStatus {
   BLOCKED
 }
@@ -270,7 +302,7 @@ model Booking {
   brideName String?
   groomName String?
 
-  eventTitle       String?
+  eventTitle        String?
   primaryPersonName String?
   primaryPersonAge  Int?
   eventTheme        String?
@@ -310,10 +342,40 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   review Review?
+  payout BookingPayout?
 
   @@index([userId])
   @@index([vendorId])
   @@index([packageId])
+  @@index([status])
+}
+
+model BookingPayout {
+  id String @id @default(uuid())
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  grossAdvance       Decimal @db.Decimal(10, 2)
+  platformCommission Decimal @db.Decimal(10, 2)
+  vendorNetAmount    Decimal @db.Decimal(10, 2)
+
+  commissionPolicy    String @default("ADVANCE_MARGINAL_V1")
+  commissionBreakdown Json
+
+  status    PayoutStatus @default(HELD_FOR_ADMIN_REVIEW)
+  simulated Boolean      @default(true)
+
+  razorpayPaymentId     String?
+  razorpayTransferId    String? @unique
+  transferFailureReason String?
+
+  releasedAt           DateTime?
+  settledAt            DateTime?
+  vendorAcknowledgedAt DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
   @@index([status])
 }
 

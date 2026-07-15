@@ -14,4 +14,7 @@ export interface User {
   avatar?: string;
   createdAt?: string;
   updatedAt?: string;
+  adminRole?: string | null;
+  permissions?: string[];
+  mustChangePassword?: boolean;
 }

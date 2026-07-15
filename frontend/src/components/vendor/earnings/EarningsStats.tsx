@@ -36,7 +36,7 @@ export default function EarningsStats() {
       }
 
       totalRevenue +=
-        booking.advancePaid;
+        booking.vendorNetAmount ?? 0;
 
       pendingAmount +=
         booking.remainingAmount;
@@ -52,7 +52,7 @@ export default function EarningsStats() {
           currentYear
       ) {
         monthlyRevenue +=
-          booking.advancePaid;
+          booking.vendorNetAmount ?? 0;
       }
     });
 

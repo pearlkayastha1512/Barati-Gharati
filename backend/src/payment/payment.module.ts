@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { InvoiceModule } from '../invoice/invoice.module';
 import { MailModule } from '../mail/mail.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { PayoutsModule } from '../payouts/payouts.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     InvoiceModule,
     MailModule,
     NotificationsModule,
+    PayoutsModule,
   ],
   controllers: [PaymentController],
   providers: [PaymentService],

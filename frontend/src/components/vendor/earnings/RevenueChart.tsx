@@ -156,7 +156,7 @@ export default function RevenueChart() {
       }
 
       revenue[date.getMonth()] +=
-        booking.advancePaid;
+        booking.vendorNetAmount ?? 0;
     });
 
     const chartData = months.map(

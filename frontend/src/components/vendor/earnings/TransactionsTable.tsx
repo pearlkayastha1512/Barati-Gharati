@@ -45,7 +45,7 @@ export default function TransactionsTable() {
           booking.amount,
 
         advance:
-          booking.advancePaid,
+          booking.vendorNetAmount ?? 0,
 
         remaining:
           booking.remainingAmount,

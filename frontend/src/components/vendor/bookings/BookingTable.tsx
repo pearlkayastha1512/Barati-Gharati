@@ -4,7 +4,6 @@
 import {
   CheckCircle2,
   Eye,
-  XCircle,
 } from "lucide-react";
 
 import { Booking } from "@/types/booking";
@@ -135,9 +134,9 @@ export default function BookingTable({ bookings }: Props) {
 
                 <td className="px-6 py-5">
                   <div className="flex gap-2">
-                    {booking.bookingStatus === "pending" &&
+                    {(booking.bookingStatus === "pending" ||
+                      booking.bookingStatus === "advance_paid") &&
                       booking.adminApproved && (
-                      <>
                         <button
                           onClick={() =>
                             handleStatusChange(
@@ -146,22 +145,10 @@ export default function BookingTable({ bookings }: Props) {
                             )
                           }
                           className="rounded-lg bg-green-600 px-3 py-2 text-white transition hover:bg-green-700"
+                          title="Acknowledge advance and accept booking"
                         >
                           <CheckCircle2 size={16} />
                         </button>
-
-                        <button
-                          onClick={() =>
-                            handleStatusChange(
-                              booking,
-                              "rejected"
-                            )
-                          }
-                          className="rounded-lg bg-red-600 px-3 py-2 text-white transition hover:bg-red-700"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                      </>
                     )}
 
                     {booking.bookingStatus ===
