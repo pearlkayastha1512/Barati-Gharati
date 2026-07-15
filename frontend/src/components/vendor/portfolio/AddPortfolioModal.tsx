@@ -417,14 +417,15 @@ export default function AddPortfolioModal({
         imageFile
       );
 
-      const success =
+      const result =
         await addPortfolio(
           formData
         );
 
-      if (!success) {
+      if (!result.success) {
         toast.error(
-          "Unable to upload portfolio."
+          result.error ??
+            "Unable to upload portfolio."
         );
         return;
       }

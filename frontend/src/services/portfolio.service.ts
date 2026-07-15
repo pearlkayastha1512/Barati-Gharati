@@ -56,16 +56,30 @@ export async function getVendorPortfolio(
 
 export async function createPortfolio(
   formData: FormData
-): Promise<boolean> {
+): Promise<{
+  success: boolean;
+  error?: string;
+}> {
   const result =
     await createPortfolioApi(
       formData
     );
 
-  return (
-    result.ok &&
-    result.data?.success
-  );
+  if (!result.ok) {
+    return {
+      success: false,
+      error: result.error,
+    };
+  }
+
+  if (!result.data?.success) {
+    return {
+      success: false,
+      error: "Portfolio upload could not be completed.",
+    };
+  }
+
+  return { success: true };
 }
 
 // ========================================

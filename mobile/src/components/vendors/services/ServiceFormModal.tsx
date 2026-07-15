@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  Modal, View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet, Platform,
+  ActivityIndicator, Alert, Modal, View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet, Platform,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -19,7 +19,7 @@ interface ServiceFormModalProps {
     duration: string;
     price: number;
     image: string | null;
-  }) => void;
+  }) => Promise<{ success: boolean; error?: string }>;
   initialService?: VendorServiceRecord | null;
 }
 
@@ -33,6 +33,7 @@ export function ServiceFormModal({ visible, onClose, onSubmit, initialService }:
   const [duration, setDuration] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -62,17 +63,23 @@ export function ServiceFormModal({ visible, onClose, onSubmit, initialService }:
     }
   };
 
-  const handleSave = () => {
-    if (!serviceName.trim() || !price.trim()) return;
-    onSubmit({
-      serviceName: serviceName.trim(),
-      category,
-      description: description.trim(),
-      duration: duration.trim(),
-      price: Number(price) || 0,
-      image,
-    });
-    onClose();
+  const handleSave = async () => {
+    if (!serviceName.trim() || !price.trim() || isSaving) return;
+
+    setIsSaving(true);
+    const result = await onSubmit({
+        serviceName: serviceName.trim(),
+        category,
+        description: description.trim(),
+        duration: duration.trim(),
+        price: Number(price) || 0,
+        image,
+      });
+    setIsSaving(false);
+
+    if (!result.success) {
+      Alert.alert("Service not saved", result.error ?? "Please try again.");
+    }
   };
 
   return (
@@ -194,8 +201,16 @@ export function ServiceFormModal({ visible, onClose, onSubmit, initialService }:
             <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>{isEditing ? "Save Changes" : "Create Service"}</Text>
+            <TouchableOpacity
+              style={[styles.saveBtn, isSaving && styles.saveBtnDisabled]}
+              onPress={() => void handleSave()}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.saveBtnText}>{isEditing ? "Save Changes" : "Create Service"}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -257,4 +272,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12, borderRadius: RADIUS.md, backgroundColor: COLORS.primary,
   },
   saveBtnText: { fontSize: 14, fontWeight: "700", color: "#fff" },
+  saveBtnDisabled: { opacity: 0.65 },
 });

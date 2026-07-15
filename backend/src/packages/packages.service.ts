@@ -18,6 +18,33 @@ export class PackagesService {
     private cloudinary: CloudinaryService,
   ) {}
 
+  private isPublicImageUrl(value: unknown): value is string {
+    if (typeof value !== 'string' || !value.trim()) {
+      return false;
+    }
+
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' || url.protocol === 'http:';
+    } catch {
+      return false;
+    }
+  }
+
+  private normalizeServiceImage(value?: string) {
+    if (!value?.trim()) {
+      return null;
+    }
+
+    if (!this.isPublicImageUrl(value)) {
+      throw new BadRequestException(
+        'Service image must be uploaded before saving the service',
+      );
+    }
+
+    return value.trim();
+  }
+
   private mapService(pkg: any) {
     return {
       id: pkg.id,
@@ -49,9 +76,11 @@ export class PackagesService {
       reviews: pkg.reviews.length,
 
       image:
-        pkg.image ||
-        pkg.vendor.logoUrl ||
-        pkg.vendor.coverImage ||
+        [
+          pkg.image,
+          pkg.vendor.logoUrl,
+          pkg.vendor.coverImage,
+        ].find((image) => this.isPublicImageUrl(image)) ||
         'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800',
 
       includes: pkg.inclusions ?? [],
@@ -112,7 +141,7 @@ console.log("===================================");
 
         description: dto.description,
 
-        image: dto.image,
+        image: this.normalizeServiceImage(dto.image),
 
         price: dto.price,
 
@@ -336,7 +365,10 @@ console.log("===================================");
 
         description: dto.description,
 
-        image: dto.image,
+        image:
+          dto.image === undefined
+            ? undefined
+            : this.normalizeServiceImage(dto.image),
 
         price: dto.price,
 
@@ -618,7 +650,6 @@ console.log("===================================");
 //   );
 // }
 // }
-
 
 
 

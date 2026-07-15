@@ -6,7 +6,9 @@ import {
   updateServiceApi,
   deleteServiceApi,
   BackendService,
+  uploadServiceImage,
 } from "../api/vendorServices.api";
+import { AxiosError } from "axios";
 
 export type ServiceCategory =
   | "Venue"
@@ -108,15 +110,51 @@ interface VendorServicesState {
       VendorServiceRecord,
       "id" | "rating" | "reviewsCount" | "status"
     >
-  ) => Promise<void>;
+  ) => Promise<ServiceActionResult>;
 
   updateService: (
     id: string,
     updates: Partial<VendorServiceRecord>
-  ) => Promise<void>;
+  ) => Promise<ServiceActionResult>;
 
-  deleteService: (id: string) => Promise<void>;
+  deleteService: (id: string) => Promise<ServiceActionResult>;
 }
+
+export type ServiceActionResult = {
+  success: boolean;
+  error?: string;
+};
+
+const isLocalImage = (image?: string | null) =>
+  !!image && /^(file|content):\/\//i.test(image);
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    const responseMessage = error.response?.data?.message;
+    const message = Array.isArray(responseMessage)
+      ? responseMessage.join(" ")
+      : responseMessage;
+
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+
+    if (!error.response) {
+      return "Backend server se connection nahi ho pa raha hai.";
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Service save nahi ho saki.";
+};
+
+const resolveImage = async (image?: string | null) => {
+  if (!image) return "";
+  return isLocalImage(image) ? uploadServiceImage(image) : image;
+};
 
 const mapCategory = (category: string): ServiceCategory => {
   if (SERVICE_CATEGORIES.includes(category as ServiceCategory)) {
@@ -172,37 +210,43 @@ export const useVendorServicesStore = create<VendorServicesState>(
 
     addService: async (service) => {
       try {
+        const image = await resolveImage(service.image);
+
         await createService({
           name: service.serviceName,
           category: service.category,
           description: service.description,
           duration: service.duration,
           price: service.price,
-          image: service.image ?? "",
+          image,
           includes: [],
         });
 
         await get().fetchServices();
+        return { success: true };
       } catch (error) {
-        console.log("CREATE SERVICE ERROR:", error);
+        return { success: false, error: getErrorMessage(error) };
       }
     },
 
     updateService: async (id, updates) => {
       try {
+        const image = await resolveImage(updates.image);
+
         await updateServiceApi(id, {
           name: updates.serviceName,
           category: updates.category,
           description: updates.description,
           duration: updates.duration,
           price: updates.price,
-          image: updates.image ?? "",
+          image,
           includes: [],
         });
 
         await get().fetchServices();
+        return { success: true };
       } catch (error) {
-        console.log("UPDATE SERVICE ERROR:", error);
+        return { success: false, error: getErrorMessage(error) };
       }
     },
 
@@ -211,8 +255,9 @@ export const useVendorServicesStore = create<VendorServicesState>(
         await deleteServiceApi(id);
 
         await get().fetchServices();
+        return { success: true };
       } catch (error) {
-        console.log("DELETE SERVICE ERROR:", error);
+        return { success: false, error: getErrorMessage(error) };
       }
     },
   })

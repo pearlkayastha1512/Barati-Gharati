@@ -13,6 +13,15 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  // Let the browser add the multipart boundary. Keeping the instance-level
+  // application/json header on FormData can make Multer receive an empty body.
+  if (
+    typeof FormData !== "undefined" &&
+    config.data instanceof FormData
+  ) {
+    config.headers.delete("Content-Type");
+  }
+
   if (typeof window !== "undefined") {
     const persisted =
       localStorage.getItem("auth-storage");

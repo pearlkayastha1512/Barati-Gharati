@@ -49,17 +49,6 @@ export function BookingDetailsModal({ visible, booking, onClose }: Props) {
   const statusStyle = STATUS_COLORS[booking.status];
 
   const showWaitingBanner = booking.status === "Pending" && !booking.adminApproved;
-  const showCompleteAction = booking.status === "Accepted";
-
-  const handleAccept = async () => {
-    setActionLoading("accept");
-    try {
-      await updateStatus(booking.id, "Accepted");
-      onClose();
-    } finally {
-      setActionLoading(null);
-    }
-  };
   const showConfirmingBanner = booking.status === "Pending" && booking.adminApproved;
   const eventHasOccurred = new Date(booking.eventDateRaw) <= new Date();
 const showCompleteAction = booking.status === "Accepted" && eventHasOccurred;
@@ -155,22 +144,10 @@ const showUpcomingBanner = booking.status === "Accepted" && !eventHasOccurred;
 
             <Section title="Payment">
               <Row label="Total Amount" value={`₹${booking.amount.toLocaleString("en-IN")}`} />
-              <Row label="Customer Advance" value={`₹${booking.advancePaid.toLocaleString("en-IN")}`} />
-              <Row label="Platform Fee" value={`- ₹${booking.platformCommission.toLocaleString("en-IN")}`} />
-              <Row label="Your Net Advance" value={`₹${booking.vendorNetAmount.toLocaleString("en-IN")}`} />
-              <Row label="Release Status" value={booking.payoutStatus?.replaceAll("_", " ") ?? "Pending"} />
+              <Row label="Advance Paid" value={`₹${booking.advancePaid.toLocaleString("en-IN")}`} />
               <Row label="Remaining" value={`₹${booking.remainingAmount.toLocaleString("en-IN")}`} />
               <Row label="Payment Status" value={booking.paymentStatus} />
             </Section>
-
-            {booking.adminApproved && !booking.vendorAcknowledgedAt && (
-              <View style={styles.releaseBanner}>
-                <MaterialCommunityIcons name="shield-check-outline" size={18} color="#166534" />
-                <Text style={styles.releaseBannerText}>
-                  Admin approved this booking. The net advance is released in the test ledger. Please acknowledge to continue.
-                </Text>
-              </View>
-            )}
 
             <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
               <Text style={styles.detailLabel}>Status</Text>
@@ -196,22 +173,6 @@ const showUpcomingBanner = booking.status === "Accepted" && !eventHasOccurred;
   </View>
 )}
 
-          {showAcceptReject && (
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.acceptBtn]}
-                onPress={handleAccept}
-                disabled={actionLoading !== null}
-              >
-                {actionLoading === "accept" ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.actionBtnText}>Acknowledge &amp; Accept</Text>
-                )}
-              </TouchableOpacity>
-
-            </View>
-          )}
             {showConfirmingBanner && (
               <View style={styles.pendingApprovalBanner}>
                 <MaterialCommunityIcons name="progress-clock" size={16} color={COLORS.textMuted} />
@@ -277,23 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     flex: 1,
-  },
-  releaseBanner: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    backgroundColor: "#ECFDF3",
-    borderColor: "#86EFAC",
-    borderWidth: 1,
-    padding: SPACING.sm,
-    borderRadius: RADIUS.md,
-    marginTop: SPACING.sm,
-  },
-  releaseBannerText: {
-    flex: 1,
-    color: "#166534",
-    fontSize: 12,
-    lineHeight: 18,
   },
 
   actionsRow: {

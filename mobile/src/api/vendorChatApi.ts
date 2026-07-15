@@ -35,8 +35,15 @@ export interface ChatMessage {
 }
 
 export const getVendorConversations = async () => {
-  const { data } = await api.get<Conversation[]>("/chat/conversations");
-  return data;
+  const { data } = await api.get<Conversation[] | { data: Conversation[] }>(
+    "/chat/conversations",
+  );
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return Array.isArray(data?.data) ? data.data : [];
 };
 
 export const getConversationMessages = async (
