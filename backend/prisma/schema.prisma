@@ -7,21 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
+
+
 enum Role {
   USER
   VENDOR
   ADMIN
-}
-
-enum AdminRole {
-  SUPER_ADMIN
-  FINANCE_ADMIN
-  VENDOR_MANAGER
-  BOOKING_MANAGER
-  SUPPORT_ADMIN
-  CONTENT_MANAGER
-  REVIEW_DISPUTE_MANAGER
-  CHAT_MODERATOR
 }
 
 enum VendorStatus {
@@ -204,21 +197,23 @@ model Package {
   title       String
   description String?
   image       String?
-  price       Decimal  @db.Decimal(10, 2)
+  price       Decimal   @db.Decimal(10, 2)
+  vendorId    String
+  categoryId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   inclusions  String[]
 
-  vendorId String
+  
   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  categoryId String
+ 
   category   Category @relation(fields: [categoryId], references: [id])
 
-  bookings Booking[]
-  reviews  Review[]
-  leads    Lead[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  bookings  Booking[]
+  reviews   Review[]
+  leads     Lead[]
+  
 
   @@index([vendorId])
   @@index([categoryId])
