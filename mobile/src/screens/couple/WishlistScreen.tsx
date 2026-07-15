@@ -213,13 +213,18 @@ export default function WishlistScreen() {
               <VendorCard
                 key={vendor.id}
                 vendor={vendor}
-                onViewProfile={() => navigation.navigate("VendorDetails", { vendorId: vendor.id })}
-                onBookNow={() =>
-                  navigation.navigate("Bookings", {
-                    screen: "BookingScreen",
-                    params: { vendorId: vendor.id },
-                  })
-                }
+                onViewProfile={() =>
+  navigation.navigate("CoupleTabs", {
+    screen: "Vendors",
+    params: { screen: "VendorDetails", params: { vendorId: vendor.id } },
+  })
+}
+onBookNow={() =>
+  navigation.navigate("CoupleTabs", {
+    screen: "Vendors",
+    params: { screen: "VendorDetails", params: { vendorId: vendor.id } },
+  })
+}
               />
             ))}
           </View>

@@ -9,7 +9,6 @@ import { styles } from "./styles/HomeScreen.styles";
 import { Sidebar } from "../../components/users/home/Sidebar";
 import { StatCard } from "../../components/users/home/StatCard";
 import { QuickActionCard } from "../../components/users/home/QuickActionCard";
-import { WeddingProgressChecklist } from "../../components/users/home/WeddingProgressChecklist";
 import { useFavoritesStore } from "../../store/favoritesStore";
 import { ChatbotFAB } from "../../components/users/home/ChatbotFAB";
 import { ChatbotModal } from "../../components/users/home/ChatbotModal";
@@ -78,7 +77,6 @@ export default function HomeScreen() {
     ...vendors.filter((vendor) => vendor.featured),
     ...vendors.filter((vendor) => !vendor.featured),
   ].slice(0, 4);
-  const bookedCategories = activeBookings.map((booking) => booking.category);
   const unreadNotifications = notifications.filter((notification) => !notification.isRead).length;
   const recentActivity = [
     ...bookings.map((booking) => ({
@@ -280,9 +278,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Wedding Progress — vendor-category checklist (distinct from task-based Checklist screen) */}
-        <WeddingProgressChecklist bookedCategories={bookedCategories} />
-
         {/* Search */}
         <View style={styles.searchRow}>
           <View style={styles.searchInputWrapper}>
@@ -311,13 +306,13 @@ export default function HomeScreen() {
         </View>
         <View style={styles.categoriesGrid}>
           <Category icon="location-city" label="Venue" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Venue" } })} />
-          <Category icon="photo-camera" label="Photography" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Photography" } })} />
-          <Category icon="brush" label="Makeup" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Makeup" } })} />
+          <Category icon="photo-camera" label="Photographer" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Photographer" } })} />
+          <Category icon="brush" label="Makeup Artist" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Makeup Artist" } })} />
           <Category icon="celebration" label="Decorator" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Decorator" } })} />
           <Category icon="headset" label="DJ" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "DJ" } })} />
           <Category icon="restaurant" label="Caterer" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Caterer" } })} />
-          <Category icon="spa" label="Mehendi" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Mehendi" } })} />
-          <Category icon="music-note" label="Band" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Band" } })} />
+          <Category icon="spa" label="Mehendi Artist" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Mehendi Artist" } })} />
+          <Category icon="music-note" label="Live Band" onPress={() => navigation.navigate("Vendors", { screen: "VendorList", params: { category: "Live Band" } })} />
         </View>
 
         {/* Featured Vendors */}
