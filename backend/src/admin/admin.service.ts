@@ -11,9 +11,11 @@ import {
   VendorBadge,
   VendorStatus,
   PaymentStatus,
+  PayoutStatus,
 } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PayoutsService } from '../payouts/payouts.service';
 
 @Injectable()
 export class AdminService {
@@ -21,6 +23,7 @@ export class AdminService {
   private readonly prisma: PrismaService,
   private readonly mailService: MailService,
   private readonly notificationsService: NotificationsService,
+  private readonly payoutsService: PayoutsService,
 ) {}
 
   private getRazorpay() {
@@ -145,8 +148,8 @@ export class AdminService {
       this.prisma.booking.count({
         where: { status: BookingStatus.CANCELLED },
       }),
-      this.prisma.booking.aggregate({
-        _sum: { amountPaid: true },
+      this.prisma.bookingPayout.aggregate({
+        _sum: { platformCommission: true },
       }),
     ]);
 
@@ -160,7 +163,7 @@ export class AdminService {
         totalBookings,
         totalCategories,
         totalRevenue: Number(
-          revenue._sum.amountPaid ?? 0,
+          revenue._sum.platformCommission ?? 0,
         ),
         pendingVendorApprovals,
         pendingBookings,
@@ -856,6 +859,38 @@ async deleteVendor(id: string) {
 
 
 
+async getSiteContent() {
+  const pages = await this.prisma.siteContent.findMany({
+    orderBy: { slug: 'asc' },
+  });
+
+  return { success: true, data: pages };
+}
+
+async updateSiteContent(
+  slug: string,
+  dto: { title: string; content: string },
+) {
+  const page = await this.prisma.siteContent.upsert({
+    where: { slug },
+    update: {
+      title: dto.title.trim(),
+      content: dto.content,
+    },
+    create: {
+      slug,
+      title: dto.title.trim(),
+      content: dto.content,
+    },
+  });
+
+  return {
+    success: true,
+    message: 'Site content updated successfully',
+    data: page,
+  };
+}
+
 async getAllBookings() {
   const bookings = await this.prisma.booking.findMany({
     include: {
@@ -878,6 +913,7 @@ async getAllBookings() {
         },
       },
       review: true,
+      payout: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -901,6 +937,7 @@ async getBookingById(id: string) {
       vendor: true,
       package: true,
       review: true,
+      payout: true,
     },
   });
 
@@ -972,6 +1009,7 @@ async approveBooking(id: string) {
       user: true,
       vendor: true,
       package: true,
+      payout: true,
     },
   });
 
@@ -992,7 +1030,11 @@ async approveBooking(id: string) {
     );
   }
 
-  if (booking.adminApproved) {
+  if (
+    booking.adminApproved &&
+    (booking.payout?.status === PayoutStatus.RELEASED ||
+      booking.payout?.status === PayoutStatus.SETTLED)
+  ) {
     return {
       success: true,
       message: 'Booking is already approved',
@@ -1000,12 +1042,22 @@ async approveBooking(id: string) {
     };
   }
 
+  await this.payoutsService.ensureAdvancePayout(
+    booking.id,
+    booking.amountPaid,
+  );
+  const payout = await this.payoutsService.releaseAdvancePayout(
+    booking.id,
+  );
+
   const updated = await this.prisma.booking.update({
     where: { id },
     data: {
       adminApproved: true,
-      adminApprovedAt: new Date(),
-      status: BookingStatus.ACCEPTED,
+      adminApprovedAt: booking.adminApprovedAt ?? new Date(),
+      status: booking.adminApproved
+        ? booking.status
+        : BookingStatus.ADVANCE_PAID,
     },
     include: {
       user: true,
@@ -1015,40 +1067,24 @@ async approveBooking(id: string) {
           category: true,
         },
       },
+      payout: true,
     },
   });
-
-  const existingConversation =
-    await this.prisma.conversation.findFirst({
-      where: {
-        customerId: booking.userId,
-        vendorId: booking.vendorId,
-      },
-    });
-
-  if (!existingConversation) {
-    await this.prisma.conversation.create({
-      data: {
-        customerId: booking.userId,
-        vendorId: booking.vendorId,
-      },
-    });
-  }
 
   await Promise.all([
     this.notificationsService.create(booking.userId, {
       title: 'Booking Approved',
-      message: `Booking ${booking.bookingNumber} was approved. You can now message ${booking.vendor.businessName}.`,
+      message: `Booking ${booking.bookingNumber} was approved. ${booking.vendor.businessName} will now acknowledge the booking.`,
     }),
     this.notificationsService.create(booking.vendor.userId, {
-      title: 'New Approved Booking',
-      message: 'You have a new approved booking.',
+      title: 'Advance Released - Action Required',
+      message: `Booking ${booking.bookingNumber}: advance ₹${Number(payout.grossAdvance).toLocaleString('en-IN')}, platform fee ₹${Number(payout.platformCommission).toLocaleString('en-IN')}, your net ₹${Number(payout.vendorNetAmount).toLocaleString('en-IN')}. Please acknowledge and accept.`,
     }),
   ]);
 
   return {
     success: true,
-    message: 'Booking approved and conversation unlocked',
+    message: 'Advance released to vendor ledger; vendor acknowledgement is pending',
     data: this.mapBooking(updated),
   };
 }
@@ -1231,6 +1267,20 @@ private mapBooking(booking: any) {
       booking.specialRequirements ?? '',
     amount: Number(booking.totalAmount),
     advancePaid: Number(booking.amountPaid),
+    platformCommission: Number(
+      booking.payout?.platformCommission ?? 0,
+    ),
+    vendorNetAmount: Number(
+      booking.payout?.vendorNetAmount ?? 0,
+    ),
+    payoutStatus:
+      booking.payout?.status?.toLowerCase() ?? null,
+    payoutSimulated:
+      booking.payout?.simulated ?? true,
+    payoutReleasedAt:
+      booking.payout?.releasedAt ?? null,
+    vendorAcknowledgedAt:
+      booking.payout?.vendorAcknowledgedAt ?? null,
     remainingAmount: Number(
       booking.remainingAmount,
     ),

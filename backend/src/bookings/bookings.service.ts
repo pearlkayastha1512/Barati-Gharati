@@ -12,12 +12,14 @@ import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
 import { Role, BookingStatus } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
 import { VendorStatus } from '@prisma/client';
+import { PayoutsService } from '../payouts/payouts.service';
 
 @Injectable()
 export class BookingsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private payoutsService: PayoutsService,
   ) {}
 
   async create(userId: string, dto: CreateBookingDto) {
@@ -194,6 +196,7 @@ export class BookingsService {
               category: true,
             },
           },
+          payout: true,
         },
 
         orderBy: {
@@ -216,6 +219,7 @@ export class BookingsService {
               category: true,
             },
           },
+          payout: true,
         },
 
         orderBy: {
@@ -251,6 +255,7 @@ export class BookingsService {
             category: true,
           },
         },
+        payout: true,
       },
     });
 
@@ -314,6 +319,8 @@ export class BookingsService {
       booking.id,
     );
 
+    await this.payoutsService.acknowledgeByVendor(booking.id);
+
     const updatedBooking = await this.prisma.booking.update({
       where: { id },
       data: {
@@ -327,13 +334,45 @@ export class BookingsService {
             category: true,
           },
         },
+        payout: true,
       },
+    });
+
+    const existingConversation =
+      await this.prisma.conversation.findFirst({
+        where: {
+          customerId: booking.userId,
+          vendorId: booking.vendorId,
+        },
+      });
+
+    if (!existingConversation) {
+      await this.prisma.conversation.create({
+        data: {
+          customerId: booking.userId,
+          vendorId: booking.vendorId,
+        },
+      });
+    }
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: { id: true },
     });
 
     await this.notificationsService.create(updatedBooking.userId, {
       title: 'Booking Accepted',
       message: `${updatedBooking.vendor.businessName} accepted your booking for ${updatedBooking.package.title}.`,
     });
+
+    await Promise.all(
+      admins.map((admin) =>
+        this.notificationsService.create(admin.id, {
+          title: 'Vendor Acknowledged Advance',
+          message: `${updatedBooking.vendor.businessName} acknowledged the advance and accepted booking ${updatedBooking.bookingNumber}.`,
+        }),
+      ),
+    );
 
     return this.mapBooking(updatedBooking);
   }
@@ -837,6 +876,26 @@ export class BookingsService {
       amount: Number(booking.totalAmount),
 
       advancePaid: Number(booking.amountPaid),
+
+      platformCommission: Number(
+        booking.payout?.platformCommission ?? 0,
+      ),
+
+      vendorNetAmount: Number(
+        booking.payout?.vendorNetAmount ?? 0,
+      ),
+
+      payoutStatus:
+        booking.payout?.status?.toLowerCase() ?? null,
+
+      payoutSimulated:
+        booking.payout?.simulated ?? true,
+
+      payoutReleasedAt:
+        booking.payout?.releasedAt ?? null,
+
+      vendorAcknowledgedAt:
+        booking.payout?.vendorAcknowledgedAt ?? null,
 
       remainingAmount: Number(booking.remainingAmount),
 

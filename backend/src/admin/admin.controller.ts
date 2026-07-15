@@ -4,7 +4,7 @@ import {
   UseGuards,
   Param,
   Delete,
-  Patch, Body
+  Patch, Body, UseInterceptors
 } from '@nestjs/common';
 
 import {
@@ -19,10 +19,15 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role, VendorBadge } from '@prisma/client';
 
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
+import { PermissionsGuard } from '../admin-access/guards/permissions.guard';
+import { Permissions } from '../admin-access/decorators/permissions.decorator';
+import { ADMIN_PERMISSIONS } from '../admin-access/admin-permissions';
+import { AdminAuditInterceptor } from '../admin-access/interceptors/admin-audit.interceptor';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard,RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+@UseInterceptors(AdminAuditInterceptor)
 @Roles(Role.ADMIN)
 @Controller('admin')
 export class AdminController {
@@ -31,15 +36,18 @@ export class AdminController {
   ) {}
 
   @Get('dashboard')
+  @Permissions(ADMIN_PERMISSIONS.DASHBOARD_VIEW)
   getDashboard() {
     return this.adminService.getDashboard();
   }
   @Get('users')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_VIEW)
 getAllUsers() {
   return this.adminService.getAllUsers();
 }
 
 @Get('users/:id')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_VIEW)
 getUserById(
   @Param('id') id: string,
 ) {
@@ -47,6 +55,7 @@ getUserById(
 }
 
 @Delete('users/:id')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_MANAGE)
 deleteUser(
   @Param('id') id: string,
 ) {
@@ -54,11 +63,13 @@ deleteUser(
 }
 
 @Get('vendors')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_VIEW)
 getAllVendors() {
   return this.adminService.getAllVendors();
 }
 
 @Get('vendors/:id')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_VIEW)
 getVendorById(
   @Param('id') id: string,
 ) {
@@ -66,6 +77,7 @@ getVendorById(
 }
 
 @Patch('vendors/:id/approve')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
 approveVendor(
   @Param('id') id: string,
 ) {
@@ -73,6 +85,7 @@ approveVendor(
 }
 
 @Patch('vendors/:id/reject')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
 rejectVendor(
   @Param('id') id: string,
 ) {
@@ -80,6 +93,7 @@ rejectVendor(
 }
 
 @Patch('vendors/:id/badge')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
 updateVendorBadge(
   @Param('id') id: string,
   @Body() dto: { badge: VendorBadge },
@@ -91,6 +105,7 @@ updateVendorBadge(
 }
 
 @Delete('vendors/:id')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
 deleteVendor(
   @Param('id') id: string,
 ) {
@@ -99,11 +114,13 @@ deleteVendor(
 
 
 @Get('bookings')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_VIEW)
 getAllBookings() {
   return this.adminService.getAllBookings();
 }
 
 @Get('bookings/:id')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_VIEW)
 getBookingById(
   @Param('id') id: string,
 ) {
@@ -111,6 +128,7 @@ getBookingById(
 }
 
 @Delete('bookings/:id')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_MANAGE)
 deleteBooking(
   @Param('id') id: string,
 ) {
@@ -118,6 +136,7 @@ deleteBooking(
 }
 
 @Patch('bookings/:id/status')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_MANAGE)
 updateBookingStatus(
   @Param('id') id: string,
   @Body() dto: UpdateBookingStatusDto,
@@ -129,6 +148,10 @@ updateBookingStatus(
 }
 
 @Patch('bookings/:id/approve')
+@Permissions(
+  ADMIN_PERMISSIONS.PAYMENTS_APPROVE,
+  ADMIN_PERMISSIONS.PAYOUTS_RELEASE,
+)
 approveBooking(
   @Param('id') id: string,
 ) {
@@ -136,6 +159,7 @@ approveBooking(
 }
 
 @Patch('bookings/:id/approve-payment')
+@Permissions(ADMIN_PERMISSIONS.PAYMENTS_APPROVE)
 approveBookingPayment(
   @Param('id') id: string,
 ) {
@@ -143,6 +167,7 @@ approveBookingPayment(
 }
 
 @Patch('bookings/:id/hold-payment')
+@Permissions(ADMIN_PERMISSIONS.PAYMENTS_APPROVE)
 holdBookingPayment(
   @Param('id') id: string,
 ) {
@@ -150,26 +175,31 @@ holdBookingPayment(
 }
 
 @Get('analytics')
+@Permissions(ADMIN_PERMISSIONS.REPORTS_VIEW)
 getAnalytics() {
   return this.adminService.getAnalytics();
 }
 
 @Get('emails')
+@Permissions(ADMIN_PERMISSIONS.EMAILS_VIEW)
 getEmailLogs() {
   return this.adminService.getEmailLogs();
 }
 
 @Get('notifications')
+@Permissions(ADMIN_PERMISSIONS.NOTIFICATIONS_VIEW)
 getNotifications() {
   return this.adminService.getNotifications();
 }
 
 @Get('chat/users')
+@Permissions(ADMIN_PERMISSIONS.CHAT_VIEW)
 getChatModerationUsers() {
   return this.adminService.getChatModerationUsers();
 }
 
 @Patch('chat/:id/mute')
+@Permissions(ADMIN_PERMISSIONS.CHAT_MODERATE)
 muteChatUser(
   @Param('id') id: string,
   @Body() dto: { durationMinutes?: number },
@@ -181,6 +211,7 @@ muteChatUser(
 }
 
 @Patch('chat/:id/block')
+@Permissions(ADMIN_PERMISSIONS.CHAT_MODERATE)
 blockChatUser(
   @Param('id') id: string,
 ) {
@@ -188,6 +219,10 @@ blockChatUser(
 }
 
 @Patch('chat/:id/suspend')
+@Permissions(
+  ADMIN_PERMISSIONS.CHAT_MODERATE,
+  ADMIN_PERMISSIONS.ACCOUNTS_SUSPEND,
+)
 suspendUser(
   @Param('id') id: string,
 ) {
@@ -195,6 +230,7 @@ suspendUser(
 }
 
 @Patch('chat/:id/reset-warnings')
+@Permissions(ADMIN_PERMISSIONS.CHAT_MODERATE)
 resetChatWarnings(
   @Param('id') id: string,
 ) {
@@ -202,11 +238,13 @@ resetChatWarnings(
 }
 
 @Get('settings')
+@Permissions(ADMIN_PERMISSIONS.SETTINGS_VIEW)
 getPlatformSettings() {
   return this.adminService.getPlatformSettings();
 }
 
 @Patch('settings')
+@Permissions(ADMIN_PERMISSIONS.SETTINGS_MANAGE)
 updatePlatformSettings(
   @Body()
   dto: {
@@ -222,7 +260,23 @@ updatePlatformSettings(
   );
 }
 
+@Get('content')
+@Permissions(ADMIN_PERMISSIONS.CONTENT_VIEW)
+getSiteContent() {
+  return this.adminService.getSiteContent();
+}
+
+@Patch('content/:slug')
+@Permissions(ADMIN_PERMISSIONS.CONTENT_MANAGE)
+updateSiteContent(
+  @Param('slug') slug: string,
+  @Body() dto: { title: string; content: string },
+) {
+  return this.adminService.updateSiteContent(slug, dto);
+}
+
 @Get('users/search/:name')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_VIEW)
 searchUsers(
   @Param('name') name: string,
 ) {
@@ -230,6 +284,7 @@ searchUsers(
 }
 
 @Get('vendors/search/:name')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_VIEW)
 searchVendors(
   @Param('name') name: string,
 ) {

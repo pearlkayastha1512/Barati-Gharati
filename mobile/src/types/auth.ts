@@ -32,6 +32,9 @@ export interface AuthUser {
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  adminRole?: string | null;
+  permissions?: string[];
+  mustChangePassword?: boolean;
 }
 
 export interface AuthResponse {

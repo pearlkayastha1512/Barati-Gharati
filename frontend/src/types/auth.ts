@@ -21,6 +21,12 @@ export interface User {
 
   role: UserRole;
 
+  adminRole?: import('@/lib/adminAccess').AdminRole | null;
+
+  permissions?: string[];
+
+  mustChangePassword?: boolean;
+
   status?: VendorStatus;
 
   isVerified: boolean;

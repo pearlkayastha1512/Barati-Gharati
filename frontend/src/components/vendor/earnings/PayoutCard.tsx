@@ -41,7 +41,7 @@ export default function PayoutCard() {
             "paid"
         ) {
           payoutAmount +=
-            booking.advancePaid;
+            booking.vendorNetAmount ?? 0;
         }
       });
 

@@ -42,11 +42,11 @@ export default function RevenueOverview() {
       );
 
       if (date >= todayStart) {
-        today += booking.advancePaid;
+        today += booking.vendorNetAmount ?? 0;
       }
 
       if (date >= weekStart) {
-        week += booking.advancePaid;
+        week += booking.vendorNetAmount ?? 0;
       }
 
       if (
@@ -54,14 +54,14 @@ export default function RevenueOverview() {
         date.getFullYear() === year
       ) {
         monthRevenue +=
-          booking.advancePaid;
+          booking.vendorNetAmount ?? 0;
       }
 
       if (
         date.getFullYear() === year
       ) {
         yearRevenue +=
-          booking.advancePaid;
+          booking.vendorNetAmount ?? 0;
       }
     });
 

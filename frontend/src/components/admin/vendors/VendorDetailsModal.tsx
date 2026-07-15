@@ -11,6 +11,8 @@ import {
   VENDOR_BADGE_LIMITS,
 } from "@/constants/vendor-badges";
 import { isSupportedImageSrc } from "@/lib/image-url";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 interface Props {
   vendor: StoredVendor | null;
@@ -37,6 +39,8 @@ export default function VendorDetailsModal({
   onReject,
   onBadgeChange,
 }: Props) {
+  const user = useAuthStore((state) => state.user);
+  const canManage = hasAdminPermission(user, "vendors.manage");
   if (!open || !vendor) {
     return null;
   }
@@ -178,9 +182,9 @@ export default function VendorDetailsModal({
                   <button
                     key={badge}
                     type="button"
-                    disabled={!isApproved}
+                    disabled={!isApproved || !canManage}
                     onClick={() => {
-                      if (!isApproved) {
+                      if (!isApproved || !canManage) {
                         return;
                       }
 
@@ -190,7 +194,7 @@ export default function VendorDetailsModal({
                       );
                     }}
                     className={`rounded-2xl border px-4 py-3 text-left transition ${
-                      !isApproved
+                      !isApproved || !canManage
                         ? "cursor-not-allowed border-slate-200 bg-slate-100 opacity-70"
                         : active
                         ? "border-rose-500 bg-white shadow-sm"
@@ -248,7 +252,7 @@ export default function VendorDetailsModal({
           {/* Actions */}
 
           <div className="flex justify-end gap-4">
-            {vendor.approvalStatus !== "approved" && (
+            {canManage && vendor.approvalStatus !== "approved" && (
               <button
                 onClick={() => onApprove(vendor.id)}
                 className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
@@ -257,7 +261,7 @@ export default function VendorDetailsModal({
               </button>
             )}
 
-            {vendor.approvalStatus !== "rejected" && (
+            {canManage && vendor.approvalStatus !== "rejected" && (
               <button
                 onClick={() => onReject(vendor.id)}
                 className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"

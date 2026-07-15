@@ -118,7 +118,7 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
 
       const convertedStatuses = ["accepted", "completed", "event_completed"];
       const isRevenueCounted = (b: BackendBooking) =>
-  b.paymentStatus === "paid" || b.paymentStatus === "partial";
+        b.payoutStatus === "released" || b.payoutStatus === "settled";
 
       const confirmedOrAccepted = bookings.filter((b) =>
         convertedStatuses.includes(b.bookingStatus)
@@ -128,7 +128,7 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
 
       const thisMonthRevenue = thisMonthBookings
         .filter(isRevenueCounted)
-        .reduce((sum, b) => sum + b.advancePaid, 0);
+        .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const upcoming = confirmedOrAccepted
         .filter((b) => new Date(b.eventDate) >= now)
@@ -136,15 +136,15 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
 
       const revenueToday = bookings
         .filter((b) => isRevenueCounted(b) && isSameDay(new Date(b.createdAt), now))
-        .reduce((sum, b) => sum + b.advancePaid, 0);
+        .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const revenueThisWeek = bookings
         .filter((b) => isRevenueCounted(b) && isSameWeek(new Date(b.createdAt), now))
-        .reduce((sum, b) => sum + b.advancePaid, 0);
+        .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const revenueThisYear = bookings
         .filter((b) => isRevenueCounted(b) && isSameYear(new Date(b.createdAt), now))
-        .reduce((sum, b) => sum + b.advancePaid, 0);
+        .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const uniqueCustomers = new Set(bookings.map((b) => b.customerId)).size;
 

@@ -32,7 +32,7 @@ export default function EarningsHero() {
 
     bookings.forEach((booking) => {
       totalRevenue +=
-        booking.advancePaid;
+        booking.vendorNetAmount ?? 0;
 
       pendingAmount +=
         booking.remainingAmount;
@@ -50,7 +50,7 @@ export default function EarningsHero() {
           "cancelled"
       ) {
         monthlyRevenue +=
-          booking.advancePaid;
+          booking.vendorNetAmount ?? 0;
       }
     });
 

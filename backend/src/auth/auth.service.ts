@@ -21,6 +21,7 @@ import {
   VendorBadge,
   VendorStatus,
 } from '@prisma/client';
+import { AdminAccessService } from '../admin-access/admin-access.service';
 
 
 @Injectable()
@@ -32,6 +33,7 @@ export class AuthService {
   private readonly notificationsService: NotificationsService,
    private readonly mailService: MailService,
   private readonly cloudinaryService: CloudinaryService,
+  private readonly adminAccessService: AdminAccessService,
 ) {}
 
   private readonly badgePrices: Record<VendorBadge, number> = {
@@ -572,6 +574,10 @@ async login(loginDto: LoginDto) {
     );
   }
 
+  if (user.role === Role.ADMIN && !user.adminIsActive) {
+    throw new UnauthorizedException('Your admin account is inactive.');
+  }
+
 
   const isPasswordCorrect = await bcrypt.compare(
     loginDto.password,
@@ -621,10 +627,14 @@ if (
   );
 }
 
+  const adminAccess = this.adminAccessService.resolveAccess(user);
+
   const token = await this.jwtService.signAsync({
     sub: user.id,
     email: user.email,
     role: user.role,
+    adminRole: adminAccess.adminRole,
+    permissions: adminAccess.permissions,
   });
 
   await this.notificationsService.create(user.id, {
@@ -655,6 +665,12 @@ if (
       avatar: '',
 
       role: roleMap[user.role],
+
+      adminRole: adminAccess.adminRole,
+
+      permissions: adminAccess.permissions,
+
+      mustChangePassword: user.mustChangePassword,
 
       status: user.vendor
         ? user.vendor.status.toLowerCase()

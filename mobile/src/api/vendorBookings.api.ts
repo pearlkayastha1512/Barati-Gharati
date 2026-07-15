@@ -38,6 +38,12 @@ export type BackendBooking = {
 
   amount: number;
   advancePaid: number;
+  platformCommission: number;
+  vendorNetAmount: number;
+  payoutStatus: string | null;
+  payoutSimulated: boolean;
+  payoutReleasedAt: string | null;
+  vendorAcknowledgedAt: string | null;
   remainingAmount: number;
   paymentStatus: string;
   bookingStatus: string;
