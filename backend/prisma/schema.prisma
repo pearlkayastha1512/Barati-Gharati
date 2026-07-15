@@ -7,29 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  VENDOR
-  ADMIN
-}
 
-enum VendorStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
 
-enum VendorBadge {
-  BRONZE
-  SILVER
-  GOLD
-}
 
-enum MessageStatus {
-  SENT
-  DELIVERED
-  READ
-}
 
 enum Role {
   USER
@@ -193,29 +173,24 @@ model Package {
   id          String   @id @default(uuid())
   title       String
   description String?
-<<<<<<< HEAD
-  price       Decimal  @db.Decimal(10, 2)
-=======
   image       String?
   price       Decimal   @db.Decimal(10, 2)
   vendorId    String
   categoryId  String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
->>>>>>> 00c9715 (Corrected some bugs)
   inclusions  String[]
 
-  vendorId String
+  
   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  categoryId String
+ 
   category   Category @relation(fields: [categoryId], references: [id])
 
   bookings  Booking[]
   reviews   Review[]
   leads     Lead[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  
 
   @@index([vendorId])
   @@index([categoryId])
