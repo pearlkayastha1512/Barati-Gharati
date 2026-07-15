@@ -98,7 +98,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
 
       revenueBookings.forEach((booking: any) => {
         const total = Number(booking.amount);
-        const paid = Number(booking.advancePaid);
+        const paid = Number(booking.vendorNetAmount ?? 0);
         const balance = Number(booking.remainingAmount);
 
         totalRevenue += paid;

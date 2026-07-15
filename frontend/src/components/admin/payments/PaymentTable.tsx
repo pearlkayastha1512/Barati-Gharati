@@ -3,6 +3,8 @@
 import { Check, Eye } from "lucide-react";
 
 import { Booking } from "@/types/booking";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 interface Props {
   bookings: Booking[];
@@ -17,6 +19,10 @@ export default function PaymentTable({
   onView,
   onApprove,
 }: Props) {
+  const user = useAuthStore((state) => state.user);
+  const canReleaseAdvance =
+    hasAdminPermission(user, "payments.approve") &&
+    hasAdminPermission(user, "payouts.release");
   if (bookings.length === 0) {
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-20 text-center shadow-sm">
@@ -55,6 +61,14 @@ export default function PaymentTable({
 
               <th className="px-6 py-4 font-semibold text-slate-700">
                 Paid
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Platform Fee
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Vendor Net
               </th>
 
               <th className="px-6 py-4 font-semibold text-slate-700">
@@ -105,6 +119,14 @@ export default function PaymentTable({
                   ₹{booking.advancePaid.toLocaleString("en-IN")}
                 </td>
 
+                <td className="px-6 py-5 font-semibold text-amber-700">
+                  ₹{(booking.platformCommission ?? 0).toLocaleString("en-IN")}
+                </td>
+
+                <td className="px-6 py-5 font-semibold text-emerald-700">
+                  ₹{(booking.vendorNetAmount ?? 0).toLocaleString("en-IN")}
+                </td>
+
                 <td className="px-6 py-5 text-red-600 font-semibold">
                   ₹{booking.remainingAmount.toLocaleString("en-IN")}
                 </td>
@@ -127,7 +149,7 @@ export default function PaymentTable({
 
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-2">
-                    {booking.paymentStatus ===
+                    {canReleaseAdvance && booking.paymentStatus ===
                       "partial" &&
                       !booking.adminApproved && (
                         <button

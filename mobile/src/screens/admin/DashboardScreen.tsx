@@ -1,200 +1,205 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../constants/colors';
-import { useAdminStore } from '../../store/adminStore';
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
-const quickActions = [
-  { title: 'Vendor Management', desc: 'Approve and manage vendors.', icon: 'checkmark-circle-outline', route: 'VendorManagement' },
-  { title: 'Bookings', desc: 'Monitor all bookings.', icon: 'calendar-outline', route: 'Bookings' },
-  { title: 'Notifications', desc: 'Send platform announcements.', icon: 'notifications-outline', route: 'Notifications' },
-  { title: 'Settings', desc: 'Configure platform settings.', icon: 'settings-outline', route: 'Settings' },
-];
+import { adminGradient, adminTheme } from "../../constants/adminTheme";
+import { useAdminStore } from "../../store/adminStore";
+import { useAuthStore } from "../../store/authStore";
+import { getChatModerationUsers } from "../../api/admin.api";
+import { getAdminRoleLabel, hasAdminPermission } from "../../utils/adminAccess";
 
-const bannerStats = [
-  { label: 'Platform\nVendors', icon: 'people-outline' },
-  { label: 'Platform\nCustomers', icon: 'person-outline' },
-  { label: 'Platform\nBookings', icon: 'calendar-outline' },
-  { label: 'Platform\nRevenue', icon: 'wallet-outline' },
+const modules = [
+  {
+    title: "Customer Management",
+    desc: "Search customers, verify account details and manage access.",
+    icon: "people-outline",
+    route: "CustomerManagement",
+    permission: "customers.view",
+  },
+  {
+    title: "Vendor Management",
+    desc: "Review registrations and approve or reject vendors.",
+    icon: "storefront-outline",
+    route: "VendorManagement",
+    permission: "vendors.view",
+  },
+  {
+    title: "Chat Moderation",
+    desc: "Review warnings and keep platform conversations safe.",
+    icon: "shield-checkmark-outline",
+    route: "ChatModeration",
+    permission: "chat.view",
+  },
 ];
 
 export default function DashboardScreen({ navigation }: any) {
-  const {
-    dashboard,
-    isDashboardLoading,
-    dashboardError,
-    loadDashboard,
-  } = useAdminStore();
+  const user = useAuthStore((state) => state.user);
+  const { dashboard, isDashboardLoading, dashboardError, loadDashboard } = useAdminStore();
+  const [moderationCount, setModerationCount] = useState(0);
+
+  const canViewChat = hasAdminPermission(user, "chat.view");
+  const visibleModules = useMemo(
+    () => modules.filter((item) => hasAdminPermission(user, item.permission)),
+    [user],
+  );
+
+  const load = async () => {
+    await loadDashboard();
+    if (canViewChat) {
+      try {
+        const response = await getChatModerationUsers();
+        setModerationCount(response.count);
+      } catch {
+        setModerationCount(0);
+      }
+    }
+  };
 
   useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
+    void load();
+  }, [canViewChat]);
 
-  const statCards = [
-    { label: 'Vendors', value: dashboard.totalVendors.toString(), sub: 'Registered Vendors', icon: 'people-outline' },
-    { label: 'Customers', value: dashboard.totalCustomers.toString(), sub: 'Registered Customers', icon: 'person-outline' },
-    { label: 'Bookings', value: dashboard.totalBookings.toString(), sub: 'Platform Bookings', icon: 'calendar-outline' },
-    { label: 'Revenue', value: `₹${dashboard.totalRevenue.toLocaleString('en-IN')}`, sub: 'Advance Collected', icon: 'wallet-outline' },
+  const stats = [
+    { label: "Customers", value: dashboard.totalCustomers, icon: "people-outline" },
+    { label: "Vendors", value: dashboard.totalVendors, icon: "storefront-outline" },
+    {
+      label: canViewChat ? "Moderation Queue" : "Pending Vendors",
+      value: canViewChat ? moderationCount : dashboard.pendingVendorApprovals,
+      icon: canViewChat ? "shield-outline" : "time-outline",
+    },
   ];
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ padding: 16 }}
-      refreshControl={
-        <RefreshControl
-          refreshing={isDashboardLoading}
-          onRefresh={loadDashboard}
-          tintColor={colors.blue}
-        />
-      }
-    >
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Ionicons name="menu" size={26} color={colors.textDark} />
-        </TouchableOpacity>
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.title}>Admin Dashboard</Text>
-          <Text style={styles.subtitle}>Monitor and manage the complete Wedding Planner platform.</Text>
-        </View>
-        <View style={styles.bell}>
-          <Ionicons name="notifications-outline" size={20} color={colors.red} />
-        </View>
-      </View>
-
-      {/* Gradient Banner */}
-      <LinearGradient
-        colors={[colors.navyDark, colors.blue]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.banner}
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isDashboardLoading} onRefresh={load} tintColor={adminTheme.primary} />
+        }
       >
-        <View style={styles.badge}>
-          <Ionicons name="shield-checkmark-outline" size={13} color={colors.white} />
-          <Text style={styles.badgeText}>Platform Administration</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+            <Ionicons name="menu" size={25} color={adminTheme.ink} />
+          </TouchableOpacity>
+          <View style={styles.headerCopy}>
+            <Text style={styles.eyebrow}>{getAdminRoleLabel(user?.adminRole)}</Text>
+            <Text style={styles.title}>Admin Dashboard</Text>
+          </View>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{(user?.name || "A").charAt(0).toUpperCase()}</Text>
+          </View>
         </View>
-        <Text style={styles.bannerTitle}>Welcome to{'\n'}Admin Dashboard</Text>
-        <Text style={styles.bannerDesc}>
-          Monitor vendors, customers, bookings, payments and overall platform performance.
-        </Text>
 
-        <View style={styles.bannerGrid}>
-          {bannerStats.map((b, i) => (
-            <View key={i} style={styles.bannerMiniCard}>
-              <Ionicons name={b.icon as any} size={18} color={colors.white} />
-              <Text style={styles.bannerMiniLabel}>{b.label}</Text>
+        <LinearGradient colors={adminGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <View style={styles.heroBadge}>
+            <Ionicons name="sparkles" size={14} color={adminTheme.ink} />
+            <Text style={styles.heroBadgeText}>Focused mobile administration</Text>
+          </View>
+          <Text style={styles.heroTitle}>Welcome back,{"\n"}{user?.name || "Admin"}</Text>
+          <Text style={styles.heroDescription}>
+            Manage customers, vendors and platform chat safety from one secure place.
+          </Text>
+          <View style={styles.heroStatus}>
+            <View style={styles.statusDot} />
+            <Text style={styles.heroStatusText}>Live platform data</Text>
+          </View>
+        </LinearGradient>
+
+        {dashboardError ? (
+          <TouchableOpacity style={styles.errorCard} onPress={load}>
+            <Ionicons name="alert-circle-outline" size={20} color={adminTheme.danger} />
+            <Text style={styles.errorText}>{dashboardError}</Text>
+            <Text style={styles.retry}>Retry</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        <Text style={styles.sectionTitle}>Platform overview</Text>
+        <Text style={styles.sectionSubtitle}>Updated directly from your database.</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
+          {stats.map((stat) => (
+            <View key={stat.label} style={styles.statCard}>
+              <View style={styles.statIcon}>
+                <Ionicons name={stat.icon as any} size={21} color={adminTheme.primaryDark} />
+              </View>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
           ))}
+        </ScrollView>
+
+        <Text style={styles.sectionTitle}>Management tools</Text>
+        <Text style={styles.sectionSubtitle}>Only your assigned modules are shown.</Text>
+        <View style={styles.moduleList}>
+          {visibleModules.map((item, index) => (
+            <TouchableOpacity
+              key={item.route}
+              style={styles.moduleCard}
+              activeOpacity={0.82}
+              onPress={() => navigation.navigate(item.route)}
+            >
+              <LinearGradient colors={index === 2 ? ["#FFE4EA", "#FFF7E3"] : ["#FFF0F3", "#FFFFFF"]} style={styles.moduleIcon}>
+                <Ionicons name={item.icon as any} size={25} color={adminTheme.primaryDark} />
+              </LinearGradient>
+              <View style={styles.moduleCopy}>
+                <Text style={styles.moduleTitle}>{item.title}</Text>
+                <Text style={styles.moduleDescription}>{item.desc}</Text>
+              </View>
+              <View style={styles.moduleArrow}>
+                <Ionicons name="arrow-forward" size={18} color={adminTheme.primary} />
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
-      </LinearGradient>
-
-      {dashboardError && (
-        <View style={styles.errorCard} accessibilityRole="alert">
-          <View style={styles.errorCopy}>
-            <Ionicons name="alert-circle-outline" size={20} color={colors.red} />
-            <Text style={styles.errorText}>{dashboardError}</Text>
-          </View>
-          <TouchableOpacity onPress={loadDashboard} disabled={isDashboardLoading}>
-            <Text style={styles.retryText}>Try again</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Stat Cards */}
-      <View style={styles.statGrid}>
-        {statCards.map((s, i) => (
-          <View key={i} style={styles.statCard}>
-            <View style={styles.statIconBox}>
-              <Ionicons name={s.icon as any} size={20} color={colors.blue} />
-            </View>
-            <Text style={styles.statLabel}>{s.label}</Text>
-            <Text style={styles.statValue}>{s.value}</Text>
-            <Text style={styles.statSub}>{s.sub}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Quick Actions */}
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
-      <Text style={styles.sectionDesc}>Manage your platform efficiently.</Text>
-
-      <View style={styles.actionGrid}>
-        {quickActions.map((a, i) => (
-          <TouchableOpacity
-            key={i}
-            style={styles.actionCard}
-            onPress={() => navigation.navigate(a.route)}
-          >
-            <View style={styles.actionIconBox}>
-              <Ionicons name={a.icon as any} size={18} color={colors.white} />
-            </View>
-            <Text style={styles.actionTitle}>{a.title}</Text>
-            <Text style={styles.actionDesc}>{a.desc}</Text>
-            <Text style={styles.actionLink}>Manage →</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '800', color: colors.textDark },
-  subtitle: { fontSize: 12, color: colors.textGray, marginTop: 2 },
-  bell: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: colors.redBg, alignItems: 'center', justifyContent: 'center',
-  },
-  banner: { borderRadius: 18, padding: 20, marginBottom: 16 },
-  badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, marginBottom: 14,
-  },
-  badgeText: { color: colors.white, fontSize: 11, fontWeight: '600' },
-  bannerTitle: { color: colors.white, fontSize: 26, fontWeight: '800', lineHeight: 32, marginBottom: 10 },
-  bannerDesc: { color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 19, marginBottom: 18 },
-  bannerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  bannerMiniCard: {
-    width: '47%', backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12, padding: 12, gap: 8,
-  },
-  bannerMiniLabel: { color: colors.white, fontSize: 12, fontWeight: '700' },
-  errorCard: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    gap: 12, padding: 12, marginBottom: 16, borderRadius: 12,
-    borderWidth: 1, borderColor: colors.red, backgroundColor: colors.redBg,
-  },
-  errorCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  errorText: { flex: 1, color: colors.red, fontSize: 12 },
-  retryText: { color: colors.red, fontSize: 12, fontWeight: '800' },
-  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
-  statCard: {
-    width: '47%', backgroundColor: colors.white, borderRadius: 14,
-    padding: 14, borderWidth: 1, borderColor: colors.border,
-  },
-  statIconBox: {
-    width: 36, height: 36, borderRadius: 10, backgroundColor: colors.blueLight,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 10,
-  },
-  statLabel: { fontSize: 12, color: colors.textGray, marginBottom: 4 },
-  statValue: { fontSize: 22, fontWeight: '800', color: colors.textDark },
-  statSub: { fontSize: 11, color: colors.textGray, marginTop: 2 },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.textDark },
-  sectionDesc: { fontSize: 12, color: colors.textGray, marginBottom: 12 },
-  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingBottom: 24 },
-  actionCard: {
-    width: '47%', backgroundColor: colors.white, borderRadius: 14,
-    padding: 14, borderWidth: 1, borderColor: colors.border,
-  },
-  actionIconBox: {
-    width: 34, height: 34, borderRadius: 10, backgroundColor: colors.navyMid,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 10,
-  },
-  actionTitle: { fontWeight: '700', fontSize: 13, color: colors.textDark, marginBottom: 4 },
-  actionDesc: { fontSize: 11, color: colors.textGray, marginBottom: 8 },
-  actionLink: { fontSize: 12, color: colors.blue, fontWeight: '700' },
+  safeArea: { flex: 1, backgroundColor: adminTheme.background },
+  container: { flex: 1, backgroundColor: adminTheme.background },
+  content: { padding: 18, paddingBottom: 40 },
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 18 },
+  menuButton: { width: 44, height: 44, borderRadius: 15, backgroundColor: adminTheme.surface, borderWidth: 1, borderColor: adminTheme.border, alignItems: "center", justifyContent: "center" },
+  headerCopy: { flex: 1, minWidth: 0, marginHorizontal: 12 },
+  eyebrow: { color: adminTheme.primaryDark, fontSize: 11, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.7 },
+  title: { color: adminTheme.ink, fontSize: 22, lineHeight: 29, fontWeight: "900" },
+  avatar: { width: 43, height: 43, borderRadius: 22, backgroundColor: adminTheme.primary, alignItems: "center", justifyContent: "center" },
+  avatarText: { color: adminTheme.white, fontSize: 17, fontWeight: "900" },
+  hero: { borderRadius: 27, padding: 22, marginBottom: 24, shadowColor: adminTheme.shadow, shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 7 }, elevation: 5 },
+  heroBadge: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.72)", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7 },
+  heroBadgeText: { marginLeft: 6, color: adminTheme.ink, fontSize: 11, fontWeight: "800" },
+  heroTitle: { color: adminTheme.ink, fontSize: 29, lineHeight: 35, fontWeight: "900", marginTop: 18 },
+  heroDescription: { color: "#633044", fontSize: 13, lineHeight: 20, fontWeight: "600", marginTop: 10 },
+  heroStatus: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", marginTop: 17, backgroundColor: "rgba(255,255,255,0.64)", paddingHorizontal: 11, paddingVertical: 7, borderRadius: 16 },
+  statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: adminTheme.success, marginRight: 7 },
+  heroStatusText: { color: adminTheme.ink, fontSize: 11, fontWeight: "800" },
+  errorCard: { flexDirection: "row", alignItems: "center", padding: 13, borderRadius: 16, backgroundColor: adminTheme.dangerBg, borderWidth: 1, borderColor: "#FFC0CA", marginBottom: 20 },
+  errorText: { flex: 1, color: adminTheme.danger, fontSize: 12, marginHorizontal: 8 },
+  retry: { color: adminTheme.danger, fontWeight: "900", fontSize: 12 },
+  sectionTitle: { color: adminTheme.ink, fontSize: 19, fontWeight: "900" },
+  sectionSubtitle: { color: adminTheme.muted, fontSize: 12, marginTop: 2, marginBottom: 13 },
+  statsRow: { paddingBottom: 25, paddingRight: 10 },
+  statCard: { width: 132, minHeight: 135, backgroundColor: adminTheme.surface, borderWidth: 1, borderColor: adminTheme.border, borderRadius: 22, padding: 15, marginRight: 11 },
+  statIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: adminTheme.blush, alignItems: "center", justifyContent: "center" },
+  statValue: { color: adminTheme.ink, fontSize: 25, lineHeight: 32, fontWeight: "900", marginTop: 11 },
+  statLabel: { color: adminTheme.muted, fontSize: 11, lineHeight: 16, fontWeight: "700" },
+  moduleList: { marginTop: 2 },
+  moduleCard: { flexDirection: "row", alignItems: "center", backgroundColor: adminTheme.surface, borderWidth: 1, borderColor: adminTheme.border, borderRadius: 22, padding: 14, marginBottom: 12, shadowColor: adminTheme.shadow, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
+  moduleIcon: { width: 52, height: 52, borderRadius: 17, alignItems: "center", justifyContent: "center" },
+  moduleCopy: { flex: 1, minWidth: 0, marginHorizontal: 12 },
+  moduleTitle: { color: adminTheme.ink, fontSize: 14, fontWeight: "900" },
+  moduleDescription: { color: adminTheme.muted, fontSize: 11, lineHeight: 16, marginTop: 3 },
+  moduleArrow: { width: 34, height: 34, borderRadius: 17, backgroundColor: adminTheme.blush, alignItems: "center", justifyContent: "center" },
 });

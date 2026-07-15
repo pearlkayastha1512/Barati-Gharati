@@ -52,6 +52,12 @@ export interface Booking {
   specialRequirements: string;
   amount: number;
   advancePaid: number;
+  platformCommission?: number;
+  vendorNetAmount?: number;
+  payoutStatus?: string | null;
+  payoutSimulated?: boolean;
+  payoutReleasedAt?: string | null;
+  vendorAcknowledgedAt?: string | null;
   remainingAmount: number;
   paymentStatus: PaymentStatus;
   adminApproved?: boolean;

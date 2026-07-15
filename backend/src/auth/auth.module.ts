@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { MailModule } from '../mail/mail.module';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { AdminAccessModule } from '../admin-access/admin-access.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
     PrismaModule,
      MailModule,
     CloudinaryModule,
+    AdminAccessModule,
     PassportModule.register({
     defaultStrategy: 'jwt',
   }),

@@ -29,6 +29,9 @@ export type BackendBooking = {
   eventTime: string;
   amount: number;
   advancePaid: number;
+  platformCommission: number;
+  vendorNetAmount: number;
+  payoutStatus: string | null;
   remainingAmount: number;
   paymentStatus: string;
   bookingStatus: string; // "pending" | "accepted" | "confirmed" | "cancelled" | "rejected"

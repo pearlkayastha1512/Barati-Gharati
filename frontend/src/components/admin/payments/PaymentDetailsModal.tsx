@@ -3,6 +3,8 @@
 import { Check, X } from "lucide-react";
 
 import { Booking } from "@/types/booking";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 interface Props {
   booking: Booking | null;
@@ -20,6 +22,10 @@ export default function PaymentDetailsModal({
   onClose,
   onApprove,
 }: Props) {
+  const user = useAuthStore((state) => state.user);
+  const canReleaseAdvance =
+    hasAdminPermission(user, "payments.approve") &&
+    hasAdminPermission(user, "payouts.release");
   if (!open || !booking) {
     return null;
   }
@@ -96,6 +102,28 @@ export default function PaymentDetailsModal({
             />
 
             <Info
+              label="Platform Revenue"
+              value={`₹${(booking.platformCommission ?? 0).toLocaleString(
+                "en-IN"
+              )}`}
+            />
+
+            <Info
+              label="Vendor Net Advance"
+              value={`₹${(booking.vendorNetAmount ?? 0).toLocaleString(
+                "en-IN"
+              )}`}
+            />
+
+            <Info
+              label="Payout Status"
+              value={
+                booking.payoutStatus?.replaceAll("_", " ") ??
+                "Not created"
+              }
+            />
+
+            <Info
               label="Remaining Amount"
               value={`₹${booking.remainingAmount.toLocaleString(
                 "en-IN"
@@ -152,6 +180,26 @@ export default function PaymentDetailsModal({
 
               <div className="flex justify-between">
                 <span className="text-slate-500">
+                  Platform commission
+                </span>
+
+                <span className="font-semibold text-amber-600">
+                  - ₹{(booking.platformCommission ?? 0).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              <div className="flex justify-between border-t border-slate-200 pt-3">
+                <span className="font-medium text-slate-700">
+                  Vendor net release
+                </span>
+
+                <span className="font-bold text-green-700">
+                  ₹{(booking.vendorNetAmount ?? 0).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">
                   Paid
                 </span>
 
@@ -175,7 +223,7 @@ export default function PaymentDetailsModal({
           </div>
 
           <div className="flex justify-end gap-3">
-            {booking.paymentStatus ===
+            {canReleaseAdvance && booking.paymentStatus ===
               "partial" &&
               !booking.adminApproved && (
                 <button
@@ -185,7 +233,7 @@ export default function PaymentDetailsModal({
                   className="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
                 >
                   <Check size={18} />
-                  Approve Booking
+                  Approve & Release Net Advance
                 </button>
               )}
 

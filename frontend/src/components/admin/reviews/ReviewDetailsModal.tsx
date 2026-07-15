@@ -3,6 +3,8 @@
 import { X, Star } from "lucide-react";
 
 import { Review } from "@/types/review";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 interface Props {
   review: Review | null;
@@ -23,6 +25,8 @@ export default function ReviewDetailsModal({
   onApprovePayment,
   onHoldPayment,
 }: Props) {
+  const user = useAuthStore((state) => state.user);
+  const canApprovePayment = hasAdminPermission(user, "payments.approve");
   if (!open || !review) {
     return null;
   }
@@ -201,7 +205,7 @@ export default function ReviewDetailsModal({
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">
-            {canModeratePayment ? (
+            {canModeratePayment && canApprovePayment ? (
               <>
                 <button
                   onClick={() =>

@@ -45,7 +45,7 @@ export default function PayoutDetailsModal({
   const totalPayout =
     payoutBookings.reduce(
       (sum, booking) =>
-        sum + booking.advancePaid,
+        sum + (booking.vendorNetAmount ?? 0),
       0
     );
 
@@ -184,7 +184,7 @@ export default function PayoutDetailsModal({
 
                     <td className="px-6 py-5 font-semibold text-slate-700">
                       ₹
-                      {booking.advancePaid.toLocaleString(
+                      {(booking.vendorNetAmount ?? 0).toLocaleString(
                         "en-IN"
                       )}
                     </td>

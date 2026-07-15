@@ -36,6 +36,7 @@ import { ChatModule } from './chat/chat.module';
 
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { AdminAccessModule } from './admin-access/admin-access.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { AvailabilityModule } from './availability/availability.module';
     InvoiceModule,
     ChatModule,
     AvailabilityModule,
+    AdminAccessModule,
   ],
   controllers: [AppController],
   providers: [

@@ -57,7 +57,7 @@ export default function RevenueAnalytics() {
 
       monthlyRevenue[
         date.getMonth()
-      ] += booking.advancePaid;
+      ] += booking.vendorNetAmount ?? 0;
     });
 
     return months.map(

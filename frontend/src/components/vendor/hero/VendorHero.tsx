@@ -66,7 +66,7 @@ export default function VendorHero() {
 ) {
   monthlyBookings++;
 
-  revenue += booking.advancePaid;
+  revenue += booking.vendorNetAmount ?? 0;
 }
     });
 

@@ -18,8 +18,11 @@ import StatsCard from "@/components/admin/cards/StatsCard";
 import QuickActionCard from "@/components/admin/cards/QuickActionCard";
 
 import { useAdminStore } from "@/store/adminStore";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 export default function AdminDashboardPage() {
+  const user = useAuthStore((state) => state.user);
   const {
     stats,
     loadDashboard,
@@ -128,33 +131,33 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          <QuickActionCard
+          {hasAdminPermission(user, "vendors.view") && <QuickActionCard
             title="Vendor Management"
             description="Approve and manage vendors."
             href="/admin/vendors"
             icon={BadgeCheck}
-          />
+          />}
 
-          <QuickActionCard
+          {hasAdminPermission(user, "bookings.view") && <QuickActionCard
             title="Bookings"
             description="Monitor all bookings."
             href="/admin/bookings"
             icon={CalendarDays}
-          />
+          />}
 
-          <QuickActionCard
+          {hasAdminPermission(user, "notifications.view") && <QuickActionCard
             title="Notifications"
             description="Send platform announcements."
             href="/admin/notifications"
             icon={Bell}
-          />
+          />}
 
-          <QuickActionCard
+          {hasAdminPermission(user, "settings.view") && <QuickActionCard
             title="Settings"
             description="Configure platform settings."
             href="/admin/settings"
             icon={Settings}
-          />
+          />}
         </div>
       </section>
     </div>
