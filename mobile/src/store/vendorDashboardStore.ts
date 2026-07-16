@@ -64,6 +64,9 @@ const isSameWeek = (d: Date, ref: Date) => {
 const isSameDay = (d: Date, ref: Date) =>
   d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
 
+const getRevenueDate = (booking: BackendBooking) =>
+  new Date(booking.lastPaymentAt ?? booking.updatedAt ?? booking.createdAt);
+
 export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
   isLoading: false,
   isApproved: true,
@@ -126,8 +129,9 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
 
       const thisMonthBookings = bookings.filter((b) => isSameMonth(new Date(b.eventDate), now));
 
-      const thisMonthRevenue = thisMonthBookings
+      const thisMonthRevenue = bookings
         .filter(isRevenueCounted)
+        .filter((b) => isSameMonth(getRevenueDate(b), now))
         .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const upcoming = confirmedOrAccepted
@@ -135,15 +139,15 @@ export const useVendorDashboardStore = create<VendorDashboardState>((set) => ({
         .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 
       const revenueToday = bookings
-        .filter((b) => isRevenueCounted(b) && isSameDay(new Date(b.createdAt), now))
+        .filter((b) => isRevenueCounted(b) && isSameDay(getRevenueDate(b), now))
         .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const revenueThisWeek = bookings
-        .filter((b) => isRevenueCounted(b) && isSameWeek(new Date(b.createdAt), now))
+        .filter((b) => isRevenueCounted(b) && isSameWeek(getRevenueDate(b), now))
         .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const revenueThisYear = bookings
-        .filter((b) => isRevenueCounted(b) && isSameYear(new Date(b.createdAt), now))
+        .filter((b) => isRevenueCounted(b) && isSameYear(getRevenueDate(b), now))
         .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
       const uniqueCustomers = new Set(bookings.map((b) => b.customerId)).size;

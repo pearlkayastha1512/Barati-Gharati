@@ -3,7 +3,7 @@ import { categories } from "./category-data";
 
 export default function Categories() {
   return (
-    <section className="bg-rose-50 py-24">
+    <section className="bg-[#efb8bf] py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
           <p className="font-semibold uppercase tracking-[0.3em] text-rose-500">

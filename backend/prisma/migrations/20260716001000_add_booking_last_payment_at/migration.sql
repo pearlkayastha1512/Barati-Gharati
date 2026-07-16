@@ -1,0 +1,2 @@
+ALTER TABLE "Booking"
+ADD COLUMN "lastPaymentAt" TIMESTAMP(3);

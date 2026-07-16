@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 export default function EarningsStats() {
   const bookings = useBookingStore(
@@ -41,9 +42,8 @@ export default function EarningsStats() {
       pendingAmount +=
         booking.remainingAmount;
 
-      const bookingDate = new Date(
-        booking.createdAt
-      );
+      const bookingDate =
+        getBookingRevenueDate(booking);
 
       if (
         bookingDate.getMonth() ===
@@ -57,10 +57,17 @@ export default function EarningsStats() {
     });
 
     const averageBooking =
-      bookings.length > 0
+      bookings.filter(
+        (booking) =>
+          booking.bookingStatus !== "cancelled"
+      ).length > 0
         ? Math.round(
             totalRevenue /
-              bookings.length
+              bookings.filter(
+                (booking) =>
+                  booking.bookingStatus !==
+                  "cancelled"
+              ).length
           )
         : 0;
 

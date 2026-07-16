@@ -1,10 +1,12 @@
 "use client";
 
-import { X, Star } from "lucide-react";
+import Image from "next/image";
+import { Camera, Star, X } from "lucide-react";
 
 import { Review } from "@/types/review";
 import { useAuthStore } from "@/store/authStore";
 import { hasAdminPermission } from "@/lib/adminAccess";
+import { isSupportedImageSrc } from "@/lib/image-url";
 
 interface Props {
   review: Review | null;
@@ -169,22 +171,47 @@ export default function ReviewDetailsModal({
             review.proofImages.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">
-                  Proof Images
+                  Event Photos
                 </h3>
 
-                <div className="mt-3 flex flex-wrap gap-3">
+                <p className="mt-1 text-sm text-slate-500">
+                  Photos submitted by the customer with this review.
+                </p>
+
+                <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
                   {review.proofImages.map(
-                    (image) => (
-                      <a
-                        key={image}
-                        href={image}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-slate-200"
-                      >
-                        View Proof
-                      </a>
-                    )
+                    (image, index) =>
+                      isSupportedImageSrc(image) ? (
+                        <a
+                          key={image}
+                          href={image}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm"
+                          aria-label={`Open event photo ${index + 1}`}
+                        >
+                          <Image
+                            src={image}
+                            alt={`Event photo ${index + 1} submitted by ${review.customerName}`}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 220px"
+                            className="object-cover transition duration-300 group-hover:scale-105"
+                          />
+                          <span className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-2 text-center text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100">
+                            View full photo
+                          </span>
+                        </a>
+                      ) : (
+                        <a
+                          key={image}
+                          href={image}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex aspect-square items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-slate-600"
+                        >
+                          <Camera size={28} />
+                        </a>
+                      )
                   )}
                 </div>
               </div>

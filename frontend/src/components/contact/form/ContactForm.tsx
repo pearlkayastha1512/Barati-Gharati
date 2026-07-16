@@ -8,10 +8,10 @@ import {
 
 export default function ContactForm() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white to-rose-50 py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#e6a0b1_0%,#f0beb9_52%,#d77e9a_100%)] py-24">
       {/* Background Glow */}
-      <div className="absolute -left-32 top-20 h-[350px] w-[350px] rounded-full bg-rose-100 blur-[140px]" />
-      <div className="absolute -right-32 bottom-10 h-[350px] w-[350px] rounded-full bg-pink-100 blur-[140px]" />
+      <div className="absolute -left-32 top-20 h-[350px] w-[350px] rounded-full bg-rose-500/30 blur-[140px]" />
+      <div className="absolute -right-32 bottom-10 h-[350px] w-[350px] rounded-full bg-pink-500/25 blur-[140px]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="grid gap-12 lg:grid-cols-2">

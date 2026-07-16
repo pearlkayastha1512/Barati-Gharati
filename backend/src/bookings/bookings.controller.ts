@@ -19,6 +19,7 @@ import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
+import { RescheduleBookingDto } from './dto/reschedule-booking.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -157,6 +158,17 @@ export class BookingsController {
       userId,
       dto,
     );
+  }
+
+  @Patch(':id/reschedule')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  reschedule(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: RescheduleBookingDto,
+  ) {
+    return this.bookingsService.reschedule(id, userId, dto);
   }
 
   // ===========================

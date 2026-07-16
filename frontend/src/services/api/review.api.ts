@@ -129,6 +129,36 @@ export async function createReviewApi(
   }
 }
 
+export async function uploadReviewImagesApi(
+  files: File[]
+) {
+  try {
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    const { data } = await api.post<{
+      success: boolean;
+      images: string[];
+    }>("/reviews/upload-images", formData);
+
+    return {
+      ok: true as const,
+      images: data.images,
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: getErrorMessage(
+        error,
+        "Unable to upload event photos."
+      ),
+    };
+  }
+}
+
 /**
  * Update review
  */

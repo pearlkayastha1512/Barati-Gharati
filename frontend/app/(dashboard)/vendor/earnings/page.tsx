@@ -24,7 +24,21 @@ export default function VendorEarningsPage() {
       return;
     }
 
-    void loadVendorBookings(0);
+    const refresh = () => {
+      void loadVendorBookings(0);
+    };
+
+    refresh();
+    window.addEventListener("focus", refresh);
+    const interval = window.setInterval(
+      refresh,
+      30_000
+    );
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.clearInterval(interval);
+    };
   }, [loadVendorBookings, user]);
 
   return (

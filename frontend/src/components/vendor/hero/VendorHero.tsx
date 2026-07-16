@@ -18,6 +18,7 @@ import {
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
 import { useBookingStore } from "@/store/bookingStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 export default function VendorHero() {
   const { vendor } = useVendorProfile();
@@ -55,9 +56,8 @@ export default function VendorHero() {
     );
 
     bookings.forEach((booking) => {
-      const bookingDate = new Date(
-        booking.createdAt
-      );
+      const bookingDate =
+        getBookingRevenueDate(booking);
 
       if (
   bookingDate.getMonth() === currentMonth &&

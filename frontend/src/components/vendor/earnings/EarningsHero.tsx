@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 export default function EarningsHero() {
   const bookings = useBookingStore(
@@ -31,23 +32,27 @@ export default function EarningsHero() {
     let pendingAmount = 0;
 
     bookings.forEach((booking) => {
+      if (
+        booking.bookingStatus ===
+        "cancelled"
+      ) {
+        return;
+      }
+
       totalRevenue +=
         booking.vendorNetAmount ?? 0;
 
       pendingAmount +=
         booking.remainingAmount;
 
-      const date = new Date(
-        booking.createdAt
-      );
+      const date =
+        getBookingRevenueDate(booking);
 
       if (
         date.getMonth() ===
           currentMonth &&
         date.getFullYear() ===
-          currentYear &&
-        booking.bookingStatus !==
-          "cancelled"
+        currentYear
       ) {
         monthlyRevenue +=
           booking.vendorNetAmount ?? 0;

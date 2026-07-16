@@ -3,13 +3,13 @@ import PhoneMockup from "./PhoneMockup";
 
 export default function DownloadApp() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-pink-50 py-24">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#d97f9b] via-[#f1bdc2] to-[#d77191] py-24">
       {/* Background Glow */}
 
       <div className="absolute inset-0">
-        <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-rose-200/30 blur-[140px]" />
+        <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-rose-500/25 blur-[140px]" />
 
-        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-200/30 blur-[140px]" />
+        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-500/25 blur-[140px]" />
       </div>
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-20 px-6 lg:grid-cols-2">

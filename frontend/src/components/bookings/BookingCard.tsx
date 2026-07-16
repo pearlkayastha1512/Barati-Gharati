@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import PayAdvanceModal from "./PayAdvanceModal";
+import { isSupportedImageSrc } from "@/lib/image-url";
 
 import {
   Booking,
@@ -88,12 +89,19 @@ export default function BookingCard({
           {/* Vendor Image */}
 
           <div className="relative h-52 w-full overflow-hidden rounded-3xl lg:h-44 lg:w-72">
-            <Image
-              src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800"
-              alt={booking.vendorName}
-              fill
-              className="object-cover"
-            />
+            {isSupportedImageSrc(booking.vendorImage) ? (
+              <Image
+                src={booking.vendorImage}
+                alt={`${booking.vendorName} profile`}
+                fill
+                sizes="(min-width: 1024px) 288px, 100vw"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#ffe6eb] to-[#fff8d8] text-6xl font-bold text-[#e63b5f]">
+                {booking.vendorName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
 
           {/* Details */}

@@ -53,6 +53,7 @@ export type BackendBooking = {
 
   createdAt: string;
   updatedAt: string;
+  lastPaymentAt: string | null;
 };
 
 export const getMyBookings = async (): Promise<BackendBooking[]> => {

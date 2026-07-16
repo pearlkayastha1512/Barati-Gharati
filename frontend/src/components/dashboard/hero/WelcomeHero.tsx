@@ -49,6 +49,19 @@ const totalSpent = useMemo(() => {
   );
 }, [bookings]);
 
+const totalBalanceDue = useMemo(() => {
+  return bookings
+    .filter(
+      (booking) =>
+        booking.bookingStatus !== "cancelled" &&
+        booking.bookingStatus !== "rejected"
+    )
+    .reduce(
+      (sum, booking) => sum + (booking.remainingAmount || 0),
+      0
+    );
+}, [bookings]);
+
 // const progress = useMemo(() => {
 //   if (!bookings.length) return 0;
 
@@ -292,9 +305,12 @@ const daysRemaining = weddingDate
             </div>
 
             <div className="rounded-2xl border border-[#ffcad3] bg-[#fff5f7] p-4">
-              
-              <p className="mt-1 text-2xl font-bold text-[#ff4d6d]">
-                Forever
+              <p className="text-2xl font-bold text-[#ff4d6d]">
+                ₹{totalBalanceDue.toLocaleString("en-IN")}
+              </p>
+
+              <p className="mt-1 text-sm text-[#8d6171]">
+                Balance Due
               </p>
             </div>
           </div>

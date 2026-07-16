@@ -20,6 +20,7 @@ import { useEffect, useMemo } from "react";
 
 import { useVendorProfile } from "@/hooks/useVendorProfile";
 import { useReviewStore } from "@/store/reviewStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 import {
   CalendarCheck2,
@@ -50,8 +51,22 @@ const loadVendorReviews = useReviewStore(
 useEffect(() => {
   if (!vendor) return;
 
-  void loadVendorBookings(vendor.id);
-  void loadVendorReviews(vendor.id);
+  const refresh = () => {
+    void loadVendorBookings(vendor.id);
+    void loadVendorReviews(vendor.id);
+  };
+
+  refresh();
+  window.addEventListener("focus", refresh);
+  const interval = window.setInterval(
+    refresh,
+    30_000
+  );
+
+  return () => {
+    window.removeEventListener("focus", refresh);
+    window.clearInterval(interval);
+  };
 }, [vendor, loadVendorBookings, loadVendorReviews]);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -67,10 +82,22 @@ useEffect(() => {
       );
     });
 
-    const monthlyRevenue = monthlyBookings.reduce(
-      (sum, booking) => sum + booking.advancePaid,
-      0
-    );
+    const monthlyRevenue = bookings
+      .filter((booking) => {
+        const paymentDate =
+          getBookingRevenueDate(booking);
+
+        return (
+          paymentDate.getMonth() === currentMonth &&
+          paymentDate.getFullYear() === currentYear &&
+          booking.bookingStatus !== "cancelled"
+        );
+      })
+      .reduce(
+        (sum, booking) =>
+          sum + (booking.vendorNetAmount ?? 0),
+        0
+      );
 
     const customers = new Set(
       bookings.map(

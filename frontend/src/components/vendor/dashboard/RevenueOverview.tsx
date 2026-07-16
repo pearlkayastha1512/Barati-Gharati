@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 export default function RevenueOverview() {
   const bookings = useBookingStore(
@@ -37,9 +38,8 @@ export default function RevenueOverview() {
         return;
       }
 
-      const date = new Date(
-        booking.createdAt
-      );
+      const date =
+        getBookingRevenueDate(booking);
 
       if (date >= todayStart) {
         today += booking.vendorNetAmount ?? 0;

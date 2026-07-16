@@ -3,13 +3,13 @@ import { Award, HeartHandshake, Sparkles } from "lucide-react";
 
 export default function OurStory() {
   return (
-    <section className="relative overflow-hidden bg-white py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#edb2bc_0%,#f1c5bc_52%,#dc91a8_100%)] py-24">
 
       {/* Background Glow */}
 
-      <div className="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-rose-100 blur-[150px]" />
+      <div className="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-rose-400/35 blur-[150px]" />
 
-      <div className="absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-pink-100 blur-[150px]" />
+      <div className="absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-pink-400/30 blur-[150px]" />
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-20 px-6 lg:grid-cols-2">
 

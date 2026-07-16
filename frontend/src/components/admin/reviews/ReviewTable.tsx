@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Star } from "lucide-react";
+import { Camera, Eye, Star } from "lucide-react";
 
 import { Review } from "@/types/review";
 
@@ -48,6 +48,10 @@ export default function ReviewTable({
 
               <th className="px-6 py-4 font-semibold text-slate-700">
                 Review
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Photos
               </th>
 
               <th className="px-6 py-4 font-semibold text-slate-700">
@@ -108,6 +112,13 @@ export default function ReviewTable({
                   <p className="truncate">
                     {review.comment}
                   </p>
+                </td>
+
+                <td className="px-6 py-5">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-700">
+                    <Camera size={15} />
+                    {review.proofImages?.length ?? 0}
+                  </span>
                 </td>
 
                 <td className="px-6 py-5">

@@ -6,6 +6,8 @@ import {
   Max,
   Min,
   IsArray,
+  ArrayMaxSize,
+  IsUrl,
 } from 'class-validator';
 
 export class CreateReviewDto {
@@ -27,6 +29,10 @@ export class CreateReviewDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMaxSize(5)
+  @IsUrl(
+    { protocols: ['https'], require_protocol: true },
+    { each: true },
+  )
   proofImages?: string[];
 }

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { getBookingRevenueDate } from "@/utils/bookingRevenue";
 
 const months = [
   "January",
@@ -44,9 +45,8 @@ export default function RevenueAnalytics() {
         return;
       }
 
-      const date = new Date(
-        booking.createdAt
-      );
+      const date =
+        getBookingRevenueDate(booking);
 
       if (
         date.getFullYear() !==

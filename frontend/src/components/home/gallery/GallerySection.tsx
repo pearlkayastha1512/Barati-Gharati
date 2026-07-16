@@ -6,11 +6,11 @@ import Link from "next/link";
 
 export default function GallerySection() {
   return (
-    <section className="relative overflow-hidden bg-white py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(145deg,#f5d0c8_0%,#e8a2b5_48%,#f8ddd0_100%)] py-24">
       {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-rose-100 blur-[120px]" />
-        <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-pink-100 blur-[120px]" />
+        <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-rose-400/35 blur-[120px]" />
+        <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-pink-400/30 blur-[120px]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6">

@@ -3,13 +3,13 @@ import { missionData } from "./mission-data";
 
 export default function MissionVision() {
   return (
-    <section className="relative overflow-hidden bg-[#fff8f9] py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(145deg,#d9829d_0%,#eeb2bc_50%,#efc0b8_100%)] py-24">
 
       {/* Background Glow */}
 
-      <div className="absolute -left-40 top-10 h-[400px] w-[400px] rounded-full bg-rose-200/40 blur-[140px]" />
+      <div className="absolute -left-40 top-10 h-[400px] w-[400px] rounded-full bg-rose-500/30 blur-[140px]" />
 
-      <div className="absolute -right-40 bottom-10 h-[400px] w-[400px] rounded-full bg-pink-200/40 blur-[140px]" />
+      <div className="absolute -right-40 bottom-10 h-[400px] w-[400px] rounded-full bg-pink-500/25 blur-[140px]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
 

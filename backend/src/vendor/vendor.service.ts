@@ -13,6 +13,7 @@ import { Role } from '@prisma/client';
 import { VendorStatus } from '@prisma/client';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { JwtService } from '@nestjs/jwt';
+import { PayoutsService } from '../payouts/payouts.service';
 
 @Injectable()
 export class VendorService {
@@ -21,6 +22,7 @@ export class VendorService {
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
     private readonly jwtService: JwtService,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   async createVendor(
@@ -600,6 +602,33 @@ async getDashboard(userId: string) {
     },
   });
 
+  const revenueBookings = await this.prisma.booking.findMany({
+    where: {
+      vendorId: vendor.id,
+      status: {
+        notIn: ['CANCELLED', 'REJECTED'],
+      },
+    },
+    select: {
+      amountPaid: true,
+      payout: {
+        select: {
+          status: true,
+          platformCommission: true,
+        },
+      },
+    },
+  });
+
+  const totalRevenue = revenueBookings.reduce(
+    (sum, booking) =>
+      sum +
+      this.payoutsService.calculateRecognizedVendorEarnings(
+        booking,
+      ),
+    0,
+  );
+
   return {
     success: true,
     data: {
@@ -612,7 +641,7 @@ async getDashboard(userId: string) {
       pendingBookings,
       confirmedBookings,
       cancelledBookings,
-      totalRevenue: 0,
+      totalRevenue,
       averageRating: 0,
     },
   };
