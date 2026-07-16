@@ -40,22 +40,21 @@ export default function Footer() {
       <div className="absolute -right-32 bottom-0 h-72 w-72 rounded-full bg-pink-500/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-20">
-        <div className="grid gap-16 lg:grid-cols-4">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           {/* Logo */}
           <div className="lg:col-span-2">
             <Link
               href="/"
-              className="inline-flex rounded-2xl bg-white p-3"
+              className="inline-flex"
               aria-label="Barati Gharati home"
             >
-              <BrandLogo className="h-20 w-64" />
+              <BrandLogo className="h-16 w-56 sm:h-20 sm:w-64" />
             </Link>
 
             <p className="mt-6 max-w-md leading-8 text-gray-400">
-              Making wedding planning effortless with
-              verified vendors, beautiful inspiration,
-              transparent pricing and unforgettable
-              experiences across India.
+              Planning weddings, birthdays, anniversaries, baby showers,
+              corporate events and every celebration with verified vendors,
+              transparent pricing and unforgettable experiences across India.
             </p>
 
             {/* Contact */}
@@ -121,7 +120,10 @@ export default function Footer() {
             links={FOOTER_LINKS.company}
           />
 
-         
+          <FooterColumn
+            title="Beyond Weddings"
+            links={FOOTER_LINKS.celebrations}
+          />
 
           <FooterColumn
             title="Resources"

@@ -81,15 +81,29 @@ export class PaymentService {
     return Math.round((total * rate) / 100);
   }
 
-  private getSettlement(totalAmount: unknown) {
+  private getSettlement(
+    totalAmount: unknown,
+    platformCommissionValue: unknown,
+  ) {
     const total = Number(totalAmount);
-    const platformCommission = Math.round(total * 10) / 100;
+    const platformCommission = Math.max(
+      0,
+      Number(platformCommissionValue) || 0,
+    );
+    const platformCommissionRate =
+      total > 0
+        ? Math.round((platformCommission / total) * 10_000) / 100
+        : 0;
 
     return {
       totalAmount: total,
-      platformCommissionRate: 10,
+      platformCommissionRate,
       platformCommission,
-      vendorReceives: total - platformCommission,
+      vendorReceives:
+        this.payoutsService.calculateVendorNetCollected(
+          total,
+          platformCommission,
+        ),
     };
   }
 
@@ -545,6 +559,7 @@ export class PaymentService {
   data: {
   paymentStatus: PaymentStatus.PARTIAL,
   amountPaid: requiredAdvance,
+  lastPaymentAt: new Date(),
   remainingAmount:
     Number(booking.totalAmount) - requiredAdvance,
   status: BookingStatus.ADVANCE_PAID,
@@ -636,6 +651,7 @@ return {
       include: {
         user: true,
         vendor: true,
+        payout: true,
         package: {
           include: {
             category: true,
@@ -685,6 +701,7 @@ return {
       data: {
         amountPaid: totalAmount,
         remainingAmount: 0,
+        lastPaymentAt: new Date(),
         paymentStatus: PaymentStatus.SUCCESS,
         status: BookingStatus.CONFIRMED,
         finalPaymentOrderId: null,
@@ -697,10 +714,14 @@ return {
             category: true,
           },
         },
+        payout: true,
       },
     });
 
-    const settlement = this.getSettlement(totalAmount);
+    const settlement = this.getSettlement(
+      totalAmount,
+      updatedBooking.payout?.platformCommission,
+    );
 
     await Promise.all([
       this.notificationsService.create(updatedBooking.vendor.userId, {

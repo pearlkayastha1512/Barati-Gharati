@@ -16,6 +16,41 @@ export class PayoutsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  calculateVendorNetCollected(
+    amountPaid: unknown,
+    platformCommission: unknown,
+  ) {
+    const paid = Math.max(0, Number(amountPaid) || 0);
+    const commission = Math.max(
+      0,
+      Number(platformCommission) || 0,
+    );
+
+    return Math.round(Math.max(0, paid - commission) * 100) / 100;
+  }
+
+  calculateRecognizedVendorEarnings(booking: {
+    amountPaid: unknown;
+    payout?: {
+      status?: PayoutStatus | null;
+      platformCommission?: unknown;
+    } | null;
+  }) {
+    const status = booking.payout?.status;
+
+    if (
+      status !== PayoutStatus.RELEASED &&
+      status !== PayoutStatus.SETTLED
+    ) {
+      return 0;
+    }
+
+    return this.calculateVendorNetCollected(
+      booking.amountPaid,
+      booking.payout?.platformCommission,
+    );
+  }
+
   calculateAdvanceCommission(grossAdvance: unknown) {
     const gross = Math.max(0, Number(grossAdvance));
     const slabs = [

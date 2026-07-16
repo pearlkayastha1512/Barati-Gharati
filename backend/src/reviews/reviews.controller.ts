@@ -6,9 +6,16 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFiles,
+  UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -16,6 +23,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { VendorReplyDto } from './dto/vendor-reply.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { imageFileFilter } from '../common/file-filter';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -26,6 +34,33 @@ export class ReviewsController {
   @Post()
   create(@CurrentUser('sub') userId: string, @Body() dto: CreateReviewDto) {
     return this.reviewsService.create(userId, dto);
+  }
+
+  @Post('upload-images')
+  @UseInterceptors(
+    FilesInterceptor('images', 5, {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: imageFileFilter,
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          maxItems: 5,
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  uploadImages(
+    @CurrentUser('sub') userId: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.reviewsService.uploadProofImages(userId, files);
   }
 
   @Get()

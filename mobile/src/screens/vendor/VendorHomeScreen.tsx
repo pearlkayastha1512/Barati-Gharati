@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { COLORS, SPACING } from "../../constants/theme";
 import { styles } from "./vendorHomeStyles";
@@ -44,9 +44,11 @@ export default function VendorHomeScreen() {
     fetchDashboard,
   } = useVendorDashboardStore();
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchDashboard();
+    }, [fetchDashboard]),
+  );
 
   // Loading state
   if (!approvalChecked || isLoading) {
@@ -300,4 +302,3 @@ export default function VendorHomeScreen() {
     </SafeAreaView>
   );
 }
-

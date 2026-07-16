@@ -3,13 +3,13 @@ import { values } from "./values-data";
 
 export default function CoreValues() {
   return (
-    <section className="relative overflow-hidden bg-white py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#efb9b9_0%,#d98ca5_50%,#c96d8e_100%)] py-24">
 
       {/* Background Glow */}
 
-      <div className="absolute left-0 top-20 h-[350px] w-[350px] rounded-full bg-rose-100 blur-[140px]" />
+      <div className="absolute left-0 top-20 h-[350px] w-[350px] rounded-full bg-rose-400/35 blur-[140px]" />
 
-      <div className="absolute right-0 bottom-0 h-[350px] w-[350px] rounded-full bg-pink-100 blur-[140px]" />
+      <div className="absolute right-0 bottom-0 h-[350px] w-[350px] rounded-full bg-pink-400/30 blur-[140px]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
 

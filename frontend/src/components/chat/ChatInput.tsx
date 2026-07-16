@@ -73,14 +73,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { KeyboardEvent, useState } from "react";
 import { SendHorizonal } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
 import { useMessageStore } from "@/store/messageStore";
-import { toast } from "sonner";
-
-import { validateMessage } from "@/utils/messageValidator";
 
 export default function ChatInput() {
   const [text, setText] = useState("");
@@ -125,17 +122,33 @@ await sendNewMessage(
     setText("");
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.nativeEvent.isComposing
+    ) {
+      event.preventDefault();
+      void handleSend();
+    }
+  };
+
   return (
     <div className="flex shrink-0 items-center gap-3 border-t border-[#ffb3bf] bg-[#fffdf0] p-5">
-      <input
+      <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder="Type a message..."
-        className="flex-1 rounded-xl border border-[#ffb3bf] px-4 py-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
+        rows={1}
+        className="max-h-28 min-h-12 flex-1 resize-none rounded-xl border border-[#ffb3bf] px-4 py-3 text-[#6c2d45] outline-none focus:border-[#ff4d6d]"
       />
 
       <button
-        onClick={handleSend}
+        type="button"
+        onClick={() => void handleSend()}
+        disabled={!text.trim()}
+        aria-label="Send message"
         className="rounded-xl bg-[#ff4d6d] p-3 text-white transition hover:bg-[#e63b5f]"
       >
         <SendHorizonal size={20} />

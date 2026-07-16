@@ -3,7 +3,7 @@ import { faqs } from "./faq-data";
 
 export default function ContactFAQ() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-[linear-gradient(145deg,#d77f9b_0%,#e9a8b6_48%,#f1c1b9_100%)] py-24">
 
       <div className="mx-auto max-w-5xl px-6">
 

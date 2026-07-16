@@ -3,7 +3,7 @@ import { planningSteps } from "./planning-data";
 
 export default function PlanningProcess() {
   return (
-    <section className="bg-gradient-to-b from-rose-50 to-white py-24">
+    <section className="bg-[linear-gradient(135deg,#efbbb9_0%,#dc8fa6_52%,#c96f8f_100%)] py-24">
 
       <div className="mx-auto max-w-7xl px-6">
 

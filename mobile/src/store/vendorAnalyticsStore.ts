@@ -59,12 +59,18 @@ function computeAnalytics(bookings: BackendBooking[]) {
 
   activeBookings.forEach((b) => {
     const eventDate = new Date(b.eventDate);
-    if (eventDate.getFullYear() !== currentYear) return;
+    if (eventDate.getFullYear() === currentYear) {
+      monthlyBookingCounts[eventDate.getMonth()].count += 1;
+      totalBookingsThisYear += 1;
+    }
 
-    const monthIdx = eventDate.getMonth();
-    monthlyBookingCounts[monthIdx].count += 1;
-    monthlyRevenueTotals[monthIdx].amount += b.vendorNetAmount || 0;
-    totalBookingsThisYear += 1;
+    const revenueDate = new Date(
+      b.lastPaymentAt ?? b.updatedAt ?? b.createdAt,
+    );
+    if (revenueDate.getFullYear() === currentYear) {
+      monthlyRevenueTotals[revenueDate.getMonth()].amount +=
+        b.vendorNetAmount || 0;
+    }
   });
 
   const bestMonth = monthlyRevenueTotals.reduce(
@@ -111,7 +117,7 @@ function computeAnalytics(bookings: BackendBooking[]) {
       insights.push({
         id: "best-month",
         icon: "trending-up",
-        text: `${bestMonth.month} was your best month, generating ₹${bestMonth.amount.toLocaleString("en-IN")} in advance payments.`,
+        text: `${bestMonth.month} was your best month, generating ₹${bestMonth.amount.toLocaleString("en-IN")} in received payments.`,
       });
     }
 

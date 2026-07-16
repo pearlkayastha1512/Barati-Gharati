@@ -38,7 +38,7 @@ const displayedVendors = showAll
   return (
     <section
       id="featured-section"
-      className="bg-gradient-to-b from-rose-50 to-white py-24"
+      className="bg-gradient-to-b from-[#e7a0b5] via-[#f3c5c4] to-[#fff1e7] py-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}

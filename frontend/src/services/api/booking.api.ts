@@ -261,3 +261,32 @@ export async function updateBookingPaymentApi(
     };
   }
 }
+
+export async function rescheduleBookingApi(
+  id: string,
+  eventDate: string,
+  reason?: string
+) {
+  try {
+    const { data } = await api.patch(
+      `/bookings/${id}/reschedule`,
+      {
+        eventDate,
+        reason: reason?.trim() || undefined,
+      }
+    );
+
+    return {
+      ok: true as const,
+      data,
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: getErrorMessage(
+        error,
+        "Unable to reschedule booking."
+      ),
+    };
+  }
+}

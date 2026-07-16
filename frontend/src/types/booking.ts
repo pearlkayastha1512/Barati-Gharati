@@ -37,6 +37,8 @@ export interface Booking {
 
   vendorName: string;
 
+  vendorImage?: string | null;
+
   category: string;
 
   packageName: string;
@@ -125,4 +127,6 @@ export interface Booking {
   createdAt: string;
 
   updatedAt: string;
+
+  lastPaymentAt?: string | null;
 }

@@ -106,7 +106,9 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
           pendingAmount += balance;
         }
 
-        const paymentDate = new Date(booking.createdAt);
+        const paymentDate = new Date(
+          booking.lastPaymentAt ?? booking.updatedAt ?? booking.createdAt,
+        );
 
         if (
           paymentDate.getMonth() === now.getMonth() &&
@@ -124,7 +126,7 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
           id: booking.id,
           customerName: booking.customerName,
           eventType: booking.eventType,
-          date: new Date(booking.eventDate).toISOString().slice(0, 10),
+          date: paymentDate.toISOString().slice(0, 10),
           total,
           paid,
           balance,

@@ -35,18 +35,19 @@ export default function Hero() {
   <HeroContent />
 </motion.div>
       </div>
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
-  <svg
-    viewBox="0 0 1440 120"
-    className="w-full h-auto"
-    preserveAspectRatio="none"
-  >
-    <path
-      fill="#ffffff"
-      d="M0,96L80,90.7C160,85,320,75,480,69.3C640,64,800,64,960,69.3C1120,75,1280,85,1360,90.7L1440,96L1440,120L0,120Z"
-    />
-  </svg>
-</div>
+      <div className="absolute -bottom-px left-0 w-full overflow-hidden leading-none">
+        <svg
+          viewBox="0 0 1440 120"
+          className="block h-auto w-full"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            fill="#efb8bf"
+            d="M0,96L80,90.7C160,85,320,75,480,69.3C640,64,800,64,960,69.3C1120,75,1280,85,1360,90.7L1440,96L1440,120L0,120Z"
+          />
+        </svg>
+      </div>
     </section>
   );
 }

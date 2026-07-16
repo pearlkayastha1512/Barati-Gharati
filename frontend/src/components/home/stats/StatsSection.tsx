@@ -80,14 +80,14 @@ import { stats } from "./stats-data";
 
 export default function StatsSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-rose-50 via-white to-rose-50 py-28">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#fff1e7] via-[#efb5c1] to-[#df8fa8] py-28">
       {/* Luxury Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-rose-200/30 blur-[140px]" />
+        <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-rose-400/35 blur-[140px]" />
 
-        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-200/30 blur-[160px]" />
+        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-pink-400/30 blur-[160px]" />
 
-        <div className="absolute left-1/2 top-1/2 h-[550px] w-[550px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-100/20 blur-[180px]" />
+        <div className="absolute left-1/2 top-1/2 h-[550px] w-[550px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff0e5]/45 blur-[180px]" />
 
         {/* Decorative Blobs */}
         <div className="absolute left-12 top-24 h-5 w-5 rotate-12 rounded-full bg-rose-300 opacity-60 blur-sm" />

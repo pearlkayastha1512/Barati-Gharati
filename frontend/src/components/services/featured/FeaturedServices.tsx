@@ -3,7 +3,7 @@ import { featuredServices } from "./featured-services-data";
 
 export default function FeaturedServices() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-[linear-gradient(145deg,#d9829d_0%,#eeb4bd_48%,#f3c6bb_100%)] py-24">
 
       <div className="mx-auto max-w-7xl px-6">
 

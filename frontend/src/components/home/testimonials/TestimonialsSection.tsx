@@ -3,13 +3,13 @@ import { testimonials } from "./testimonials-data";
 
 export default function TestimonialsSection() {
   return (
-    <section className="relative overflow-hidden bg-rose-50 py-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#df91a8_0%,#efb8c1_52%,#d9809d_100%)] py-24">
       {/* Background Glow */}
 
       <div className="absolute inset-0">
-        <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-rose-100 blur-[120px]" />
+        <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-rose-400/40 blur-[120px]" />
 
-        <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-pink-100 blur-[120px]" />
+        <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-pink-400/35 blur-[120px]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6">

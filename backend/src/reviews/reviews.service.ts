@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -12,12 +13,62 @@ import {
   Role,
   VendorStatus,
 } from '@prisma/client';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ReviewsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cloudinary: CloudinaryService,
+  ) {}
+
+  async uploadProofImages(
+    userId: string,
+    files: Express.Multer.File[],
+  ) {
+    const customer = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!customer || customer.role !== Role.USER) {
+      throw new ForbiddenException(
+        'Only customers can upload review photos',
+      );
+    }
+
+    if (!files?.length) {
+      throw new BadRequestException(
+        'Please select at least one event photo',
+      );
+    }
+
+    const uploaded = await Promise.all(
+      files.map((file) =>
+        this.cloudinary.uploadImage(
+          file,
+          'wedding-planner/reviews',
+        ),
+      ),
+    );
+
+    return {
+      success: true,
+      images: uploaded.map((image) => image.secure_url),
+    };
+  }
 
   async create(userId: string, dto: CreateReviewDto) {
+    if (
+      dto.proofImages?.some(
+        (image) => new URL(image).hostname !== 'res.cloudinary.com',
+      )
+    ) {
+      throw new BadRequestException(
+        'Review photos must be uploaded through the platform',
+      );
+    }
+
     const booking = await this.prisma.booking.findUnique({
       where: {
         id: dto.bookingId,
@@ -261,6 +312,8 @@ export class ReviewsService {
       packageName: review.package.title,
       rating: review.rating,
       comment: review.comment ?? '',
+      complaint: review.complaint,
+      proofImages: review.proofImages,
       reply: review.vendorReply,
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
@@ -315,6 +368,8 @@ export class ReviewsService {
       packageName: review.package.title,
       rating: review.rating,
       comment: review.comment,
+      complaint: review.complaint,
+      proofImages: review.proofImages,
       reply: review.vendorReply,
       repliedAt: review.vendorReply
         ? review.updatedAt

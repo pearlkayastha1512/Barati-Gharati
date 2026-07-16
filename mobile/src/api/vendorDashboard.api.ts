@@ -14,7 +14,7 @@ export type BackendDashboard = {
   pendingBookings: number;
   confirmedBookings: number;
   cancelledBookings: number;
-  totalRevenue: number; // currently always 0 server-side
+  totalRevenue: number;
   averageRating: number; // currently always 0 server-side
 };
 
@@ -36,6 +36,8 @@ export type BackendBooking = {
   paymentStatus: string;
   bookingStatus: string; // "pending" | "accepted" | "confirmed" | "cancelled" | "rejected"
   createdAt: string;
+  updatedAt: string;
+  lastPaymentAt: string | null;
 };
 
 export type BackendReview = {

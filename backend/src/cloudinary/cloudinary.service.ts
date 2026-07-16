@@ -16,13 +16,14 @@ export class CloudinaryService {
 
   async uploadImage(
     file: Express.Multer.File,
+    folder = 'wedding-planner/vendors',
   ): Promise<UploadApiResponse> {
     return new Promise<UploadApiResponse>(
       (resolve, reject) => {
         cloudinary.uploader
           .upload_stream(
             {
-              folder: 'wedding-planner/vendors',
+              folder,
 
               quality: 'auto',
 

@@ -3,7 +3,7 @@ import { teamMembers } from "./team-data";
 
 export default function MeetTeam() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-[linear-gradient(145deg,#d77f9b_0%,#eeb3bc_50%,#f0c2b9_100%)] py-24">
 
       <div className="mx-auto max-w-7xl px-6">
 

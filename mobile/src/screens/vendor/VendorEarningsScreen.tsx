@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, Modal, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { COLORS } from "../../constants/theme";
 import { CAL_COLORS } from "../../constants/calendarTheme";
@@ -37,9 +37,11 @@ export default function VendorEarningsScreen() {
     isLoading,
   } = useVendorEarningsStore();
 
-  useEffect(() => {
-    fetchEarnings();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchEarnings();
+    }, [fetchEarnings]),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

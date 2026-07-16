@@ -65,6 +65,7 @@ export interface Booking {
   bookingStatus: BookingStatus;
   createdAt: string;
   updatedAt: string;
+  lastPaymentAt?: string | null;
 }
 
 export type CreateBookingInput = Omit<Booking, "id" | "createdAt" | "updatedAt">;

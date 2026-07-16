@@ -9,6 +9,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
+import { RescheduleBookingDto } from './dto/reschedule-booking.dto';
 import { Role, BookingStatus } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
 import { VendorStatus } from '@prisma/client';
@@ -557,6 +558,116 @@ export class BookingsService {
     return this.mapBooking(updatedBooking);
   }
 
+  async reschedule(
+    id: string,
+    userId: string,
+    dto: RescheduleBookingDto,
+  ) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: { category: true },
+        },
+        payout: true,
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const unavailableStatuses: BookingStatus[] = [
+      BookingStatus.CANCELLED,
+      BookingStatus.REJECTED,
+      BookingStatus.EVENT_COMPLETED,
+      BookingStatus.AWAITING_ADMIN_REVIEW,
+      BookingStatus.PAYMENT_HELD,
+    ];
+
+    if (unavailableStatuses.includes(booking.status)) {
+      throw new BadRequestException(
+        'This booking can no longer be rescheduled',
+      );
+    }
+
+    const newEventDate = new Date(dto.eventDate);
+    const tomorrow = new Date();
+    tomorrow.setUTCHours(0, 0, 0, 0);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+
+    if (newEventDate < tomorrow) {
+      throw new BadRequestException(
+        'Please select a future event date',
+      );
+    }
+
+    const oldDateRange = this.getDateRange(booking.eventDate);
+    const newDateRange = this.getDateRange(newEventDate);
+
+    if (oldDateRange.start.getTime() === newDateRange.start.getTime()) {
+      throw new BadRequestException(
+        'Please select a different event date',
+      );
+    }
+
+    await this.ensureVendorAvailable(
+      booking.vendorId,
+      newEventDate,
+      booking.id,
+    );
+
+    const updatedBooking = await this.prisma.booking.update({
+      where: { id },
+      data: { eventDate: newEventDate },
+      include: {
+        user: true,
+        vendor: true,
+        package: {
+          include: { category: true },
+        },
+        payout: true,
+      },
+    });
+
+    const previousDate = booking.eventDate.toLocaleDateString('en-IN');
+    const updatedDate = updatedBooking.eventDate.toLocaleDateString('en-IN');
+    const reason = dto.reason?.trim()
+      ? ` Reason: ${dto.reason.trim()}`
+      : '';
+
+    await this.notificationsService.create(updatedBooking.vendor.userId, {
+      title: 'Booking Rescheduled',
+      message: `${updatedBooking.customerName ?? updatedBooking.user.name} changed booking ${updatedBooking.bookingNumber} from ${previousDate} to ${updatedDate}.${reason}`,
+    });
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      admins.map((admin) =>
+        this.notificationsService.create(admin.id, {
+          title: 'Booking Rescheduled',
+          message: `Booking ${updatedBooking.bookingNumber} was moved from ${previousDate} to ${updatedDate}.${reason}`,
+        }),
+      ),
+    );
+
+    return {
+      success: true,
+      message: 'Booking rescheduled successfully',
+      data: this.mapBooking(updatedBooking),
+    };
+  }
+
   async updatePayment(
     id: string,
     userId: string,
@@ -615,6 +726,7 @@ export class BookingsService {
       data: {
         amountPaid,
         remainingAmount,
+        lastPaymentAt: new Date(),
         paymentStatus:
           remainingAmount <= 0
             ? PaymentStatus.SUCCESS
@@ -628,6 +740,7 @@ export class BookingsService {
             category: true,
           },
         },
+        payout: true,
       },
     });
 
@@ -788,6 +901,19 @@ export class BookingsService {
       options?.viewerRole === Role.VENDOR &&
       !booking.adminApproved;
 
+    const platformCommission = Number(
+      booking.payout?.platformCommission ?? 0,
+    );
+    const vendorNetAmount =
+      options?.viewerRole === Role.VENDOR
+        ? this.payoutsService.calculateRecognizedVendorEarnings(
+            booking,
+          )
+        : this.payoutsService.calculateVendorNetCollected(
+            booking.amountPaid,
+            platformCommission,
+          );
+
     return {
       id: booking.id,
 
@@ -808,6 +934,8 @@ export class BookingsService {
         : booking.customerPhone ?? booking.user.phone ?? '',
 
       vendorName: booking.vendor.businessName,
+
+      vendorImage: booking.vendor.logoUrl ?? '',
 
       category: booking.package.category?.name ?? '',
 
@@ -877,13 +1005,9 @@ export class BookingsService {
 
       advancePaid: Number(booking.amountPaid),
 
-      platformCommission: Number(
-        booking.payout?.platformCommission ?? 0,
-      ),
+      platformCommission,
 
-      vendorNetAmount: Number(
-        booking.payout?.vendorNetAmount ?? 0,
-      ),
+      vendorNetAmount,
 
       payoutStatus:
         booking.payout?.status?.toLowerCase() ?? null,
@@ -914,6 +1038,8 @@ export class BookingsService {
       createdAt: booking.createdAt,
 
       updatedAt: booking.updatedAt,
+
+      lastPaymentAt: booking.lastPaymentAt ?? null,
     };
   }
 

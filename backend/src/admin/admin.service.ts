@@ -1206,8 +1206,20 @@ async holdBookingPayment(id: string) {
 
 private mapBooking(booking: any) {
   const totalAmount = Number(booking.totalAmount);
-  const platformCommission =
-    Math.round(totalAmount * 10) / 100;
+  const platformCommission = Number(
+    booking.payout?.platformCommission ?? 0,
+  );
+  const vendorNetAmount =
+    this.payoutsService.calculateVendorNetCollected(
+      booking.amountPaid,
+      platformCommission,
+    );
+  const platformCommissionRate =
+    totalAmount > 0
+      ? Math.round(
+          (platformCommission / totalAmount) * 10_000,
+        ) / 100
+      : 0;
 
   return {
     id: booking.id,
@@ -1234,6 +1246,8 @@ private mapBooking(booking: any) {
       booking.partnerOccupation ?? '',
     vendorName:
       booking.vendor?.businessName ?? '',
+    vendorImage:
+      booking.vendor?.logoUrl ?? '',
     category:
       booking.package?.category?.name ?? '',
     packageName:
@@ -1267,12 +1281,8 @@ private mapBooking(booking: any) {
       booking.specialRequirements ?? '',
     amount: Number(booking.totalAmount),
     advancePaid: Number(booking.amountPaid),
-    platformCommission: Number(
-      booking.payout?.platformCommission ?? 0,
-    ),
-    vendorNetAmount: Number(
-      booking.payout?.vendorNetAmount ?? 0,
-    ),
+    platformCommission,
+    vendorNetAmount,
     payoutStatus:
       booking.payout?.status?.toLowerCase() ?? null,
     payoutSimulated:
@@ -1306,10 +1316,9 @@ private mapBooking(booking: any) {
       booking.paymentStatus === PaymentStatus.SUCCESS
         ? {
             totalAmount,
-            platformCommissionRate: 10,
+            platformCommissionRate,
             platformCommission,
-            vendorReceives:
-              totalAmount - platformCommission,
+            vendorReceives: vendorNetAmount,
           }
         : null,
     bookingStatus: this.mapBookingStatus(
@@ -1317,6 +1326,7 @@ private mapBooking(booking: any) {
     ),
     createdAt: booking.createdAt,
     updatedAt: booking.updatedAt,
+    lastPaymentAt: booking.lastPaymentAt ?? null,
   };
 }
 

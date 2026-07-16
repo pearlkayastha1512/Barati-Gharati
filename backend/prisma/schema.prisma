@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
-
-
 enum Role {
   USER
   VENDOR
@@ -33,6 +29,17 @@ enum MessageStatus {
   SENT
   DELIVERED
   READ
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  FINANCE_ADMIN
+  VENDOR_MANAGER
+  BOOKING_MANAGER
+  SUPPORT_ADMIN
+  CONTENT_MANAGER
+  REVIEW_DISPUTE_MANAGER
+  CHAT_MODERATOR
 }
 
 model User {
@@ -197,23 +204,20 @@ model Package {
   title       String
   description String?
   image       String?
-  price       Decimal   @db.Decimal(10, 2)
+  price       Decimal  @db.Decimal(10, 2)
   vendorId    String
   categoryId  String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   inclusions  String[]
 
-  
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
- 
-  category   Category @relation(fields: [categoryId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 
-  bookings  Booking[]
-  reviews   Review[]
-  leads     Lead[]
-  
+  bookings Booking[]
+  reviews  Review[]
+  leads    Lead[]
 
   @@index([vendorId])
   @@index([categoryId])
@@ -331,6 +335,7 @@ model Booking {
 
   advancePaymentOrderId String?
   finalPaymentOrderId   String?
+  lastPaymentAt         DateTime?
   adminApproved         Boolean   @default(false)
   adminApprovedAt       DateTime?
 

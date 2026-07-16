@@ -4,12 +4,14 @@ import { VendorService } from './vendor.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { AuthModule } from '../auth/auth.module';
+import { PayoutsModule } from '../payouts/payouts.module';
 
 @Module({
   imports: [
     PrismaModule,
     CloudinaryModule,
-    AuthModule
+    AuthModule,
+    PayoutsModule,
   ],
   controllers: [VendorController],
   providers: [VendorService],
