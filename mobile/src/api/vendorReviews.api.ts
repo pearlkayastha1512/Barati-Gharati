@@ -8,6 +8,8 @@ export const getReviewsByVendor = async (
     `/reviews/vendor/${vendorId}`,
   );
 
+  console.log("RAW REVIEWS (separate screen) =>", JSON.stringify(response.data, null, 2));
+
   return response.data;
 };
 

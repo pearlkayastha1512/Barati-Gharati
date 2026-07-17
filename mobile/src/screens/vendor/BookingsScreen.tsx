@@ -43,8 +43,8 @@ export default function BookingsScreen() {
   ).length;
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
   const totalRevenue = bookings
-    .filter((b) => b.paymentStatus === "paid" || b.paymentStatus === "partial")
-    .reduce((sum, b) => sum + b.advancePaid, 0);
+  .filter((b) => b.payoutStatus === "released" || b.payoutStatus === "settled")
+  .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =

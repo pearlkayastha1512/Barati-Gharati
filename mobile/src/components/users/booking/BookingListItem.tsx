@@ -34,8 +34,6 @@ const dateLabel = (value: string) => {
     : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
-// Converts a raw arraybuffer to base64 without depending on `global`/`btoa`,
-// which TypeScript's lib types don't recognize in this project.
 const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -62,7 +60,14 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return result;
 }
 
-export function BookingListItem({ booking, onPress, onPay }: { booking: Booking; onPress: () => void; onPay: (mode: "advance" | "remaining") => void }) {
+type Props = {
+  booking: Booking;
+  onPress: () => void;
+  onPay: (mode: "advance" | "remaining") => void;
+  onWriteReview: () => void; // NEW
+};
+
+export function BookingListItem({ booking, onPress, onPay, onWriteReview }: Props) {
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [vendorImage, setVendorImage] = useState<string | null>(null);
 
@@ -72,9 +77,7 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
       .then((vendor) => {
         if (active && vendor?.image) setVendorImage(vendor.image);
       })
-      .catch(() => {
-        // silently fall back to the placeholder below if the vendor lookup fails
-      });
+      .catch(() => {});
     return () => {
       active = false;
     };
@@ -83,6 +86,8 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
   const statusStyle = STATUS_COLORS[booking.bookingStatus];
   const canPayAdvance = booking.advancePaid <= 0 && booking.bookingStatus === "pending" && booking.paymentStatus !== "paid";
   const canPayRemaining = booking.bookingStatus === "payment_approved" && booking.remainingAmount > 0;
+  const canWriteReview = booking.bookingStatus === "event_completed"; // NEW
+
   const partialLabel = booking.bookingStatus === "awaiting_admin_review"
     ? "Awaiting Admin Review"
     : booking.bookingStatus === "payment_held"
@@ -131,10 +136,7 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
 
   return (
     <View style={styles.bookingCard}>
-      <Image
-        source={{ uri: vendorImage ?? FALLBACK_IMAGE }}
-        style={styles.bookingHeroImage}
-      />
+      <Image source={{ uri: vendorImage ?? FALLBACK_IMAGE }} style={styles.bookingHeroImage} />
 
       <View style={styles.bookingHeaderRow}>
         <View style={styles.bookingHeaderCopy}>
@@ -183,6 +185,22 @@ export function BookingListItem({ booking, onPress, onPay }: { booking: Booking;
           <Text style={styles.remainingValue}>₹{booking.remainingAmount.toLocaleString("en-IN")}</Text>
         </View>
       </View>
+
+      {/* NEW: Write Review CTA — shows only right after vendor marks event complete */}
+      {canWriteReview && (
+        <TouchableOpacity style={styles.reviewButton} onPress={onWriteReview}>
+          <MaterialIcons name="rate-review" size={17} color="#FFFFFF" />
+          <Text style={styles.reviewButtonText}>Write a Review</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* NEW: Pending badge — review already submitted, waiting on admin */}
+      {booking.bookingStatus === "awaiting_admin_review" && (
+        <View style={styles.pendingReviewBadge}>
+          <MaterialIcons name="hourglass-empty" size={14} color="#7E22CE" />
+          <Text style={styles.pendingReviewText}>Review submitted — awaiting admin approval</Text>
+        </View>
+      )}
 
       <TouchableOpacity
         style={[styles.payButton, !canPayAdvance && !canPayRemaining && styles.payButtonDisabled]}
