@@ -5,6 +5,7 @@ import AboutUsScreen from "../screens/couple/AboutUsScreen";
 import PrivacyPolicyScreen from "../screens/couple/PrivacyPolicyScreen";
 import TermsConditionsScreen from "../screens/couple/TermsConditionsScreen";
 import RefundPolicyScreen from "../screens/couple/RefundPolicyScreen";
+import MyReviewsScreen from "../screens/couple/MyReviewsScreen";
 
 import HomeScreen from "../screens/couple/HomeScreen";
 import VendorStackNavigator from "./VendorStackNavigator";
@@ -81,6 +82,7 @@ export default function CoupleNavigator() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} /> 
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="Wishlist" component={WishlistScreen} />  
+      <Stack.Screen name="MyReviews" component={MyReviewsScreen} />
       <Stack.Screen name="BookingDetails" component={BookingDetailsScreen} />
       <Stack.Screen name="AboutUs" component={AboutUsScreen} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

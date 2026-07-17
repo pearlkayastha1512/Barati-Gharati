@@ -66,14 +66,14 @@ export const getMyBookings = async (): Promise<BackendBooking[]> => {
 
 export const getVendorReviews = async (vendorId: string): Promise<BackendReview[]> => {
   const response = await api.get(`/reviews/vendor/${vendorId}`);
-  // TODO: confirm actual response shape once reviews.service.ts is available —
-  // assuming it's a plain array or { data: [...] }; adjust if needed.
+  console.log("RAW REVIEWS RESPONSE =>", JSON.stringify(response.data, null, 2));
   return Array.isArray(response.data) ? response.data : response.data.data ?? [];
 };
 
 export const getVendorAverageRating = async (vendorId: string): Promise<number> => {
   const response = await api.get(`/reviews/vendor/${vendorId}/average`);
-  // TODO: confirm shape — assuming { average: number } or a raw number.
   const data = response.data;
-  return typeof data === "number" ? data : data?.average ?? data?.data?.average ?? 0;
+  return typeof data === "number"
+    ? data
+    : data?.averageRating ?? data?.average ?? data?.data?.averageRating ?? data?.data?.average ?? 0;
 };

@@ -85,8 +85,10 @@ export const useVendorEarningsStore = create<VendorEarningsState>((set) => ({
     try {
       const bookings = await getMyBookings();
       const revenueBookings = bookings.filter(
-        (booking: any) => !EXCLUDED_BOOKING_STATUSES.includes(booking.bookingStatus)
-      );
+  (booking: any) =>
+    !EXCLUDED_BOOKING_STATUSES.includes(booking.bookingStatus) &&
+    (booking.payoutStatus === "released" || booking.payoutStatus === "settled")
+);
 
       let totalRevenue = 0;
       let thisMonthRevenue = 0;

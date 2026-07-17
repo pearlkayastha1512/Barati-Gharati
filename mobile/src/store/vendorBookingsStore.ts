@@ -138,17 +138,32 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
       set({ isLoading: true });
       let data = await getMyBookings();
 
+      console.log(
+  "ALL BOOKINGS =>",
+  data.map((b) => ({
+    id: b.id,
+    bookingStatus: b.bookingStatus,
+    payoutStatus: b.payoutStatus,
+    adminApproved: b.adminApproved,
+  })),
+);
+
       const needsAutoAccept = data.filter(
-        (b) =>
-          b.adminApproved &&
-          (b.bookingStatus === "pending" || b.bookingStatus === "advance_paid")
-      );
+  (b) =>
+    b.adminApproved &&
+    (b.bookingStatus === "pending" ||
+      (b.bookingStatus === "advance_paid" &&
+        (b.payoutStatus === "released" || b.payoutStatus === "settled")))
+);
 
       if (needsAutoAccept.length > 0) {
         await Promise.all(
           needsAutoAccept.map((b) =>
-            acceptBooking(b.id).catch((err) => {
-              console.log(`AUTO-ACCEPT FAILED for booking ${b.id} =>`, err);
+            acceptBooking(b.id).catch((err: any) => {
+              console.log(
+                `AUTO-ACCEPT FAILED for booking ${b.id} (status=${b.bookingStatus}) =>`,
+                err?.response?.data ?? err
+              );
             })
           )
         );

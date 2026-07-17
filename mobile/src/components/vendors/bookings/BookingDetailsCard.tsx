@@ -72,8 +72,14 @@ export function BookingDetailsCard({ booking }: { booking: VendorBookingRecord |
             <Text style={styles.detailValue}>{booking.date}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount</Text>
-            <Text style={styles.detailValue}>₹{booking.amount.toLocaleString("en-IN")}</Text>
+            <Text style={styles.detailLabel}>
+  {(booking.payoutStatus === "released" || booking.payoutStatus === "settled") ? "You'll receive" : "Booking amount"}
+</Text>
+<Text style={styles.detailValue}>
+  {(booking.payoutStatus === "released" || booking.payoutStatus === "settled")
+    ? `₹${booking.vendorNetAmount.toLocaleString("en-IN")}`
+    : `₹${booking.amount.toLocaleString("en-IN")}`}
+</Text>
           </View>
           <View style={[styles.detailRow, { borderBottomWidth: booking.status === "Pending" ? 1 : 0 }]}>
             <Text style={styles.detailLabel}>Status</Text>

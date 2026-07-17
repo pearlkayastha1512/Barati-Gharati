@@ -211,7 +211,13 @@ export default function HomeScreen() {
           <StatCard icon="event" title="Bookings" label="Total Bookings" value={bookings.length} onPress={() => navigation.navigate("Bookings")} />
           <StatCard icon="favorite" title="Wishlist" label="Saved Vendors" value={favoriteIds.size} onPress={() => navigation.navigate("Wishlist")} />
           <StatCard icon="account-balance-wallet" title="Budget" label="Budget Remaining" value={`₹${budgetRemaining.toLocaleString("en-IN")}`} onPress={() => navigation.navigate("Budget")} />
-          <StatCard icon="star" title="Reviews" label="Reviews Given" value={reviewsCount} />
+          <StatCard
+  icon="star"
+  title="Reviews"
+  label="Reviews Given"
+  value={reviewsCount}
+  onPress={() => navigation.navigate("MyReviews")}
+/>
         </View>
 
         {/* Quick Actions */}

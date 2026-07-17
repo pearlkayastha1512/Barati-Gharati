@@ -8,6 +8,7 @@ export type BookingStatus =
   | "payment_held"
   | "completed"
   | "rejected"
+
   | "cancelled";
 
 export type PaymentStatus =

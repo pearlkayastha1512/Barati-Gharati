@@ -1,74 +1,185 @@
 import { create } from "zustand";
-import { getMyReviews } from "../api/review.api";
+import {
+  getMyReviews,
+  getReviewsByVendor,
+  createReview as apiCreateReview,
+  updateReview as apiUpdateReview,
+  deleteReview as apiDeleteReview,
+  uploadReviewPhotos,
+} from "../api/review.api";
 
 export type Review = {
   id: string;
   vendorId: string;
   userId: string;
+  bookingId: string;
   rating: number;
   text: string;
+  proofImages: string[];
   date: string;
+   reply?: string | null;
+  repliedAt?: string;
 };
 
 interface ReviewState {
   reviews: Review[];
+  loadingVendorId: string | null;
   loadMyReviews: () => Promise<void>;
-  addReview: (vendorId: string, userId: string, rating: number, text: string) => void;
-  updateReview: (reviewId: string, rating: number, text: string) => void;
-  deleteReview: (reviewId: string) => void;
+  loadReviewsForVendor: (vendorId: string) => Promise<void>;
+  addReview: (
+    bookingId: string,
+    vendorId: string,
+    userId: string,
+    rating: number,
+    text: string,
+    photos?: string[], // 👈 local device URIs from image picker, not yet uploaded
+  ) => Promise<boolean>;
+  updateReview: (
+    reviewId: string,
+    rating: number,
+    text: string,
+    photos?: string[], // 👈 local device URIs from image picker, not yet uploaded
+  ) => Promise<boolean>;
+  deleteReview: (reviewId: string) => Promise<boolean>;
   getReviewsForVendor: (vendorId: string) => Review[];
   getUserReviewForVendor: (vendorId: string, userId: string) => Review | undefined;
   getVendorAverage: (vendorId: string) => { average: number; total: number; breakdown: number[] };
 }
 
-// TODO: once backend is connected, replace local state with API-backed state:
-// - on mount (per vendor), fetch via getVendorReviews(vendorId) and populate reviews
-// - addReview should call createReview(vendorId, { rating, text })
-// - updateReview should call updateReview(reviewId, { rating, text })
-// - deleteReview should call deleteReview(reviewId) — optimistic update with rollback on failure
+const mapRecord = (review: any): Review => ({
+  id: review.id,
+  vendorId: String(review.vendorId),
+  userId: review.userId ?? review.customerId,
+  bookingId: review.bookingId,
+  rating: review.rating,
+  text: review.comment ?? "",
+  proofImages: review.proofImages ?? [],
+  reply: review.reply ?? null,
+  repliedAt: review.repliedAt,
+  date: review.createdAt ?? review.updatedAt ?? new Date().toISOString(),
+});
+
+// Ensures the reviews array can never contain two entries with the same id,
+// no matter which loading/mutation paths ran or overlapped.
+const dedupeById = (reviews: Review[]): Review[] => {
+  const map = new Map<string, Review>();
+  for (const r of reviews) {
+    map.set(r.id, r);
+  }
+  return Array.from(map.values());
+};
+
+// Uploads only local device URIs (file://, ph://, content://) and leaves
+// already-hosted URLs (http/https) untouched — needed when editing a review
+// that already has some server-side photos mixed with newly picked ones.
+const uploadLocalPhotosIfAny = async (photos?: string[]): Promise<string[]> => {
+  if (!photos || photos.length === 0) return [];
+
+  const localUris = photos.filter((uri) => !uri.startsWith("http"));
+  const alreadyHosted = photos.filter((uri) => uri.startsWith("http"));
+
+  if (localUris.length === 0) return alreadyHosted;
+
+  const uploadedUrls = await uploadReviewPhotos(localUris);
+  return [...alreadyHosted, ...uploadedUrls];
+};
+
 export const useReviewStore = create<ReviewState>((set, get) => ({
   reviews: [],
+  loadingVendorId: null,
 
   loadMyReviews: async () => {
     try {
       const reviews = await getMyReviews();
-      set({
-        reviews: reviews.map((review) => ({
-          id: review.id,
-          vendorId: String(review.vendorId),
-          userId: review.customerId,
-          rating: review.rating,
-          text: review.comment ?? "",
-          date: review.createdAt,
-        })),
+      const mine = reviews.map(mapRecord);
+      set((state) => {
+        const otherVendors = state.reviews.filter(
+          (r) => !mine.some((m) => m.id === r.id),
+        );
+        return { reviews: dedupeById([...otherVendors, ...mine]) };
       });
     } catch {
       // Keep the last successful snapshot when a refresh fails.
     }
   },
 
-  addReview: (vendorId, userId, rating, text) => {
-    const newReview: Review = {
-      id: Date.now().toString(),
-      vendorId,
-      userId,
-      rating,
-      text,
-      date: new Date().toISOString(),
-    };
-    set((state) => ({ reviews: [newReview, ...state.reviews] }));
+  loadReviewsForVendor: async (vendorId) => {
+    set({ loadingVendorId: vendorId });
+    try {
+      const reviews = await getReviewsByVendor(vendorId);
+      const vendorReviews = reviews.map(mapRecord);
+      set((state) => {
+        const others = state.reviews.filter((r) => r.vendorId !== vendorId);
+        return { reviews: dedupeById([...others, ...vendorReviews]) };
+      });
+    } catch {
+      // Keep whatever was already loaded for this vendor on failure.
+    } finally {
+      set({ loadingVendorId: null });
+    }
   },
 
-  updateReview: (reviewId, rating, text) => {
-    set((state) => ({
-      reviews: state.reviews.map((r) =>
-        r.id === reviewId ? { ...r, rating, text, date: new Date().toISOString() } : r
-      ),
-    }));
+  addReview: async (bookingId, vendorId, userId, rating, text, photos) => {
+    try {
+      // Photos abhi local device URIs hain — pehle server pe upload karo,
+      // phir unke public URLs hi backend ko bhejo.
+      const uploadedUrls = await uploadLocalPhotosIfAny(photos);
+
+      const created = await apiCreateReview({
+        bookingId,
+        rating,
+        comment: text,
+        proofImages: uploadedUrls,
+      });
+      const newReview = mapRecord({ ...created, vendorId, userId });
+      set((state) => ({ reviews: dedupeById([newReview, ...state.reviews]) }));
+      return true;
+    } catch {
+      return false;
+    }
   },
 
-  deleteReview: (reviewId) => {
+  updateReview: async (reviewId, rating, text, photos) => {
+    const previous = get().reviews;
+    try {
+      const uploadedUrls = await uploadLocalPhotosIfAny(photos);
+
+      // Optimistic update
+      set((state) => ({
+        reviews: state.reviews.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                rating,
+                text,
+                proofImages: photos ? uploadedUrls : r.proofImages,
+                date: new Date().toISOString(),
+              }
+            : r,
+        ),
+      }));
+
+      // ⚠️ NOTE: apiUpdateReview ka dto abhi sirf { rating?, comment? } accept karta hai
+      // (review.api.ts mein check karo) — agar photos update karne hain to backend
+      // team se bolna hoga is endpoint mein `proofImages` field bhi accept karwaye.
+      await apiUpdateReview(reviewId, { rating, comment: text });
+      return true;
+    } catch {
+      set({ reviews: previous });
+      return false;
+    }
+  },
+
+  deleteReview: async (reviewId) => {
+    const previous = get().reviews;
     set((state) => ({ reviews: state.reviews.filter((r) => r.id !== reviewId) }));
+    try {
+      await apiDeleteReview(reviewId);
+      return true;
+    } catch {
+      set({ reviews: previous });
+      return false;
+    }
   },
 
   getReviewsForVendor: (vendorId) => {
@@ -87,7 +198,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
     const sum = vendorReviews.reduce((acc, r) => acc + r.rating, 0);
     const average = Math.round((sum / total) * 10) / 10;
     const breakdown = [5, 4, 3, 2, 1].map(
-      (star) => vendorReviews.filter((r) => r.rating === star).length
+      (star) => vendorReviews.filter((r) => r.rating === star).length,
     );
 
     return { average, total, breakdown };

@@ -44,3 +44,44 @@ export const getAverageRating = async (
 
   return response.data;
 };
+export const createReview = async (dto: {
+  bookingId: string;
+  rating: number;
+  comment?: string;
+  complaint?: string;
+  proofImages?: string[];
+}): Promise<CustomerReviewRecord> => {
+  const response = await api.post<CustomerReviewRecord>("/reviews", dto);
+  return response.data;
+};
+
+export const updateReview = async (
+  reviewId: string,
+  dto: { rating?: number; comment?: string },
+): Promise<CustomerReviewRecord> => {
+  const response = await api.patch<CustomerReviewRecord>(`/reviews/${reviewId}`, dto);
+  return response.data;
+};
+
+export const deleteReview = async (reviewId: string): Promise<void> => {
+  await api.delete(`/reviews/${reviewId}`);
+};
+export const uploadReviewPhotos = async (
+  localUris: string[],
+): Promise<string[]> => {
+  const formData = new FormData();
+  localUris.forEach((uri, index) => {
+    formData.append("images", {
+      uri,
+      name: `review-photo-${index}.jpg`,
+      type: "image/jpeg",
+    } as any);
+  });
+
+  const response = await api.post("/reviews/upload-images", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  // matches ReviewsService.uploadProofImages() → { success: true, images: string[] }
+  return response.data.images;
+};

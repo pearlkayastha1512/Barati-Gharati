@@ -56,6 +56,7 @@ const EMPTY_VENDOR: Vendor = {
   image: "",
   packages: [],
 };
+const EMPTY_PHOTOS: string[] = []; 
 
 export default function VendorDetailsScreen() {
   const navigation = useNavigation<any>();
@@ -67,10 +68,15 @@ export default function VendorDetailsScreen() {
   const [bookModalVisible, setBookModalVisible] = useState(false);
   const [newBookingForPayment, setNewBookingForPayment] = useState<Booking | null>(null);
   const addBooking = useBookingStore((state) => state.addBooking);
+  const bookings = useBookingStore((state) => state.bookings);
+  const loadBookings = useBookingStore((state) => state.loadBookings);
   const [vendorData, setVendorData] = useState<Vendor | null>(null);
   const [vendorLoading, setVendorLoading] = useState(true);
   const [vendorError, setVendorError] = useState<string | null>(null);
   const vendor = vendorData ?? EMPTY_VENDOR;
+
+  // The UUID the backend actually expects for review endpoints (Review.vendorId FK)
+  const reviewVendorId = vendor.backendId ?? "";
 
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [portfolioLoading, setPortfolioLoading] = useState(true);
@@ -109,8 +115,27 @@ export default function VendorDetailsScreen() {
   const deleteReview = useReviewStore((state) => state.deleteReview);
   const getVendorAverage = useReviewStore((state) => state.getVendorAverage);
   const getUserReviewForVendor = useReviewStore((state) => state.getUserReviewForVendor);
-  const { average, total, breakdown } = getVendorAverage(vendor.id);
-  const userReview = getUserReviewForVendor(vendor.id, currentUserId);
+  const loadReviewsForVendor = useReviewStore((state) => state.loadReviewsForVendor);
+  const { average, total, breakdown } = getVendorAverage(reviewVendorId);
+  const userReview = getUserReviewForVendor(reviewVendorId, currentUserId);
+
+  // Load real reviews for this vendor from the backend (uses the UUID, not the numeric id)
+  useEffect(() => {
+    if (reviewVendorId) {
+      loadReviewsForVendor(reviewVendorId);
+    }
+  }, [reviewVendorId]);
+
+  // Load the user's bookings so we can find a reviewable (completed) booking with this vendor
+  useEffect(() => {
+    loadBookings();
+  }, []);
+
+  const reviewableBooking = bookings.find(
+    (b) =>
+      b.vendorId === Number(vendor.id) &&
+      (b.bookingStatus === "event_completed" || b.bookingStatus === "completed"),
+  );
 
   const startConversation = useMessagesStore((state) => state.startConversation);
 
@@ -164,7 +189,16 @@ export default function VendorDetailsScreen() {
     if (!userReview) return;
     Alert.alert("Delete Review", "Are you sure you want to delete your review?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: () => deleteReview(userReview.id) },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const success = await deleteReview(userReview.id);
+          if (!success) {
+            Alert.alert("Error", "Review delete nahi ho saki. Please try again.");
+          }
+        },
+      },
     ]);
   };
 
@@ -311,7 +345,7 @@ export default function VendorDetailsScreen() {
             <Text style={styles.cardTitle}>Customer Reviews</Text>
             <Text style={styles.cardSubtitle}>Hear what couples say about this vendor.</Text>
           </View>
-          {!userReview && (
+          {!userReview && reviewableBooking && (
             <TouchableOpacity style={styles.writeReviewButton} onPress={() => setReviewModalVisible(true)}>
               <Text style={styles.writeReviewButtonText}>Write Review</Text>
             </TouchableOpacity>
@@ -434,12 +468,19 @@ export default function VendorDetailsScreen() {
         onClose={() => setReviewModalVisible(false)}
         initialRating={userReview?.rating ?? 0}
         initialText={userReview?.text ?? ""}
+        initialPhotos={userReview?.proofImages ?? []}
         isEditing={!!userReview}
-        onSubmit={(rating, text) => {
+        onSubmit={async (rating, text, photos) => {
+          let success = false;
           if (userReview) {
-            updateReview(userReview.id, rating, text);
+            success = await updateReview(userReview.id, rating, text, photos);
+          } else if (reviewableBooking && reviewVendorId) {
+            success = await addReview(reviewableBooking.id, reviewVendorId, currentUserId, rating, text, photos);
+          }
+          if (success) {
+            setReviewModalVisible(false);
           } else {
-            addReview(vendor.id, currentUserId, rating, text);
+            Alert.alert("Error", "Review save nahi ho saki. Please try again.");
           }
         }}
       />

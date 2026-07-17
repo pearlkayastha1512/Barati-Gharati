@@ -9,11 +9,10 @@ import { BookingStatCard } from "../../components/users/booking/BookingStatCard"
 import { BookingFilterTabs, FilterKey } from "../../components/users/booking/BookingFilterTabs";
 import { BookingListItem } from "../../components/users/booking/BookingListItem";
 import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
+import { WriteReviewModal } from "../../components/users/vendors/WriteReviewModal";
 import { Booking } from "../../types/booking";
+import { createReview, uploadReviewPhotos } from "../../api/review.api";
 import { styles } from "./styles/BookingScreen.styles";
-
-// TODO: import API functions once backend is connected
-// import { getBookings } from "../../api/booking.api";
 
 export default function BookingScreen() {
   const navigation = useNavigation<any>();
@@ -21,6 +20,8 @@ export default function BookingScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
   const [paymentBooking, setPaymentBooking] = useState<Booking | null>(null);
   const [paymentMode, setPaymentMode] = useState<"advance" | "remaining">("advance");
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null); // NEW
+  const [submittingReview, setSubmittingReview] = useState(false); // NEW
 
   useEffect(() => {
     loadBookings();
@@ -54,6 +55,30 @@ export default function BookingScreen() {
     if (activeFilter === "All") return bookings;
     return bookings.filter((b) => b.bookingStatus === activeFilter.toLowerCase());
   }, [activeFilter, bookings]);
+
+  // NEW: handles photo upload + review submission together
+  const handleReviewSubmit = async (rating: number, reviewText: string, localPhotoUris: string[]) => {
+    if (!reviewBooking) return;
+    setSubmittingReview(true);
+    try {
+      let proofImages: string[] = [];
+      if (localPhotoUris.length > 0) {
+        proofImages = await uploadReviewPhotos(localPhotoUris);
+      }
+
+      await createReview({
+        bookingId: reviewBooking.id,
+        rating,
+        comment: reviewText,
+        proofImages,
+      });
+
+      await loadBookings();
+      setReviewBooking(null);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -177,17 +202,25 @@ export default function BookingScreen() {
                   setPaymentBooking(booking);
                   setPaymentMode(mode);
                 }}
+                onWriteReview={() => setReviewBooking(booking)}
               />
             ))}
           </View>
         )}
       </ScrollView>
+
       <PaymentCheckoutModal
         booking={paymentBooking}
         mode={paymentMode}
         visible={paymentBooking !== null}
         onClose={() => setPaymentBooking(null)}
         onPaid={loadBookings}
+      />
+
+      <WriteReviewModal
+        visible={reviewBooking !== null}
+        onClose={() => setReviewBooking(null)}
+        onSubmit={handleReviewSubmit}
       />
     </SafeAreaView>
   );
