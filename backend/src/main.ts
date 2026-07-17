@@ -75,12 +75,12 @@ async function bootstrap() {
       AppModule,
     );
 
-  app.enableCors({
+app.enableCors({
   origin: [
     'http://localhost:3000',
     'http://localhost:8081',
     'http://192.168.29.132:8081',
-    'https://wedding-planner-liart.vercel.app',
+    process.env.FRONTEND_URL!,
   ],
   credentials: true,
 });
