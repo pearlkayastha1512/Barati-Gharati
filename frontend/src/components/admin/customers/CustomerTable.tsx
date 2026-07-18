@@ -51,6 +51,14 @@ export default function CustomerTable({
               </th>
 
               <th className="px-6 py-4 font-semibold text-slate-700">
+                Membership
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Admin Review
+              </th>
+
+              <th className="px-6 py-4 font-semibold text-slate-700">
                 Actions
               </th>
             </tr>
@@ -99,6 +107,18 @@ export default function CustomerTable({
                     {customer.isVerified
                       ? "Verified"
                       : "Unverified"}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${customer.membership === "PREMIUM" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"}`}>
+                    {customer.membership ?? "FREE"}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${customer.adminVerificationStatus === "approved" ? "bg-green-100 text-green-700" : customer.adminVerificationStatus === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                    {(customer.adminVerificationStatus ?? "pending").toUpperCase()}
                   </span>
                 </td>
 

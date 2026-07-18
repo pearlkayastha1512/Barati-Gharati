@@ -7,8 +7,10 @@ import { toast } from "sonner";
 
 import {
   VendorBadge,
+  VendorBadgeBillingCycle,
   VENDOR_BADGE_LABELS,
   VENDOR_BADGE_LIMITS,
+  VENDOR_BADGE_PRICES,
 } from "@/constants/vendor-badges";
 import {
   createVendorBadgeOrderApi,
@@ -63,17 +65,14 @@ interface VendorBadgeUpgradeModalProps {
 
 const plans: Array<{
   badge: UpgradeBadge;
-  price: number;
   accent: string;
 }> = [
   {
     badge: "silver",
-    price: 999,
     accent: "from-[#fff8ef] to-[#fff0bf] text-[#4d1730]",
   },
   {
     badge: "gold",
-    price: 1999,
     accent: "from-[#fff0bf] to-[#ffb703] text-[#4d1730]",
   },
 ];
@@ -111,6 +110,8 @@ export default function VendorBadgeUpgradeModal({
 }: VendorBadgeUpgradeModalProps) {
   const [loadingBadge, setLoadingBadge] =
     useState<UpgradeBadge | null>(null);
+  const [billingCycle, setBillingCycle] =
+    useState<VendorBadgeBillingCycle>("monthly");
 
   if (!open) {
     return null;
@@ -122,7 +123,7 @@ export default function VendorBadgeUpgradeModal({
     setLoadingBadge(badge);
 
     const order =
-      await createVendorBadgeOrderApi(badge);
+      await createVendorBadgeOrderApi(badge, billingCycle);
 
     if (!order.ok || !order.data) {
       setLoadingBadge(null);
@@ -149,7 +150,7 @@ export default function VendorBadgeUpgradeModal({
       amount: order.data.amountInPaise,
       currency: order.data.currency,
       name: "Barati Gharati",
-      description: `${VENDOR_BADGE_LABELS[badge]} badge upgrade`,
+      description: `${VENDOR_BADGE_LABELS[badge]} ${billingCycle} badge plan`,
       order_id: order.data.orderId,
       theme: {
         color:
@@ -164,6 +165,7 @@ export default function VendorBadgeUpgradeModal({
         const verified =
           await verifyVendorBadgePaymentApi({
             badge,
+            billingCycle,
             orderId:
               response.razorpay_order_id,
             paymentId:
@@ -183,7 +185,7 @@ export default function VendorBadgeUpgradeModal({
         }
 
         toast.success(
-          `${VENDOR_BADGE_LABELS[badge]} badge activated.`
+          `${VENDOR_BADGE_LABELS[badge]} ${billingCycle} plan activated.`
         );
         onUpgraded();
         onClose();
@@ -206,7 +208,7 @@ export default function VendorBadgeUpgradeModal({
               Upgrade Badge
             </h2>
             <p className="mt-1 text-[#946176]">
-              Choose a higher plan to unlock more monthly bookings.
+              Choose or renew a monthly or yearly badge plan.
             </p>
           </div>
 
@@ -218,13 +220,36 @@ export default function VendorBadgeUpgradeModal({
           </button>
         </div>
 
+        <div className="mt-6 inline-flex rounded-xl bg-[#f7eadf] p-1">
+          {(["monthly", "yearly"] as const).map((cycle) => (
+            <button
+              type="button"
+              key={cycle}
+              disabled={Boolean(loadingBadge)}
+              onClick={() => setBillingCycle(cycle)}
+              className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${
+                billingCycle === cycle
+                  ? "bg-white text-[#e4005a] shadow-sm"
+                  : "text-[#946176]"
+              }`}
+            >
+              {cycle}
+              {cycle === "yearly" && (
+                <span className="ml-2 text-xs text-green-700">2 months free</span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="mt-7 grid gap-4 md:grid-cols-2">
           {plans.map((plan) => {
             const disabled =
-              rank(plan.badge) <=
+              rank(plan.badge) <
               rank(currentBadge);
             const loading =
               loadingBadge === plan.badge;
+            const price =
+              VENDOR_BADGE_PRICES[billingCycle][plan.badge];
 
             return (
               <button
@@ -259,9 +284,12 @@ export default function VendorBadgeUpgradeModal({
 
                   <p className="mt-5 text-4xl font-black">
                     ₹
-                    {plan.price.toLocaleString(
+                    {price.toLocaleString(
                       "en-IN"
                     )}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold opacity-70">
+                    per {billingCycle === "monthly" ? "month" : "year"}
                   </p>
                 </div>
 
@@ -273,8 +301,10 @@ export default function VendorBadgeUpgradeModal({
 
                 <p className="mt-2 text-sm text-[#946176]">
                   {disabled
-                    ? "Current or lower plan"
-                    : "Pay securely and activate instantly"}
+                    ? "Lower plan"
+                    : plan.badge === currentBadge
+                      ? `Renew ${billingCycle} plan securely`
+                      : "Pay securely and activate instantly"}
                 </p>
               </button>
             );

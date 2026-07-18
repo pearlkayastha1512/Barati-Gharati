@@ -16,12 +16,4 @@ export const navLinks: NavLink[] = [
     label: "Vendors",
     href: "/vendors",
   },
-  {
-    label: "About",
-    href: "/about",
-  },
-  {
-    label: "Contact",
-    href: "/contact",
-  },
 ];

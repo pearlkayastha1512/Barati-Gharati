@@ -25,6 +25,32 @@ enum VendorBadge {
   GOLD
 }
 
+enum VendorBadgeBillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum CustomerMembership {
+  FREE
+  PREMIUM
+}
+
+enum AdminVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PremiumPlanningStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  VENDORS_ASSIGNED
+  QUOTED
+  ACCEPTED
+  REJECTED
+  BOOKED
+}
+
 enum MessageStatus {
   SENT
   DELIVERED
@@ -36,6 +62,7 @@ enum AdminRole {
   FINANCE_ADMIN
   VENDOR_MANAGER
   BOOKING_MANAGER
+  PREMIUM_PLANNING_MANAGER
   SUPPORT_ADMIN
   CONTENT_MANAGER
   REVIEW_DISPUTE_MANAGER
@@ -52,6 +79,15 @@ model User {
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  membership               CustomerMembership @default(FREE)
+  membershipActivatedAt    DateTime?
+  membershipPaymentOrderId String?            @unique
+  membershipPaymentId      String?
+
+  adminVerificationStatus AdminVerificationStatus @default(PENDING)
+  adminVerifiedAt         DateTime?
+  adminRejectionReason    String?
 
   adminRole          AdminRole?
   adminPermissions   String[]   @default([])
@@ -85,8 +121,43 @@ model User {
 
   customerConversations Conversation[] @relation("CustomerConversations")
 
-  wishlists      Wishlist[]
-  adminAuditLogs AdminAuditLog[]
+  wishlists               Wishlist[]
+  adminAuditLogs          AdminAuditLog[]
+  premiumPlanningRequests PremiumPlanningRequest[]
+
+  @@index([adminVerificationStatus])
+}
+
+model PremiumPlanningRequest {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weddingType         String
+  venuePreference     String
+  budget              Decimal  @db.Decimal(12, 2)
+  city                String
+  guestCount          Int
+  theme               String
+  requiredVendors     String[]
+  specialRequirements String?
+
+  status            PremiumPlanningStatus @default(SUBMITTED)
+  assignedVendorIds String[]              @default([])
+  quotationAmount   Decimal?              @db.Decimal(12, 2)
+  quotationDetails  Json?
+  adminNotes        String?
+  reviewedAt        DateTime?
+  quotedAt          DateTime?
+  respondedAt       DateTime?
+  bookedAt          DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model AdminAuditLog {
@@ -104,6 +175,25 @@ model AdminAuditLog {
   @@index([actorId])
   @@index([resource])
   @@index([createdAt])
+}
+
+model VendorRegistrationVerification {
+  id String @id @default(uuid())
+
+  ownerName String
+  email     String
+  phone     String
+  otpHash   String
+
+  verifiedAt DateTime?
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([expiresAt])
 }
 
 model Portfolio {
@@ -124,36 +214,38 @@ model Portfolio {
 }
 
 model Vendor {
-  id                     String       @id @default(uuid())
+  id                     String                  @id @default(uuid())
   businessName           String
   description            String?
   address                String?
-  userId                 String       @unique
+  userId                 String                  @unique
   categoryId             String?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
   coverImage             String?
   logoUrl                String?
-  status                 VendorStatus @default(PENDING)
+  status                 VendorStatus            @default(PENDING)
   approvedAt             DateTime?
   rejectionReason        String?
-  frontendVendorId       Int?         @unique
-  bankVerified           Boolean      @default(false)
-  businessVerified       Boolean      @default(false)
+  frontendVendorId       Int?                    @unique
+  bankVerified           Boolean                 @default(false)
+  businessVerified       Boolean                 @default(false)
   city                   String?
-  documentsUploaded      Boolean      @default(false)
+  documentsUploaded      Boolean                 @default(false)
   experience             String?
   facebook               String?
   gstNumber              String?
-  gstVerified            Boolean      @default(false)
+  gstVerified            Boolean                 @default(false)
   instagram              String?
-  isActive               Boolean      @default(true)
+  isActive               Boolean                 @default(true)
   linkedin               String?
   website                String?
   youtube                String?
-  badge                  VendorBadge  @default(BRONZE)
-  monthlyBookingLimit    Int          @default(5)
+  badge                  VendorBadge             @default(BRONZE)
+  badgeBillingCycle      VendorBadgeBillingCycle @default(MONTHLY)
+  monthlyBookingLimit    Int                     @default(5)
   badgePurchasedAt       DateTime?
+  badgeExpiresAt         DateTime?
   badgePaymentOrderId    String?
   badgePaymentId         String?
   badgePaymentRefundId   String?
@@ -173,6 +265,7 @@ model Vendor {
 
   @@index([categoryId])
   @@index([status])
+  @@index([badgeExpiresAt])
 }
 
 model VendorGallery {

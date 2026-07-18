@@ -10,6 +10,8 @@ export const ADMIN_PERMISSIONS = {
   CUSTOMERS_MANAGE: 'customers.manage',
   BOOKINGS_VIEW: 'bookings.view',
   BOOKINGS_MANAGE: 'bookings.manage',
+  PREMIUM_PLANNING_VIEW: 'premium-planning.view',
+  PREMIUM_PLANNING_MANAGE: 'premium-planning.manage',
   PAYMENTS_VIEW: 'payments.view',
   PAYMENTS_APPROVE: 'payments.approve',
   PAYOUTS_RELEASE: 'payouts.release',
@@ -66,6 +68,11 @@ export const ADMIN_ROLE_PERMISSIONS: Record<
     ADMIN_PERMISSIONS.CUSTOMERS_VIEW,
     ADMIN_PERMISSIONS.VENDORS_VIEW,
   ],
+  [AdminRole.PREMIUM_PLANNING_MANAGER]: [
+    ADMIN_PERMISSIONS.DASHBOARD_VIEW,
+    ADMIN_PERMISSIONS.PREMIUM_PLANNING_VIEW,
+    ADMIN_PERMISSIONS.PREMIUM_PLANNING_MANAGE,
+  ],
   [AdminRole.SUPPORT_ADMIN]: [
     ADMIN_PERMISSIONS.DASHBOARD_VIEW,
     ADMIN_PERMISSIONS.CUSTOMERS_VIEW,
@@ -101,6 +108,7 @@ export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
   [AdminRole.FINANCE_ADMIN]: 'Finance Admin',
   [AdminRole.VENDOR_MANAGER]: 'Vendor Manager',
   [AdminRole.BOOKING_MANAGER]: 'Booking Manager',
+  [AdminRole.PREMIUM_PLANNING_MANAGER]: 'Premium Planning Manager',
   [AdminRole.SUPPORT_ADMIN]: 'Support Admin',
   [AdminRole.CONTENT_MANAGER]: 'Content Manager',
   [AdminRole.REVIEW_DISPUTE_MANAGER]: 'Review & Dispute Manager',

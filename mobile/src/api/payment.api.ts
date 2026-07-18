@@ -5,6 +5,7 @@ type OrderResponse = { success: boolean; data: PaymentOrder; message?: string };
 
 export type VendorRegistrationBadgeOrder = {
   badge: "silver" | "gold";
+  billingCycle: "monthly" | "yearly";
   orderId: string;
   keyId: string;
   amount: number;
@@ -49,12 +50,16 @@ export const verifyRemainingPayment = async (
 
 export const createVendorRegistrationBadgeOrder = async (
   badge: "silver" | "gold",
+  billingCycle: "monthly" | "yearly",
+  registrationVerificationId: string,
 ) => {
   const response = await api.post<{
     success: boolean;
     data: VendorRegistrationBadgeOrder;
   }>("/payment/vendor-registration-badge/create-order", {
     badge: badge.toUpperCase(),
+    billingCycle: billingCycle.toUpperCase(),
+    registrationVerificationId,
   });
   return response.data.data;
 };

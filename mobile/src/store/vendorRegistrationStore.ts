@@ -279,6 +279,7 @@ import {
 import { RazorpaySuccess } from "../types/payment";
 
 export type RegistrationBadge = "bronze" | "silver" | "gold";
+export type RegistrationBadgeBillingCycle = "monthly" | "yearly";
 
 interface VendorRegistrationState {
   step: number;
@@ -287,6 +288,8 @@ interface VendorRegistrationState {
   business: VendorBusinessInfo;
   gallery: VendorGalleryInfo;
   selectedBadge: RegistrationBadge;
+  badgeBillingCycle: RegistrationBadgeBillingCycle;
+  registrationVerificationId: string | null;
 
   setAccount: (
     data: VendorAccountInfo
@@ -301,6 +304,8 @@ interface VendorRegistrationState {
   ) => void;
 
   setSelectedBadge: (badge: RegistrationBadge) => void;
+  setBadgeBillingCycle: (cycle: RegistrationBadgeBillingCycle) => void;
+  setRegistrationVerificationId: (id: string | null) => void;
 
   goToStep: (
     step: number
@@ -347,6 +352,8 @@ export const useVendorRegistrationStore =
 
       gallery: initialGallery,
       selectedBadge: "bronze",
+      badgeBillingCycle: "monthly",
+      registrationVerificationId: null,
 
       setAccount: (data) =>
         set({
@@ -364,6 +371,8 @@ export const useVendorRegistrationStore =
         }),
 
       setSelectedBadge: (selectedBadge) => set({ selectedBadge }),
+      setBadgeBillingCycle: (badgeBillingCycle) => set({ badgeBillingCycle }),
+      setRegistrationVerificationId: (registrationVerificationId) => set({ registrationVerificationId }),
 
       goToStep: (step) =>
         set({
@@ -392,7 +401,13 @@ export const useVendorRegistrationStore =
           business,
           gallery,
           selectedBadge,
+          badgeBillingCycle,
+          registrationVerificationId,
         } = get();
+
+        if (!registrationVerificationId) {
+          throw new Error("Please verify your business email before registration.");
+        }
 
         const [profileImage, coverImage] = await Promise.all([
           gallery.profileImageUri
@@ -412,6 +427,7 @@ export const useVendorRegistrationStore =
 
         const payload: RegisterVendorRequest =
           {
+            registrationVerificationId,
             ownerName:
               account.ownerName,
 
@@ -441,6 +457,7 @@ export const useVendorRegistrationStore =
             profileImage,
             coverImage,
             selectedBadge: selectedBadge.toUpperCase() as "BRONZE" | "SILVER" | "GOLD",
+            badgeBillingCycle: badgeBillingCycle.toUpperCase() as "MONTHLY" | "YEARLY",
             badgePaymentOrderId: payment?.razorpay_order_id,
             badgePaymentId: payment?.razorpay_payment_id,
             badgePaymentSignature: payment?.razorpay_signature,
@@ -471,6 +488,8 @@ export const useVendorRegistrationStore =
           gallery:
             initialGallery,
           selectedBadge: "bronze",
+          badgeBillingCycle: "monthly",
+          registrationVerificationId: null,
         }),
     })
   );

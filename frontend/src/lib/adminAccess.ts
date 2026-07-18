@@ -5,6 +5,7 @@ export type AdminRole =
   | 'FINANCE_ADMIN'
   | 'VENDOR_MANAGER'
   | 'BOOKING_MANAGER'
+  | 'PREMIUM_PLANNING_MANAGER'
   | 'SUPPORT_ADMIN'
   | 'CONTENT_MANAGER'
   | 'REVIEW_DISPUTE_MANAGER'
@@ -15,6 +16,7 @@ export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
   FINANCE_ADMIN: 'Finance Admin',
   VENDOR_MANAGER: 'Vendor Manager',
   BOOKING_MANAGER: 'Booking Manager',
+  PREMIUM_PLANNING_MANAGER: 'Premium Planning Manager',
   SUPPORT_ADMIN: 'Support Admin',
   CONTENT_MANAGER: 'Content Manager',
   REVIEW_DISPUTE_MANAGER: 'Review & Dispute Manager',
@@ -29,6 +31,7 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<string, string> = {
   '/admin/vendors': 'vendors.view',
   '/admin/customers': 'customers.view',
   '/admin/bookings': 'bookings.view',
+  '/admin/premium-planning': 'premium-planning.view',
   '/admin/payments': 'payments.view',
   '/admin/reviews': 'reviews.view',
   '/admin/notifications': 'notifications.view',

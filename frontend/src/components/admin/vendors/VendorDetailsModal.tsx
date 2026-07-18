@@ -24,6 +24,7 @@ interface Props {
   onApprove: (vendorId: string | number) => void;
 
   onReject: (vendorId: string | number) => void;
+  onReverify: (vendorId: string | number) => void;
 
   onBadgeChange: (
     vendorId: string | number,
@@ -37,6 +38,7 @@ export default function VendorDetailsModal({
   onClose,
   onApprove,
   onReject,
+  onReverify,
   onBadgeChange,
 }: Props) {
   const user = useAuthStore((state) => state.user);
@@ -252,6 +254,14 @@ export default function VendorDetailsModal({
           {/* Actions */}
 
           <div className="flex justify-end gap-4">
+            {canManage && vendor.approvalStatus === "approved" && (
+              <button
+                onClick={() => onReverify(vendor.id)}
+                className="rounded-2xl bg-amber-500 px-6 py-3 font-semibold text-white transition hover:bg-amber-600"
+              >
+                Require Re-verification
+              </button>
+            )}
             {canManage && vendor.approvalStatus !== "approved" && (
               <button
                 onClick={() => onApprove(vendor.id)}

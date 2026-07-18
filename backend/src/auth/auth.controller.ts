@@ -22,6 +22,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { RegisterVendorDto } from './dto/register-vendor.dto';
 import { imageFileFilter } from '../common/file-filter';
+import { ResendEmailOtpDto, VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
+import {
+  StartVendorRegistrationVerificationDto,
+  VerifyVendorRegistrationOtpDto,
+} from './dto/vendor-registration-verification.dto';
 
 @ApiTags('Authentication')   // 👈 Controller ke upar
 @Controller('auth')
@@ -33,6 +38,24 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @ApiOperation({ summary: 'Start vendor email verification before payment' })
+  @Post('register/vendor/start-verification')
+  @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
+  startVendorRegistrationVerification(
+    @Body() dto: StartVendorRegistrationVerificationDto,
+  ) {
+    return this.authService.startVendorRegistrationVerification(dto);
+  }
+
+  @ApiOperation({ summary: 'Verify vendor email OTP before payment' })
+  @Post('register/vendor/verify-otp')
+  @Throttle({ default: { limit: 30, ttl: 15 * 60 * 1000 } })
+  verifyVendorRegistrationOtp(
+    @Body() dto: VerifyVendorRegistrationOtpDto,
+  ) {
+    return this.authService.verifyVendorRegistrationOtp(dto);
   }
 
 @ApiOperation({
@@ -91,6 +114,20 @@ uploadVendorRegistrationImage(
 verifyEmail(@Query('token') token: string) {
   console.log('TOKEN =', token);
   return this.authService.verifyEmail(token);
+}
+
+@ApiOperation({ summary: 'Verify registration email using OTP' })
+@Post('verify-email-otp')
+@Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
+verifyEmailOtp(@Body() dto: VerifyEmailOtpDto) {
+  return this.authService.verifyEmailOtp(dto);
+}
+
+@ApiOperation({ summary: 'Resend registration email OTP' })
+@Post('resend-email-otp')
+@Throttle({ default: { limit: 3, ttl: 15 * 60 * 1000 } })
+resendEmailOtp(@Body() dto: ResendEmailOtpDto) {
+  return this.authService.resendEmailOtp(dto);
 }
 @ApiOperation({ summary: 'Forgot Password' })
 @Post('forgot-password')

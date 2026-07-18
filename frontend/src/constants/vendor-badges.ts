@@ -3,6 +3,26 @@ export type VendorBadge =
   | "silver"
   | "gold";
 
+export type VendorBadgeBillingCycle =
+  | "monthly"
+  | "yearly";
+
+export const VENDOR_BADGE_PRICES: Record<
+  VendorBadgeBillingCycle,
+  Record<VendorBadge, number>
+> = {
+  monthly: {
+    bronze: 0,
+    silver: 999,
+    gold: 1999,
+  },
+  yearly: {
+    bronze: 0,
+    silver: 9990,
+    gold: 19990,
+  },
+};
+
 export const VENDOR_BADGE_LIMITS: Record<
   VendorBadge,
   number

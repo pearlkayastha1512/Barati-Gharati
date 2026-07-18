@@ -4,7 +4,7 @@
 "use client";
 
 import { validateAccountStep } from "@/lib/validations/vendorRegistration";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   User,
   Mail,
@@ -13,14 +13,22 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
+import {
+  startVendorRegistrationVerificationApi,
+  verifyVendorRegistrationOtpApi,
+} from "@/services/api/auth.api";
 
 export default function AccountStep() {
   const {
     formData,
     updateField,
     nextStep,
+    registrationVerificationId,
+    setRegistrationVerificationId,
   } = useVendorRegistrationStore();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -28,8 +36,23 @@ export default function AccountStep() {
     useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingVerificationId, setPendingVerificationId] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [verificationError, setVerificationError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const requestInFlight = useRef(false);
 
-  const handleContinue = () => {
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setResendCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
+
+  const sendOtp = async () => {
+    if (requestInFlight.current || resendCooldown > 0) return;
     const result = validateAccountStep(formData);
 
     if (!result.isValid) {
@@ -38,7 +61,53 @@ export default function AccountStep() {
     }
 
     setErrors({});
-    nextStep();
+    setVerificationError("");
+    setLoading(true);
+    requestInFlight.current = true;
+    try {
+      const response = await startVendorRegistrationVerificationApi({
+        ownerName: formData.ownerName,
+        email: formData.email,
+        phone: formData.phone,
+      });
+      setPendingVerificationId(response.data.verificationId);
+      setOtp("");
+      setResendCooldown(60);
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : "Unable to send OTP.");
+    } finally {
+      requestInFlight.current = false;
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (requestInFlight.current) return;
+    if (!pendingVerificationId || !/^\d{6}$/.test(otp)) {
+      setVerificationError("Enter the 6-digit OTP sent to your email.");
+      return;
+    }
+    setLoading(true);
+    requestInFlight.current = true;
+    setVerificationError("");
+    try {
+      await verifyVendorRegistrationOtpApi(pendingVerificationId, otp);
+      setRegistrationVerificationId(pendingVerificationId);
+      nextStep();
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : "OTP verification failed.");
+    } finally {
+      requestInFlight.current = false;
+      setLoading(false);
+    }
+  };
+
+  const handleContinue = () => {
+    if (registrationVerificationId) {
+      nextStep();
+      return;
+    }
+    void sendOtp();
   };
 
   return (
@@ -264,13 +333,51 @@ export default function AccountStep() {
       </div>
 
       {/* Continue Button */}
+      {pendingVerificationId && !registrationVerificationId && (
+        <div className="mt-8 rounded-2xl border border-rose-200 bg-rose-50 p-5">
+          <p className="font-semibold text-slate-900">Verify business email</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Enter the 6-digit OTP sent to {formData.email}. Your phone number availability has also been checked.
+          </p>
+          <input
+            value={otp}
+            onChange={(event) => {
+              setOtp(event.target.value.replace(/\D/g, "").slice(0, 6));
+              setVerificationError("");
+            }}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="000000"
+            className="mt-4 h-14 w-full rounded-xl border border-rose-200 bg-white px-4 text-center text-2xl font-bold tracking-[0.4em] text-slate-900 outline-none focus:border-rose-500"
+          />
+          <div className="mt-4 flex gap-3">
+            <button type="button" disabled={loading} onClick={() => void verifyOtp()} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 font-semibold text-white disabled:opacity-60">
+              {loading && <Loader2 size={18} className="animate-spin" />}
+              Verify & Continue
+            </button>
+            <button type="button" disabled={loading || resendCooldown > 0} onClick={() => void sendOtp()} className="rounded-xl border border-rose-300 px-4 font-semibold text-rose-600 disabled:opacity-60">
+              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {registrationVerificationId && (
+        <div className="mt-6 flex items-center gap-2 rounded-xl bg-green-50 px-4 py-3 font-semibold text-green-700">
+          <CheckCircle2 size={20} /> Email verified
+        </div>
+      )}
+
+      {verificationError && <p className="mt-4 text-sm font-medium text-red-600">{verificationError}</p>}
+
       <div className="mt-10 flex justify-end">
         <button
           type="button"
           onClick={handleContinue}
+          disabled={loading || Boolean(pendingVerificationId && !registrationVerificationId)}
           className="inline-flex items-center gap-3 rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
         >
-          Continue
+          {loading ? "Sending OTP..." : registrationVerificationId ? "Continue" : "Verify Email"}
           <ArrowRight size={18} />
         </button>
       </div>

@@ -25,6 +25,10 @@ type AdminUserResponse = {
   isVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  membership?: "FREE" | "PREMIUM";
+  adminVerificationStatus?: "PENDING" | "APPROVED" | "REJECTED";
+  adminVerifiedAt?: string | null;
+  adminRejectionReason?: string | null;
 };
 
 type ApiUsersResponse = {
@@ -56,6 +60,10 @@ function mapAdminUser(
       user.updatedAt ??
       user.createdAt ??
       new Date().toISOString(),
+    membership: user.membership ?? "FREE",
+    adminVerificationStatus: user.adminVerificationStatus?.toLowerCase() as User["adminVerificationStatus"] ?? "pending",
+    adminVerifiedAt: user.adminVerifiedAt,
+    adminRejectionReason: user.adminRejectionReason,
   };
 }
 
@@ -167,6 +175,10 @@ export default function CustomerManagementPage() {
           setSelectedCustomer(null);
 
           setIsModalOpen(false);
+        }}
+        onVerificationChange={(status) => {
+          setCustomers((current) => current.map((customer) => customer._id === selectedCustomer?._id ? { ...customer, adminVerificationStatus: status } : customer));
+          setSelectedCustomer((customer) => customer ? { ...customer, adminVerificationStatus: status } : customer);
         }}
       />
     </div>

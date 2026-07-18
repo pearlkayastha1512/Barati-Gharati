@@ -17,11 +17,25 @@ import { RegisterVendorDto } from './dto/register-vendor.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 import {
+  AdminVerificationStatus,
+  CustomerMembership,
   Role,
   VendorBadge,
+  VendorBadgeBillingCycle,
   VendorStatus,
 } from '@prisma/client';
 import { AdminAccessService } from '../admin-access/admin-access.service';
+import { CUSTOMER_PREMIUM_PRICE } from '../premium-planning/premium-planning.constants';
+import { ResendEmailOtpDto, VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
+import {
+  StartVendorRegistrationVerificationDto,
+  VerifyVendorRegistrationOtpDto,
+} from './dto/vendor-registration-verification.dto';
+import {
+  getVendorBadgeExpiry,
+  VENDOR_BADGE_LIMITS,
+  VENDOR_BADGE_PRICES,
+} from '../payment/vendor-badge.constants';
 
 
 @Injectable()
@@ -35,18 +49,6 @@ export class AuthService {
   private readonly cloudinaryService: CloudinaryService,
   private readonly adminAccessService: AdminAccessService,
 ) {}
-
-  private readonly badgePrices: Record<VendorBadge, number> = {
-    [VendorBadge.BRONZE]: 0,
-    [VendorBadge.SILVER]: 999,
-    [VendorBadge.GOLD]: 1999,
-  };
-
-  private readonly badgeLimits: Record<VendorBadge, number> = {
-    [VendorBadge.BRONZE]: 5,
-    [VendorBadge.SILVER]: 15,
-    [VendorBadge.GOLD]: 50,
-  };
 
   private getRazorpay() {
     const keyId = process.env.RAZORPAY_KEY_ID;
@@ -62,6 +64,21 @@ export class AuthService {
       key_id: keyId,
       key_secret: keySecret,
     });
+  }
+
+  private async issueEmailOtp(user: { id: string; email: string; name: string }) {
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    await this.prisma.verificationToken.deleteMany({ where: { userId: user.id } });
+    await this.prisma.verificationToken.create({
+      data: {
+        token: hashedOtp,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+    await this.mailService.sendVerificationOtp(user.email, user.name, otp);
   }
 
   private verifyPaymentSignature(
@@ -148,8 +165,8 @@ export class AuthService {
       await this.getRazorpay().orders.fetch(
         dto.badgePaymentOrderId,
       );
-    const expectedAmount =
-      this.badgePrices[dto.selectedBadge] * 100;
+    const billingCycle = dto.badgeBillingCycle ?? VendorBadgeBillingCycle.MONTHLY;
+    const expectedAmount = VENDOR_BADGE_PRICES[billingCycle][dto.selectedBadge] * 100;
 
     if (Number(order.amount) !== expectedAmount) {
       throw new BadRequestException(
@@ -160,12 +177,125 @@ export class AuthService {
     if (
       order.notes?.paymentType !==
         'VENDOR_REGISTRATION_BADGE' ||
-      order.notes?.badge !== dto.selectedBadge
+      order.notes?.badge !== dto.selectedBadge ||
+      order.notes?.billingCycle !== billingCycle ||
+      order.notes?.registrationVerificationId !== dto.registrationVerificationId
     ) {
       throw new BadRequestException(
         'Badge payment order does not match vendor registration',
       );
     }
+  }
+
+  private async verifyCustomerMembershipPayment(dto: RegisterDto) {
+    const membership = dto.membership ?? CustomerMembership.FREE;
+    if (membership === CustomerMembership.FREE) return;
+
+    if (!dto.membershipPaymentOrderId || !dto.membershipPaymentId || !dto.membershipPaymentSignature) {
+      throw new BadRequestException('Premium membership payment details are required');
+    }
+
+    this.verifyPaymentSignature(
+      dto.membershipPaymentOrderId,
+      dto.membershipPaymentId,
+      dto.membershipPaymentSignature,
+    );
+
+    const reusedOrder = await this.prisma.user.findFirst({
+      where: { membershipPaymentOrderId: dto.membershipPaymentOrderId },
+      select: { id: true },
+    });
+    if (reusedOrder) throw new BadRequestException('This membership payment has already been used');
+
+    const order = await this.getRazorpay().orders.fetch(dto.membershipPaymentOrderId);
+    if (Number(order.amount) !== CUSTOMER_PREMIUM_PRICE * 100) {
+      throw new BadRequestException('Membership payment amount is invalid');
+    }
+    if (order.notes?.paymentType !== 'CUSTOMER_PREMIUM_REGISTRATION') {
+      throw new BadRequestException('Payment order does not match premium registration');
+    }
+  }
+
+  private async getVerifiedVendorRegistration(
+    verificationId: string,
+    email: string,
+    phone: string,
+  ) {
+    const verification = await this.prisma.vendorRegistrationVerification.findUnique({
+      where: { id: verificationId },
+    });
+    if (
+      !verification ||
+      !verification.verifiedAt ||
+      verification.usedAt ||
+      verification.expiresAt < new Date() ||
+      verification.email.toLowerCase() !== email.trim().toLowerCase() ||
+      verification.phone !== phone.trim()
+    ) {
+      throw new BadRequestException(
+        'Please verify this email and phone before selecting a badge plan.',
+      );
+    }
+    return verification;
+  }
+
+  async startVendorRegistrationVerification(
+    dto: StartVendorRegistrationVerificationDto,
+  ) {
+    const email = dto.email.trim().toLowerCase();
+    const phone = dto.phone.trim();
+    const [existingEmail, existingPhone] = await Promise.all([
+      this.prisma.user.findUnique({ where: { email } }),
+      this.prisma.user.findUnique({ where: { phone } }),
+    ]);
+    if (existingEmail) throw new BadRequestException('Email already registered');
+    if (existingPhone) throw new BadRequestException('Phone number already registered');
+
+    await this.prisma.vendorRegistrationVerification.deleteMany({
+      where: { usedAt: null, verifiedAt: null, OR: [{ email }, { phone }] },
+    });
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const verification = await this.prisma.vendorRegistrationVerification.create({
+      data: {
+        ownerName: dto.ownerName.trim(),
+        email,
+        phone,
+        otpHash: await bcrypt.hash(otp, 10),
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+    await this.mailService.sendVerificationOtp(email, dto.ownerName, otp);
+    return {
+      success: true,
+      message: 'A 6-digit OTP has been sent to your business email.',
+      data: { verificationId: verification.id, email, phone },
+    };
+  }
+
+  async verifyVendorRegistrationOtp(dto: VerifyVendorRegistrationOtpDto) {
+    const verification = await this.prisma.vendorRegistrationVerification.findUnique({
+      where: { id: dto.verificationId },
+    });
+    if (!verification || verification.usedAt || verification.expiresAt < new Date()) {
+      throw new BadRequestException(
+        'OTP is invalid or has expired. Please request a new code.',
+      );
+    }
+    if (!(await bcrypt.compare(dto.otp, verification.otpHash))) {
+      throw new BadRequestException('Invalid OTP.');
+    }
+    const updated = await this.prisma.vendorRegistrationVerification.update({
+      where: { id: verification.id },
+      data: {
+        verifiedAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+    return {
+      success: true,
+      message: 'Email verified. You can now continue and choose a badge plan.',
+      data: { verificationId: updated.id, email: updated.email, phone: updated.phone },
+    };
   }
 
   async uploadVendorRegistrationImage(
@@ -186,7 +316,6 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-
   // Step 1
   const existingUser = await this.prisma.user.findUnique({
     where: {
@@ -206,6 +335,8 @@ export class AuthService {
 if (existingPhone) {
   throw new BadRequestException('Phone number already registered');
 }
+  await this.verifyCustomerMembershipPayment(registerDto);
+
   // Step 2
   const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
@@ -217,39 +348,14 @@ if (existingPhone) {
       phone: registerDto.phone,
       password: hashedPassword,
       role: Role.USER,
+      membership: registerDto.membership ?? CustomerMembership.FREE,
+      membershipActivatedAt:
+        registerDto.membership === CustomerMembership.PREMIUM ? new Date() : undefined,
+      membershipPaymentOrderId: registerDto.membershipPaymentOrderId,
+      membershipPaymentId: registerDto.membershipPaymentId,
     },
   });
-  // Remove any old verification tokens
-await this.prisma.verificationToken.deleteMany({
-  where: {
-    userId: user.id,
-  },
-});
-
-
-  // Generate verification token
-const verificationToken = crypto.randomBytes(32).toString('hex');
-
-// Save token in database
-await this.prisma.verificationToken.create({
-  data: {
-    token: verificationToken,
-    userId: user.id,
-    expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
-  },
-});
-// await this.mailService.sendVerificationEmail(
-//   user.email,
-//   user.name,
-//   verificationToken,
-// );
-    this.mailService
-  .sendVerificationEmail(
-    user.email,
-    user.name,
-    verificationToken,
-  )
-  .catch(err => console.error(err));
+  this.issueEmailOtp(user).catch((error) => console.error('OTP email failed', error));
   await this.notificationsService.create(
   user.id,
   {
@@ -261,13 +367,14 @@ await this.prisma.verificationToken.create({
   // Step 4
   return {
     success: true,
-    message: 'Registration successful. Please check your email to verify your account.',
+    message: 'Registration successful. Enter the OTP sent to your email.',
     data: {
       id: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
       role: user.role,
+      membership: user.membership,
     },
   };
 }
@@ -286,11 +393,43 @@ await this.prisma.verificationToken.create({
   registerVendorDto: RegisterVendorDto,
 ) {
 
+  const completedRegistration = await this.prisma.user.findUnique({
+    where: { email: registerVendorDto.email.trim().toLowerCase() },
+    include: { vendor: true },
+  });
+  if (
+    completedRegistration?.role === Role.VENDOR &&
+    completedRegistration.vendor &&
+    (registerVendorDto.selectedBadge === VendorBadge.BRONZE ||
+      completedRegistration.vendor.badgePaymentOrderId ===
+        registerVendorDto.badgePaymentOrderId)
+  ) {
+    return {
+      success: true,
+      message: 'Vendor registration was already completed and is awaiting admin approval.',
+      user: {
+        _id: completedRegistration.id,
+        name: completedRegistration.name,
+        email: completedRegistration.email,
+        phone: completedRegistration.phone ?? '',
+        role: 'vendor',
+        status: completedRegistration.vendor.status.toLowerCase(),
+        isVerified: completedRegistration.isVerified,
+      },
+    };
+  }
+
+  await this.getVerifiedVendorRegistration(
+    registerVendorDto.registrationVerificationId,
+    registerVendorDto.email,
+    registerVendorDto.phone,
+  );
+
   // Check email
   const existingUser =
     await this.prisma.user.findUnique({
       where: {
-        email: registerVendorDto.email,
+        email: registerVendorDto.email.trim().toLowerCase(),
       },
     });
 
@@ -304,7 +443,7 @@ await this.prisma.verificationToken.create({
   const existingPhone =
     await this.prisma.user.findUnique({
       where: {
-        phone: registerVendorDto.phone,
+        phone: registerVendorDto.phone.trim(),
       },
     });
 
@@ -374,11 +513,12 @@ const user =
   await this.prisma.user.create({
     data: {
       name: registerVendorDto.ownerName,
-      email: registerVendorDto.email,
-      phone: registerVendorDto.phone,
+      email: registerVendorDto.email.trim().toLowerCase(),
+      phone: registerVendorDto.phone.trim(),
       password: hashedPassword,
 
       role: Role.VENDOR,
+      isVerified: true,
 
       vendor: {
         create: {
@@ -416,8 +556,10 @@ const user =
 
           status: VendorStatus.PENDING,
           badge: registerVendorDto.selectedBadge,
+          badgeBillingCycle:
+            registerVendorDto.badgeBillingCycle ?? VendorBadgeBillingCycle.MONTHLY,
           monthlyBookingLimit:
-            this.badgeLimits[
+            VENDOR_BADGE_LIMITS[
               registerVendorDto.selectedBadge
             ],
           badgePurchasedAt:
@@ -425,6 +567,12 @@ const user =
             VendorBadge.BRONZE
               ? null
               : new Date(),
+          badgeExpiresAt:
+            registerVendorDto.selectedBadge === VendorBadge.BRONZE
+              ? null
+              : getVendorBadgeExpiry(
+                  registerVendorDto.badgeBillingCycle ?? VendorBadgeBillingCycle.MONTHLY,
+                ),
           badgePaymentOrderId:
             registerVendorDto.badgePaymentOrderId,
           badgePaymentId:
@@ -459,33 +607,10 @@ const user =
 
 
 
-  // Remove old verification tokens
-  await this.prisma.verificationToken.deleteMany({
-    where: {
-      userId: user.id,
-    },
+  await this.prisma.vendorRegistrationVerification.update({
+    where: { id: registerVendorDto.registrationVerificationId },
+    data: { usedAt: new Date() },
   });
-
-  // Verification token
-  const verificationToken =
-    crypto.randomBytes(32).toString('hex');
-
-  await this.prisma.verificationToken.create({
-    data: {
-      token: verificationToken,
-      userId: user.id,
-      expiresAt: new Date(
-        Date.now() + 60 * 60 * 1000,
-      ),
-    },
-  });
-
-  // Email
-  await this.mailService.sendVerificationEmail(
-    user.email,
-    user.name,
-    verificationToken,
-  );
 
   // Notification
   await this.notificationsService.create(
@@ -503,7 +628,7 @@ const user =
     success: true,
 
     message:
-      'Vendor registration successful. Please verify your email.',
+      'Vendor registration successful. Your application is awaiting admin approval.',
 
     user: {
       _id: user.id,
@@ -592,40 +717,27 @@ console.log('PASSWORD MATCH =', isPasswordCorrect);
       'Invalid email or password',
     );
   }
-   
 
-  // Email verification
-// if (!user.isVerified) {
-//   throw new UnauthorizedException(
-//     'Please verify your email before logging in.',
-//   );
-// }
+  if (user.role !== Role.ADMIN && !user.isVerified) {
+    throw new UnauthorizedException('Please verify your email using the OTP before logging in.');
+  }
 
+  if (user.role === Role.USER) {
+    if (user.adminVerificationStatus === AdminVerificationStatus.PENDING) {
+      throw new UnauthorizedException('Your account is awaiting admin approval.');
+    }
+    if (user.adminVerificationStatus === AdminVerificationStatus.REJECTED) {
+      throw new UnauthorizedException('Your account verification was rejected by the admin.');
+    }
+  }
 
+  if (user.role === Role.VENDOR && user.vendor?.status === VendorStatus.PENDING) {
+    throw new UnauthorizedException('Your vendor account is awaiting admin approval.');
+  }
 
-
-
-// Vendor approval check
-// if (
-//   user.role === Role.VENDOR &&
-//   user.vendor?.status === VendorStatus.PENDING
-// ) {
-//   throw new UnauthorizedException(
-//     'Your vendor account is pending admin approval.',
-//   );
-// }
-
-
-
-
-if (
-  user.role === Role.VENDOR &&
-  user.vendor?.status === VendorStatus.REJECTED
-) {
-  throw new UnauthorizedException(
-    'Your vendor registration has been rejected by the admin.',
-  );
-}
+  if (user.role === Role.VENDOR && user.vendor?.status === VendorStatus.REJECTED) {
+    throw new UnauthorizedException('Your vendor registration has been rejected by the admin.');
+  }
 
   const adminAccess = this.adminAccessService.resolveAccess(user);
 
@@ -681,12 +793,55 @@ if (
       createdAt: user.createdAt,
 
       updatedAt: user.updatedAt,
+
+      membership: user.membership,
+
+      adminVerificationStatus: user.adminVerificationStatus.toLowerCase(),
     },
   };
 }
 
 
 
+
+async verifyEmailOtp(dto: VerifyEmailOtpDto) {
+  const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  if (!user) throw new BadRequestException('Invalid email or OTP.');
+  if (user.isVerified) {
+    return { success: true, message: 'Email is already verified. Your account is awaiting admin approval.' };
+  }
+
+  const verification = await this.prisma.verificationToken.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (!verification || verification.expiresAt < new Date()) {
+    throw new BadRequestException('OTP is invalid or has expired. Please request a new code.');
+  }
+  if (!(await bcrypt.compare(dto.otp, verification.token))) {
+    throw new BadRequestException('Invalid OTP.');
+  }
+
+  await this.prisma.$transaction([
+    this.prisma.user.update({ where: { id: user.id }, data: { isVerified: true } }),
+    this.prisma.verificationToken.deleteMany({ where: { userId: user.id } }),
+  ]);
+  return {
+    success: true,
+    message: 'Email verified successfully. Your account is now awaiting admin approval.',
+    data: { adminVerificationStatus: 'pending' },
+  };
+}
+
+async resendEmailOtp(dto: ResendEmailOtpDto) {
+  const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  if (!user) {
+    return { success: true, message: 'If the account exists, a new OTP has been sent.' };
+  }
+  if (user.isVerified) throw new BadRequestException('Email is already verified.');
+  await this.issueEmailOtp(user);
+  return { success: true, message: 'A new OTP has been sent to your email.' };
+}
 
 async verifyEmail(token: string) {
   const verificationToken = await this.prisma.verificationToken.findUnique({

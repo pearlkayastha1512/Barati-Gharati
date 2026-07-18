@@ -4,7 +4,7 @@ import {
   UseGuards,
   Param,
   Delete,
-  Patch, Body, UseInterceptors
+  Patch, Body, UseInterceptors, Post
 } from '@nestjs/common';
 
 import {
@@ -23,6 +23,7 @@ import { PermissionsGuard } from '../admin-access/guards/permissions.guard';
 import { Permissions } from '../admin-access/decorators/permissions.decorator';
 import { ADMIN_PERMISSIONS } from '../admin-access/admin-permissions';
 import { AdminAuditInterceptor } from '../admin-access/interceptors/admin-audit.interceptor';
+import { CreateVendorByAdminDto } from './dto/create-vendor-by-admin.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -54,6 +55,24 @@ getUserById(
   return this.adminService.getUserById(id);
 }
 
+@Patch('users/:id/approve')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_MANAGE)
+approveCustomer(@Param('id') id: string) {
+  return this.adminService.approveCustomer(id);
+}
+
+@Patch('users/:id/reject')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_MANAGE)
+rejectCustomer(@Param('id') id: string, @Body() dto: { reason?: string }) {
+  return this.adminService.rejectCustomer(id, dto.reason);
+}
+
+@Patch('users/:id/reverify')
+@Permissions(ADMIN_PERMISSIONS.CUSTOMERS_MANAGE)
+reverifyCustomer(@Param('id') id: string) {
+  return this.adminService.reverifyCustomer(id);
+}
+
 @Delete('users/:id')
 @Permissions(ADMIN_PERMISSIONS.CUSTOMERS_MANAGE)
 deleteUser(
@@ -66,6 +85,14 @@ deleteUser(
 @Permissions(ADMIN_PERMISSIONS.VENDORS_VIEW)
 getAllVendors() {
   return this.adminService.getAllVendors();
+}
+
+@Post('vendors')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
+createVendor(
+  @Body() dto: CreateVendorByAdminDto,
+) {
+  return this.adminService.createVendorByAdmin(dto);
 }
 
 @Get('vendors/:id')
@@ -90,6 +117,12 @@ rejectVendor(
   @Param('id') id: string,
 ) {
   return this.adminService.rejectVendor(id);
+}
+
+@Patch('vendors/:id/reverify')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
+reverifyVendor(@Param('id') id: string) {
+  return this.adminService.reverifyVendor(id);
 }
 
 @Patch('vendors/:id/badge')

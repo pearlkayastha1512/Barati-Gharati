@@ -138,6 +138,7 @@ const normalizeVendor = (vendor: BackendVendor): Vendor => ({
 });
 
 export interface RegisterVendorRequest {
+  registrationVerificationId: string;
   ownerName: string;
   email: string;
   phone: string;
@@ -157,10 +158,33 @@ export interface RegisterVendorRequest {
   profileImage?: string;
   coverImage?: string;
   selectedBadge: "BRONZE" | "SILVER" | "GOLD";
+  badgeBillingCycle?: "MONTHLY" | "YEARLY";
   badgePaymentOrderId?: string;
   badgePaymentId?: string;
   badgePaymentSignature?: string;
 }
+
+export const startVendorRegistrationVerification = async (payload: {
+  ownerName: string;
+  email: string;
+  phone: string;
+}) => {
+  const response = await api.post<{
+    data: { verificationId: string };
+  }>("/auth/register/vendor/start-verification", payload);
+  return response.data.data;
+};
+
+export const verifyVendorRegistrationOtp = async (
+  verificationId: string,
+  otp: string,
+) => {
+  const response = await api.post("/auth/register/vendor/verify-otp", {
+    verificationId,
+    otp,
+  });
+  return response.data;
+};
 
 export interface RegisterVendorResponse {
   message: string;
@@ -366,4 +390,3 @@ export const getVendorDashboard = async () => {
 
   return response.data;
 };
-

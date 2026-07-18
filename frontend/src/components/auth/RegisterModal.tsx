@@ -10,20 +10,28 @@ import {
   Eye,
   EyeOff,
   X,
+  CheckCircle2,
+  Crown,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
 
 // import { registerUser } from "@/services/auth.service";
-import { registerApi } from "@/services/api/auth.api";
+import { registerApi, resendEmailOtpApi, verifyEmailOtpApi } from "@/services/api/auth.api";
 import { toast } from "sonner";
+import { createCustomerPremiumRegistrationOrderApi } from "@/services/api/payment.api";
+
+type MembershipPayment = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
 
 export default function RegisterModal() {
  const {
   isRegisterOpen,
   closeRegister,
   openLogin,
-  login,
 } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
@@ -33,6 +41,10 @@ export default function RegisterModal() {
     useState(false);
 
   const [agree, setAgree] = useState(false);
+  const [membership, setMembership] = useState<"FREE" | "PREMIUM">("FREE");
+  const [otpEmail, setOtpEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -146,53 +158,66 @@ if (!form.confirmPassword) {
 
 
 try {
-  setLoading(true);
+  const finishRegistration = async (payment?: MembershipPayment) => {
+    await registerApi({
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      password: form.password,
+      membership,
+      membershipPaymentOrderId: payment?.razorpay_order_id,
+      membershipPaymentId: payment?.razorpay_payment_id,
+      membershipPaymentSignature: payment?.razorpay_signature,
+    });
 
-  await registerApi({
-  name: form.name,
-  email: form.email,
-  phone: form.phone,
-  password: form.password,
-});
+    setOtpEmail(form.email);
+    setOtp("");
+    setOtpError("");
+    toast.success("Registration successful. OTP sent to your email.");
+    setLoading(false);
+  };
 
-  setLoading(false);
+  if (membership === "FREE") {
+    await finishRegistration();
+    return;
+  }
 
-  // if (!result.ok) {
-  //   setErrors((prev) => ({
-  //     ...prev,
-  //     email:
-  //       result.data.message ??
-  //       "Registration failed.",
-  //   }));
+  const order = await createCustomerPremiumRegistrationOrderApi();
+  if (!order.ok || !order.data) {
+    throw new Error(order.error ?? "Unable to start premium payment.");
+  }
 
-  //   return;
-  // }
-
-  closeRegister();
-
-  toast.success(
-  "Registration successful. Please verify your email."
-);
-
-  openLogin();
-
-  setForm({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+  const loaded = await new Promise<boolean>((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
   });
 
-  setAgree(false);
-} catch (error: any) {
-  setLoading(false);
+  if (!loaded || !window.Razorpay) throw new Error("Payment gateway could not be loaded.");
 
+  new window.Razorpay({
+    key: order.data.keyId,
+    amount: order.data.amountInPaise,
+    currency: order.data.currency,
+    name: "Barati Gharati",
+    description: "Customer Premium Membership",
+    order_id: order.data.orderId,
+    prefill: { name: form.name, email: form.email, contact: form.phone },
+    theme: { color: "#f43f5e" },
+    handler: (payment) => void finishRegistration(payment).catch((error: Error) => {
+      setLoading(false);
+      setErrors((prev) => ({ ...prev, email: error.message }));
+    }),
+    modal: { ondismiss: () => setLoading(false) },
+  }).open();
+} catch (error: unknown) {
+  setLoading(false);
   setErrors((prev) => ({
     ...prev,
-    email:
-      error.message ||
-      "Registration failed.",
+    email: error instanceof Error ? error.message : "Registration failed.",
   }));
 }
 // setLoading(false);
@@ -212,6 +237,42 @@ try {
 
 // setAgree(false);
 };
+
+  const verifyOtp = async () => {
+    if (!/^\d{6}$/.test(otp)) {
+      setOtpError("Enter the 6-digit OTP.");
+      return;
+    }
+    try {
+      setLoading(true);
+      await verifyEmailOtpApi(otpEmail, otp);
+      toast.success("Email verified. Your account is awaiting admin approval.");
+      setForm({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+      setMembership("FREE");
+      setAgree(false);
+      setOtpEmail("");
+      setOtp("");
+      closeRegister();
+      openLogin();
+    } catch (error: unknown) {
+      setOtpError(error instanceof Error ? error.message : "OTP verification failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    try {
+      setLoading(true);
+      await resendEmailOtpApi(otpEmail);
+      setOtpError("");
+      toast.success("A new OTP has been sent.");
+    } catch (error: unknown) {
+      setOtpError(error instanceof Error ? error.message : "Unable to resend OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -249,11 +310,11 @@ try {
             <div className="flex items-center justify-between border-b px-7 py-6">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">
-                  Create Account
+                  {otpEmail ? "Verify Email" : "Create Account"}
                 </h2>
 
                 <p className="mt-2 text-gray-500">
-                  Join thousands of happy couples.
+                  {otpEmail ? `Enter the OTP sent to ${otpEmail}` : "Join thousands of happy couples."}
                 </p>
               </div>
 
@@ -265,7 +326,36 @@ try {
               </button>
             </div>
 
-            <div className="space-y-4 p-6">
+            {otpEmail && (
+              <div className="space-y-5 p-7 text-slate-900">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  Email OTP verify karne ke baad account admin review mein jayega. Admin approval ke baad login available hoga.
+                </div>
+                <label className="block text-sm font-semibold text-slate-700">
+                  6-digit OTP
+                  <input
+                    value={otp}
+                    onChange={(event) => {
+                      setOtp(event.target.value.replace(/\D/g, "").slice(0, 6));
+                      setOtpError("");
+                    }}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    className="mt-2 h-14 w-full rounded-xl border border-slate-300 bg-white px-4 text-center text-2xl font-bold tracking-[0.45em] text-slate-900 outline-none focus:border-rose-500"
+                    placeholder="000000"
+                  />
+                </label>
+                {otpError && <p className="text-sm text-red-600">{otpError}</p>}
+                <button type="button" disabled={loading} onClick={() => void verifyOtp()} className="h-12 w-full rounded-xl bg-rose-500 font-semibold text-white disabled:opacity-60">
+                  {loading ? "Verifying..." : "Verify Email OTP"}
+                </button>
+                <button type="button" disabled={loading} onClick={() => void resendOtp()} className="w-full text-sm font-semibold text-rose-600 disabled:opacity-60">
+                  Resend OTP
+                </button>
+              </div>
+            )}
+
+            <div className={`${otpEmail ? "hidden" : "space-y-4"} p-6`}>
 
               {/* Full Name */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -506,6 +596,43 @@ try {
                         : "w-1/3 bg-red-500"
                     }`}
                   />
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-gray-900">Choose your membership</p>
+                    <p className="text-sm text-gray-500">Premium includes our managed wedding-planning service.</p>
+                  </div>
+                  <Crown className="text-amber-500" size={24} />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setMembership("FREE")}
+                    className={`rounded-2xl border p-4 text-left transition ${membership === "FREE" ? "border-rose-500 bg-rose-50 ring-2 ring-rose-100" : "border-gray-200"}`}
+                  >
+                    <div className="flex items-center justify-between font-semibold text-gray-900">
+                      Free <span>₹0</span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-500">Browse vendors and use standard planning tools.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMembership("PREMIUM")}
+                    className={`rounded-2xl border p-4 text-left transition ${membership === "PREMIUM" ? "border-amber-500 bg-amber-50 ring-2 ring-amber-100" : "border-gray-200"}`}
+                  >
+                    <div className="flex items-center justify-between font-semibold text-gray-900">
+                      Premium <span>₹4,999</span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">One-time payment · personal team review and quotation.</p>
+                    <div className="mt-3 space-y-1 text-xs text-gray-600">
+                      {["Fill wedding preferences", "Vendor assignment", "Personal quotation", "Booking coordination"].map((feature) => (
+                        <span key={feature} className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-green-600" />{feature}</span>
+                      ))}
+                    </div>
+                  </button>
                 </div>
               </div>
 

@@ -6,9 +6,11 @@ import {
 import Razorpay from 'razorpay';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  AdminVerificationStatus,
   BookingStatus,
   Role,
   VendorBadge,
+  VendorBadgeBillingCycle,
   VendorStatus,
   PaymentStatus,
   PayoutStatus,
@@ -16,6 +18,10 @@ import {
 import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PayoutsService } from '../payouts/payouts.service';
+import { getVendorBadgeExpiry } from '../payment/vendor-badge.constants';
+import { VENDOR_BADGE_LIMITS } from '../payment/vendor-badge.constants';
+import { CreateVendorByAdminDto } from './dto/create-vendor-by-admin.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
@@ -185,6 +191,11 @@ export class AdminService {
       phone: true,
       role: true,
       isVerified: true,
+      membership: true,
+      membershipActivatedAt: true,
+      adminVerificationStatus: true,
+      adminVerifiedAt: true,
+      adminRejectionReason: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -195,6 +206,76 @@ export class AdminService {
     count: users.length,
     data: users,
   };
+}
+
+private async getCustomerForVerification(id: string) {
+  const user = await this.prisma.user.findUnique({ where: { id } });
+  if (!user || user.role !== Role.USER) {
+    throw new NotFoundException('Customer not found');
+  }
+  return user;
+}
+
+async approveCustomer(id: string) {
+  const user = await this.getCustomerForVerification(id);
+  if (!user.isVerified) {
+    throw new BadRequestException('Customer must verify their email OTP before admin approval');
+  }
+  const data = await this.prisma.user.update({
+    where: { id },
+    data: {
+      adminVerificationStatus: AdminVerificationStatus.APPROVED,
+      adminVerifiedAt: new Date(),
+      adminRejectionReason: null,
+    },
+  });
+  await this.notificationsService.create(id, {
+    title: 'Account approved',
+    message: 'Your customer account has been approved. You can now log in.',
+  });
+  await this.mailService.sendCustomerVerificationDecision(user.email, user.name, true);
+  return { success: true, message: 'Customer approved successfully', data };
+}
+
+async rejectCustomer(id: string, reason?: string) {
+  const user = await this.getCustomerForVerification(id);
+  const data = await this.prisma.user.update({
+    where: { id },
+    data: {
+      adminVerificationStatus: AdminVerificationStatus.REJECTED,
+      adminVerifiedAt: null,
+      adminRejectionReason: reason?.trim() || 'Registration details could not be verified.',
+    },
+  });
+  await this.notificationsService.create(id, {
+    title: 'Account verification rejected',
+    message: data.adminRejectionReason ?? 'Please contact support for more information.',
+  });
+  await this.mailService.sendCustomerVerificationDecision(
+    user.email,
+    user.name,
+    false,
+    data.adminRejectionReason ?? undefined,
+  );
+  return { success: true, message: 'Customer verification rejected', data };
+}
+
+async reverifyCustomer(id: string) {
+  const user = await this.getCustomerForVerification(id);
+  const data = await this.prisma.user.update({
+    where: { id },
+    data: {
+      adminVerificationStatus: AdminVerificationStatus.PENDING,
+      adminVerifiedAt: null,
+      adminRejectionReason: null,
+    },
+  });
+  await this.notificationsService.create(id, {
+    title: 'Account re-verification required',
+    message: 'Your account is under admin review again. Login will be available after approval.',
+  });
+  await this.mailService.sendReverificationNotice(user.email, user.name, 'Customer');
+  return { success: true, message: 'Customer moved to re-verification', data };
 }
 
 async getUserById(id: string) {
@@ -369,6 +450,12 @@ async getAllVendors() {
       badgePurchasedAt:
         vendor.badgePurchasedAt,
 
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
+
       isActive:
         vendor.isActive,
 
@@ -403,6 +490,100 @@ async getAllVendors() {
 
       updatedAt: vendor.updatedAt,
     })),
+  };
+}
+
+async createVendorByAdmin(dto: CreateVendorByAdminDto) {
+  const email = dto.email.trim().toLowerCase();
+  const phone = dto.phone.trim();
+  const [emailExists, phoneExists] = await Promise.all([
+    this.prisma.user.findUnique({ where: { email } }),
+    this.prisma.user.findUnique({ where: { phone } }),
+  ]);
+  if (emailExists) throw new BadRequestException('Email already registered');
+  if (phoneExists) throw new BadRequestException('Phone number already registered');
+
+  let category = await this.prisma.category.findFirst({
+    where: { name: { equals: dto.category.trim(), mode: 'insensitive' } },
+  });
+  if (!category) {
+    category = await this.prisma.category.create({
+      data: { name: dto.category.trim() },
+    });
+  }
+
+  const lastVendor = await this.prisma.vendor.findFirst({
+    where: { frontendVendorId: { not: null } },
+    orderBy: { frontendVendorId: 'desc' },
+    select: { frontendVendorId: true },
+  });
+  const badge = dto.badge ?? VendorBadge.BRONZE;
+  const billingCycle =
+    dto.badgeBillingCycle ?? VendorBadgeBillingCycle.MONTHLY;
+  const now = new Date();
+
+  const user = await this.prisma.user.create({
+    data: {
+      name: dto.ownerName.trim(),
+      email,
+      phone,
+      password: await bcrypt.hash(dto.password, 10),
+      role: Role.VENDOR,
+      isVerified: true,
+      adminVerificationStatus: AdminVerificationStatus.APPROVED,
+      adminVerifiedAt: now,
+      mustChangePassword: false,
+      vendor: {
+        create: {
+          frontendVendorId: (lastVendor?.frontendVendorId ?? 0) + 1,
+          businessName: dto.businessName.trim(),
+          categoryId: category.id,
+          city: dto.city.trim(),
+          address: dto.address?.trim(),
+          description: dto.description?.trim(),
+          status: VendorStatus.APPROVED,
+          approvedAt: now,
+          businessVerified: true,
+          isActive: true,
+          badge,
+          badgeBillingCycle: billingCycle,
+          monthlyBookingLimit: VENDOR_BADGE_LIMITS[badge],
+          badgePurchasedAt: badge === VendorBadge.BRONZE ? null : now,
+          badgeExpiresAt:
+            badge === VendorBadge.BRONZE
+              ? null
+              : getVendorBadgeExpiry(billingCycle, now),
+        },
+      },
+    },
+    include: { vendor: { include: { category: true } } },
+  });
+
+  let credentialsEmailSent = true;
+  try {
+    await this.mailService.sendAdminCreatedVendorCredentials(
+      email,
+      user.name,
+      dto.password,
+    );
+  } catch {
+    credentialsEmailSent = false;
+  }
+
+  return {
+    success: true,
+    message: credentialsEmailSent
+      ? 'Vendor created, verified and approved successfully. Login credentials were emailed.'
+      : 'Vendor created and approved, but the credentials email could not be sent.',
+    data: {
+      id: user.vendor?.id,
+      userId: user.id,
+      email: user.email,
+      businessName: user.vendor?.businessName,
+      badge: user.vendor?.badge.toLowerCase(),
+      approvalStatus: 'approved',
+      credentialsEmailSent,
+    },
   };
 }
 
@@ -546,6 +727,12 @@ async getVendorById(id: string) {
       badgePurchasedAt:
         vendor.badgePurchasedAt,
 
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
+
       isActive:
         vendor.isActive,
 
@@ -622,8 +809,13 @@ async updateVendorBadge(
     where: { id },
     data: {
       badge,
+      badgeBillingCycle: VendorBadgeBillingCycle.MONTHLY,
       monthlyBookingLimit: limits[badge],
       badgePurchasedAt: new Date(),
+      badgeExpiresAt:
+        badge === VendorBadge.BRONZE
+          ? null
+          : getVendorBadgeExpiry(VendorBadgeBillingCycle.MONTHLY),
     },
     include: {
       user: true,
@@ -644,6 +836,8 @@ async updateVendorBadge(
       id: updated.id,
       badge: updated.badge.toLowerCase(),
       monthlyBookingLimit: updated.monthlyBookingLimit,
+      badgeBillingCycle: updated.badgeBillingCycle.toLowerCase(),
+      badgeExpiresAt: updated.badgeExpiresAt,
       badgePurchasedAt: updated.badgePurchasedAt,
     },
   };
@@ -662,6 +856,10 @@ async approveVendor(id: string) {
     throw new NotFoundException(
       'Vendor not found',
     );
+  }
+
+  if (!vendor.user.isVerified) {
+    throw new BadRequestException('Vendor must verify their email OTP before admin approval');
   }
 
   const updatedVendor = await this.prisma.$transaction(
@@ -751,6 +949,26 @@ async approveVendor(id: string) {
   };
 }
 
+async reverifyVendor(id: string) {
+  const vendor = await this.prisma.vendor.findUnique({ where: { id }, include: { user: true } });
+  if (!vendor) throw new NotFoundException('Vendor not found');
+  const data = await this.prisma.vendor.update({
+    where: { id },
+    data: {
+      status: VendorStatus.PENDING,
+      approvedAt: null,
+      businessVerified: false,
+      isActive: false,
+    },
+  });
+  await this.notificationsService.create(vendor.userId, {
+    title: 'Vendor re-verification required',
+    message: 'Your vendor account is under admin review again.',
+  });
+  await this.mailService.sendReverificationNotice(vendor.user.email, vendor.user.name, 'Vendor');
+  return { success: true, message: 'Vendor moved to re-verification', data };
+}
+
 async rejectVendor(id: string) {
   const vendor = await this.prisma.vendor.findUnique({
     where: {
@@ -806,6 +1024,7 @@ async rejectVendor(id: string) {
   await this.mailService.sendVendorRejectedEmail(
     updatedVendor.user.email,
     updatedVendor.user.name,
+    Boolean(refund),
   );
 
   return {
