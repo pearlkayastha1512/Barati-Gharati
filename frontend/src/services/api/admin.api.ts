@@ -78,8 +78,46 @@ export async function getAllVendorsApi() {
   return requestAdmin("/vendors");
 }
 
+export type CreateVendorByAdminPayload = {
+  ownerName: string;
+  email: string;
+  phone: string;
+  password: string;
+  businessName: string;
+  category: string;
+  city: string;
+  address?: string;
+  description?: string;
+  badge: "BRONZE" | "SILVER" | "GOLD";
+  badgeBillingCycle: "MONTHLY" | "YEARLY";
+};
+
+export async function createVendorByAdminApi(
+  payload: CreateVendorByAdminPayload,
+) {
+  return requestAdmin("/vendors", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getAllUsersApi() {
   return requestAdmin("/users");
+}
+
+export async function approveCustomerApi(id: string) {
+  return requestAdmin(`/users/${id}/approve`, { method: "PATCH" });
+}
+
+export async function rejectCustomerApi(id: string, reason?: string) {
+  return requestAdmin(`/users/${id}/reject`, {
+    method: "PATCH",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function reverifyCustomerApi(id: string) {
+  return requestAdmin(`/users/${id}/reverify`, { method: "PATCH" });
 }
 
 export async function getAllBookingsApi() {
@@ -333,6 +371,10 @@ export async function rejectVendorApi(
       method: "PATCH",
     }
   );
+}
+
+export async function reverifyVendorApi(id: string) {
+  return requestAdmin(`/vendors/${id}/reverify`, { method: "PATCH" });
 }
 
 export async function updateVendorBadgeApi(

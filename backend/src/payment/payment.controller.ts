@@ -14,7 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { Role, VendorBadge } from '@prisma/client';
+import { Role, VendorBadge, VendorBadgeBillingCycle } from '@prisma/client';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -111,21 +111,33 @@ export class PaymentController {
   @Roles(Role.VENDOR)
   createVendorBadgeOrder(
     @CurrentUser('sub') userId: string,
-    @Body() dto: { badge: VendorBadge },
+    @Body() dto: { badge: VendorBadge; billingCycle?: VendorBadgeBillingCycle },
   ) {
     return this.paymentService.createVendorBadgeOrder(
       userId,
       dto.badge,
+      dto.billingCycle ?? VendorBadgeBillingCycle.MONTHLY,
     );
   }
 
   @Post('vendor-registration-badge/create-order')
   createVendorRegistrationBadgeOrder(
-    @Body() dto: { badge: VendorBadge },
+    @Body() dto: {
+      badge: VendorBadge;
+      billingCycle?: VendorBadgeBillingCycle;
+      registrationVerificationId: string;
+    },
   ) {
     return this.paymentService.createVendorRegistrationBadgeOrder(
       dto.badge,
+      dto.billingCycle ?? VendorBadgeBillingCycle.MONTHLY,
+      dto.registrationVerificationId,
     );
+  }
+
+  @Post('customer-premium-registration/create-order')
+  createCustomerPremiumRegistrationOrder() {
+    return this.paymentService.createCustomerPremiumRegistrationOrder();
   }
 
   @Post('vendor-badge/verify')
@@ -136,11 +148,13 @@ export class PaymentController {
     @Body()
     dto: VerifyPaymentDto & {
       badge: VendorBadge;
+      billingCycle?: VendorBadgeBillingCycle;
     },
   ) {
     return this.paymentService.verifyVendorBadgePayment(
       userId,
       dto.badge,
+      dto.billingCycle ?? VendorBadgeBillingCycle.MONTHLY,
       dto,
     );
   }

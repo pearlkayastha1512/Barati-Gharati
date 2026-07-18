@@ -18,7 +18,8 @@ import { useAuthStore } from "@/store/authStore";
 
 
 
-import { loginApi } from "@/services/api/auth.api";
+import { loginApi, resendEmailOtpApi, verifyEmailOtpApi } from "@/services/api/auth.api";
+import { toast } from "sonner";
 
 import { useRouter } from "next/navigation";
 
@@ -41,6 +42,8 @@ export default function LoginModal() {
   const [remember, setRemember] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [needsOtp, setNeedsOtp] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const [errors, setErrors] = useState({
     email: "",
@@ -105,12 +108,42 @@ export default function LoginModal() {
         result.user.role
       )
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+  const message = error instanceof Error ? error.message : "Login failed.";
+  if (message.toLowerCase().includes("verify your email")) setNeedsOtp(true);
   setErrors({
-    email: error.message,
+    email: message,
     password: "",
   });
 } finally {
+    setLoading(false);
+  }
+};
+
+const verifyLoginOtp = async () => {
+  if (!/^\d{6}$/.test(otp)) return setErrors((current) => ({ ...current, email: "Enter the 6-digit OTP." }));
+  try {
+    setLoading(true);
+    await verifyEmailOtpApi(email, otp);
+    setNeedsOtp(false);
+    setOtp("");
+    setErrors({ email: "", password: "" });
+    toast.success("Email verified. Login will be available after admin approval.");
+  } catch (error: unknown) {
+    setErrors((current) => ({ ...current, email: error instanceof Error ? error.message : "OTP verification failed." }));
+  } finally {
+    setLoading(false);
+  }
+};
+
+const resendLoginOtp = async () => {
+  try {
+    setLoading(true);
+    await resendEmailOtpApi(email);
+    toast.success("A new OTP has been sent.");
+  } catch (error: unknown) {
+    setErrors((current) => ({ ...current, email: error instanceof Error ? error.message : "Unable to resend OTP." }));
+  } finally {
     setLoading(false);
   }
 };
@@ -260,6 +293,17 @@ export default function LoginModal() {
                 )}
               </div>
 
+              {needsOtp && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                  <p className="text-sm font-semibold text-slate-800">Verify your email OTP</p>
+                  <input value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="mt-3 h-12 w-full rounded-xl border border-rose-200 bg-white text-center text-xl font-bold tracking-[0.4em] text-slate-900 outline-none focus:border-rose-500" />
+                  <div className="mt-3 flex gap-3">
+                    <button type="button" disabled={loading} onClick={() => void verifyLoginOtp()} className="flex-1 rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white disabled:opacity-60">Verify OTP</button>
+                    <button type="button" disabled={loading} onClick={() => void resendLoginOtp()} className="rounded-xl border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-600 disabled:opacity-60">Resend</button>
+                  </div>
+                </div>
+              )}
+
               {/* Remember Me + Forgot Password */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -324,7 +368,7 @@ export default function LoginModal() {
 
               {/* Register */}
               <div className="text-center text-sm text-gray-600">
-                Don't have an account?
+                Don&apos;t have an account?
                 <button
                   type="button"
                   onClick={() => {

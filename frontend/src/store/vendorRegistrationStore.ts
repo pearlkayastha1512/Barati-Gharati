@@ -17,6 +17,8 @@ interface VendorRegistrationStore {
 
   // Form
   formData: VendorRegistrationForm;
+  registrationVerificationId: string | null;
+  setRegistrationVerificationId: (id: string | null) => void;
 
   updateField: (
     field: keyof VendorRegistrationForm,
@@ -55,6 +57,9 @@ export const useVendorRegistrationStore =
     // Form
     formData:
       vendorRegistrationService.getInitialData(),
+    registrationVerificationId: null,
+    setRegistrationVerificationId: (registrationVerificationId) =>
+      set({ registrationVerificationId }),
 
     updateField: (field, value) =>
       set((state) => ({
@@ -62,6 +67,10 @@ export const useVendorRegistrationStore =
           ...state.formData,
           [field]: value,
         },
+        registrationVerificationId:
+          field === "email" || field === "phone"
+            ? null
+            : state.registrationVerificationId,
       })),
 
     resetForm: () =>
@@ -69,5 +78,6 @@ export const useVendorRegistrationStore =
         currentStep: 1,
         formData:
           vendorRegistrationService.getInitialData(),
+        registrationVerificationId: null,
       }),
   }));

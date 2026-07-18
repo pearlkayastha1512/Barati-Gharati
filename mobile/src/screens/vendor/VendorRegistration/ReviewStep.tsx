@@ -104,9 +104,9 @@ import { BadgePaymentModal } from "../../../components/vendors/vendorRegistratio
 import { RazorpaySuccess } from "../../../types/payment";
 
 const badgePlans = [
-  { badge: "bronze" as const, label: "Bronze", price: 0, limit: 5, color: "#B7791F", background: "#FFF7E6" },
-  { badge: "silver" as const, label: "Silver", price: 999, limit: 15, color: "#64748B", background: "#F1F5F9" },
-  { badge: "gold" as const, label: "Gold", price: 1999, limit: 50, color: "#A16207", background: "#FEF9C3" },
+  { badge: "bronze" as const, label: "Bronze", monthlyPrice: 0, yearlyPrice: 0, limit: 5, color: "#B7791F", background: "#FFF7E6" },
+  { badge: "silver" as const, label: "Silver", monthlyPrice: 999, yearlyPrice: 9990, limit: 15, color: "#64748B", background: "#F1F5F9" },
+  { badge: "gold" as const, label: "Gold", monthlyPrice: 1999, yearlyPrice: 19990, limit: 50, color: "#A16207", background: "#FEF9C3" },
 ];
 
 export default function ReviewStep() {
@@ -116,6 +116,9 @@ export default function ReviewStep() {
   gallery,
   selectedBadge,
   setSelectedBadge,
+  badgeBillingCycle,
+  setBadgeBillingCycle,
+  registrationVerificationId,
   prevStep,
   submitRegistration,
 } = useVendorRegistrationStore();
@@ -123,6 +126,7 @@ export default function ReviewStep() {
   const [submitting, setSubmitting] =
     useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [completedPayment, setCompletedPayment] = useState<RazorpaySuccess | null>(null);
 
   const completeRegistration = async (payment?: RazorpaySuccess) => {
     const response = await submitRegistration(payment);
@@ -136,6 +140,8 @@ export default function ReviewStep() {
 
       if (selectedBadge === "bronze") {
         await completeRegistration();
+      } else if (completedPayment) {
+        await completeRegistration(completedPayment);
       } else {
         setSubmitting(false);
         setPaymentOpen(true);
@@ -253,9 +259,33 @@ export default function ReviewStep() {
           </View>
         </View>
 
+        <View style={styles.billingToggle}>
+          {(["monthly", "yearly"] as const).map((cycle) => (
+            <TouchableOpacity
+              key={cycle}
+              disabled={submitting}
+              onPress={() => setBadgeBillingCycle(cycle)}
+              style={[
+                styles.billingOption,
+                badgeBillingCycle === cycle && styles.billingOptionActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.billingOptionText,
+                  badgeBillingCycle === cycle && styles.billingOptionTextActive,
+                ]}
+              >
+                {cycle === "monthly" ? "Monthly" : "Yearly · 2 months free"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <View style={styles.badgeGrid}>
           {badgePlans.map((plan) => {
             const active = selectedBadge === plan.badge;
+            const price = badgeBillingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
             return (
               <TouchableOpacity
                 key={plan.badge}
@@ -271,7 +301,10 @@ export default function ReviewStep() {
                   <Text style={[styles.badgePlanName, { color: plan.color }]}>{plan.label} Badge</Text>
                   {active && <MaterialIcons name="check-circle" size={20} color="#E4005A" />}
                 </View>
-                <Text style={styles.badgePrice}>{plan.price === 0 ? "Free" : `₹${plan.price.toLocaleString("en-IN")}`}</Text>
+                <Text style={styles.badgePrice}>{price === 0 ? "Free" : `₹${price.toLocaleString("en-IN")}`}</Text>
+                {price > 0 && (
+                  <Text style={styles.badgePeriod}>per {badgeBillingCycle === "monthly" ? "month" : "year"}</Text>
+                )}
                 <Text style={styles.badgeLimit}>Up to {plan.limit} bookings per month</Text>
               </TouchableOpacity>
             );
@@ -295,11 +328,14 @@ export default function ReviewStep() {
         <BadgePaymentModal
           visible={paymentOpen}
           badge={selectedBadge}
+          billingCycle={badgeBillingCycle}
+          registrationVerificationId={registrationVerificationId ?? ""}
           ownerName={account.ownerName}
           email={account.businessEmail}
           phone={account.phone}
           onClose={() => setPaymentOpen(false)}
           onPaid={async (payment) => {
+            setCompletedPayment(payment);
             setSubmitting(true);
             try {
               await completeRegistration(payment);

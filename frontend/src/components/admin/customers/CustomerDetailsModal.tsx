@@ -2,6 +2,9 @@
 
 import { X } from "lucide-react";
 import { User } from "@/types/auth";
+import { approveCustomerApi, rejectCustomerApi, reverifyCustomerApi } from "@/services/api/admin.api";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   customer: User | null;
@@ -9,16 +12,34 @@ interface Props {
   open: boolean;
 
   onClose: () => void;
+  onVerificationChange: (status: "pending" | "approved" | "rejected") => void;
 }
 
 export default function CustomerDetailsModal({
   customer,
   open,
   onClose,
+  onVerificationChange,
 }: Props) {
+  const [loading, setLoading] = useState(false);
   if (!open || !customer) {
     return null;
   }
+
+  const updateVerification = async (action: "approve" | "reject" | "reverify") => {
+    const reason = action === "reject" ? window.prompt("Rejection reason (optional):") ?? undefined : undefined;
+    setLoading(true);
+    const result = action === "approve"
+      ? await approveCustomerApi(customer._id)
+      : action === "reject"
+      ? await rejectCustomerApi(customer._id, reason)
+      : await reverifyCustomerApi(customer._id);
+    setLoading(false);
+    if (!result.ok) return toast.error(result.error ?? "Unable to update verification.");
+    const status = action === "approve" ? "approved" : action === "reject" ? "rejected" : "pending";
+    onVerificationChange(status);
+    toast.success(result.data && typeof result.data === "object" && "message" in result.data ? String(result.data.message) : "Verification updated.");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
@@ -101,6 +122,8 @@ export default function CustomerDetailsModal({
               value={customer.role}
             />
 
+            <Info label="Admin Verification" value={(customer.adminVerificationStatus ?? "pending").toUpperCase()} />
+
             <Info
               label="Created At"
               value={new Date(
@@ -117,7 +140,11 @@ export default function CustomerDetailsModal({
 
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-3">
+
+            {customer.adminVerificationStatus !== "approved" && <button disabled={loading || !customer.isVerified} onClick={() => void updateVerification("approve")} className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Approve Customer</button>}
+            {customer.adminVerificationStatus !== "rejected" && <button disabled={loading} onClick={() => void updateVerification("reject")} className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white disabled:opacity-50">Reject</button>}
+            {customer.adminVerificationStatus === "approved" && <button disabled={loading} onClick={() => void updateVerification("reverify")} className="rounded-2xl bg-amber-500 px-6 py-3 font-semibold text-white disabled:opacity-50">Require Re-verification</button>}
 
             <button
               onClick={onClose}

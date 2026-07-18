@@ -13,6 +13,8 @@ import { RazorpaySuccess } from "../../../types/payment";
 type Props = {
   visible: boolean;
   badge: "silver" | "gold";
+  billingCycle: "monthly" | "yearly";
+  registrationVerificationId: string;
   ownerName: string;
   email: string;
   phone: string;
@@ -29,7 +31,7 @@ const createHtml = (
     amount: order.amountInPaise,
     currency: order.currency,
     name: "Barati Gharati",
-    description: `${order.badge === "gold" ? "Gold" : "Silver"} vendor registration badge`,
+    description: `${order.badge === "gold" ? "Gold" : "Silver"} ${order.billingCycle} vendor registration badge`,
     order_id: order.orderId,
     callback_url: `${BASE_URL}/payment/mobile-callback`,
     redirect: true,
@@ -45,18 +47,19 @@ const createHtml = (
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>html,body{height:100%;margin:0;background:#fff;font-family:sans-serif}.loading{height:100%;display:flex;align-items:center;justify-content:center;color:#6c2d45}</style></head><body><div class="loading">Opening secure payment…</div><script src="https://checkout.razorpay.com/v1/checkout.js"></script><script>(function(){var options=${safeOptions};options.handler=function(response){window.ReactNativeWebView.postMessage(JSON.stringify({type:'success',data:response}));};options.modal={ondismiss:function(){window.ReactNativeWebView.postMessage(JSON.stringify({type:'dismiss'}));}};try{var checkout=new Razorpay(options);checkout.on('payment.failed',function(response){window.ReactNativeWebView.postMessage(JSON.stringify({type:'failed',message:(response.error&&response.error.description)||'Payment failed'}));});checkout.open();}catch(error){window.ReactNativeWebView.postMessage(JSON.stringify({type:'failed',message:error.message||'Unable to open payment gateway'}));}})();</script></body></html>`;
 };
 
-export function BadgePaymentModal({ visible, badge, ownerName, email, phone, onClose, onPaid }: Props) {
+export function BadgePaymentModal({ visible, badge, billingCycle, registrationVerificationId, ownerName, email, phone, onClose, onPaid }: Props) {
   const [order, setOrder] = useState<VendorRegistrationBadgeOrder | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const prepare = async () => {
     setLoading(true);
     setError(null);
     setOrder(null);
     try {
-      setOrder(await createVendorRegistrationBadgeOrder(badge));
+      setOrder(await createVendorRegistrationBadgeOrder(badge, billingCycle, registrationVerificationId));
     } catch (reason: any) {
       setError(reason?.response?.data?.message ?? "Badge payment prepare nahi ho saka.");
     } finally {
@@ -70,8 +73,9 @@ export function BadgePaymentModal({ visible, badge, ownerName, email, phone, onC
       setOrder(null);
       setError(null);
       setSubmitting(false);
+      setPaymentCompleted(false);
     }
-  }, [visible, badge]);
+  }, [visible, badge, billingCycle, registrationVerificationId]);
 
   const html = useMemo(
     () => order ? createHtml(order, { ownerName, email, phone }) : "",
@@ -95,6 +99,7 @@ export function BadgePaymentModal({ visible, badge, ownerName, email, phone, onC
         return;
       }
       if (message.type !== "success" || !message.data) return;
+      setPaymentCompleted(true);
       setSubmitting(true);
       await onPaid(message.data);
     } catch (reason: any) {
@@ -110,7 +115,7 @@ export function BadgePaymentModal({ visible, badge, ownerName, email, phone, onC
         <View style={modalStyles.header}>
           <View style={{ flex: 1 }}>
             <Text style={modalStyles.title}>Pay for {badge === "gold" ? "Gold" : "Silver"} Badge</Text>
-            {order && <Text style={modalStyles.subtitle}>₹{order.amount.toLocaleString("en-IN")} · {order.monthlyBookingLimit} bookings/month</Text>}
+            {order && <Text style={modalStyles.subtitle}>₹{order.amount.toLocaleString("en-IN")} / {billingCycle === "monthly" ? "month" : "year"} · {order.monthlyBookingLimit} bookings/month</Text>}
           </View>
           <TouchableOpacity onPress={onClose} disabled={submitting} style={modalStyles.close}>
             <MaterialIcons name="close" size={23} color="#3F1D2F" />
@@ -118,7 +123,7 @@ export function BadgePaymentModal({ visible, badge, ownerName, email, phone, onC
         </View>
 
         {(loading || submitting) && <View style={modalStyles.center}><ActivityIndicator size="large" color="#E4005A" /><Text style={modalStyles.info}>{submitting ? "Verifying payment and submitting registration…" : "Preparing secure checkout…"}</Text></View>}
-        {error && !loading && !submitting && <View style={modalStyles.center}><MaterialIcons name="error-outline" size={44} color="#E4005A" /><Text style={modalStyles.error}>{error}</Text><TouchableOpacity style={modalStyles.retry} onPress={prepare}><Text style={modalStyles.retryText}>Try Again</Text></TouchableOpacity></View>}
+        {error && !loading && !submitting && <View style={modalStyles.center}><MaterialIcons name="error-outline" size={44} color="#E4005A" /><Text style={modalStyles.error}>{error}</Text><TouchableOpacity style={modalStyles.retry} onPress={paymentCompleted ? onClose : prepare}><Text style={modalStyles.retryText}>{paymentCompleted ? "Close & Retry Registration" : "Try Again"}</Text></TouchableOpacity></View>}
         {order && !submitting && <WebView
           source={{ html, baseUrl: "https://checkout.razorpay.com" }}
           originWhitelist={["https://*", "http://*"]}

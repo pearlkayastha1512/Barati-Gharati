@@ -8,17 +8,22 @@ import VendorStats from "@/components/admin/vendors/VendorStats";
 import VendorFilters from "@/components/admin/vendors/VendorFilters";
 import VendorTable from "@/components/admin/vendors/VendorTable";
 import VendorDetailsModal from "@/components/admin/vendors/VendorDetailsModal";
+import AdminCreateVendorModal from "@/components/admin/vendors/AdminCreateVendorModal";
 
 import { useAdminStore } from "@/store/adminStore";
 import { StoredVendor } from "@/services/vendor.service";
 import {
   approveVendorApi,
   rejectVendorApi,
+  reverifyVendorApi,
   updateVendorBadgeApi,
 } from "@/services/api/admin.api";
 import { VendorBadge } from "@/constants/vendor-badges";
+import { useAuthStore } from "@/store/authStore";
+import { hasAdminPermission } from "@/lib/adminAccess";
 
 export default function VendorManagementPage() {
+  const adminUser = useAuthStore((state) => state.user);
   const {
     vendors,
     loadVendors,
@@ -41,6 +46,7 @@ export default function VendorManagementPage() {
 
   const [isModalOpen, setIsModalOpen] =
     useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleViewVendor = (
   vendor: StoredVendor
@@ -104,6 +110,16 @@ export default function VendorManagementPage() {
       data?.message ??
         "Vendor rejected successfully."
     );
+  };
+
+  const handleReverifyVendor = async (vendorId: string | number) => {
+    const result = await reverifyVendorApi(String(vendorId));
+    if (!result.ok) return toast.error(result.error ?? "Unable to request re-verification.");
+    await loadVendors();
+    await loadDashboard();
+    setIsModalOpen(false);
+    setSelectedVendor(null);
+    toast.success("Vendor moved to re-verification.");
   };
 
   const handleBadgeChange = async (
@@ -220,7 +236,13 @@ export default function VendorManagementPage() {
 
   return (
     <div className="space-y-8">
-      <VendorHero />
+      <VendorHero
+        onAddVendor={
+          hasAdminPermission(adminUser, "vendors.manage")
+            ? () => setIsCreateModalOpen(true)
+            : undefined
+        }
+      />
 
       <VendorStats vendors={vendors} />
 
@@ -247,7 +269,17 @@ export default function VendorManagementPage() {
         }}
         onApprove={handleApproveVendor}
         onReject={handleRejectVendor}
+        onReverify={handleReverifyVendor}
         onBadgeChange={handleBadgeChange}
+      />
+
+      <AdminCreateVendorModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={async () => {
+          await loadVendors();
+          await loadDashboard();
+        }}
       />
     </div>
   );

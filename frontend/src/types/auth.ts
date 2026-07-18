@@ -34,6 +34,11 @@ export interface User {
   createdAt: string;
 
   updatedAt: string;
+
+  membership?: "FREE" | "PREMIUM";
+  adminVerificationStatus?: "pending" | "approved" | "rejected";
+  adminVerifiedAt?: string | null;
+  adminRejectionReason?: string | null;
 }
 
 export interface LoginData {

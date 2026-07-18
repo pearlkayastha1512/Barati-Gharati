@@ -13,8 +13,10 @@ import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
 import { registerVendorApi } from "@/services/api/auth.api";
 import {
   VendorBadge,
+  VendorBadgeBillingCycle,
   VENDOR_BADGE_LABELS,
   VENDOR_BADGE_LIMITS,
+  VENDOR_BADGE_PRICES,
 } from "@/constants/vendor-badges";
 import { createVendorRegistrationBadgeOrderApi } from "@/services/api/payment.api";
 
@@ -57,24 +59,20 @@ declare global {
 
 const badgePlans: Array<{
   badge: VendorBadge;
-  price: number;
   className: string;
 }> = [
   {
     badge: "bronze",
-    price: 0,
     className:
       "border-amber-300 bg-amber-50 text-amber-900",
   },
   {
     badge: "silver",
-    price: 999,
     className:
       "border-slate-300 bg-slate-50 text-slate-800",
   },
   {
     badge: "gold",
-    price: 1999,
     className:
       "border-yellow-300 bg-yellow-50 text-yellow-900",
   },
@@ -100,14 +98,22 @@ function loadRazorpayScript() {
 export default function ReviewStep() {
   const {
     formData,
+    registrationVerificationId,
     previousStep,
     nextStep,
   } = useVendorRegistrationStore();
   const [selectedBadge, setSelectedBadge] =
     useState<VendorBadge>("bronze");
+  const [billingCycle, setBillingCycle] =
+    useState<VendorBadgeBillingCycle>("monthly");
   const [isSubmitting, setIsSubmitting] =
     useState(false);
   const [error, setError] = useState("");
+  const [completedPayment, setCompletedPayment] = useState<{
+    response: RazorpayResponse;
+    badge: VendorBadge;
+    billingCycle: VendorBadgeBillingCycle;
+  } | null>(null);
 
 //  const handleSubmit = () => {
 //   const result = registerVendor(formData);
@@ -129,6 +135,7 @@ const submitRegistration = async (
   payment?: RazorpayResponse
 ) => {
   const result = await registerVendorApi({
+    registrationVerificationId: registrationVerificationId ?? "",
     ownerName: formData.ownerName,
     email: formData.email,
     phone: formData.phone,
@@ -156,6 +163,10 @@ const submitRegistration = async (
         | "BRONZE"
         | "SILVER"
         | "GOLD",
+    badgeBillingCycle:
+      billingCycle.toUpperCase() as
+        | "MONTHLY"
+        | "YEARLY",
     badgePaymentOrderId:
       payment?.razorpay_order_id,
     badgePaymentId:
@@ -178,6 +189,26 @@ const handleSubmit = async () => {
   setError("");
   setIsSubmitting(true);
 
+  if (!registrationVerificationId) {
+    setError("Please go back and verify your business email before payment.");
+    setIsSubmitting(false);
+    return;
+  }
+
+  if (
+    completedPayment &&
+    completedPayment.badge === selectedBadge &&
+    completedPayment.billingCycle === billingCycle
+  ) {
+    try {
+      await submitRegistration(completedPayment.response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration could not be completed. Your payment is saved; retry will not charge you again.");
+      setIsSubmitting(false);
+    }
+    return;
+  }
+
   if (selectedBadge === "bronze") {
     try {
       await submitRegistration();
@@ -194,7 +225,9 @@ const handleSubmit = async () => {
 
   const order =
     await createVendorRegistrationBadgeOrderApi(
-      selectedBadge as "silver" | "gold"
+      selectedBadge as "silver" | "gold",
+      billingCycle,
+      registrationVerificationId,
     );
 
   if (!order.ok || !order.data) {
@@ -221,7 +254,7 @@ const handleSubmit = async () => {
     amount: order.data.amountInPaise,
     currency: order.data.currency,
     name: "Barati Gharati",
-    description: `${VENDOR_BADGE_LABELS[selectedBadge]} vendor registration badge`,
+    description: `${VENDOR_BADGE_LABELS[selectedBadge]} ${billingCycle} vendor registration badge`,
     order_id: order.data.orderId,
     prefill: {
       name: formData.ownerName,
@@ -237,13 +270,14 @@ const handleSubmit = async () => {
       },
     },
     handler: async (response) => {
+      setCompletedPayment({ response, badge: selectedBadge, billingCycle });
       try {
         await submitRegistration(response);
       } catch (err) {
         setError(
           err instanceof Error
             ? err.message
-            : "Vendor registration failed."
+            : "Registration could not be completed. Your payment is saved; retry will not charge you again."
         );
         setIsSubmitting(false);
       }
@@ -355,10 +389,33 @@ const handleSubmit = async () => {
           </div>
         </div>
 
+        <div className="mt-5 inline-flex rounded-xl bg-gray-100 p-1">
+          {(["monthly", "yearly"] as const).map((cycle) => (
+            <button
+              type="button"
+              key={cycle}
+              disabled={isSubmitting}
+              onClick={() => setBillingCycle(cycle)}
+              className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${
+                billingCycle === cycle
+                  ? "bg-white text-rose-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
+            >
+              {cycle}
+              {cycle === "yearly" && (
+                <span className="ml-2 text-xs text-green-600">2 months free</span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {badgePlans.map((plan) => {
             const active =
               selectedBadge === plan.badge;
+            const price =
+              VENDOR_BADGE_PRICES[billingCycle][plan.badge];
 
             return (
               <button
@@ -393,10 +450,16 @@ const handleSubmit = async () => {
                 </div>
 
                 <p className="mt-4 text-3xl font-black">
-                  {plan.price === 0
+                  {price === 0
                     ? "Free"
-                    : `₹${plan.price.toLocaleString("en-IN")}`}
+                    : `₹${price.toLocaleString("en-IN")}`}
                 </p>
+
+                {price > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-gray-500">
+                    per {billingCycle === "monthly" ? "month" : "year"}
+                  </p>
+                )}
 
                 <p className="mt-3 text-sm font-medium text-gray-600">
                   Up to{" "}

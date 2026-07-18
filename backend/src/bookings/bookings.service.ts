@@ -849,6 +849,7 @@ export class BookingsService {
     id: string;
     badge: string;
     monthlyBookingLimit: number;
+    badgeExpiresAt?: Date | null;
   }) {
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
@@ -871,9 +872,18 @@ export class BookingsService {
         },
       });
 
-    if (currentMonthBookings >= vendor.monthlyBookingLimit) {
+    const paidPlanExpired =
+      vendor.badge !== 'BRONZE' &&
+      (!vendor.badgeExpiresAt || vendor.badgeExpiresAt <= now);
+    const effectiveLimit = paidPlanExpired
+      ? 5
+      : vendor.monthlyBookingLimit;
+
+    if (currentMonthBookings >= effectiveLimit) {
       throw new BadRequestException(
-        `${vendor.badge} badge limit reached. Upgrade your plan for further bookings.`,
+        paidPlanExpired
+          ? 'Your paid badge plan has expired. Renew it to receive more bookings.'
+          : `${vendor.badge} badge limit reached. Upgrade your plan for further bookings.`,
       );
     }
   }

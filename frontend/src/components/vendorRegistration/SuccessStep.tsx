@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import { CheckCircle2, ArrowRight } from "lucide-react";
-
 import { useVendorRegistrationStore } from "@/store/vendorRegistrationStore";
 
 export default function SuccessStep() {
@@ -30,7 +29,7 @@ export default function SuccessStep() {
         </span>
         .
         <br />
-        Your application has been submitted successfully and is currently
+        Your email is verified and your application has been submitted successfully. It is now
         <span className="font-semibold text-amber-600">
           {" "}under review.
         </span>
@@ -38,6 +37,10 @@ export default function SuccessStep() {
         Once approved, you can log in and start managing your business,
         bookings, and customers.
       </p>
+
+      <div className="mx-auto mt-8 max-w-md rounded-2xl border border-green-200 bg-green-50 p-5 text-green-800">
+        Email verified. Your vendor application is awaiting admin approval. If a paid application is rejected, its badge payment will be refunded.
+      </div>
 
       <Link
         href="/"

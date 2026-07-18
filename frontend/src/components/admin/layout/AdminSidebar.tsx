@@ -18,6 +18,7 @@ import {
   UserCog,
   FilePenLine,
   ClipboardList,
+  Crown,
 } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
@@ -62,6 +63,12 @@ const menuItems = [
     title: "Bookings",
     href: "/admin/bookings",
     icon: CalendarCheck2,
+    permission: "premium-planning.view",
+  },
+  {
+    title: "Premium Planning",
+    href: "/admin/premium-planning",
+    icon: Crown,
     permission: "bookings.view",
   },
   {

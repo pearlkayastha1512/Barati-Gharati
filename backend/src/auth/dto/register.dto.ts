@@ -3,8 +3,11 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
+  IsEnum,
+  IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { CustomerMembership } from '@prisma/client';
 
 export class RegisterDto {
 
@@ -34,5 +37,22 @@ export class RegisterDto {
   @IsString()
   @MinLength(6)
   password!: string;
+
+  @ApiProperty({ enum: CustomerMembership, default: CustomerMembership.FREE })
+  @IsOptional()
+  @IsEnum(CustomerMembership)
+  membership: CustomerMembership = CustomerMembership.FREE;
+
+  @IsOptional()
+  @IsString()
+  membershipPaymentOrderId?: string;
+
+  @IsOptional()
+  @IsString()
+  membershipPaymentId?: string;
+
+  @IsOptional()
+  @IsString()
+  membershipPaymentSignature?: string;
 
 }

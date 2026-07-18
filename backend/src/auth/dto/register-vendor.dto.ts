@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   MinLength,
 } from 'class-validator';
 
@@ -12,9 +13,13 @@ import {
   ApiProperty,
   ApiPropertyOptional,
 } from '@nestjs/swagger';
-import { VendorBadge } from '@prisma/client';
+import { VendorBadge, VendorBadgeBillingCycle } from '@prisma/client';
 
 export class RegisterVendorDto {
+
+  @ApiProperty()
+  @IsUUID()
+  registrationVerificationId!: string;
 
   
   // Account
@@ -126,6 +131,14 @@ export class RegisterVendorDto {
   })
   @IsEnum(VendorBadge)
   selectedBadge!: VendorBadge;
+
+  @ApiPropertyOptional({
+    enum: VendorBadgeBillingCycle,
+    default: VendorBadgeBillingCycle.MONTHLY,
+  })
+  @IsOptional()
+  @IsEnum(VendorBadgeBillingCycle)
+  badgeBillingCycle: VendorBadgeBillingCycle = VendorBadgeBillingCycle.MONTHLY;
 
   @ApiProperty()
   @IsOptional()

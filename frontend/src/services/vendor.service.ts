@@ -75,6 +75,8 @@ export interface StoredVendor {
   currentMonthBookings: number;
 
   badgePurchasedAt?: string | null;
+  badgeBillingCycle?: "monthly" | "yearly";
+  badgeExpiresAt?: string | null;
 
   isActive: boolean;
 
@@ -199,6 +201,8 @@ type ApiVendorProfile = {
   monthlyBookingLimit?: number;
   currentMonthBookings?: number;
   badgePurchasedAt?: string | null;
+  badgeBillingCycle?: "monthly" | "yearly";
+  badgeExpiresAt?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -276,6 +280,12 @@ function mapStoredVendor(
 
     badgePurchasedAt:
       vendor.badgePurchasedAt ?? null,
+
+    badgeBillingCycle:
+      vendor.badgeBillingCycle ?? "monthly",
+
+    badgeExpiresAt:
+      vendor.badgeExpiresAt ?? null,
 
     isActive: vendor.isActive,
 

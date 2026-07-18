@@ -97,12 +97,18 @@ export const styles = StyleSheet.create({
   reviewRowValue: { fontSize: 13, fontWeight: "600", color: "#333", flexShrink: 1, textAlign: "right" },
   badgeHeadingRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   badgeSubtitle: { color: "#777", fontSize: 12, lineHeight: 17, marginTop: -5, marginBottom: 12 },
+  billingToggle: { flexDirection: "row", backgroundColor: "#F4F4F5", borderRadius: 12, padding: 4, marginBottom: 12 },
+  billingOption: { flex: 1, alignItems: "center", borderRadius: 9, paddingVertical: 9, paddingHorizontal: 4 },
+  billingOptionActive: { backgroundColor: "#FFFFFF", elevation: 2 },
+  billingOptionText: { color: "#71717A", fontSize: 11, fontWeight: "700" },
+  billingOptionTextActive: { color: "#E4005A" },
   badgeGrid: { gap: 10 },
   badgePlan: { borderWidth: 1, borderRadius: 14, padding: 15 },
   badgePlanActive: { borderWidth: 2, elevation: 2 },
   badgePlanHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   badgePlanName: { fontSize: 16, fontWeight: "800" },
   badgePrice: { color: "#222", fontSize: 23, fontWeight: "900", marginTop: 12 },
+  badgePeriod: { color: "#777", fontSize: 11, fontWeight: "600", marginTop: 2 },
   badgeLimit: { color: "#666", fontSize: 12, fontWeight: "600", marginTop: 7 },
 
   // Document card (available for future use, not wired into current flow)

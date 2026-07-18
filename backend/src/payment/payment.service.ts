@@ -18,9 +18,16 @@ import {
   BookingStatus,
   Role,
   VendorBadge,
+  VendorBadgeBillingCycle,
   VendorStatus,
 } from '@prisma/client';
 import { PayoutsService } from '../payouts/payouts.service';
+import { CUSTOMER_PREMIUM_PRICE } from '../premium-planning/premium-planning.constants';
+import {
+  getVendorBadgeExpiry,
+  VENDOR_BADGE_LIMITS,
+  VENDOR_BADGE_PRICES,
+} from './vendor-badge.constants';
 
 @Injectable()
 export class PaymentService {
@@ -107,18 +114,6 @@ export class PaymentService {
     };
   }
 
-  private readonly badgePrices: Record<VendorBadge, number> = {
-    [VendorBadge.BRONZE]: 0,
-    [VendorBadge.SILVER]: 999,
-    [VendorBadge.GOLD]: 1999,
-  };
-
-  private readonly badgeLimits: Record<VendorBadge, number> = {
-    [VendorBadge.BRONZE]: 5,
-    [VendorBadge.SILVER]: 15,
-    [VendorBadge.GOLD]: 50,
-  };
-
   private readonly badgeRank: Record<VendorBadge, number> = {
     [VendorBadge.BRONZE]: 1,
     [VendorBadge.SILVER]: 2,
@@ -162,6 +157,7 @@ export class PaymentService {
   async createVendorBadgeOrder(
     userId: string,
     badge: VendorBadge,
+    billingCycle: VendorBadgeBillingCycle,
   ) {
     if (!Object.values(VendorBadge).includes(badge)) {
       throw new BadRequestException('Invalid badge plan');
@@ -181,13 +177,17 @@ export class PaymentService {
       );
     }
 
-    if (this.badgeRank[badge] <= this.badgeRank[vendor.badge]) {
+    if (!Object.values(VendorBadgeBillingCycle).includes(billingCycle)) {
+      throw new BadRequestException('Invalid badge billing cycle');
+    }
+
+    if (this.badgeRank[badge] < this.badgeRank[vendor.badge]) {
       throw new BadRequestException(
         'Please select a higher badge plan to upgrade',
       );
     }
 
-    const amount = this.badgePrices[badge];
+    const amount = VENDOR_BADGE_PRICES[billingCycle][badge];
 
     const order = await this.getRazorpay().orders.create({
       amount: Math.round(amount * 100),
@@ -196,6 +196,7 @@ export class PaymentService {
       notes: {
         vendorId: vendor.id,
         badge,
+        billingCycle,
         paymentType: 'VENDOR_BADGE_UPGRADE',
       },
     });
@@ -213,18 +214,21 @@ export class PaymentService {
       data: {
         vendorId: vendor.id,
         badge: badge.toLowerCase(),
+        billingCycle: billingCycle.toLowerCase(),
         orderId: order.id,
         keyId: process.env.RAZORPAY_KEY_ID,
         amount,
         amountInPaise: order.amount,
         currency: 'INR',
-        monthlyBookingLimit: this.badgeLimits[badge],
+        monthlyBookingLimit: VENDOR_BADGE_LIMITS[badge],
       },
     };
   }
 
   async createVendorRegistrationBadgeOrder(
     badge: VendorBadge,
+    billingCycle: VendorBadgeBillingCycle,
+    registrationVerificationId: string,
   ) {
     if (!Object.values(VendorBadge).includes(badge)) {
       throw new BadRequestException('Invalid badge plan');
@@ -236,7 +240,31 @@ export class PaymentService {
       );
     }
 
-    const amount = this.badgePrices[badge];
+    if (!Object.values(VendorBadgeBillingCycle).includes(billingCycle)) {
+      throw new BadRequestException('Invalid badge billing cycle');
+    }
+
+    const verification =
+      await this.prisma.vendorRegistrationVerification.findUnique({
+        where: { id: registrationVerificationId },
+      });
+    if (
+      !verification ||
+      !verification.verifiedAt ||
+      verification.usedAt ||
+      verification.expiresAt < new Date()
+    ) {
+      throw new BadRequestException(
+        'Please verify your business email before starting badge payment.',
+      );
+    }
+
+    await this.prisma.vendorRegistrationVerification.update({
+      where: { id: registrationVerificationId },
+      data: { expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+    });
+
+    const amount = VENDOR_BADGE_PRICES[billingCycle][badge];
 
     const order = await this.getRazorpay().orders.create({
       amount: Math.round(amount * 100),
@@ -244,6 +272,8 @@ export class PaymentService {
       receipt: `vendor_reg_${Date.now()}`.slice(0, 40),
       notes: {
         badge,
+        billingCycle,
+        registrationVerificationId,
         paymentType: 'VENDOR_REGISTRATION_BADGE',
       },
     });
@@ -254,12 +284,35 @@ export class PaymentService {
         'Vendor registration badge order created successfully',
       data: {
         badge: badge.toLowerCase(),
+        billingCycle: billingCycle.toLowerCase(),
         orderId: order.id,
         keyId: process.env.RAZORPAY_KEY_ID,
         amount,
         amountInPaise: order.amount,
         currency: 'INR',
-        monthlyBookingLimit: this.badgeLimits[badge],
+        monthlyBookingLimit: VENDOR_BADGE_LIMITS[badge],
+      },
+    };
+  }
+
+  async createCustomerPremiumRegistrationOrder() {
+    const order = await this.getRazorpay().orders.create({
+      amount: CUSTOMER_PREMIUM_PRICE * 100,
+      currency: 'INR',
+      receipt: `customer_premium_${Date.now()}`.slice(0, 40),
+      notes: { paymentType: 'CUSTOMER_PREMIUM_REGISTRATION' },
+    });
+
+    return {
+      success: true,
+      message: 'Premium membership order created successfully',
+      data: {
+        membership: 'PREMIUM',
+        orderId: order.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        amount: CUSTOMER_PREMIUM_PRICE,
+        amountInPaise: order.amount,
+        currency: 'INR',
       },
     };
   }
@@ -267,10 +320,14 @@ export class PaymentService {
   async verifyVendorBadgePayment(
     userId: string,
     badge: VendorBadge,
+    billingCycle: VendorBadgeBillingCycle,
     dto: VerifyPaymentDto,
   ) {
     if (!Object.values(VendorBadge).includes(badge)) {
       throw new BadRequestException('Invalid badge plan');
+    }
+    if (!Object.values(VendorBadgeBillingCycle).includes(billingCycle)) {
+      throw new BadRequestException('Invalid badge billing cycle');
     }
 
     const vendor = await this.prisma.vendor.findUnique({
@@ -296,12 +353,32 @@ export class PaymentService {
       dto.signature,
     );
 
+    const order = await this.getRazorpay().orders.fetch(dto.orderId);
+    const expectedAmount = VENDOR_BADGE_PRICES[billingCycle][badge] * 100;
+    if (
+      Number(order.amount) !== expectedAmount ||
+      order.notes?.paymentType !== 'VENDOR_BADGE_UPGRADE' ||
+      order.notes?.vendorId !== vendor.id ||
+      order.notes?.badge !== badge ||
+      order.notes?.billingCycle !== billingCycle
+    ) {
+      throw new BadRequestException('Payment order does not match selected badge plan');
+    }
+
+    const now = new Date();
+    const renewalBase =
+      badge === vendor.badge && vendor.badgeExpiresAt && vendor.badgeExpiresAt > now
+        ? vendor.badgeExpiresAt
+        : now;
+
     const updatedVendor = await this.prisma.vendor.update({
       where: { id: vendor.id },
       data: {
         badge,
-        monthlyBookingLimit: this.badgeLimits[badge],
+        badgeBillingCycle: billingCycle,
+        monthlyBookingLimit: VENDOR_BADGE_LIMITS[badge],
         badgePurchasedAt: new Date(),
+        badgeExpiresAt: getVendorBadgeExpiry(billingCycle, renewalBase),
         badgePaymentId: dto.paymentId,
         badgePaymentOrderId: null,
         badgePaymentRefundId: null,
@@ -317,7 +394,7 @@ export class PaymentService {
     await Promise.all([
       this.notificationsService.create(userId, {
         title: 'Badge Upgraded',
-        message: `Your vendor badge is now ${badge}. You can receive up to ${this.badgeLimits[badge]} bookings per month.`,
+        message: `Your ${billingCycle.toLowerCase()} ${badge} badge is active. You can receive up to ${VENDOR_BADGE_LIMITS[badge]} bookings per month.`,
       }),
       ...admins.map((admin) =>
         this.notificationsService.create(admin.id, {
@@ -334,6 +411,8 @@ export class PaymentService {
         badge: updatedVendor.badge.toLowerCase(),
         monthlyBookingLimit:
           updatedVendor.monthlyBookingLimit,
+        billingCycle: updatedVendor.badgeBillingCycle.toLowerCase(),
+        badgeExpiresAt: updatedVendor.badgeExpiresAt,
         badgePurchasedAt:
           updatedVendor.badgePurchasedAt,
       },

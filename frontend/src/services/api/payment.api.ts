@@ -151,6 +151,7 @@ export async function verifyRemainingPaymentApi(
 export type VendorBadgeOrderResponse = {
   vendorId: string;
   badge: "bronze" | "silver" | "gold";
+  billingCycle: "monthly" | "yearly";
   orderId: string;
   keyId: string;
   amount: number;
@@ -160,13 +161,15 @@ export type VendorBadgeOrderResponse = {
 };
 
 export async function createVendorBadgeOrderApi(
-  badge: "silver" | "gold"
+  badge: "silver" | "gold",
+  billingCycle: "monthly" | "yearly"
 ) {
   try {
     const { data } = await api.post(
       "/payment/vendor-badge/create-order",
       {
         badge: badge.toUpperCase(),
+        billingCycle: billingCycle.toUpperCase(),
       }
     );
 
@@ -186,13 +189,17 @@ export async function createVendorBadgeOrderApi(
 }
 
 export async function createVendorRegistrationBadgeOrderApi(
-  badge: "silver" | "gold"
+  badge: "silver" | "gold",
+  billingCycle: "monthly" | "yearly",
+  registrationVerificationId: string,
 ) {
   try {
     const { data } = await api.post(
       "/payment/vendor-registration-badge/create-order",
       {
         badge: badge.toUpperCase(),
+        billingCycle: billingCycle.toUpperCase(),
+        registrationVerificationId,
       }
     );
 
@@ -214,9 +221,36 @@ export async function createVendorRegistrationBadgeOrderApi(
   }
 }
 
+export type CustomerPremiumOrderResponse = {
+  membership: "PREMIUM";
+  orderId: string;
+  keyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+};
+
+export async function createCustomerPremiumRegistrationOrderApi() {
+  try {
+    const { data } = await api.post(
+      "/payment/customer-premium-registration/create-order"
+    );
+    return {
+      ok: true,
+      data: data?.data as CustomerPremiumOrderResponse,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(error, "Unable to start premium membership payment."),
+    };
+  }
+}
+
 export async function verifyVendorBadgePaymentApi(
   payload: {
     badge: "silver" | "gold";
+    billingCycle: "monthly" | "yearly";
     orderId: string;
     paymentId: string;
     signature: string;
@@ -227,6 +261,7 @@ export async function verifyVendorBadgePaymentApi(
       "/payment/vendor-badge/verify",
       {
         badge: payload.badge.toUpperCase(),
+        billingCycle: payload.billingCycle.toUpperCase(),
         orderId: payload.orderId,
         paymentId: payload.paymentId,
         signature: payload.signature,

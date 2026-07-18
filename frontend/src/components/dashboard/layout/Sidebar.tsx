@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
@@ -28,6 +29,11 @@ const menuItems = [
     title: "Wedding Planner",
     href: "/customer/planner",
     icon: CalendarDays,
+  },
+  {
+    title: "Plan My Wedding",
+    href: "/customer/plan-my-wedding",
+    icon: Crown,
   },
   {
     title: "Bookings",

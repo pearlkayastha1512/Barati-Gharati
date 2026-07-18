@@ -105,6 +105,10 @@ async getMyVendorProfile(userId: string) {
       badge: vendor.badge,
       monthlyBookingLimit:
         vendor.monthlyBookingLimit,
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
       currentMonthBookings:
         vendor._count.bookings,
     },
@@ -355,6 +359,12 @@ async getAllVendors() {
       monthlyBookingLimit:
         vendor.monthlyBookingLimit,
 
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
+
       currentMonthBookings:
         vendor._count.bookings,
 
@@ -468,6 +478,12 @@ async getVendorById(id: string) {
 
       monthlyBookingLimit:
         vendor.monthlyBookingLimit,
+
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
 
       currentMonthBookings:
         vendor._count.bookings,
@@ -635,6 +651,10 @@ async getDashboard(userId: string) {
       badge: vendor.badge.toLowerCase(),
       monthlyBookingLimit:
         vendor.monthlyBookingLimit,
+      badgeBillingCycle:
+        vendor.badgeBillingCycle.toLowerCase(),
+      badgeExpiresAt:
+        vendor.badgeExpiresAt,
       currentMonthBookings,
       totalPackages,
       totalBookings,

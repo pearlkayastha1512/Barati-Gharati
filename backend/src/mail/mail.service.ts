@@ -91,6 +91,49 @@ export class MailService {
 
     await this.logEmail(to, subject, html);
   }
+
+  async sendVerificationOtp(
+    to: string,
+    name: string,
+    otp: string,
+  ) {
+    const subject = 'Your Barati Gharati verification code';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#31202a">
+        <h2>Hello ${name},</h2>
+        <p>Use this one-time password to verify your email address:</p>
+        <div style="margin:24px 0;padding:18px;text-align:center;font-size:32px;font-weight:700;letter-spacing:10px;background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;color:#be123c">${otp}</div>
+        <p>This code expires in 10 minutes. Do not share it with anyone.</p>
+        <p>After email verification, your account will be reviewed by the Barati Gharati admin team.</p>
+      </div>
+    `;
+
+    await this.mailerService.sendMail({ to, subject, html });
+    await this.logEmail(to, subject, html);
+  }
+
+  async sendCustomerVerificationDecision(
+    to: string,
+    name: string,
+    approved: boolean,
+    reason?: string,
+  ) {
+    const subject = approved
+      ? 'Your Barati Gharati account is approved'
+      : 'Update on your Barati Gharati verification';
+    const html = approved
+      ? `<h2>Hello ${name},</h2><p>Your email and account details have been verified. Your customer account is approved and you can now log in.</p>`
+      : `<h2>Hello ${name},</h2><p>Your account verification could not be approved.</p><p><strong>Reason:</strong> ${reason || 'Please contact support for more information.'}</p>`;
+    await this.mailerService.sendMail({ to, subject, html });
+    await this.logEmail(to, subject, html);
+  }
+
+  async sendReverificationNotice(to: string, name: string, accountType: string) {
+    const subject = `${accountType} account re-verification required`;
+    const html = `<h2>Hello ${name},</h2><p>Your ${accountType.toLowerCase()} account has been moved back to admin review. Login will be restored after the admin approves it again.</p>`;
+    await this.mailerService.sendMail({ to, subject, html });
+    await this.logEmail(to, subject, html);
+  }
   async sendPasswordResetEmail(
     to: string,
     name: string,
@@ -178,7 +221,7 @@ async sendBookingInvoice(
 }
 
 
-async sendVendorApprovedEmail(
+  async sendVendorApprovedEmail(
   to: string,
   name: string,
 ) {
@@ -209,11 +252,32 @@ async sendVendorApprovedEmail(
     success: true,
     message: 'Vendor approval email sent.',
   };
-}
+  }
+
+  async sendAdminCreatedVendorCredentials(
+    to: string,
+    name: string,
+    temporaryPassword: string,
+  ) {
+    const subject = 'Your Barati Gharati vendor account is ready';
+    const loginUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:3000'}`;
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#31202a">
+        <h2>Hello ${name},</h2>
+        <p>The Barati Gharati team has created and approved your vendor account.</p>
+        <p><strong>Email:</strong> ${to}</p>
+        <p><strong>Temporary password:</strong> ${temporaryPassword}</p>
+        <p>Please log in at <a href="${loginUrl}">${loginUrl}</a> and change this temporary password from account settings.</p>
+      </div>
+    `;
+    await this.mailerService.sendMail({ to, subject, html });
+    await this.logEmail(to, subject, '<p>Vendor credentials email sent.</p>');
+  }
 
 async sendVendorRejectedEmail(
   to: string,
   name: string,
+  badgePaymentRefunded = false,
 ) {
   const subject = 'Wedding Planner - Vendor Application';
   const html = `
@@ -222,6 +286,10 @@ async sendVendorRejectedEmail(
       <p>We're sorry.</p>
 
       <p>Your vendor registration has been rejected by the admin.</p>
+
+      ${badgePaymentRefunded
+        ? '<p>Your paid badge payment refund has been initiated to the original payment method.</p>'
+        : ''}
 
       <p>You may contact support for more information.</p>
 

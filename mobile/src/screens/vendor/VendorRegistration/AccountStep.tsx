@@ -8,9 +8,13 @@ import { NavigationButtons } from "../../../components/vendors/vendorRegistratio
 import { CategoryDropdown } from "../../../components/vendors/vendorRegistration/CategoryDropdown";
 
 import { styles } from "./styles";
+import {
+  startVendorRegistrationVerification,
+  verifyVendorRegistrationOtp,
+} from "../../../api/vendor.api";
 
 export default function AccountStep() {
-  const { account, setAccount, nextStep } = useVendorRegistrationStore();
+  const { account, setAccount, nextStep, setRegistrationVerificationId } = useVendorRegistrationStore();
   const [ownerName, setOwnerName] = useState(account.ownerName);
   const [businessEmail, setBusinessEmail] = useState(account.businessEmail);
   const [phone, setPhone] = useState(account.phone);
@@ -18,8 +22,11 @@ export default function AccountStep() {
   const [confirmPassword, setConfirmPassword] = useState(account.confirmPassword);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [pendingVerificationId, setPendingVerificationId] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!ownerName.trim() || !businessEmail.trim() || !phone.trim() || !password || !confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -29,8 +36,30 @@ export default function AccountStep() {
       return;
     }
     setError("");
-    setAccount({ ownerName, businessEmail, phone, password, confirmPassword });
-    nextStep();
+    setLoading(true);
+    try {
+      if (!pendingVerificationId) {
+        const result = await startVendorRegistrationVerification({
+          ownerName,
+          email: businessEmail,
+          phone,
+        });
+        setPendingVerificationId(result.verificationId);
+        return;
+      }
+      if (!/^\d{6}$/.test(otp)) {
+        setError("Enter the 6-digit OTP sent to your email.");
+        return;
+      }
+      await verifyVendorRegistrationOtp(pendingVerificationId, otp);
+      setAccount({ ownerName, businessEmail, phone, password, confirmPassword });
+      setRegistrationVerificationId(pendingVerificationId);
+      nextStep();
+    } catch (reason: any) {
+      setError(reason?.response?.data?.message ?? reason?.message ?? "Verification failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +82,11 @@ export default function AccountStep() {
           mode="outlined"
           placeholder="vendor@email.com"
           value={businessEmail}
-          onChangeText={setBusinessEmail}
+          onChangeText={(value) => {
+            setBusinessEmail(value);
+            setPendingVerificationId(null);
+            setRegistrationVerificationId(null);
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
           style={styles.input}
@@ -65,11 +98,30 @@ export default function AccountStep() {
           mode="outlined"
           placeholder="+91 9876543210"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(value) => {
+            setPhone(value);
+            setPendingVerificationId(null);
+            setRegistrationVerificationId(null);
+          }}
           keyboardType="phone-pad"
           style={styles.input}
           left={<TextInput.Icon icon="phone-outline" />}
         />
+
+        {pendingVerificationId ? (
+          <>
+            <Text style={styles.label}>Email OTP</Text>
+            <TextInput
+              mode="outlined"
+              placeholder="6-digit OTP"
+              value={otp}
+              onChangeText={(value) => setOtp(value.replace(/\D/g, "").slice(0, 6))}
+              keyboardType="number-pad"
+              style={styles.input}
+              left={<TextInput.Icon icon="shield-check-outline" />}
+            />
+          </>
+        ) : null}
 
         <Text style={styles.label}>Password</Text>
         <TextInput
@@ -101,7 +153,12 @@ export default function AccountStep() {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <NavigationButtons showPrevious={false} onNext={handleContinue} />
+        <NavigationButtons
+          showPrevious={false}
+          onNext={() => void handleContinue()}
+          nextLabel={loading ? "Please wait..." : pendingVerificationId ? "Verify & Continue" : "Send Email OTP"}
+          nextDisabled={loading}
+        />
       </RegistrationCard>
     </ScrollView>
   );
