@@ -15,7 +15,6 @@ export default function AboutPage() {
       <OurStory />
 
       <MissionVision />
-
       <CoreValues />
 
       <AboutStats />
