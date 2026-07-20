@@ -1,5 +1,5 @@
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
-
+import api from "@/lib/axios";
 export interface RegisterRequest {
   name: string;
   email: string;
@@ -190,7 +190,11 @@ export async function uploadVendorRegistrationImageApi(
     },
   };
 }
+export const getCurrentUser = async () => {
+  const response = await api.get("/auth/me");
 
+  return response.data;
+};
 export async function registerVendorApi(
   data: VendorRegisterRequest,
 ) {
@@ -211,4 +215,8 @@ export async function registerVendorApi(
     ok: response.ok,
     data: result,
   };
+
+
+
+  
 }

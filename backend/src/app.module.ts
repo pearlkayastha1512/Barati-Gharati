@@ -38,6 +38,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AdminAccessModule } from './admin-access/admin-access.module';
 import { PremiumPlanningModule } from './premium-planning/premium-planning.module';
+import { WeddingWebsiteModule } from './wedding-website/wedding-website.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { PremiumPlanningModule } from './premium-planning/premium-planning.modul
     AvailabilityModule,
     AdminAccessModule,
     PremiumPlanningModule,
+    WeddingWebsiteModule,
   ],
   controllers: [AppController],
   providers: [

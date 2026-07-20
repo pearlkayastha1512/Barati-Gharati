@@ -18,6 +18,12 @@ import {
   ApiBody,
   ApiConsumes,
 } from '@nestjs/swagger';
+import {
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { RegisterVendorDto } from './dto/register-vendor.dto';
@@ -141,6 +147,19 @@ resetPassword(@Body() dto: ResetPasswordDto) {
   return this.authService.resetPassword(dto);
 }
 
+
+@Get("me")
+@UseGuards(AuthGuard("jwt"))
+@ApiOperation({
+  summary: "Get current user",
+})
+getMe(@Request() req) {
+  return {
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+  };
+}
 
 
   

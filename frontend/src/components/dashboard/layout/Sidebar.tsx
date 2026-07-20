@@ -17,6 +17,9 @@ import {
   ChevronRight,
   Crown,
 } from "lucide-react";
+import {
+  Globe,
+} from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
 const menuItems = [
@@ -36,10 +39,16 @@ const menuItems = [
     icon: Crown,
   },
   {
+  title: "My Website",
+  href: "/my-website",
+  icon: Globe,
+},
+  {
     title: "Bookings",
     href: "/customer/bookings",
     icon: CalendarDays,
   },
+ 
   {
     title: "Wishlist",
     href: "/customer/wishlist",

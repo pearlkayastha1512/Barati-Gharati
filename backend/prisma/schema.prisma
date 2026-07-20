@@ -125,6 +125,8 @@ model User {
   adminAuditLogs          AdminAuditLog[]
   premiumPlanningRequests PremiumPlanningRequest[]
 
+  weddingWebsite WeddingWebsite?
+
   @@index([adminVerificationStatus])
 }
 
@@ -439,8 +441,9 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  review Review?
-  payout BookingPayout?
+  review         Review?
+  payout         BookingPayout?
+  weddingWebsite WeddingWebsite?
 
   @@index([userId])
   @@index([vendorId])
@@ -802,4 +805,102 @@ model PlatformSettings {
   maintenanceMode           Boolean  @default(false)
   updatedAt                 DateTime @updatedAt
   createdAt                 DateTime @default(now())
+}
+
+// model WeddingWebsite {
+//   id String @id @default(cuid())
+
+//   userId String @unique
+//   user   User   @relation(fields: [userId], references: [id])
+
+//   bookingId String?  @unique
+//   booking   Booking? @relation(fields: [bookingId], references: [id])
+
+//   slug String @unique
+
+//   template String @default("classic")
+
+//   heroImage String?
+
+//   galleryImages String[]
+
+//   story String?
+
+//   isPublished Boolean @default(false)
+
+//   createdAt        DateTime         @default(now())
+//   updatedAt        DateTime         @updatedAt
+//   weddingEvents    WeddingEvent[]
+//   weddingGalleries WeddingGallery[]
+// }
+
+model WeddingWebsite {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  slug String @unique
+
+  brideName String @default("")
+  groomName String @default("")
+
+  weddingDate DateTime?
+
+  heroImage  String?
+  coverImage String?
+
+  story String?
+
+  venueName    String?
+  venueAddress String?
+
+  template String @default("classic")
+
+  galleryImages String[]
+
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events    WeddingEvent[]
+  galleries WeddingGallery[]
+}
+
+model WeddingEvent {
+  id String @id @default(uuid())
+
+  title String
+
+  description String?
+
+  date DateTime
+
+  location String?
+
+  websiteId String
+
+  website WeddingWebsite @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([websiteId])
+}
+
+model WeddingGallery {
+  id String @id @default(uuid())
+
+  imageUrl String
+
+  websiteId String
+
+  website WeddingWebsite @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([websiteId])
 }

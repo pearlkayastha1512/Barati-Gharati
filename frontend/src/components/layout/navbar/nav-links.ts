@@ -16,4 +16,8 @@ export const navLinks: NavLink[] = [
     label: "Vendors",
     href: "/vendors",
   },
+  {
+  label: "Website",
+  href: "/website",
+}
 ];
