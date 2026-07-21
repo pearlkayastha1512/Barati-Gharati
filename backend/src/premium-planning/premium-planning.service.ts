@@ -8,7 +8,12 @@ import {
   CustomerMembership,
   PremiumPlanningStatus,
   VendorStatus,
+  BookingStatus,
+  PaymentStatus,
+  VendorAssignmentRole,
+  VendorAssignmentStatus,
 } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreatePremiumPlanningRequestDto } from './dto/create-premium-planning-request.dto';
@@ -193,22 +198,42 @@ export class PremiumPlanningService {
       throw new BadRequestException('Quotation cannot be changed after customer response');
     }
 
+    const advancePercentage = dto.advancePercentage ?? 50;
+    const advanceAmount = Math.round((dto.amount * advancePercentage) / 100);
+    const validityDays = dto.validityDays ?? 7;
+    const validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + validityDays);
+
+    const quotationDetails = {
+      ...(dto.details ?? {}),
+      amount: dto.amount,
+      advancePercentage,
+      advanceAmount,
+      validityDays,
+      validUntil: validUntil.toISOString(),
+      inclusions: dto.inclusions ?? '',
+      vendorBreakdown: dto.vendorBreakdown ?? [],
+    };
+
     const data = await this.prisma.premiumPlanningRequest.update({
       where: { id },
       data: {
         quotationAmount: dto.amount,
-        quotationDetails: dto.details as object | undefined,
-        adminNotes: dto.adminNotes,
+        quotationDetails: quotationDetails as object,
+        adminNotes: dto.adminNotes ?? current.adminNotes,
         quotedAt: new Date(),
         status: PremiumPlanningStatus.QUOTED,
       },
     });
+
     await this.notifications.create(current.userId, {
-      title: 'Your wedding quotation is ready',
+      title: 'Your detailed wedding quotation is ready 🎉',
       message: `Review your personalized quotation of ₹${dto.amount.toLocaleString('en-IN')}.`,
     });
+
     return { success: true, message: 'Quotation sent to customer', data };
   }
+
 
   async respond(userId: string, id: string, accept: boolean) {
     const current = await this.find(id);
@@ -242,9 +267,119 @@ export class PremiumPlanningService {
     return { success: true, message: 'Wedding plan marked as booked', data };
   }
 
+  async payAdvance(userId: string, id: string) {
+    const current = await this.find(id);
+    if (current.userId !== userId) throw new ForbiddenException('You cannot access this request');
+    if (current.status !== PremiumPlanningStatus.ACCEPTED) {
+      throw new BadRequestException('You must accept the quotation before paying advance');
+    }
+
+    const details = (current.quotationDetails ?? {}) as Record<string, any>;
+    const totalAmount = Number(current.quotationAmount) || 0;
+    const advancePercentage = details.advancePercentage ?? 50;
+    const totalAdvancePaid = details.advanceAmount ?? Math.round((totalAmount * advancePercentage) / 100);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true, phone: true },
+    });
+
+    // Mark planning request as BOOKED
+    const updatedRequest = await this.prisma.premiumPlanningRequest.update({
+      where: { id },
+      data: {
+        status: PremiumPlanningStatus.BOOKED,
+        bookedAt: new Date(),
+      },
+    });
+
+    // Auto-create Booking records for all assigned vendors
+    const assignedVendorIds = current.assignedVendorIds || [];
+    const createdBookings: any[] = [];
+
+
+    const breakdown = (details.vendorBreakdown as Array<{ vendorId?: string; vendorName: string; category: string; cost: number }>) || [];
+
+    for (let i = 0; i < assignedVendorIds.length; i++) {
+      const vendorId = assignedVendorIds[i];
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: vendorId },
+        include: { packages: true },
+      });
+
+      if (!vendor) continue;
+
+      const itemCost = breakdown.find((b) => b.vendorId === vendorId)?.cost;
+      const vendorTotalAmount = itemCost && itemCost > 0 ? itemCost : Math.round(totalAmount / (assignedVendorIds.length || 1));
+      const vendorAdvancePaid = Math.round((vendorTotalAmount * advancePercentage) / 100);
+
+      const packageId = vendor.packages?.[0]?.id;
+      if (!packageId) continue;
+
+      const bookingNumber = `BG-PREM-${Date.now().toString(36).toUpperCase()}-${i + 1}`;
+
+      const createdBooking = await this.prisma.booking.create({
+        data: {
+          bookingNumber,
+          userId,
+          vendorId,
+          packageId,
+          eventType: current.weddingType ?? 'Wedding',
+          eventDate: current.createdAt ? new Date(current.createdAt) : new Date(),
+          city: current.city ?? vendor.city ?? 'Noida',
+          guests: current.guestCount ?? 100,
+          customerName: user?.name ?? 'Customer',
+          customerEmail: user?.email ?? '',
+          customerPhone: user?.phone ?? '',
+          eventTitle: `${current.weddingType} (${vendor.businessName})`,
+          totalAmount: vendorTotalAmount,
+          amountPaid: vendorAdvancePaid,
+          remainingAmount: vendorTotalAmount - vendorAdvancePaid,
+          status: BookingStatus.ADVANCE_PAID,
+          paymentStatus: PaymentStatus.PARTIAL,
+          lastPaymentAt: new Date(),
+          adminApproved: true,
+        },
+      });
+
+      createdBookings.push(createdBooking);
+
+      await this.prisma.bookingVendorAssignment.create({
+        data: {
+          bookingId: createdBooking.id,
+          vendorId,
+          role: VendorAssignmentRole.PRIMARY,
+          priority: 1,
+          score: 100,
+          status: VendorAssignmentStatus.ACCEPTED,
+          respondedAt: new Date(),
+        },
+      });
+
+
+      await this.notifications.create(vendor.userId, {
+        title: '🎉 New Confirmed Booking (Advance Paid)!',
+        message: `Your booking for ${current.weddingType} in ${current.city} is confirmed with Advance Paid of ₹${vendorAdvancePaid.toLocaleString('en-IN')}.`,
+      });
+    }
+
+    await this.notifications.create(userId, {
+      title: '🎉 Premium Wedding Plan Booked!',
+      message: `Your advance payment of ₹${totalAdvancePaid.toLocaleString('en-IN')} was received. ${createdBookings.length} vendor bookings have been confirmed.`,
+    });
+
+    return {
+      success: true,
+      message: 'Advance payment received & bookings confirmed!',
+      data: updatedRequest,
+      bookings: createdBookings,
+    };
+  }
+
   private async find(id: string) {
     const request = await this.prisma.premiumPlanningRequest.findUnique({ where: { id } });
     if (!request) throw new NotFoundException('Planning request not found');
     return request;
   }
 }
+

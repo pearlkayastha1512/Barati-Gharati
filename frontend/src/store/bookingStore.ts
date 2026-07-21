@@ -9,7 +9,13 @@ import {
   getVendorBookingsApi,
   updateBookingPaymentApi,
   updateBookingStatusApi,
+  primaryAcceptApi,
+  primaryRejectApi,
+  standbyRespondApi,
+  promotedAcceptApi,
+  promotedRejectApi,
 } from "@/services/api/booking.api";
+
 
 interface BookingStore {
   bookings: Booking[];
@@ -55,7 +61,14 @@ interface BookingStore {
     bookingId: string,
     amount: number
   ) => Promise<boolean>;
+
+  primaryAccept: (bookingId: string) => Promise<boolean>;
+  primaryReject: (bookingId: string, reason?: string) => Promise<boolean>;
+  standbyRespond: (bookingId: string, response: "AVAILABLE" | "NOT_AVAILABLE") => Promise<boolean>;
+  promotedAccept: (bookingId: string) => Promise<boolean>;
+  promotedReject: (bookingId: string, reason?: string) => Promise<boolean>;
 }
+
 
 export const useBookingStore =
   create<BookingStore>((set) => ({
@@ -271,12 +284,55 @@ export const useBookingStore =
       return true;
     },
 
+    primaryAccept: async (bookingId) => {
+      const result = await primaryAcceptApi(bookingId);
+      if (!result.ok) return false;
+      // Refresh vendor bookings
+      const refresh = await getVendorBookingsApi();
+      if (refresh.ok && refresh.data?.success) {
+        set({ bookings: refresh.data.data });
+      }
+      return true;
+    },
 
+    primaryReject: async (bookingId, reason) => {
+      const result = await primaryRejectApi(bookingId, reason);
+      if (!result.ok) return false;
+      const refresh = await getVendorBookingsApi();
+      if (refresh.ok && refresh.data?.success) {
+        set({ bookings: refresh.data.data });
+      }
+      return true;
+    },
 
+    standbyRespond: async (bookingId, response) => {
+      const result = await standbyRespondApi(bookingId, response);
+      if (!result.ok) return false;
+      const refresh = await getVendorBookingsApi();
+      if (refresh.ok && refresh.data?.success) {
+        set({ bookings: refresh.data.data });
+      }
+      return true;
+    },
 
+    promotedAccept: async (bookingId) => {
+      const result = await promotedAcceptApi(bookingId);
+      if (!result.ok) return false;
+      const refresh = await getVendorBookingsApi();
+      if (refresh.ok && refresh.data?.success) {
+        set({ bookings: refresh.data.data });
+      }
+      return true;
+    },
 
-
-
-
-
+    promotedReject: async (bookingId, reason) => {
+      const result = await promotedRejectApi(bookingId, reason);
+      if (!result.ok) return false;
+      const refresh = await getVendorBookingsApi();
+      if (refresh.ok && refresh.data?.success) {
+        set({ bookings: refresh.data.data });
+      }
+      return true;
+    },
   }));
+

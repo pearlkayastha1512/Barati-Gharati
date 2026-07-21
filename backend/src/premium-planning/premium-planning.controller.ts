@@ -48,6 +48,15 @@ export class PremiumPlanningController {
     return this.service.respond(userId, id, dto.accept);
   }
 
+  @Post('requests/:id/pay-advance')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  payAdvance(@CurrentUser('sub') userId: string, @Param('id') id: string) {
+    return this.service.payAdvance(userId, id);
+  }
+
+
   @Get('admin/requests')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)

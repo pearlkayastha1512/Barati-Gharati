@@ -92,9 +92,18 @@ export async function reviewPremiumPlanningRequestApi(
 
 export async function quotePremiumPlanningRequestApi(
   id: string,
-  payload: { amount: number; details?: Record<string, unknown>; adminNotes?: string }
+  payload: {
+    amount: number;
+    advancePercentage?: number;
+    validityDays?: number;
+    inclusions?: string;
+    vendorBreakdown?: Array<{ vendorId?: string; vendorName: string; category: string; cost: number; notes?: string }>;
+    details?: Record<string, unknown>;
+    adminNotes?: string;
+  }
 ) {
   const { data } = await api.patch(`/premium-planning/admin/requests/${id}/quotation`, payload);
+
   return data.data as PremiumPlanningRequest;
 }
 
@@ -102,3 +111,9 @@ export async function bookPremiumPlanningRequestApi(id: string) {
   const { data } = await api.patch(`/premium-planning/admin/requests/${id}/book`);
   return data.data as PremiumPlanningRequest;
 }
+
+export async function payPremiumPlanningAdvanceApi(id: string) {
+  const { data } = await api.post(`/premium-planning/requests/${id}/pay-advance`);
+  return data;
+}
+

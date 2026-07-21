@@ -1,6 +1,14 @@
 
 export type BookingStatus =
   | "pending"
+  | "matching"
+  | "waiting_primary_vendor"
+  | "primary_accepted"
+  | "waiting_payment"
+  | "primary_rejected"
+  | "promote_standby"
+  | "standby_accepted"
+  | "in_progress"
   | "advance_paid"
   | "accepted"
   | "event_completed"
@@ -8,8 +16,11 @@ export type BookingStatus =
   | "payment_approved"
   | "payment_held"
   | "completed"
+  | "review_pending"
   | "rejected"
-  | "cancelled";
+  | "cancelled"
+  | "closed";
+
 
 export type PaymentStatus =
   | "pending"
@@ -25,6 +36,8 @@ export interface Booking {
 
   customerId: string;
   vendorId: number;
+  noVendorAvailable?: boolean;
+
 
   customerName: string;
   customerEmail: string;

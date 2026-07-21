@@ -18,11 +18,11 @@ import {
 
 import PayAdvanceModal from "./PayAdvanceModal";
 import { isSupportedImageSrc } from "@/lib/image-url";
+import StatusBadge from "@/components/ui/StatusBadge";
 
-import {
-  Booking,
-  BookingStatus,
-} from "@/types/booking";
+import { Booking, BookingStatus } from "@/types/booking";
+import { getAdvancePercentage, getAdvanceAmountDue } from "@/utils/advance-payment";
+
 
 interface BookingCardProps {
   booking: Booking;
@@ -31,43 +31,37 @@ interface BookingCardProps {
 export default function BookingCard({
   booking,
 }: BookingCardProps) {
-  const [openPayment, setOpenPayment] =
-    useState(false);
+  const [openPayment, setOpenPayment] = useState(false);
+  const advancePercentage = getAdvancePercentage(booking.amount);
+  const advanceDueAmount = getAdvanceAmountDue(booking.amount);
+
 
   const statusColor: Record<
     BookingStatus,
     string
   > = {
-    pending:
-      "bg-[#fff3b0] text-[#111111]",
-
-    advance_paid:
-      "bg-blue-100 text-blue-700",
-
-    accepted:
-      "bg-[#fff8d8] text-[#111111]",
-
-    event_completed:
-      "bg-indigo-100 text-indigo-700",
-
-    awaiting_admin_review:
-      "bg-purple-100 text-purple-700",
-
-    payment_approved:
-      "bg-emerald-100 text-emerald-700",
-
-    payment_held:
-      "bg-red-100 text-red-700",
-
-    completed:
-      "bg-[#ffe6eb] text-[#ff4d6d]",
-
-    cancelled:
-      "bg-[#ffe6eb] text-[#e63b5f]",
-
-    rejected:
-      "bg-[#ffe6eb] text-[#e63b5f]",
+    pending: "bg-[#fff3b0] text-[#111111]",
+    matching: "bg-[#fff3b0] text-[#111111]",
+    waiting_primary_vendor: "bg-purple-100 text-purple-700",
+    primary_accepted: "bg-blue-100 text-blue-700",
+    waiting_payment: "bg-amber-100 text-amber-800",
+    primary_rejected: "bg-rose-100 text-rose-700",
+    promote_standby: "bg-indigo-100 text-indigo-700",
+    standby_accepted: "bg-blue-100 text-blue-700",
+    in_progress: "bg-blue-100 text-blue-700",
+    advance_paid: "bg-blue-100 text-blue-700",
+    accepted: "bg-[#fff8d8] text-[#111111]",
+    event_completed: "bg-indigo-100 text-indigo-700",
+    awaiting_admin_review: "bg-purple-100 text-purple-700",
+    payment_approved: "bg-emerald-100 text-emerald-700",
+    payment_held: "bg-red-100 text-red-700",
+    completed: "bg-[#ffe6eb] text-[#ff4d6d]",
+    review_pending: "bg-amber-100 text-amber-800",
+    cancelled: "bg-[#ffe6eb] text-[#e63b5f]",
+    rejected: "bg-[#ffe6eb] text-[#e63b5f]",
+    closed: "bg-slate-100 text-slate-700",
   };
+
 
   return (
     <>
@@ -119,11 +113,9 @@ export default function BookingCard({
                   </p>
                 </div>
 
-                <span
-                  className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${statusColor[booking.bookingStatus]}`}
-                >
-                  {booking.bookingStatus}
-                </span>
+                <StatusBadge status={booking.bookingStatus} size="sm" />
+
+
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -188,16 +180,20 @@ export default function BookingCard({
 
                   <div>
                     <p className="text-xs text-[#8d6171]">
-                      Advance Paid
+                      {booking.advancePaid > 0
+                        ? "Advance Paid"
+                        : `Advance Due (${advancePercentage}%)`}
                     </p>
 
                     <p className="mt-1 font-semibold text-[#111111]">
                       ₹
-                      {booking.advancePaid.toLocaleString(
-                        "en-IN"
-                      )}
+                      {(booking.advancePaid > 0
+                        ? booking.advancePaid
+                        : advanceDueAmount
+                      ).toLocaleString("en-IN")}
                     </p>
                   </div>
+
 
                   <div>
                     <p className="text-xs text-[#8d6171]">
@@ -258,7 +254,11 @@ export default function BookingCard({
   disabled={
     booking.paymentStatus === "paid" ||
     booking.paymentStatus === "partial" ||
-    booking.bookingStatus === "cancelled"
+    booking.bookingStatus === "cancelled" ||
+    booking.bookingStatus === "primary_rejected" ||
+    booking.bookingStatus === "waiting_primary_vendor" ||
+    booking.bookingStatus === "matching" ||
+    booking.bookingStatus === "promote_standby"
   }
   onClick={() => setOpenPayment(true)}
   className={`
@@ -276,8 +276,12 @@ export default function BookingCard({
     ${
       booking.paymentStatus === "paid" ||
       booking.paymentStatus === "partial" ||
-      booking.bookingStatus === "cancelled"
-        ? "cursor-not-allowed bg-[#ffe6eb] text-[#8d6171]"
+      booking.bookingStatus === "cancelled" ||
+      booking.bookingStatus === "primary_rejected" ||
+      booking.bookingStatus === "waiting_primary_vendor" ||
+      booking.bookingStatus === "matching" ||
+      booking.bookingStatus === "promote_standby"
+        ? "cursor-not-allowed bg-slate-100 text-slate-500"
         : "bg-[#ff4d6d] text-white hover:bg-[#e63b5f]"
     }
   `}
@@ -286,14 +290,21 @@ export default function BookingCard({
 
   {booking.bookingStatus === "cancelled"
     ? "Booking Cancelled"
+    : booking.bookingStatus === "primary_rejected"
+    ? "Vendor Rejected (Finding Alternative)"
+    : booking.bookingStatus === "waiting_primary_vendor" ||
+      booking.bookingStatus === "matching" ||
+      booking.bookingStatus === "promote_standby"
+    ? "Awaiting Vendor Acceptance"
     : booking.paymentStatus === "paid"
     ? "Payment Completed"
     : booking.paymentStatus === "partial"
     ? booking.adminApproved
       ? "Advance Paid"
       : "Awaiting Admin Approval"
-    : "Pay Advance"}
+    : "Pay Advance (Vendor Accepted)"}
 </button>
+
 
 
 

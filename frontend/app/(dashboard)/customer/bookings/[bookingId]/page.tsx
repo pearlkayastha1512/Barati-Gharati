@@ -12,7 +12,9 @@ import BookingTimeline from "@/components/bookings/details/BookingTimeline";
 import PaymentInformation from "@/components/bookings/details/PaymentInformation";
 import BookingActions from "@/components/bookings/details/BookingActions";
 
+import AlternativeVendorsCard from "@/components/bookings/details/AlternativeVendorsCard";
 import { useBookingStore } from "@/store/bookingStore";
+
 
 export default function BookingDetailsPage() {
   const params = useParams();
@@ -36,11 +38,20 @@ export default function BookingDetailsPage() {
     notFound();
   }
 
+  const showAlternativeVendors =
+    selectedBooking.bookingStatus === "primary_rejected" ||
+    selectedBooking.bookingStatus === "promote_standby" ||
+    Boolean(selectedBooking.noVendorAvailable);
+
   return (
     <div className="space-y-8">
       <BookingDetailsHero
         booking={selectedBooking}
       />
+
+      {showAlternativeVendors && (
+        <AlternativeVendorsCard booking={selectedBooking} />
+      )}
 
       <section className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
@@ -52,6 +63,7 @@ export default function BookingDetailsPage() {
             booking={selectedBooking}
           />
         </div>
+
 
         <div className="space-y-6">
           <PaymentInformation

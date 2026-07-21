@@ -25,16 +25,21 @@ export default function VendorInformation({
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
 
       <div className="mb-6">
-
         <h2 className="text-2xl font-bold text-gray-900">
           Vendor Information
         </h2>
 
         <p className="mt-1 text-gray-500">
-          Details of your booked vendor.
+          Details of your assigned vendor.
         </p>
-
       </div>
+
+      {booking.bookingStatus === "promote_standby" && (
+        <div className="mb-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm font-medium text-indigo-900">
+          🌟 <b>Standby Vendor Selected!</b> Primary vendor was unavailable. <b>{booking.vendorName}</b> has been automatically selected and notified to accept your booking request.
+        </div>
+      )}
+
 
       <div className="flex flex-col gap-6 lg:flex-row">
 

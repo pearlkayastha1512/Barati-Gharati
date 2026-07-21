@@ -28,11 +28,11 @@ export default function BookingSuccess({
       <CheckCircle2 className="mx-auto h-24 w-24 text-green-500" />
 
       <h2 className="mt-6 text-4xl font-bold text-gray-900">
-        Advance Payment Received
+        Booking Request Sent!
       </h2>
 
       <p className="mt-2 text-gray-600 ">
-        Thank you for choosing <b>{vendorName}</b>. Your request is now waiting for admin approval.
+        Your request for <b>{vendorName}</b> has been sent. The vendor has 2 hours to accept your booking request.
       </p>
 
       <div className="mt-10 rounded-2xl bg-gray-50 p-6 text-left">
@@ -53,7 +53,7 @@ export default function BookingSuccess({
       </div>
 
       <p className="mt-8 text-gray-600">
-        Vendor chat will unlock after admin approves this booking.
+        Once the vendor accepts your request, you will be notified to pay the advance payment to lock your date.
       </p>
 
       <button
@@ -62,6 +62,7 @@ export default function BookingSuccess({
       >
         Back to Vendor
       </button>
+
     </motion.div>
   );
 }

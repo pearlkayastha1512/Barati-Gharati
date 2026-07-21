@@ -93,6 +93,30 @@ export const useServiceStore =
         await createService(service);
 
       if (!success) {
+        // A request can time out after the database commit. Reload once before
+        // showing an error so the vendor is not encouraged to create a duplicate.
+        const services = await getMyServices();
+        const justCreated = services.some((item) => {
+          const createdAt = new Date(item.createdAt).getTime();
+          const createdRecently =
+            Number.isFinite(createdAt) &&
+            Date.now() - createdAt < 2 * 60 * 1000;
+
+          return (
+            createdRecently &&
+            item.name.trim().toLowerCase() ===
+              service.name.trim().toLowerCase() &&
+            item.category.trim().toLowerCase() ===
+              service.category.trim().toLowerCase() &&
+            Number(item.price) === Number(service.price)
+          );
+        });
+
+        if (justCreated) {
+          set({ services });
+          return true;
+        }
+
         return false;
       }
 

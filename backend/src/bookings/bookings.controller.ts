@@ -1,6 +1,6 @@
 import {
   Controller,
- Get,
+  Get,
   Post,
   Patch,
   Param,
@@ -20,6 +20,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { UpdateBookingPaymentDto } from './dto/update-booking-payment.dto';
 import { RescheduleBookingDto } from './dto/reschedule-booking.dto';
+import { StandbyRespondDto, VendorRejectDto } from './dto/vendor-response.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -35,8 +36,7 @@ export class BookingsController {
   ) {}
 
   // ===========================
-  // USER
-  // Create Booking
+  // USER — Create Booking
   // ===========================
 
   @Post()
@@ -50,8 +50,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // USER & VENDOR
-  // My Bookings
+  // USER & VENDOR — My Bookings
   // ===========================
 
   @Get()
@@ -65,8 +64,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // USER & VENDOR
-  // Booking Details
+  // USER & VENDOR — Booking Details
   // ===========================
 
   @Get(':id')
@@ -81,8 +79,118 @@ export class BookingsController {
   }
 
   // ===========================
-  // VENDOR
-  // Accept Booking
+  // USER & VENDOR — Booking Assignments (Smart Engine)
+  // ===========================
+
+  @Get(':id/assignments')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.VENDOR)
+  getAssignments(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('role') role: Role,
+  ) {
+    return this.bookingsService.getBookingAssignments(id, userId, role);
+  }
+
+  // ===========================
+  // USER — Alternative Vendors (Smart Engine)
+  // ===========================
+
+  @Get(':id/alternative-vendors')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  getAlternativeVendors(@Param('id') id: string) {
+    return this.bookingsService.getAlternativeVendors(id);
+  }
+
+  @Patch(':id/select-vendor')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  customerSelectVendor(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body('vendorId') vendorId: string,
+  ) {
+    return this.bookingsService.customerSelectVendor(id, userId, vendorId);
+  }
+
+
+  // ===========================
+  // VENDOR — Primary Accept (Smart Engine)
+  // ===========================
+
+  @Patch(':id/primary-accept')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  primaryAccept(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+  ) {
+    return this.bookingsService.primaryAccept(id, userId);
+  }
+
+  // ===========================
+  // VENDOR — Primary Reject (Smart Engine)
+  // ===========================
+
+  @Patch(':id/primary-reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  primaryReject(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: VendorRejectDto,
+  ) {
+    return this.bookingsService.primaryReject(id, userId, dto.reason);
+  }
+
+  // ===========================
+  // VENDOR — Standby Respond (Smart Engine)
+  // ===========================
+
+  @Patch(':id/standby-respond')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  standbyRespond(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: StandbyRespondDto,
+  ) {
+    return this.bookingsService.standbyRespond(id, userId, dto.response);
+  }
+
+  // ===========================
+  // VENDOR — Promoted Accept (Smart Engine)
+  // ===========================
+
+  @Patch(':id/promoted-accept')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  promotedAccept(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+  ) {
+    return this.bookingsService.promotedAccept(id, userId);
+  }
+
+  // ===========================
+  // VENDOR — Promoted Reject (Smart Engine)
+  // ===========================
+
+  @Patch(':id/promoted-reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  promotedReject(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: VendorRejectDto,
+  ) {
+    return this.bookingsService.promotedReject(id, userId, dto.reason);
+  }
+
+  // ===========================
+  // VENDOR (Legacy) — Accept Booking
   // ===========================
 
   @Patch(':id/accept')
@@ -96,8 +204,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // VENDOR
-  // Reject Booking
+  // VENDOR (Legacy) — Reject Booking
   // ===========================
 
   @Patch(':id/reject')
@@ -108,11 +215,7 @@ export class BookingsController {
     @CurrentUser('sub') userId: string,
     @Body() dto: CancelBookingDto,
   ) {
-    return this.bookingsService.reject(
-      id,
-      userId,
-      dto.cancellationReason,
-    );
+    return this.bookingsService.reject(id, userId, dto.cancellationReason);
   }
 
   @Patch(':id/complete-event')
@@ -126,8 +229,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // VENDOR
-  // Confirm Booking
+  // USER — Confirm Booking
   // ===========================
 
   @Patch(':id/confirm')
@@ -141,8 +243,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // USER
-  // Update Payment
+  // USER — Update Payment
   // ===========================
 
   @Patch(':id/payment')
@@ -153,11 +254,7 @@ export class BookingsController {
     @CurrentUser('sub') userId: string,
     @Body() dto: UpdateBookingPaymentDto,
   ) {
-    return this.bookingsService.updatePayment(
-      id,
-      userId,
-      dto,
-    );
+    return this.bookingsService.updatePayment(id, userId, dto);
   }
 
   @Patch(':id/reschedule')
@@ -172,8 +269,7 @@ export class BookingsController {
   }
 
   // ===========================
-  // USER
-  // Cancel Booking
+  // USER — Cancel Booking
   // ===========================
 
   @Patch(':id/cancel')
@@ -184,10 +280,6 @@ export class BookingsController {
     @CurrentUser('sub') userId: string,
     @Body() dto: CancelBookingDto,
   ) {
-    return this.bookingsService.cancel(
-      id,
-      userId,
-      dto,
-    );
+    return this.bookingsService.cancel(id, userId, dto);
   }
 }

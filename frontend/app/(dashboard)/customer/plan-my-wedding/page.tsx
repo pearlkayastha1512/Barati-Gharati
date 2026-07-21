@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, CheckCircle2, ChevronRight, Crown, Eye, IndianRupee, Loader2, Sparkles } from "lucide-react";
+import { Check, CheckCircle2, ChevronRight, Crown, Eye, IndianRupee, Loader2, Sparkles, CreditCard } from "lucide-react";
+
 import { toast } from "sonner";
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
@@ -11,7 +12,9 @@ import {
   getMyPremiumPlanningRequestsApi,
   PremiumPlanningRequest,
   respondToPremiumQuotationApi,
+  payPremiumPlanningAdvanceApi,
 } from "@/services/api/premium-planning.api";
+
 
 const vendorOptions = ["Venue", "Catering", "Photography", "Videography", "Decoration", "Makeup", "Mehendi", "DJ & Entertainment", "Invitations", "Transport"];
 const workflow = ["Preferences", "Team review", "Vendors assigned", "Quotation", "Your response", "Booking"];
@@ -43,6 +46,7 @@ export default function PlanMyWeddingPage() {
   const [requests, setRequests] = useState<PremiumPlanningRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [payingAdvanceId, setPayingAdvanceId] = useState<string | null>(null);
   const isPremium = user?.membership === "PREMIUM";
 
   const load = async () => {
@@ -105,6 +109,20 @@ export default function PlanMyWeddingPage() {
       toast.error(axios.isAxiosError(error) ? error.response?.data?.message ?? "Unable to update quotation." : "Unable to update quotation.");
     }
   };
+
+  const handlePayAdvance = async (id: string) => {
+    setPayingAdvanceId(id);
+    try {
+      await payPremiumPlanningAdvanceApi(id);
+      toast.success("🎉 Advance payment received! Your wedding plan is booked & vendors confirmed!");
+      await load();
+    } catch (error: unknown) {
+      toast.error(axios.isAxiosError(error) ? error.response?.data?.message ?? "Failed to process advance payment." : "Failed to process advance payment.");
+    } finally {
+      setPayingAdvanceId(null);
+    }
+  };
+
 
   if (!isPremium) return (
     <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-10 text-center shadow-xl shadow-rose-100">
@@ -217,18 +235,141 @@ export default function PlanMyWeddingPage() {
             )}
 
             {request.quotationAmount && (
-              <div className="mt-5 rounded-2xl bg-amber-50 p-5">
-                <p className="text-sm font-semibold text-amber-800">Personalized quotation</p>
-                <p className="mt-1 flex items-center text-3xl font-bold text-amber-950"><IndianRupee size={25} />{Number(request.quotationAmount).toLocaleString("en-IN")}</p>
+              <div className="mt-5 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-amber-50/80 p-6 shadow-sm space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-amber-200/60 pb-4">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                      ✨ Official Wedding Quotation
+                    </span>
+                    <h4 className="mt-2 text-3xl font-extrabold text-amber-950 flex items-center">
+                      <IndianRupee size={26} />
+                      {Number(request.quotationAmount).toLocaleString("en-IN")}
+                    </h4>
+                  </div>
+
+                  {(() => {
+                    const details = (request.quotationDetails ?? {}) as Record<string, any>;
+                    const advancePct = details.advancePercentage ?? 50;
+                    const advanceAmt = details.advanceAmount ?? Math.round((Number(request.quotationAmount) * advancePct) / 100);
+                    return (
+                      <div className="rounded-xl bg-white border border-amber-200 p-3.5 text-right shadow-xs">
+                        <p className="text-xs font-semibold text-amber-800">Advance Due to Confirm ({advancePct}%):</p>
+                        <p className="text-xl font-black text-amber-950 mt-0.5">
+                          ₹{Number(advanceAmt).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Vendor Breakdown Table if available */}
+                {(() => {
+                  const details = (request.quotationDetails ?? {}) as Record<string, any>;
+                  const breakdown = (details.vendorBreakdown as Array<{ vendorName: string; category: string; cost: number }>) || [];
+                  if (breakdown.length === 0) return null;
+                  return (
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-amber-950">Itemized Cost Breakdown</p>
+                      <div className="divide-y divide-amber-200/60 rounded-xl border border-amber-200 bg-white overflow-hidden text-sm">
+                        {breakdown.map((item, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3">
+                            <div>
+                              <span className="font-bold text-slate-900">{item.vendorName}</span>
+                              <span className="ml-2 text-xs font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">{item.category}</span>
+                            </div>
+                            <span className="font-extrabold text-slate-900">₹{Number(item.cost).toLocaleString("en-IN")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Inclusions */}
+                {(() => {
+                  const details = (request.quotationDetails ?? {}) as Record<string, any>;
+                  const inclusionsText = details.inclusions as string | undefined;
+                  if (!inclusionsText) return null;
+                  return (
+                    <div className="rounded-xl bg-white/80 p-4 border border-amber-200 text-sm">
+                      <p className="text-xs font-bold uppercase tracking-wider text-amber-950 mb-1">Included Package Services & Terms</p>
+                      <p className="text-slate-700 font-medium whitespace-pre-line">{inclusionsText}</p>
+                    </div>
+                  );
+                })()}
+
                 {request.status === "QUOTED" && (
-                  <div className="mt-4 flex gap-3">
-                    <button onClick={() => void respond(request.id, true)} className="rounded-xl bg-green-600 px-5 py-2 font-semibold text-white">Accept</button>
-                    <button onClick={() => void respond(request.id, false)} className="rounded-xl border border-red-200 px-5 py-2 font-semibold text-red-600">Reject</button>
+                  <div className="mt-4 flex flex-wrap items-center gap-3 pt-2">
+                    <button
+                      onClick={() => void respond(request.id, true)}
+                      className="rounded-xl bg-green-600 px-7 py-3 font-extrabold text-white transition hover:bg-green-700 shadow-md"
+                    >
+                      Accept Quotation & Proceed
+                    </button>
+                    <button
+                      onClick={() => void respond(request.id, false)}
+                      className="rounded-xl border border-red-200 bg-white px-5 py-3 font-bold text-red-600 transition hover:bg-red-50"
+                    >
+                      Reject Quotation
+                    </button>
+                  </div>
+                )}
+
+                {request.status === "ACCEPTED" && (
+                  <div className="mt-4 rounded-xl bg-emerald-100/80 p-5 border border-emerald-300 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="text-emerald-700" size={22} />
+                      <p className="font-extrabold text-emerald-950 text-base">Quotation Accepted!</p>
+                    </div>
+                    <p className="text-sm text-emerald-900 font-medium">
+                      Pay the advance to lock in your assigned vendors and confirm your booking.
+                    </p>
+                    {(() => {
+                      const details = (request.quotationDetails ?? {}) as Record<string, any>;
+                      const advancePct = details.advancePercentage ?? 50;
+                      const advanceAmt = details.advanceAmount ?? Math.round((Number(request.quotationAmount) * advancePct) / 100);
+                      return (
+                        <button
+                          disabled={payingAdvanceId === request.id}
+                          onClick={() => void handlePayAdvance(request.id)}
+                          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-7 py-3.5 font-extrabold text-white transition hover:bg-emerald-700 shadow-md disabled:opacity-60"
+                        >
+                          {payingAdvanceId === request.id ? (
+                            <Loader2 className="animate-spin" size={18} />
+                          ) : (
+                            <CreditCard size={18} />
+                          )}
+                          Pay Advance (₹{Number(advanceAmt).toLocaleString("en-IN")}) & Confirm Booking
+                        </button>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {request.status === "BOOKED" && (
+                  <div className="mt-4 rounded-xl bg-emerald-50 p-5 border border-emerald-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="text-emerald-600" size={24} />
+                        <div>
+                          <p className="font-extrabold text-emerald-950 text-base">🎉 Booking Fully Confirmed!</p>
+                          <p className="text-xs text-emerald-800 font-medium">Your advance payment has been received and individual vendor bookings are active.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href="/customer/bookings"
+                      className="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"
+                    >
+                      View Your Bookings Dashboard →
+                    </Link>
                   </div>
                 )}
               </div>
             )}
+
           </article>
+
         ))}
       </section>
     </div>

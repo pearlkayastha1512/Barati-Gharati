@@ -14,6 +14,7 @@ import { Role, BookingStatus } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
 import { VendorStatus } from '@prisma/client';
 import { PayoutsService } from '../payouts/payouts.service';
+import { BookingEngineService } from '../booking-engine/booking-engine.service';
 
 @Injectable()
 export class BookingsService {
@@ -21,6 +22,7 @@ export class BookingsService {
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
     private payoutsService: PayoutsService,
+    private bookingEngine: BookingEngineService,
   ) {}
 
   async create(userId: string, dto: CreateBookingDto) {
@@ -82,77 +84,44 @@ export class BookingsService {
     const booking = await this.prisma.booking.create({
       data: {
         bookingNumber: dto.bookingNumber,
-
         userId,
-
         vendorId: vendor.id,
-
         packageId: pkg.id,
-
         eventType: dto.eventType,
-
         eventDate,
-
         eventTime: dto.eventTime,
-
         venue: dto.venue,
-
         city: dto.city,
-
         guests: dto.guests,
-
         customerName: dto.customerName,
-
         customerEmail: dto.customerEmail,
-
         customerPhone: dto.customerPhone,
-
         brideName: dto.brideName,
-
         groomName: dto.groomName,
-
         eventTitle: dto.eventTitle,
-
         primaryPersonName: dto.primaryPersonName,
-
         primaryPersonAge: dto.primaryPersonAge,
-
         eventTheme: dto.eventTheme,
-
         partnerName: dto.partnerName,
-
         partnerEmail: dto.partnerEmail,
-
         partnerPhone: dto.partnerPhone,
-
         partnerOccupation: dto.partnerOccupation,
-
         contactAddress: dto.contactAddress,
-
         contactState: dto.contactState,
-
         contactCountry: dto.contactCountry,
-
         weddingTheme: dto.weddingTheme,
-
         specialRequirements: dto.specialRequirements,
-
         totalAmount: dto.amount,
-
         amountPaid: dto.advancePaid,
-
         remainingAmount: dto.remainingAmount,
-
         paymentStatus: dto.paymentStatus,
-
-        status: dto.bookingStatus,
+        // Always start as PENDING — engine will move it through the workflow
+        status: BookingStatus.PENDING,
       },
 
       include: {
         user: true,
-
         vendor: true,
-
         package: {
           include: {
             category: true,
@@ -160,6 +129,15 @@ export class BookingsService {
         },
       },
     });
+
+    // ── Trigger Smart Booking Engine asynchronously ──
+    // We don't await so the HTTP response returns immediately.
+    // The engine runs in the background and updates the booking status.
+    this.bookingEngine
+      .runMatchingForBooking(booking.id)
+      .catch((err) =>
+        console.error(`[BookingEngine] Error for booking ${booking.id}:`, err),
+      );
 
     return this.mapBooking(booking);
   }
@@ -412,14 +390,23 @@ export class BookingsService {
   async completeEvent(id: string, userId: string) {
     const booking = await this.getVendorBooking(id, userId);
 
-    if (
-      booking.status !== BookingStatus.ACCEPTED &&
-      booking.status !== BookingStatus.CONFIRMED
-    ) {
+    const allowedStatuses: BookingStatus[] = [
+      BookingStatus.ADVANCE_PAID,
+      BookingStatus.ACCEPTED,
+      BookingStatus.PRIMARY_ACCEPTED,
+      BookingStatus.STANDBY_ACCEPTED,
+      BookingStatus.IN_PROGRESS,
+      BookingStatus.CONFIRMED,
+      BookingStatus.WAITING_PAYMENT,
+    ];
+
+    if (!allowedStatuses.includes(booking.status)) {
       throw new BadRequestException(
-        'Only accepted bookings can be marked as completed',
+        'Only active/accepted bookings can be marked as completed',
       );
     }
+
+
 
     const updatedBooking = await this.prisma.booking.update({
       where: { id },
@@ -756,6 +743,91 @@ export class BookingsService {
     };
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // Smart Booking Engine — Delegate Methods
+  // ═══════════════════════════════════════════════════════════
+
+  async primaryAccept(bookingId: string, userId: string) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    await this.bookingEngine.handlePrimaryAccept(bookingId, vendor.id);
+    return { success: true, message: 'Booking accepted. User will be notified to make payment.' };
+  }
+
+  async primaryReject(
+    bookingId: string,
+    userId: string,
+    reason?: string,
+  ) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    await this.bookingEngine.handlePrimaryReject(bookingId, vendor.id, reason);
+    return { success: true, message: 'Booking rejected. Standby vendor will be promoted.' };
+  }
+
+  async standbyRespond(
+    bookingId: string,
+    userId: string,
+    response: 'AVAILABLE' | 'NOT_AVAILABLE',
+  ) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    await this.bookingEngine.handleStandbyResponse(bookingId, vendor.id, response);
+    return { success: true, message: `Response recorded: ${response}` };
+  }
+
+  async promotedAccept(bookingId: string, userId: string) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    await this.bookingEngine.handlePromotedAccept(bookingId, vendor.id);
+    return { success: true, message: 'Booking accepted as promoted vendor. User notified for payment.' };
+  }
+
+  async promotedReject(
+    bookingId: string,
+    userId: string,
+    reason?: string,
+  ) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    await this.bookingEngine.handlePromotedReject(bookingId, vendor.id, reason);
+    return { success: true, message: 'Booking rejected. Next standby will be promoted.' };
+  }
+
+  async getBookingAssignments(bookingId: string, userId: string, role: Role) {
+    // Verify access
+    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    if (role === Role.VENDOR) {
+      const vendor = await this.prisma.vendor.findUnique({ where: { userId } });
+      if (!vendor || booking.vendorId !== vendor.id)
+        throw new ForbiddenException('Access denied');
+    } else if (role === Role.USER) {
+      if (booking.userId !== userId) throw new ForbiddenException('Access denied');
+    }
+
+    const assignments = await this.bookingEngine.getBookingAssignments(bookingId);
+    return { success: true, data: assignments };
+  }
+
+  async getAlternativeVendors(id: string) {
+    return this.bookingEngine.getAlternativeVendorsForCustomer(id);
+  }
+
+  async customerSelectVendor(id: string, userId: string, vendorId: string) {
+    return this.bookingEngine.customerSelectVendor(id, userId, vendorId);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Private helpers
+  // ═══════════════════════════════════════════════════════════
+
   private async getVendorBooking(id: string, userId: string) {
     const vendor = await this.prisma.vendor.findUnique({
       where: {
@@ -834,6 +906,9 @@ export class BookingsService {
               BookingStatus.AWAITING_ADMIN_REVIEW,
               BookingStatus.PAYMENT_APPROVED,
               BookingStatus.CONFIRMED,
+              BookingStatus.WAITING_PAYMENT,
+              BookingStatus.PRIMARY_ACCEPTED,
+              BookingStatus.STANDBY_ACCEPTED,
             ],
           },
         },
@@ -926,129 +1001,59 @@ export class BookingsService {
 
     return {
       id: booking.id,
-
       bookingNumber: booking.bookingNumber,
-
       customerId: booking.userId,
-
       vendorId: booking.vendor.frontendVendorId ?? 0,
-
       customerName: booking.customerName ?? booking.user.name,
-
       customerEmail: hideCustomerContact
         ? ''
         : booking.customerEmail ?? booking.user.email,
-
       customerPhone: hideCustomerContact
         ? ''
         : booking.customerPhone ?? booking.user.phone ?? '',
-
       vendorName: booking.vendor.businessName,
-
       vendorImage: booking.vendor.logoUrl ?? '',
-
       category: booking.package.category?.name ?? '',
-
       packageName: booking.package.title,
-
       eventType: booking.eventType ?? '',
-
       eventDate: booking.eventDate,
-
       eventTime: booking.eventTime ?? '',
-
       venue: booking.venue ?? '',
-
       city: booking.city ?? '',
-
       guests: booking.guests,
-
       brideName: booking.brideName ?? '',
-
       groomName: booking.groomName ?? '',
-
       eventTitle: booking.eventTitle ?? '',
-
-      primaryPersonName: hideCustomerContact
-        ? ''
-        : booking.primaryPersonName ?? '',
-
-      primaryPersonAge: hideCustomerContact
-        ? null
-        : booking.primaryPersonAge ?? null,
-
+      primaryPersonName: hideCustomerContact ? '' : booking.primaryPersonName ?? '',
+      primaryPersonAge: hideCustomerContact ? null : booking.primaryPersonAge ?? null,
       eventTheme: booking.eventTheme ?? booking.weddingTheme ?? '',
-
-      partnerName: hideCustomerContact
-        ? ''
-        : booking.partnerName ?? '',
-
-      partnerEmail: hideCustomerContact
-        ? ''
-        : booking.partnerEmail ?? '',
-
-      partnerPhone: hideCustomerContact
-        ? ''
-        : booking.partnerPhone ?? '',
-
-      partnerOccupation: hideCustomerContact
-        ? ''
-        : booking.partnerOccupation ?? '',
-
-      contactAddress: hideCustomerContact
-        ? ''
-        : booking.contactAddress ?? '',
-
-      contactState: hideCustomerContact
-        ? ''
-        : booking.contactState ?? '',
-
-      contactCountry: hideCustomerContact
-        ? ''
-        : booking.contactCountry ?? '',
-
+      partnerName: hideCustomerContact ? '' : booking.partnerName ?? '',
+      partnerEmail: hideCustomerContact ? '' : booking.partnerEmail ?? '',
+      partnerPhone: hideCustomerContact ? '' : booking.partnerPhone ?? '',
+      partnerOccupation: hideCustomerContact ? '' : booking.partnerOccupation ?? '',
+      contactAddress: hideCustomerContact ? '' : booking.contactAddress ?? '',
+      contactState: hideCustomerContact ? '' : booking.contactState ?? '',
+      contactCountry: hideCustomerContact ? '' : booking.contactCountry ?? '',
       weddingTheme: booking.weddingTheme ?? '',
-
       specialRequirements: booking.specialRequirements ?? '',
-
       amount: Number(booking.totalAmount),
-
       advancePaid: Number(booking.amountPaid),
-
       platformCommission,
-
       vendorNetAmount,
-
-      payoutStatus:
-        booking.payout?.status?.toLowerCase() ?? null,
-
-      payoutSimulated:
-        booking.payout?.simulated ?? true,
-
-      payoutReleasedAt:
-        booking.payout?.releasedAt ?? null,
-
-      vendorAcknowledgedAt:
-        booking.payout?.vendorAcknowledgedAt ?? null,
-
+      payoutStatus: booking.payout?.status?.toLowerCase() ?? null,
+      payoutSimulated: booking.payout?.simulated ?? true,
+      payoutReleasedAt: booking.payout?.releasedAt ?? null,
+      vendorAcknowledgedAt: booking.payout?.vendorAcknowledgedAt ?? null,
       remainingAmount: Number(booking.remainingAmount),
-
-      paymentStatus: this.mapPaymentStatus(
-        booking.paymentStatus,
-      ),
-
+      paymentStatus: this.mapPaymentStatus(booking.paymentStatus),
       adminApproved: booking.adminApproved,
-
       adminApprovedAt: booking.adminApprovedAt,
-
-      bookingStatus: this.mapBookingStatus(
-        booking.status,
-      ),
-
+      bookingStatus: this.mapBookingStatus(booking.status),
+      // Smart engine fields
+      matchedAt: booking.matchedAt ?? null,
+      noVendorAvailable: booking.noVendorAvailable ?? false,
       createdAt: booking.createdAt,
-
       updatedAt: booking.updatedAt,
-
       lastPaymentAt: booking.lastPaymentAt ?? null,
     };
   }
@@ -1057,35 +1062,29 @@ export class BookingsService {
     if (status === PaymentStatus.SUCCESS) {
       return 'paid';
     }
-
     return status.toLowerCase();
   }
 
   private mapBookingStatus(status: BookingStatus) {
-    if (status === BookingStatus.CONFIRMED) {
-      return 'completed';
-    }
-
-    if (status === BookingStatus.ADVANCE_PAID) {
-      return 'advance_paid';
-    }
-
-    if (status === BookingStatus.EVENT_COMPLETED) {
-      return 'event_completed';
-    }
-
-    if (status === BookingStatus.AWAITING_ADMIN_REVIEW) {
-      return 'awaiting_admin_review';
-    }
-
-    if (status === BookingStatus.PAYMENT_APPROVED) {
-      return 'payment_approved';
-    }
-
-    if (status === BookingStatus.PAYMENT_HELD) {
-      return 'payment_held';
-    }
-
-    return status.toLowerCase();
+    const statusMap: Partial<Record<BookingStatus, string>> = {
+      [BookingStatus.CONFIRMED]: 'completed',
+      [BookingStatus.ADVANCE_PAID]: 'advance_paid',
+      [BookingStatus.EVENT_COMPLETED]: 'event_completed',
+      [BookingStatus.AWAITING_ADMIN_REVIEW]: 'awaiting_admin_review',
+      [BookingStatus.PAYMENT_APPROVED]: 'payment_approved',
+      [BookingStatus.PAYMENT_HELD]: 'payment_held',
+      [BookingStatus.MATCHING]: 'matching',
+      [BookingStatus.WAITING_PRIMARY_VENDOR]: 'waiting_primary_vendor',
+      [BookingStatus.PRIMARY_ACCEPTED]: 'primary_accepted',
+      [BookingStatus.WAITING_PAYMENT]: 'waiting_payment',
+      [BookingStatus.PRIMARY_REJECTED]: 'primary_rejected',
+      [BookingStatus.PROMOTE_STANDBY]: 'promote_standby',
+      [BookingStatus.STANDBY_ACCEPTED]: 'standby_accepted',
+      [BookingStatus.IN_PROGRESS]: 'in_progress',
+      [BookingStatus.COMPLETED]: 'completed',
+      [BookingStatus.REVIEW_PENDING]: 'review_pending',
+      [BookingStatus.CLOSED]: 'closed',
+    };
+    return statusMap[status] ?? status.toLowerCase();
   }
 }

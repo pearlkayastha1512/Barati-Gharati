@@ -8,6 +8,7 @@ import { MailModule } from '../mail/mail.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PayoutsModule } from '../payouts/payouts.module';
 import { AdminAccessModule } from '../admin-access/admin-access.module';
+import { BookingEngineModule } from '../booking-engine/booking-engine.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AdminAccessModule } from '../admin-access/admin-access.module';
     NotificationsModule,
     PayoutsModule,
     AdminAccessModule,
+    BookingEngineModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

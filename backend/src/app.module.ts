@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -39,12 +40,14 @@ import { AvailabilityModule } from './availability/availability.module';
 import { AdminAccessModule } from './admin-access/admin-access.module';
 import { PremiumPlanningModule } from './premium-planning/premium-planning.module';
 import { WeddingWebsiteModule } from './wedding-website/wedding-website.module';
+import { BookingEngineModule } from './booking-engine/booking-engine.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(), // enables cron jobs for booking engine scheduler
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -61,15 +64,12 @@ import { WeddingWebsiteModule } from './wedding-website/wedding-website.module';
     PortfolioModule,
     PackagesModule,
     PaymentModule,
-    PackagesModule,
     BookingsModule,
     GuestsModule,
     TimelineModule,
     ChecklistModule,
     NotificationsModule,
     AdminModule,
-    PackagesModule,
-    BookingsModule,
     ReviewsModule,
     BudgetsModule,
     ExpensesModule,
@@ -81,6 +81,7 @@ import { WeddingWebsiteModule } from './wedding-website/wedding-website.module';
     AdminAccessModule,
     PremiumPlanningModule,
     WeddingWebsiteModule,
+    BookingEngineModule, // Smart Booking Engine (standalone, for admin use)
   ],
   controllers: [AppController],
   providers: [
