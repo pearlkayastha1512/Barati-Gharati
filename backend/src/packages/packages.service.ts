@@ -4,6 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePackageDto } from './dto/create-package.dto';
@@ -13,6 +14,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class PackagesService {
+  private readonly logger = new Logger(PackagesService.name);
   constructor(
     private prisma: PrismaService,
     private cloudinary: CloudinaryService,
@@ -135,33 +137,32 @@ console.log("price =", dto.price, typeof dto.price);
 console.log("vendor =", vendor.id);
 console.log("category =", category.id);
 console.log("===================================");
-    const pkg = await this.prisma.package.create({
-      data: {
-        title: dto.name,
+    try {
+      const pkg = await this.prisma.package.create({
+        data: {
+          title: dto.name,
+          description: dto.description,
+          image: this.normalizeServiceImage(dto.image),
+          price: dto.price,
+          categoryId: category.id,
+          vendorId: vendor.id,
+          inclusions: dto.includes ?? [],
+        },
+        include: {
+          category: true,
+          reviews: true,
+          vendor: true,
+        },
+      });
 
-        description: dto.description,
-
-        image: this.normalizeServiceImage(dto.image),
-
-        price: dto.price,
-
-        categoryId: category.id,
-
-        vendorId: vendor.id,
-
-        inclusions: dto.includes ?? [],
-      },
-
-      include: {
-        category: true,
-
-        reviews: true,
-
-        vendor: true,
-      },
-    });
-
-    return this.mapService(pkg);
+      return this.mapService(pkg);
+    } catch (error) {
+      this.logger.error(
+        `Package creation failed for vendor ${vendor.id}`,
+        error instanceof Error ? error.stack : JSON.stringify(error),
+      );
+      throw error;
+    }
   }
 
   async uploadImage(
@@ -650,6 +651,5 @@ console.log("===================================");
 //   );
 // }
 // }
-
 
 

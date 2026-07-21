@@ -39,12 +39,18 @@ function getPaymentBadge(status: string) {
   }
 }
 
+import { getAdvancePercentage, getAdvanceAmountDue } from "@/utils/advance-payment";
+
 export default function PaymentInformation({
   booking,
 }: PaymentInformationProps) {
   const badge = getPaymentBadge(
     booking.paymentStatus
   );
+
+  const advancePercentage = getAdvancePercentage(booking.amount);
+  const advanceDueAmount = getAdvanceAmountDue(booking.amount);
+
 
   return (
     <section className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
@@ -85,27 +91,28 @@ export default function PaymentInformation({
         </div>
 
         <div className="flex items-center justify-between">
-
           <div className="flex items-center gap-3">
-
             <CreditCard
               size={20}
               className="text-green-600"
             />
 
             <span className="text-gray-600">
-              Advance Paid
+              {booking.advancePaid > 0
+                ? "Advance Paid"
+                : `Advance Due (${advancePercentage}%)`}
             </span>
-
           </div>
 
           <span className="font-semibold text-green-600">
-            ₹{booking.advancePaid.toLocaleString(
-              "en-IN"
-            )}
+            ₹
+            {(booking.advancePaid > 0
+              ? booking.advancePaid
+              : advanceDueAmount
+            ).toLocaleString("en-IN")}
           </span>
-
         </div>
+
 
         <div className="flex items-center justify-between">
 

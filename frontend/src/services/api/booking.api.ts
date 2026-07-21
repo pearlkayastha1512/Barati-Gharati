@@ -235,6 +235,82 @@ export async function updateBookingStatusApi(
   }
 }
 
+// ── Smart Booking Engine API Actions ──
+
+export async function primaryAcceptApi(id: string) {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/primary-accept`);
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to accept booking.") };
+  }
+}
+
+export async function primaryRejectApi(id: string, reason?: string) {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/primary-reject`, { reason });
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to reject booking.") };
+  }
+}
+
+export async function standbyRespondApi(id: string, response: "AVAILABLE" | "NOT_AVAILABLE") {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/standby-respond`, { response });
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to send response.") };
+  }
+}
+
+export async function promotedAcceptApi(id: string) {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/promoted-accept`);
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to accept promoted booking.") };
+  }
+}
+
+export async function promotedRejectApi(id: string, reason?: string) {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/promoted-reject`, { reason });
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to reject promoted booking.") };
+  }
+}
+
+export async function getBookingAssignmentsApi(id: string) {
+  try {
+    const { data } = await api.get(`/bookings/${id}/assignments`);
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to fetch assignments.") };
+  }
+}
+
+export async function getAlternativeVendorsApi(id: string) {
+  try {
+    const { data } = await api.get(`/bookings/${id}/alternative-vendors`);
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to fetch alternative vendors.") };
+  }
+}
+
+export async function customerSelectVendorApi(id: string, vendorId: string) {
+  try {
+    const { data } = await api.patch(`/bookings/${id}/select-vendor`, { vendorId });
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error, "Failed to select vendor.") };
+  }
+}
+
+
+
 export async function updateBookingPaymentApi(
   id: string,
   amount: number

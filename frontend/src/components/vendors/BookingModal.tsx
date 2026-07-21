@@ -240,20 +240,13 @@ const handleBooking = async () => {
   }
 
   setBookingId(bookingNumber);
-
-  if (!result.data?.id) {
-    toast.error(
-      "Booking created, but payment could not be started."
-    );
-    return;
-  }
-
-  setPaymentBooking(result.data);
+  setSuccess(true);
 
   toast.success(
-    "Booking details saved. Please pay the required advance."
+    "Booking request submitted to vendor successfully!"
   );
 };
+
 
 
 

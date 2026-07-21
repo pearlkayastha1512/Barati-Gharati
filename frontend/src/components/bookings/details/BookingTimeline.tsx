@@ -32,14 +32,27 @@ export default function BookingTimeline({
     {
       title: "Vendor Response",
       description:
-        booking.bookingStatus === "pending"
+        booking.bookingStatus === "waiting_primary_vendor" ||
+        booking.bookingStatus === "matching" ||
+        booking.bookingStatus === "pending" ||
+        booking.bookingStatus === "promote_standby"
           ? "Waiting for vendor approval."
+          : booking.bookingStatus === "primary_rejected"
+          ? "Primary vendor unavailable. Engine searching/promoting standby..."
           : "Vendor accepted your booking.",
       date: booking.updatedAt,
       completed:
-        booking.bookingStatus !== "pending",
+        booking.bookingStatus === "waiting_payment" ||
+        booking.bookingStatus === "primary_accepted" ||
+        booking.bookingStatus === "standby_accepted" ||
+        booking.bookingStatus === "accepted" ||
+        booking.bookingStatus === "advance_paid" ||
+        booking.bookingStatus === "in_progress" ||
+        booking.bookingStatus === "event_completed" ||
+        booking.bookingStatus === "completed",
       icon: CheckCircle2,
     },
+
 
     {
       title: "Advance Payment",
@@ -59,6 +72,10 @@ export default function BookingTimeline({
         "Coordinate with your vendor before the event.",
       date: booking.eventDate,
       completed:
+        booking.bookingStatus === "advance_paid" ||
+        booking.bookingStatus === "in_progress" ||
+        booking.bookingStatus === "event_completed" ||
+        booking.bookingStatus === "payment_approved" ||
         booking.bookingStatus === "completed",
       icon: Users,
     },
@@ -66,12 +83,19 @@ export default function BookingTimeline({
     {
       title: "Event Day",
       description:
-        "Celebrate your special day.",
+        booking.bookingStatus === "event_completed"
+          ? "Event completed by vendor! Waiting for admin review & final settlement."
+          : booking.bookingStatus === "payment_approved" || booking.bookingStatus === "completed"
+          ? "Event completed and approved by admin."
+          : "Celebrate your special day.",
       date: booking.eventDate,
       completed:
+        booking.bookingStatus === "event_completed" ||
+        booking.bookingStatus === "payment_approved" ||
         booking.bookingStatus === "completed",
       icon: PartyPopper,
     },
+
   ];
 
   return (

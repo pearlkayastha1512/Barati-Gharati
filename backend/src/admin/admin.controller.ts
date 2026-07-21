@@ -17,6 +17,22 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role, VendorBadge } from '@prisma/client';
+import { BookingEngineService } from '../booking-engine/booking-engine.service';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+
+export class AdminManualAssignDto {
+  @IsString()
+  vendorId!: string;
+}
+
+export class AdminAdjustLeadDto {
+  @IsNumber()
+  delta!: number;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
 
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { PermissionsGuard } from '../admin-access/guards/permissions.guard';
@@ -34,6 +50,7 @@ import { CreateVendorByAdminDto } from './dto/create-vendor-by-admin.dto';
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
+    private readonly bookingEngine: BookingEngineService,
   ) {}
 
   @Get('dashboard')
@@ -206,6 +223,58 @@ holdBookingPayment(
 ) {
   return this.adminService.holdBookingPayment(id);
 }
+
+// ═══════════════════════════════════════════════════════════
+// Smart Booking Engine — Admin Endpoints
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Admin manually assigns a vendor to a booking when no vendor is available.
+ */
+@Patch('bookings/:id/manual-assign')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_MANAGE)
+manualAssign(
+  @Param('id') id: string,
+  @Body() dto: AdminManualAssignDto,
+) {
+  return this.bookingEngine.adminManualAssign(id, dto.vendorId);
+}
+
+/**
+ * Admin views all vendor assignments for a booking.
+ */
+@Get('bookings/:id/assignments')
+@Permissions(ADMIN_PERMISSIONS.BOOKINGS_MANAGE)
+getBookingAssignments(
+  @Param('id') id: string,
+) {
+  return this.bookingEngine.getBookingAssignments(id);
+}
+
+/**
+ * Admin adjusts lead balance for a vendor (top-up or deduct).
+ */
+@Patch('vendors/:vendorId/lead-balance')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
+adjustLeadBalance(
+  @Param('vendorId') vendorId: string,
+  @Body() dto: AdminAdjustLeadDto,
+) {
+  return this.bookingEngine.adjustLeadBalance(vendorId, dto.delta);
+}
+
+/**
+ * Admin initializes lead balance for a vendor (e.g. after badge assignment).
+ */
+@Post('vendors/:vendorId/lead-balance/init')
+@Permissions(ADMIN_PERMISSIONS.VENDORS_MANAGE)
+initializeLeadBalance(
+  @Param('vendorId') vendorId: string,
+  @Body('badge') badge: string,
+) {
+  return this.bookingEngine.initializeLeadBalance(vendorId, badge);
+}
+
 
 @Get('analytics')
 @Permissions(ADMIN_PERMISSIONS.REPORTS_VIEW)

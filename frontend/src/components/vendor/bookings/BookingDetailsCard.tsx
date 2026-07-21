@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export default function BookingDetailsCard() {
   const {
@@ -73,9 +74,13 @@ export default function BookingDetailsCard() {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
 
-      <h2 className="text-2xl font-bold text-slate-900">
-        Booking Details
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-slate-900">
+          Booking Details
+        </h2>
+        <StatusBadge status={selectedBooking.bookingStatus} size="md" />
+      </div>
+
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
 
@@ -359,45 +364,69 @@ export default function BookingDetailsCard() {
         </div>
       )}
 
-      {selectedBooking.bookingStatus ===
-        "pending" &&
-        !selectedBooking.adminApproved && (
-        <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
-          This lead is awaiting admin approval. You can accept it after admin confirms the advance payment.
-        </div>
-      )}
-
-      {selectedBooking.bookingStatus ===
-        "pending" &&
-        selectedBooking.adminApproved && (
+      {(selectedBooking.bookingStatus === "waiting_primary_vendor" ||
+        selectedBooking.bookingStatus === "pending") && (
         <div className="mt-8 flex gap-4">
-
           <button
-            onClick={() =>
-              updateStatus(
-                selectedBooking.id,
-                "accepted"
-              )
-            }
+            onClick={() => useBookingStore.getState().primaryAccept(selectedBooking.id)}
             className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
           >
-            Accept Booking
+            Accept Booking (Primary)
           </button>
 
           <button
-            onClick={() =>
-              updateStatus(
-                selectedBooking.id,
-                "cancelled"
-              )
-            }
+            onClick={() => {
+              const reason = prompt("Reason for rejection (optional):") ?? undefined;
+              useBookingStore.getState().primaryReject(selectedBooking.id, reason);
+            }}
             className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
           >
-            Reject
+            Reject Booking
           </button>
-
         </div>
       )}
+
+      {selectedBooking.bookingStatus === "promote_standby" && (
+        <div className="mt-8 flex gap-4">
+          <button
+            onClick={() => useBookingStore.getState().promotedAccept(selectedBooking.id)}
+            className="rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700"
+          >
+            Accept Promoted Booking
+          </button>
+
+          <button
+            onClick={() => {
+              const reason = prompt("Reason for rejection (optional):") ?? undefined;
+              useBookingStore.getState().promotedReject(selectedBooking.id, reason);
+            }}
+            className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
+          >
+            Reject Promoted Booking
+          </button>
+        </div>
+      )}
+
+      {(selectedBooking.bookingStatus === "advance_paid" ||
+        selectedBooking.bookingStatus === "in_progress" ||
+        selectedBooking.bookingStatus === "payment_approved" ||
+        (selectedBooking.bookingStatus === "accepted" && selectedBooking.paymentStatus !== "pending")) && (
+        <div className="mt-8 flex gap-4">
+          <button
+            onClick={() =>
+              useBookingStore
+                .getState()
+                .updateStatus(selectedBooking.id, "event_completed")
+            }
+            className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            Mark Event as Completed
+          </button>
+        </div>
+      )}
+
+
+
 
     </section>
   );

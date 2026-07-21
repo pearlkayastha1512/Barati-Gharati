@@ -17,11 +17,15 @@ import { Booking } from "@/types/booking";
 import { useBookingStore } from "@/store/bookingStore";
 import { toast } from "sonner";
 import {
+  createPaymentOrderApi,
   createRemainingPaymentOrderApi,
+  verifyPaymentApi,
   verifyRemainingPaymentApi,
 } from "@/services/api/payment.api";
 import { downloadInvoiceApi } from "@/services/api/invoice.api";
 import { rescheduleBookingApi } from "@/services/api/booking.api";
+import { getAdvancePercentage, getAdvanceAmountDue } from "@/utils/advance-payment";
+
 
 type RazorpayResponse = {
   razorpay_order_id: string;
@@ -85,10 +89,9 @@ interface BookingActionsProps {
 export default function BookingActions({
   booking,
 }: BookingActionsProps) {
-  const [payingRemaining, setPayingRemaining] =
-    useState(false);
-  const [downloadingInvoice, setDownloadingInvoice] =
-    useState(false);
+  const [payingAdvance, setPayingAdvance] = useState(false);
+  const [payingRemaining, setPayingRemaining] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleReason, setRescheduleReason] = useState("");
@@ -101,9 +104,85 @@ export default function BookingActions({
 
   const currentBooking = booking;
 
+  const advancePercentage = getAdvancePercentage(currentBooking.amount);
+  const advanceDueAmount = getAdvanceAmountDue(currentBooking.amount);
+
+  const canPayAdvance =
+    [
+      "waiting_payment",
+      "primary_accepted",
+      "standby_accepted",
+      "accepted",
+    ].includes(currentBooking.bookingStatus) &&
+    currentBooking.paymentStatus === "pending";
+
   const canCancel =
-    currentBooking.bookingStatus ===
-    "pending";
+    currentBooking.bookingStatus === "pending" ||
+    currentBooking.bookingStatus === "waiting_primary_vendor";
+
+  const handleAdvancePayment = async () => {
+    if (!canPayAdvance) return;
+
+    setPayingAdvance(true);
+
+    const orderResult = await createPaymentOrderApi(currentBooking.id);
+
+    if (!orderResult.ok || !orderResult.data) {
+      setPayingAdvance(false);
+      toast.error(orderResult.error ?? "Unable to prepare payment.");
+      return;
+    }
+
+    const scriptLoaded = await loadRazorpayScript();
+
+    if (!scriptLoaded || !window.Razorpay) {
+      setPayingAdvance(false);
+      toast.error("Payment gateway could not be loaded.");
+      return;
+    }
+
+    const order = orderResult.data;
+    const razorpay = new window.Razorpay({
+      key: order.keyId,
+      amount: order.amountInPaise,
+      currency: order.currency,
+      name: "Barati Gharati",
+      description: `${order.advancePercentage ?? advancePercentage}% advance for ${currentBooking.vendorName}`,
+      order_id: order.orderId,
+      prefill: {
+        name: currentBooking.customerName,
+        email: currentBooking.customerEmail,
+        contact: currentBooking.customerPhone,
+      },
+      theme: {
+        color: "#ff4d6d",
+      },
+      modal: {
+        ondismiss: () => setPayingAdvance(false),
+      },
+      handler: async (response) => {
+        const verified = await verifyPaymentApi({
+          bookingId: currentBooking.id,
+          orderId: response.razorpay_order_id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+        });
+
+        setPayingAdvance(false);
+
+        if (!verified.ok) {
+          toast.error(verified.error ?? "Payment verification failed.");
+          return;
+        }
+
+        toast.success("Advance payment completed successfully!");
+        await loadBooking(currentBooking.id);
+      },
+    });
+
+    razorpay.open();
+  };
+
 
   const canPayRemaining =
     currentBooking.bookingStatus ===
@@ -384,7 +463,32 @@ export default function BookingActions({
           </div>
         </button>
 
-        {/* Cancel Booking */}
+        {/* Pay Advance Button */}
+        {canPayAdvance ? (
+          <button
+            onClick={handleAdvancePayment}
+            disabled={payingAdvance}
+            className="flex w-full items-center justify-between rounded-2xl bg-[#ff4d6d] px-5 py-4 font-semibold text-white transition hover:bg-[#e4005a] disabled:cursor-not-allowed disabled:opacity-70 shadow-lg shadow-rose-100"
+          >
+            <div className="flex items-center gap-3">
+              {payingAdvance ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : (
+                <CreditCard size={20} />
+              )}
+              {payingAdvance
+                ? "Preparing Payment..."
+                : `Pay Advance ₹${advanceDueAmount.toLocaleString("en-IN")} (${advancePercentage}%)`}
+            </div>
+          </button>
+        ) : (currentBooking.bookingStatus === "waiting_primary_vendor" ||
+            currentBooking.bookingStatus === "matching" ||
+            currentBooking.bookingStatus === "promote_standby") && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
+            ⏳ Waiting for vendor acceptance before advance payment can be made.
+          </div>
+        )}
+
 
         <button
           onClick={handleCancelBooking}

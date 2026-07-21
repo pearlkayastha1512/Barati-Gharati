@@ -233,6 +233,8 @@ model Vendor {
   bankVerified           Boolean                 @default(false)
   businessVerified       Boolean                 @default(false)
   city                   String?
+  latitude               Decimal?                @db.Decimal(10, 7) // geo-coordinate for distance scoring
+  longitude              Decimal?                @db.Decimal(10, 7) // geo-coordinate for distance scoring
   documentsUploaded      Boolean                 @default(false)
   experience             String?
   facebook               String?
@@ -253,21 +255,25 @@ model Vendor {
   badgePaymentRefundId   String?
   badgePaymentRefundedAt DateTime?
 
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category      Category?            @relation(fields: [categoryId], references: [id])
-  packages      Package[]
-  gallery       VendorGallery[]
-  bookings      Booking[]
-  availability  VendorAvailability[]
-  portfolio     Portfolio[]
-  reviews       Review[]
-  leads         Lead[]
-  conversations Conversation[]
-  wishlists     Wishlist[]
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category?               @relation(fields: [categoryId], references: [id])
+  packages          Package[]
+  gallery           VendorGallery[]
+  bookings          Booking[]
+  availability      VendorAvailability[]
+  portfolio         Portfolio[]
+  reviews           Review[]
+  leads             Lead[]
+  conversations     Conversation[]
+  wishlists         Wishlist[]
+  vendorAssignments BookingVendorAssignment[]
+  leadBalance       VendorLeadBalance?
+  leadDeductions    LeadDeductionLog[]
 
   @@index([categoryId])
   @@index([status])
   @@index([badgeExpiresAt])
+  @@index([city])
 }
 
 model VendorGallery {
@@ -319,16 +325,32 @@ model Package {
 }
 
 enum BookingStatus {
-  PENDING
+  // ── Legacy statuses (kept for backwards-compatibility) ──
   ADVANCE_PAID
-  ACCEPTED
-  EVENT_COMPLETED
   AWAITING_ADMIN_REVIEW
   PAYMENT_APPROVED
   PAYMENT_HELD
-  CONFIRMED
+
+  // ── Smart Booking Engine statuses ──
+  PENDING               // User submitted booking
+  MATCHING              // Engine is finding vendors
+  WAITING_PRIMARY_VENDOR // Sent to primary + standbys, awaiting primary response
+  PRIMARY_ACCEPTED      // Primary vendor accepted
+  WAITING_PAYMENT       // Awaiting user advance payment
+  PRIMARY_REJECTED      // Primary vendor rejected / timed out
+  PROMOTE_STANDBY       // Promoting standby to primary
+  STANDBY_ACCEPTED      // Promoted standby accepted
+  CONFIRMED             // Advance paid, booking confirmed
+  IN_PROGRESS           // Event day / ongoing
+  COMPLETED             // Event completed by vendor
+  REVIEW_PENDING        // Waiting for user review
+  CLOSED                // Fully closed
+
+  // ── Terminal statuses ──
+  ACCEPTED              // Legacy accept (kept for existing data)
+  EVENT_COMPLETED       // Legacy completed (kept for existing data)
   CANCELLED
-  REJECTED
+  REJECTED              // Legacy reject (kept for existing data)
 }
 
 enum PaymentStatus {
@@ -392,6 +414,10 @@ model Booking {
   venue String?
   city  String?
 
+  // Event geo-coordinates (optional — used for distance scoring)
+  eventLatitude  Decimal? @db.Decimal(10, 7)
+  eventLongitude Decimal? @db.Decimal(10, 7)
+
   guests Int @default(0)
 
   customerName  String?
@@ -438,17 +464,24 @@ model Booking {
 
   cancellationReason String?
 
+  // Smart Booking Engine fields
+  matchedAt            DateTime?  // when engine completed matching
+  engineTimeoutHours   Int        @default(2) // hours vendors have to respond
+  noVendorAvailable    Boolean    @default(false) // flagged when engine finds no candidates
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  review         Review?
-  payout         BookingPayout?
-  weddingWebsite WeddingWebsite?
+  review            Review?
+  payout            BookingPayout?
+  weddingWebsite    WeddingWebsite?
+  vendorAssignments BookingVendorAssignment[]
 
   @@index([userId])
   @@index([vendorId])
   @@index([packageId])
   @@index([status])
+  @@index([matchedAt])
 }
 
 model BookingPayout {
@@ -478,6 +511,96 @@ model BookingPayout {
   updatedAt            DateTime  @updatedAt
 
   @@index([status])
+}
+
+// ─────────────────────────────────────────
+// Smart Booking Engine — New Enums & Models
+// ─────────────────────────────────────────
+
+enum VendorAssignmentRole {
+  PRIMARY
+  STANDBY
+}
+
+enum VendorAssignmentStatus {
+  PENDING       // Waiting for vendor response
+  ACCEPTED      // Primary accepted
+  REJECTED      // Primary rejected (manual or timeout)
+  AVAILABLE     // Standby said "I'm Available"
+  NOT_AVAILABLE // Standby said "Not Available" — no lead deducted
+  PROMOTED      // Standby was promoted to primary role
+  CLOSED        // Slot closed (another vendor was selected)
+  TIMED_OUT     // Vendor did not respond within window
+}
+
+model BookingVendorAssignment {
+  id        String @id @default(uuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  role     VendorAssignmentRole   // PRIMARY or STANDBY
+  priority Int                    // 1=primary, 2,3,4=standby order
+  score    Float?                 // calculated priority score (0–100)
+
+  status      VendorAssignmentStatus @default(PENDING)
+  respondedAt DateTime?              // when vendor responded
+  promotedAt  DateTime?              // if/when standby was promoted
+  timeoutAt   DateTime?              // deadline for auto-reject
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([timeoutAt])
+  @@unique([bookingId, vendorId])
+}
+
+// Lead balance per vendor (reset monthly based on subscription plan)
+model VendorLeadBalance {
+  id             String   @id @default(uuid())
+
+  vendorId       String   @unique
+  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  totalLeads     Int      @default(0)  // total allocated this cycle
+  usedLeads      Int      @default(0)  // leads deducted
+  remainingLeads Int      @default(0)  // totalLeads - usedLeads
+
+  planType       String   @default("BRONZE") // mirrors vendor.badge
+  cycleStartAt   DateTime @default(now())    // start of current billing cycle
+  cycleEndAt     DateTime?                   // end of current billing cycle
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Immutable audit log for every lead deduction
+model LeadDeductionLog {
+  id        String @id @default(uuid())
+
+  vendorId  String
+  vendor    Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  bookingId String // reference to the booking
+  assignmentId String? // reference to the BookingVendorAssignment row
+
+  reason    String // "PRIMARY_ACCEPTED" | "PRIMARY_REJECTED" | "PRIMARY_TIMED_OUT" | "PROMOTED_ACCEPTED" | "PROMOTED_REJECTED"
+  deducted  Int    @default(1)
+
+  balanceBefore Int // remainingLeads before deduction
+  balanceAfter  Int // remainingLeads after deduction
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+  @@index([bookingId])
+  @@index([createdAt])
 }
 
 // model Availability {

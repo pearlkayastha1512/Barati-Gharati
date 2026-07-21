@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 
 import { Booking } from "@/types/booking";
+import StatusBadge from "@/components/ui/StatusBadge";
+
 
 interface BookingDetailsHeroProps {
   booking: Booking;
@@ -131,35 +133,24 @@ export default function BookingDetailsHero({
         {/* Right */}
 
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-
-          <div className="flex items-center gap-3">
-
+          <div className="flex items-center gap-3 font-semibold text-white">
             <CalendarDays size={22} />
-
             <span>
-              {booking.eventDate}
+              {isNaN(new Date(booking.eventDate).getTime())
+                ? booking.eventDate
+                : new Date(booking.eventDate).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
             </span>
-
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-
-            <CheckCircle2
-              size={22}
-              className={getStatusColor(
-                booking.bookingStatus
-              )}
-            />
-
-            <span>
-              {getStatusText(
-                booking.bookingStatus
-              )}
-            </span>
-
+          <div className="mt-4">
+            <StatusBadge status={booking.bookingStatus} size="md" className="shadow-md font-bold" />
           </div>
-
         </div>
+
 
       </div>
     </motion.section>
