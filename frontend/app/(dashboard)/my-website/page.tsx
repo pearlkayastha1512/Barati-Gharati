@@ -185,15 +185,15 @@ const handleImageUpload = async (
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <div className="rounded-full bg-rose-50 px-5 py-3 shadow-md">
+            <div className="rounded-full bg-rose-50 px-5 py-3 shadow-md text-gray-600">
               💍 Wedding
             </div>
 
-            <div className="rounded-full bg-pink-50 px-5 py-3 shadow-md">
+            <div className="rounded-full bg-pink-50 px-5 py-3 shadow-md text-gray-600">
               📸 Memories
             </div>
 
-            <div className="rounded-full bg-amber-50 px-5 py-3 shadow-md">
+            <div className="rounded-full bg-amber-50 px-5 py-3 shadow-md text-gray-600">
               ❤️ Love Story
             </div>
           </div>
