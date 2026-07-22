@@ -36,9 +36,9 @@ export const FOOTER_LINKS = {
       href: "/terms-and-conditions",
     },
     {
-      title: "Terms of Use",
-      href: "/terms-of-use",
-    },
+  title: "Refund Policy",
+  href: "/refund-policy",
+},
   ],
 
   celebrations: [
