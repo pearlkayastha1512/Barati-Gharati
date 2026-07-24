@@ -39,8 +39,10 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AdminAccessModule } from './admin-access/admin-access.module';
 import { PremiumPlanningModule } from './premium-planning/premium-planning.module';
+import { WeddingStoriesModule } from './wedding-stories/wedding-stories.module';
 import { WeddingWebsiteModule } from './wedding-website/wedding-website.module';
 import { BookingEngineModule } from './booking-engine/booking-engine.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -81,6 +83,8 @@ import { BookingEngineModule } from './booking-engine/booking-engine.module';
     AdminAccessModule,
     PremiumPlanningModule,
     WeddingWebsiteModule,
+    WeddingStoriesModule,
+     UploadModule,
     BookingEngineModule, // Smart Booking Engine (standalone, for admin use)
   ],
   controllers: [AppController],

@@ -1,20 +1,47 @@
+"use client";
 
+import { useEffect } from "react";
 
 import GalleryCard from "./GalleryCard";
-import { gallery } from "./gallery-data";
-import Link from "next/link";
+
+import { useWeddingStoryStore } from "@/store/weddingStoryStore";
 
 export default function GallerySection() {
+  const {
+    homeStories,
+    fetchHomeStories,
+    loading,
+  } = useWeddingStoryStore();
+
+  useEffect(() => {
+    fetchHomeStories();
+  }, []);
+
+  if (loading && homeStories.length === 0) {
+    return (
+      <section className="py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[360px] animate-pulse rounded-[30px] bg-pink-100"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(145deg,#f5d0c8_0%,#e8a2b5_48%,#f8ddd0_100%)] py-24">
-      {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-rose-400/35 blur-[120px]" />
-        <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-pink-400/30 blur-[120px]" />
+        <div className="absolute bottom-10 right-0 h-72 w-72 rounded-full bg-pink-400/30 blur-[120px]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6">
-        {/* Heading */}
         <div className="mb-16 text-center">
           <p className="font-semibold uppercase tracking-[0.4em] text-rose-500">
             WEDDING INSPIRATION
@@ -22,33 +49,34 @@ export default function GallerySection() {
 
           <h2 className="mt-6 text-4xl font-bold text-gray-900 lg:text-6xl">
             Real Wedding
-            <span className="text-rose-500"> Stories</span>
+            <span className="text-rose-500">
+              {" "}
+              Stories
+            </span>
           </h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-            Discover breathtaking weddings, beautiful venues and unforgettable
-            celebrations from couples across India.
+            Discover breathtaking weddings,
+            beautiful venues and unforgettable
+            celebrations.
           </p>
         </div>
 
-        {/* Masonry Gallery */}
         <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
-          {gallery.map((item) => (
+          {homeStories.map((story) => (
             <div
-              key={item.id}
+              key={story.id}
               className="mb-6 break-inside-avoid"
             >
               <GalleryCard
-                id={item.id}
-                image={item.image}
-                title={item.title}
-                location={item.location}
+                slug={story.slug}
+                image={story.coverImage}
+                title={story.title}
+                location={story.location}
               />
             </div>
           ))}
         </div>
-
-      
       </div>
     </section>
   );

@@ -1,34 +1,31 @@
-
-
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, ArrowRight } from "lucide-react";
 
 interface GalleryCardProps {
-  id: number;
+  slug: string;
   image: string;
   title: string;
   location: string;
 }
 
 export default function GalleryCard({
-  id,
+  slug,
   image,
   title,
   location,
 }: GalleryCardProps) {
   return (
     <Link
-      href={`/stories/${id}`}
+      href={`/stories/${slug}`}
       className="
-       group
-relative
-block
-overflow-hidden
-rounded-[32px]
-h-[360px]
-shadow-lg
-
+        group
+        relative
+        block
+        h-[360px]
+        overflow-hidden
+        rounded-[32px]
+        shadow-lg
       "
     >
       <Image
@@ -43,9 +40,11 @@ shadow-lg
         "
       />
 
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-      <div className="absolute left-0 right-0 bottom-0 p-6 text-white">
+      {/* Content */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
         <Heart
           size={22}
           className="mb-4 fill-white text-white"

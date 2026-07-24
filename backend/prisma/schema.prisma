@@ -124,6 +124,7 @@ model User {
   wishlists               Wishlist[]
   adminAuditLogs          AdminAuditLog[]
   premiumPlanningRequests PremiumPlanningRequest[]
+  weddingStories          WeddingStory[]
 
   weddingWebsite WeddingWebsite?
 
@@ -255,8 +256,8 @@ model Vendor {
   badgePaymentRefundId   String?
   badgePaymentRefundedAt DateTime?
 
-  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category          Category?               @relation(fields: [categoryId], references: [id])
+  user              User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category?                 @relation(fields: [categoryId], references: [id])
   packages          Package[]
   gallery           VendorGallery[]
   bookings          Booking[]
@@ -332,25 +333,25 @@ enum BookingStatus {
   PAYMENT_HELD
 
   // ── Smart Booking Engine statuses ──
-  PENDING               // User submitted booking
-  MATCHING              // Engine is finding vendors
+  PENDING // User submitted booking
+  MATCHING // Engine is finding vendors
   WAITING_PRIMARY_VENDOR // Sent to primary + standbys, awaiting primary response
-  PRIMARY_ACCEPTED      // Primary vendor accepted
-  WAITING_PAYMENT       // Awaiting user advance payment
-  PRIMARY_REJECTED      // Primary vendor rejected / timed out
-  PROMOTE_STANDBY       // Promoting standby to primary
-  STANDBY_ACCEPTED      // Promoted standby accepted
-  CONFIRMED             // Advance paid, booking confirmed
-  IN_PROGRESS           // Event day / ongoing
-  COMPLETED             // Event completed by vendor
-  REVIEW_PENDING        // Waiting for user review
-  CLOSED                // Fully closed
+  PRIMARY_ACCEPTED // Primary vendor accepted
+  WAITING_PAYMENT // Awaiting user advance payment
+  PRIMARY_REJECTED // Primary vendor rejected / timed out
+  PROMOTE_STANDBY // Promoting standby to primary
+  STANDBY_ACCEPTED // Promoted standby accepted
+  CONFIRMED // Advance paid, booking confirmed
+  IN_PROGRESS // Event day / ongoing
+  COMPLETED // Event completed by vendor
+  REVIEW_PENDING // Waiting for user review
+  CLOSED // Fully closed
 
   // ── Terminal statuses ──
-  ACCEPTED              // Legacy accept (kept for existing data)
-  EVENT_COMPLETED       // Legacy completed (kept for existing data)
+  ACCEPTED // Legacy accept (kept for existing data)
+  EVENT_COMPLETED // Legacy completed (kept for existing data)
   CANCELLED
-  REJECTED              // Legacy reject (kept for existing data)
+  REJECTED // Legacy reject (kept for existing data)
 }
 
 enum PaymentStatus {
@@ -465,9 +466,9 @@ model Booking {
   cancellationReason String?
 
   // Smart Booking Engine fields
-  matchedAt            DateTime?  // when engine completed matching
-  engineTimeoutHours   Int        @default(2) // hours vendors have to respond
-  noVendorAvailable    Boolean    @default(false) // flagged when engine finds no candidates
+  matchedAt          DateTime? // when engine completed matching
+  engineTimeoutHours Int       @default(2) // hours vendors have to respond
+  noVendorAvailable  Boolean   @default(false) // flagged when engine finds no candidates
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -523,18 +524,18 @@ enum VendorAssignmentRole {
 }
 
 enum VendorAssignmentStatus {
-  PENDING       // Waiting for vendor response
-  ACCEPTED      // Primary accepted
-  REJECTED      // Primary rejected (manual or timeout)
-  AVAILABLE     // Standby said "I'm Available"
+  PENDING // Waiting for vendor response
+  ACCEPTED // Primary accepted
+  REJECTED // Primary rejected (manual or timeout)
+  AVAILABLE // Standby said "I'm Available"
   NOT_AVAILABLE // Standby said "Not Available" — no lead deducted
-  PROMOTED      // Standby was promoted to primary role
-  CLOSED        // Slot closed (another vendor was selected)
-  TIMED_OUT     // Vendor did not respond within window
+  PROMOTED // Standby was promoted to primary role
+  CLOSED // Slot closed (another vendor was selected)
+  TIMED_OUT // Vendor did not respond within window
 }
 
 model BookingVendorAssignment {
-  id        String @id @default(uuid())
+  id String @id @default(uuid())
 
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -542,39 +543,39 @@ model BookingVendorAssignment {
   vendorId String
   vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  role     VendorAssignmentRole   // PRIMARY or STANDBY
-  priority Int                    // 1=primary, 2,3,4=standby order
-  score    Float?                 // calculated priority score (0–100)
+  role     VendorAssignmentRole // PRIMARY or STANDBY
+  priority Int // 1=primary, 2,3,4=standby order
+  score    Float? // calculated priority score (0–100)
 
   status      VendorAssignmentStatus @default(PENDING)
-  respondedAt DateTime?              // when vendor responded
-  promotedAt  DateTime?              // if/when standby was promoted
-  timeoutAt   DateTime?              // deadline for auto-reject
+  respondedAt DateTime? // when vendor responded
+  promotedAt  DateTime? // if/when standby was promoted
+  timeoutAt   DateTime? // deadline for auto-reject
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([bookingId, vendorId])
   @@index([bookingId])
   @@index([vendorId])
   @@index([status])
   @@index([timeoutAt])
-  @@unique([bookingId, vendorId])
 }
 
 // Lead balance per vendor (reset monthly based on subscription plan)
 model VendorLeadBalance {
-  id             String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  vendorId       String   @unique
-  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId String @unique
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  totalLeads     Int      @default(0)  // total allocated this cycle
-  usedLeads      Int      @default(0)  // leads deducted
-  remainingLeads Int      @default(0)  // totalLeads - usedLeads
+  totalLeads     Int @default(0) // total allocated this cycle
+  usedLeads      Int @default(0) // leads deducted
+  remainingLeads Int @default(0) // totalLeads - usedLeads
 
-  planType       String   @default("BRONZE") // mirrors vendor.badge
-  cycleStartAt   DateTime @default(now())    // start of current billing cycle
-  cycleEndAt     DateTime?                   // end of current billing cycle
+  planType     String    @default("BRONZE") // mirrors vendor.badge
+  cycleStartAt DateTime  @default(now()) // start of current billing cycle
+  cycleEndAt   DateTime? // end of current billing cycle
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -582,16 +583,16 @@ model VendorLeadBalance {
 
 // Immutable audit log for every lead deduction
 model LeadDeductionLog {
-  id        String @id @default(uuid())
+  id String @id @default(uuid())
 
-  vendorId  String
-  vendor    Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  bookingId String // reference to the booking
+  bookingId    String // reference to the booking
   assignmentId String? // reference to the BookingVendorAssignment row
 
-  reason    String // "PRIMARY_ACCEPTED" | "PRIMARY_REJECTED" | "PRIMARY_TIMED_OUT" | "PROMOTED_ACCEPTED" | "PROMOTED_REJECTED"
-  deducted  Int    @default(1)
+  reason   String // "PRIMARY_ACCEPTED" | "PRIMARY_REJECTED" | "PRIMARY_TIMED_OUT" | "PROMOTED_ACCEPTED" | "PROMOTED_REJECTED"
+  deducted Int    @default(1)
 
   balanceBefore Int // remainingLeads before deduction
   balanceAfter  Int // remainingLeads after deduction
@@ -1026,4 +1027,73 @@ model WeddingGallery {
   createdAt DateTime @default(now())
 
   @@index([websiteId])
+}
+
+model WeddingStory {
+  id String @id @default(cuid())
+
+  title String
+  slug  String @unique
+
+  location String
+
+  coverImage String
+
+  story String[]
+
+  guests          Int
+  vendors         Int
+  celebrationDays Int
+
+  budget String
+
+  venue        String
+  photographer String
+  decor        String
+
+  featured  Boolean @default(false)
+  published Boolean @default(true)
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  galleryImages WeddingStoryImage[]
+  timeline      WeddingStoryTimeline[]
+
+  @@index([featured])
+  @@index([published])
+  @@index([slug])
+}
+
+model WeddingStoryImage {
+  id String @id @default(cuid())
+
+  image String
+
+  sortOrder Int @default(0)
+
+  storyId String
+
+  story WeddingStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model WeddingStoryTimeline {
+  id String @id @default(cuid())
+
+  title String
+
+  description String
+
+  sortOrder Int @default(0)
+
+  storyId String
+
+  story WeddingStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }

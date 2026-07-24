@@ -19,6 +19,7 @@ import {
   FilePenLine,
   ClipboardList,
   Crown,
+   BookHeart,
 } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 
@@ -111,6 +112,13 @@ const menuItems = [
 //     href: "/admin/analytics",
 //     icon: BarChart3,
 //   },
+
+{
+  title: "Wedding Stories",
+  href: "/admin/wedding-stories",
+  icon: BookHeart,
+  permission: "content.view",
+},
   {
     title: "Settings",
     href: "/admin/settings",
