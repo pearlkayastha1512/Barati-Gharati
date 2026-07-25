@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   Modal,
   View,
@@ -13,6 +13,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../../../store/authStore";
+import { CustomerMembership } from "../../../types/user";
 import { styles } from "./Sidebar.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -31,15 +32,14 @@ type NavItem = {
 
 // Only items NOT already covered by the bottom tab bar
 // (Home, Vendors, Bookings, Budget, Profile live in the tab bar — no need to duplicate here)
-const NAV_ITEMS: NavItem[] = [
+const BASE_NAV_ITEMS: NavItem[] = [
   { icon: "check-circle-outline", label: "Wedding Planner", route: "Checklist" },
   { icon: "chat-bubble-outline", label: "Messages", route: "Messages" },
-  { icon: "notifications-none", label: "Notifications", route: "Notifications" },
+  { icon: "storefront", label: "Become a Vendor", route: "BecomeVendor" },
   { icon: "settings", label: "Settings", route: "Settings" },
   { icon: "help-outline", label: "Help & Support", route: "HelpSupport" },
 ];
 
-// Legal/info links — separated visually from the main nav list
 // Legal/info links — separated visually from the main nav list
 const INFO_ITEMS: NavItem[] = [
   { icon: "info-outline", label: "About Us", route: "AboutUs" },
@@ -61,12 +61,30 @@ export function Sidebar({ visible, onClose }: Props) {
     }).start();
   }, [visible]);
 
+  // Membership-gated nav items — Plan My Wedding only for PREMIUM,
+  // Upgrade My Plan only for FREE. Recomputes whenever user changes.
+  const navItems = useMemo<NavItem[]>(() => {
+    const items = [...BASE_NAV_ITEMS];
+
+    if (user?.membership === CustomerMembership.PREMIUM) {
+      items.unshift({
+        icon: "auto-awesome",
+        label: "Plan My Wedding",
+        route: "PlanMyWedding",
+      });
+    } else if (user?.membership === CustomerMembership.FREE) {
+      items.push({
+        icon: "workspace-premium",
+        label: "Upgrade My Plan",
+        route: "UpgradeMembership",
+      });
+    }
+
+    return items;
+  }, [user?.membership]);
+
   const handleNavigate = (item: NavItem) => {
     onClose();
-    // TODO: each of these routes needs to actually exist in your navigator.
-    // Settings, HelpSupport, AboutUs, PrivacyPolicy, TermsOfService are likely
-    // NEW screens you haven't built yet — create them or this will throw
-    // the same "not a valid name" error we saw earlier.
     navigation.navigate(item.route);
   };
 
@@ -93,7 +111,6 @@ export function Sidebar({ visible, onClose }: Props) {
           style={[styles.sidebar, { transform: [{ translateX }] }]}
           onStartShouldSetResponder={() => true}
         >
-          {/* Gradient header — matches HomeScreen hero card theme */}
           <LinearGradient
             colors={["#fffef7", "#ffe6eb", "#ff8fa1", "#ff4d6d"]}
             locations={[0, 0.28, 0.68, 1]}
@@ -113,7 +130,7 @@ export function Sidebar({ visible, onClose }: Props) {
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <Text style={styles.sectionLabel}>Menu</Text>
             <View style={styles.navList}>
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <TouchableOpacity
                   key={item.label}
                   style={styles.navItem}
@@ -146,7 +163,6 @@ export function Sidebar({ visible, onClose }: Props) {
             </View>
           </ScrollView>
 
-          {/* Logout */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialIcons name="logout" size={18} color="#E63B5F" />
             <Text style={styles.logoutText}>Logout</Text>

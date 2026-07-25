@@ -1,5 +1,16 @@
 import { create } from "zustand";
-import { getMyBookings, acceptBooking, completeBookingEvent, BackendBooking } from "../api/vendorBookings.api";
+import {
+  getMyBookings,
+  acceptBooking,
+  rejectBooking,
+  completeBookingEvent,
+  primaryAccept,
+  primaryReject,
+  promotedAccept,
+  promotedReject,
+  standbyRespond,
+  BackendBooking,
+} from "../api/vendorBookings.api";
 
 export type VendorBookingStatus = "Pending" | "Accepted" | "Completed" | "Cancelled" | "Rejected";
 
@@ -8,9 +19,13 @@ export type VendorBookingRecord = {
   customerName: string;
   eventType: string;
   date: string;
-  eventDateRaw: string; // ISO date string, used for date comparisons (e.g. "has the event happened yet")
+  eventDateRaw: string;
   amount: number;
   status: VendorBookingStatus;
+  // Raw lowercase backend status (e.g. "waiting_primary_vendor") — used for
+  // precise flow-stage logic in the modal, since `status` above is only a
+  // simplified bucket for dashboard counts.
+  rawStatus: string;
 
   packageName: string;
   advancePaid: number;
@@ -54,27 +69,54 @@ interface VendorBookingsState {
   isLoading: boolean;
   fetchBookings: () => Promise<void>;
   updateStatus: (id: string, status: VendorBookingStatus) => Promise<void>;
+  acceptBooking: (id: string) => Promise<void>;
+  rejectBooking: (id: string, cancellationReason: string) => Promise<void>;
+  primaryAccept: (id: string) => Promise<void>;
+  primaryReject: (id: string, reason?: string) => Promise<void>;
+  promotedAccept: (id: string) => Promise<void>;
+  promotedReject: (id: string, reason?: string) => Promise<void>;
+  standbyRespond: (id: string, response: "AVAILABLE" | "NOT_AVAILABLE") => Promise<void>;
 }
 
+// Ground-truth mapping, based on BookingsService.mapBookingStatus() on the backend.
 const mapStatus = (backendStatus: string): VendorBookingStatus => {
-  switch (backendStatus) {
+  const s = backendStatus.toLowerCase();
+  switch (s) {
     case "pending":
-    case "advance_paid":
+    case "matching":
+    case "waiting_primary_vendor":
+    case "promote_standby":
     case "awaiting_admin_review":
       return "Pending";
-    case "accepted":
+
+    case "primary_accepted":
+    case "waiting_payment":
+    case "standby_accepted":
+    case "advance_paid":
     case "payment_approved":
     case "payment_held":
+    case "in_progress":
+    case "accepted":
       return "Accepted";
-    case "advance_paid":
-      return "Pending";
+
+    // NOTE: backend currently maps both CONFIRMED and COMPLETED to the string
+    // "completed" (a naming collision in mapBookingStatus() — worth flagging
+    // to the backend team). We treat "completed" as the Completed bucket here,
+    // and rely on rawStatus + event date in the modal to decide whether the
+    // "Mark Event as Completed" action should still be offered.
     case "completed":
     case "event_completed":
+    case "review_pending":
+    case "closed":
       return "Completed";
+
     case "cancelled":
+    case "primary_rejected":
       return "Cancelled";
+
     case "rejected":
       return "Rejected";
+
     default:
       return "Pending";
   }
@@ -92,6 +134,7 @@ const mapBooking = (b: BackendBooking): VendorBookingRecord => ({
   eventDateRaw: b.eventDate,
   amount: b.amount,
   status: mapStatus(b.bookingStatus),
+  rawStatus: b.bookingStatus.toLowerCase(),
   adminApproved: b.adminApproved,
   packageName: b.packageName,
   advancePaid: b.advancePaid,
@@ -136,40 +179,7 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
   fetchBookings: async () => {
     try {
       set({ isLoading: true });
-      let data = await getMyBookings();
-
-      console.log(
-  "ALL BOOKINGS =>",
-  data.map((b) => ({
-    id: b.id,
-    bookingStatus: b.bookingStatus,
-    payoutStatus: b.payoutStatus,
-    adminApproved: b.adminApproved,
-  })),
-);
-
-      const needsAutoAccept = data.filter(
-  (b) =>
-    b.adminApproved &&
-    (b.bookingStatus === "pending" ||
-      (b.bookingStatus === "advance_paid" &&
-        (b.payoutStatus === "released" || b.payoutStatus === "settled")))
-);
-
-      if (needsAutoAccept.length > 0) {
-        await Promise.all(
-          needsAutoAccept.map((b) =>
-            acceptBooking(b.id).catch((err: any) => {
-              console.log(
-                `AUTO-ACCEPT FAILED for booking ${b.id} (status=${b.bookingStatus}) =>`,
-                err?.response?.data ?? err
-              );
-            })
-          )
-        );
-        data = await getMyBookings();
-      }
-
+      const data = await getMyBookings();
       set({ bookings: data.map(mapBooking), isLoading: false });
     } catch (error) {
       console.log("FETCH VENDOR BOOKINGS ERROR =>", error);
@@ -189,6 +199,116 @@ export const useVendorBookingsStore = create<VendorBookingsState>((set, get) => 
     } catch (error) {
       console.log("UPDATE BOOKING STATUS ERROR =>", error);
       set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  acceptBooking: async (id) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) => (b.id === id ? { ...b, status: "Accepted" } : b)),
+    }));
+    try {
+      await acceptBooking(id);
+    } catch (error) {
+      console.log("ACCEPT BOOKING ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  rejectBooking: async (id, cancellationReason) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) => (b.id === id ? { ...b, status: "Rejected" } : b)),
+    }));
+    try {
+      await rejectBooking(id, cancellationReason);
+    } catch (error) {
+      console.log("REJECT BOOKING ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  primaryAccept: async (id) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        b.id === id ? { ...b, status: "Accepted", rawStatus: "waiting_payment" } : b
+      ),
+    }));
+    try {
+      await primaryAccept(id);
+      await get().fetchBookings();
+    } catch (error) {
+      console.log("PRIMARY ACCEPT ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  primaryReject: async (id, reason) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        b.id === id ? { ...b, status: "Rejected", rawStatus: "primary_rejected" } : b
+      ),
+    }));
+    try {
+      await primaryReject(id, reason);
+      await get().fetchBookings();
+    } catch (error) {
+      console.log("PRIMARY REJECT ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  promotedAccept: async (id) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        // Backend puts a promoted vendor's accept on the same "waiting_payment"
+        // status as a normal primary accept (see BookingEngineService.handlePromotedAccept) —
+        // this optimistic value is overwritten by the fetchBookings() call below
+        // as soon as the real response lands.
+        b.id === id ? { ...b, status: "Accepted", rawStatus: "waiting_payment" } : b
+      ),
+    }));
+    try {
+      await promotedAccept(id);
+      await get().fetchBookings();
+    } catch (error) {
+      console.log("PROMOTED ACCEPT ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  promotedReject: async (id, reason) => {
+    const previous = get().bookings;
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        b.id === id ? { ...b, status: "Rejected", rawStatus: "primary_rejected" } : b
+      ),
+    }));
+    try {
+      await promotedReject(id, reason);
+      await get().fetchBookings();
+    } catch (error) {
+      console.log("PROMOTED REJECT ERROR =>", error);
+      set({ bookings: previous });
+      throw error;
+    }
+  },
+
+  standbyRespond: async (id, response) => {
+    try {
+      await standbyRespond(id, response);
+      await get().fetchBookings();
+    } catch (error) {
+      console.log("STANDBY RESPOND ERROR =>", error);
       throw error;
     }
   },

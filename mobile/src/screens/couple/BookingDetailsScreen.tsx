@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -8,18 +8,47 @@ import { useBookingStore } from "../../store/bookingStore";
 import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
 
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
-const pretty = (value: string) => value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const pretty = (value?: string) =>
+  value
+    ? value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "--";
 
 export default function BookingDetailsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { selectedBooking, isLoading, isSubmitting, error, loadBooking, cancel } = useBookingStore();
+  const {
+    selectedBooking,
+    isLoading,
+    isSubmitting,
+    error,
+    loadBooking,
+    cancel,
+    alternativeVendors,
+    isLoadingAlternatives,
+    isSelectingVendor,
+    loadAlternativeVendors,
+    selectVendor,
+  } = useBookingStore();
   const bookingId = String(route.params?.bookingId ?? "");
   const [paymentMode, setPaymentMode] = useState<"advance" | "remaining" | null>(null);
 
   useEffect(() => {
     loadBooking(bookingId);
   }, [bookingId, loadBooking]);
+
+  const status = selectedBooking?.bookingStatus.toLowerCase() ?? "";
+
+  // Shown once the original vendor has rejected and the system is looking
+  // for a replacement — lets the customer pick instead of only waiting for
+  // the automatic standby promotion to happen on its own.
+  const showAlternativeVendors =
+    status === "primary_rejected" || status === "promote_standby";
+
+  useEffect(() => {
+    if (showAlternativeVendors && bookingId) {
+      loadAlternativeVendors(bookingId);
+    }
+  }, [showAlternativeVendors, bookingId, loadAlternativeVendors]);
 
   const confirmCancel = () => {
     Alert.alert("Cancel Booking", "Are you sure you want to cancel this booking?", [
@@ -35,6 +64,30 @@ export default function BookingDetailsScreen() {
     ]);
   };
 
+  const handleSelectVendor = (vendorId: string, businessName: string) => {
+    Alert.alert(
+      "Select Vendor",
+      `Book ${businessName} for this event?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Select",
+          onPress: async () => {
+            const success = await selectVendor(bookingId, vendorId);
+            if (success) {
+              Alert.alert(
+                "Vendor Selected",
+                `${businessName} has been notified. You'll be able to pay the advance once they accept.`,
+              );
+            } else {
+              Alert.alert("Error", "Couldn't select this vendor. Please try again.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   if (isLoading && !selectedBooking) {
     return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color="#FF4D6D" /></SafeAreaView>;
   }
@@ -44,9 +97,20 @@ export default function BookingDetailsScreen() {
   }
 
   const booking = selectedBooking;
-  const canCancel = !["cancelled", "completed", "payment_approved"].includes(booking.bookingStatus);
-  const canPayAdvance = booking.advancePaid <= 0 && booking.bookingStatus === "pending" && booking.paymentStatus !== "paid";
-  const canPayRemaining = booking.bookingStatus === "payment_approved" && booking.remainingAmount > 0;
+
+  const canCancel = ![
+    "cancelled",
+    "completed",
+    "closed",
+    "event_completed",
+    "awaiting_admin_review",
+    "payment_approved",
+  ].includes(status);
+
+  const canPayAdvance = status === "waiting_payment";
+
+  const canPayRemaining =
+    status === "payment_approved" && booking.remainingAmount > 0;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -63,8 +127,147 @@ export default function BookingDetailsScreen() {
           <Text style={styles.eyebrow}>BOOKING #{booking.bookingNumber}</Text>
           <Text style={styles.heroTitle}>{booking.vendorName}</Text>
           <Text style={styles.heroSub}>{booking.category} · {booking.eventType}</Text>
-          <View style={styles.status}><Text style={styles.statusText}>{pretty(booking.bookingStatus)}</Text></View>
+          <View
+            style={[
+              styles.status,
+              {
+                backgroundColor:
+                  status === "waiting_payment"
+                    ? "#FEF3C7"
+                    : status === "matching" || status === "waiting_primary_vendor"
+                    ? "#E0F2FE"
+                    : status === "primary_rejected" || status === "promote_standby"
+                    ? "#F3E8FF"
+                    : status === "primary_accepted" ||
+                      status === "advance_paid" ||
+                      status === "accepted"
+                    ? "#DCFCE7"
+                    : status === "in_progress"
+                    ? "#FCE7F3"
+                    : status === "event_completed" || status === "awaiting_admin_review"
+                    ? "#E0E7FF"
+                    : status === "payment_approved"
+                    ? "#DCFCE7"
+                    : status === "cancelled"
+                    ? "#FEE2E2"
+                    : "#F3F4F6",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color:
+                    status === "waiting_payment"
+                      ? "#92400E"
+                      : status === "matching" || status === "waiting_primary_vendor"
+                      ? "#0369A1"
+                      : status === "primary_rejected" || status === "promote_standby"
+                      ? "#7E22CE"
+                      : status === "primary_accepted" ||
+                        status === "advance_paid" ||
+                        status === "accepted"
+                      ? "#15803D"
+                      : status === "in_progress"
+                      ? "#BE185D"
+                      : status === "event_completed" || status === "awaiting_admin_review"
+                      ? "#4338CA"
+                      : status === "payment_approved"
+                      ? "#15803D"
+                      : status === "completed" || status === "closed"
+                      ? "#15803D"
+                      : status === "cancelled"
+                      ? "#B91C1C"
+                      : "#374151",
+                },
+              ]}
+            >
+              {pretty(status)}
+            </Text>
+          </View>
         </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Booking Progress</Text>
+
+          <Row
+            icon="timeline"
+            label="Current Status"
+            value={pretty(status)}
+          />
+
+          <Row
+            icon="payments"
+            label="Payment Status"
+            value={pretty(booking.paymentStatus)}
+          />
+
+          <Row
+            icon="verified"
+            label="Admin Approval"
+            value={
+              ["payment_approved", "completed", "closed"].includes(status)
+                ? "Approved"
+                : "Pending"
+            }
+          />
+        </View>
+
+        {showAlternativeVendors && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Choose a Replacement Vendor</Text>
+            <Text style={styles.alternativesSubtitle}>
+              {booking.vendorName} is unavailable for this booking. Pick a replacement below,
+              or we'll automatically assign the next available vendor shortly.
+            </Text>
+
+            {isLoadingAlternatives ? (
+              <ActivityIndicator size="small" color="#FF4D6D" style={{ marginTop: 12 }} />
+            ) : alternativeVendors.length === 0 ? (
+              <Text style={styles.alternativesEmpty}>
+                No alternative vendors found right now. We'll notify you once one is assigned.
+              </Text>
+            ) : (
+              alternativeVendors.map((vendor) => (
+                <View key={vendor.id} style={styles.vendorOptionCard}>
+                  {vendor.profileImage ? (
+                    <Image source={{ uri: vendor.profileImage }} style={styles.vendorOptionImage} />
+                  ) : (
+                    <View style={[styles.vendorOptionImage, styles.vendorOptionImageFallback]}>
+                      <MaterialIcons name="storefront" size={22} color="#FF4D6D" />
+                    </View>
+                  )}
+                  <View style={styles.vendorOptionCopy}>
+                    <Text style={styles.vendorOptionName}>{vendor.businessName}</Text>
+                    <Text style={styles.vendorOptionMeta}>
+                      {vendor.category}
+                      {vendor.city ? ` · ${vendor.city}` : ""}
+                    </Text>
+                    <View style={styles.vendorOptionMetaRow}>
+                      <MaterialIcons name="star" size={13} color="#F5A623" />
+                      <Text style={styles.vendorOptionRating}>{vendor.rating.toFixed(1)}</Text>
+                      <Text style={styles.vendorOptionPrice}>
+                        Starting {money(vendor.startingPrice)}
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.vendorSelectButton, isSelectingVendor && styles.vendorSelectButtonDisabled]}
+                    onPress={() => handleSelectVendor(vendor.id, vendor.businessName)}
+                    disabled={isSelectingVendor}
+                  >
+                    {isSelectingVendor ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.vendorSelectButtonText}>Select</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Vendor Information</Text>
@@ -76,9 +279,17 @@ export default function BookingDetailsScreen() {
         </View>
 
         {(canPayAdvance || canPayRemaining) && (
-          <TouchableOpacity style={styles.payButton} onPress={() => setPaymentMode(canPayRemaining ? "remaining" : "advance")}>
+          <TouchableOpacity
+            style={styles.payButton}
+            onPress={() =>
+              setPaymentMode(canPayRemaining ? "remaining" : "advance")
+            }
+          >
             <MaterialIcons name="credit-card" size={18} color="#FFFFFF" />
-            <Text style={styles.payText}>{canPayRemaining ? "Pay Remaining Amount" : "Pay Secure Advance"}</Text>
+
+            <Text style={styles.payText}>
+              {canPayRemaining ? "Pay Remaining Amount" : "Pay Advance Payment"}
+            </Text>
           </TouchableOpacity>
         )}
 
@@ -135,4 +346,19 @@ const styles = StyleSheet.create({
   paymentRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#FFE6EB" }, paymentLabel: { color: "#8D6171" }, paymentValue: { color: "#3F1D2F", fontWeight: "700" }, paymentAccent: { color: "#E63B5F" },
   cancelButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 16, borderWidth: 1, borderColor: "#FFB3BF", paddingVertical: 14, backgroundColor: "#FFFEF7" }, cancelText: { color: "#E63B5F", fontWeight: "700" },
   payButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 16, paddingVertical: 15, backgroundColor: "#FF4D6D", marginBottom: 14 }, payText: { color: "#FFFFFF", fontWeight: "800" },
+
+  alternativesSubtitle: { color: "#8D6171", fontSize: 12, lineHeight: 18, marginBottom: 12, marginTop: -6 },
+  alternativesEmpty: { color: "#8D6171", fontSize: 12, textAlign: "center", paddingVertical: 12 },
+  vendorOptionCard: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#FFE6EB" },
+  vendorOptionImage: { width: 48, height: 48, borderRadius: 12 },
+  vendorOptionImageFallback: { backgroundColor: "#FFE6EB", alignItems: "center", justifyContent: "center" },
+  vendorOptionCopy: { flex: 1 },
+  vendorOptionName: { color: "#3F1D2F", fontWeight: "700", fontSize: 13 },
+  vendorOptionMeta: { color: "#8D6171", fontSize: 11, marginTop: 2 },
+  vendorOptionMetaRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+  vendorOptionRating: { color: "#3F1D2F", fontSize: 11, fontWeight: "700", marginRight: 6 },
+  vendorOptionPrice: { color: "#8D6171", fontSize: 11 },
+  vendorSelectButton: { backgroundColor: "#FF4D6D", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
+  vendorSelectButtonDisabled: { opacity: 0.6 },
+  vendorSelectButtonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 12 },
 });

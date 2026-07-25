@@ -9,17 +9,100 @@ import { styles } from "../../../screens/couple/styles/BookingScreen.styles";
 import { downloadBookingInvoice } from "../../../api/bookings.api";
 import { getVendorById } from "../../../api/vendor.api";
 
-const STATUS_COLORS: Record<Booking["bookingStatus"], { bg: string; text: string }> = {
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   pending: { bg: "#FFF3B0", text: "#6C2D45" },
-  advance_paid: { bg: "#DBEAFE", text: "#1D4ED8" },
-  accepted: { bg: "#FFF8D8", text: "#6C2D45" },
-  event_completed: { bg: "#E0E7FF", text: "#4338CA" },
-  awaiting_admin_review: { bg: "#F3E8FF", text: "#7E22CE" },
-  payment_approved: { bg: "#D1FAE5", text: "#047857" },
-  payment_held: { bg: "#FEE2E2", text: "#B91C1C" },
-  completed: { bg: "#FFE6EB", text: "#FF4D6D" },
-  rejected: { bg: "#FFE6EB", text: "#E63B5F" },
-  cancelled: { bg: "#FFE6EB", text: "#E63B5F" },
+
+  matching: { bg: "#E0F2FE", text: "#0369A1" },
+
+  waiting_primary_vendor: {
+    bg: "#E0F2FE",
+    text: "#0369A1",
+  },
+
+  primary_accepted: {
+    bg: "#DCFCE7",
+    text: "#15803D",
+  },
+
+  waiting_payment: {
+    bg: "#FEF3C7",
+    text: "#92400E",
+  },
+
+  primary_rejected: {
+    bg: "#FEE2E2",
+    text: "#B91C1C",
+  },
+
+  promote_standby: {
+    bg: "#F3E8FF",
+    text: "#7E22CE",
+  },
+
+  standby_accepted: {
+    bg: "#DCFCE7",
+    text: "#15803D",
+  },
+
+  advance_paid: {
+    bg: "#DBEAFE",
+    text: "#2563EB",
+  },
+
+  accepted: {
+    bg: "#DCFCE7",
+    text: "#15803D",
+  },
+
+  in_progress: {
+    bg: "#DBEAFE",
+    text: "#2563EB",
+  },
+
+  event_completed: {
+    bg: "#E0E7FF",
+    text: "#4338CA",
+  },
+
+  awaiting_admin_review: {
+    bg: "#F3E8FF",
+    text: "#7E22CE",
+  },
+
+  payment_approved: {
+    bg: "#DCFCE7",
+    text: "#15803D",
+  },
+
+  payment_held: {
+    bg: "#FEE2E2",
+    text: "#B91C1C",
+  },
+
+  review_pending: {
+    bg: "#FDF2F8",
+    text: "#BE185D",
+  },
+
+  completed: {
+    bg: "#D1FAE5",
+    text: "#047857",
+  },
+
+  closed: {
+    bg: "#D1FAE5",
+    text: "#047857",
+  },
+
+  rejected: {
+    bg: "#FEE2E2",
+    text: "#B91C1C",
+  },
+
+  cancelled: {
+    bg: "#FEE2E2",
+    text: "#B91C1C",
+  },
 };
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800";
@@ -83,10 +166,22 @@ export function BookingListItem({ booking, onPress, onPay, onWriteReview }: Prop
     };
   }, [booking.vendorId]);
 
-  const statusStyle = STATUS_COLORS[booking.bookingStatus];
-  const canPayAdvance = booking.advancePaid <= 0 && booking.bookingStatus === "pending" && booking.paymentStatus !== "paid";
-  const canPayRemaining = booking.bookingStatus === "payment_approved" && booking.remainingAmount > 0;
-  const canWriteReview = booking.bookingStatus === "event_completed"; // NEW
+  console.log("Booking Status =", booking.bookingStatus);
+
+const statusStyle =
+  STATUS_COLORS[booking.bookingStatus as keyof typeof STATUS_COLORS] ?? {
+    bg: "#DCFCE7",
+    text: "#15803D",
+  };
+ const canPayAdvance =
+  booking.bookingStatus === "waiting_payment";
+
+const canPayRemaining =
+  booking.bookingStatus === "payment_approved" &&
+  booking.remainingAmount > 0;
+
+const canWriteReview =
+  booking.bookingStatus === "event_completed";
 
   const partialLabel = booking.bookingStatus === "awaiting_admin_review"
     ? "Awaiting Admin Review"
@@ -95,15 +190,53 @@ export function BookingListItem({ booking, onPress, onPay, onWriteReview }: Prop
       : booking.adminApproved
         ? "Advance Paid"
         : "Awaiting Booking Approval";
-  const paymentLabel = booking.bookingStatus === "cancelled"
-    ? "Booking Cancelled"
-    : booking.paymentStatus === "paid"
-      ? "Payment Completed"
-      : canPayRemaining
-        ? "Pay Remaining Amount"
-        : booking.paymentStatus === "partial"
-          ? partialLabel
-          : "Pay Secure Advance";
+  let paymentLabel = "Waiting...";
+
+if (booking.bookingStatus === "cancelled") {
+  paymentLabel = "Booking Cancelled";
+}
+else if (booking.bookingStatus === "matching") {
+  paymentLabel = "Finding Best Vendor";
+}
+else if (booking.bookingStatus === "waiting_primary_vendor") {
+  paymentLabel = "Waiting Vendor Response";
+}
+else if (booking.bookingStatus === "primary_accepted") {
+  paymentLabel = "Vendor Accepted";
+}
+else if (booking.bookingStatus === "waiting_payment") {
+  paymentLabel = "Pay Secure Advance";
+}
+else if (booking.bookingStatus === "advance_paid") {
+  paymentLabel = "Advance Paid";
+}
+else if (booking.bookingStatus === "accepted") {
+  paymentLabel = "Booking Confirmed";
+}
+else if (booking.bookingStatus === "event_completed") {
+  paymentLabel = "Write Review";
+}
+else if (booking.bookingStatus === "awaiting_admin_review") {
+  paymentLabel = "Review Under Approval";
+}
+else if (booking.bookingStatus === "payment_approved") {
+  paymentLabel = "Pay Remaining Amount";
+}
+else if (booking.bookingStatus === "payment_held") {
+  paymentLabel = "Payment On Hold";
+}
+else if (booking.bookingStatus === "review_pending") {
+  paymentLabel = "Review Pending";
+}
+else if (
+  booking.bookingStatus === "completed" ||
+  booking.bookingStatus === "closed"
+) {
+  paymentLabel = "Booking Completed";
+}
+else if (booking.bookingStatus === "rejected") {
+  paymentLabel = "Booking Rejected";
+}
 
   const handleDownloadInvoice = async () => {
     if (downloadingInvoice) return;

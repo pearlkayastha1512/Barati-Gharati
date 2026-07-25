@@ -1,28 +1,3 @@
-// import api from "./axios";
-
-// export const login = (data: any) => {
-//   return api.post("/auth/login", data);
-// };
-
-// export const register = (data: any) => {
-//   return api.post("/auth/register", data);
-// };
-// export const forgotPassword = (email: string) => {
-//   return api.post("/auth/forgot-password", {
-//     email,
-//   });
-// };
-// export const resetPassword = (data: {
-//   token: string;
-//   password: string;
-// }) => {
-//   return api.post("/auth/reset-password", data);
-// };
-// export const verifyEmail = (token: string) => {
-//   return api.post("/auth/verify-email", {
-//     token,
-//   });
-// };
 import api from "./axios";
 
 import {
@@ -30,6 +5,8 @@ import {
   RegisterRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  VerifyEmailOtpRequest,
+  ResendEmailOtpRequest,
   AuthResponse,
   LoginApiResponse,
   ApiResponse,
@@ -73,6 +50,7 @@ export const login = async (
       adminRole: backendUser.adminRole,
       permissions: backendUser.permissions,
       mustChangePassword: backendUser.mustChangePassword,
+      membership: backendUser.membership,
     },
   };
 };
@@ -115,6 +93,30 @@ export const verifyEmail = async (
 ): Promise<ApiResponse> => {
   const response = await api.get<ApiResponse>(
     `/auth/verify-email?token=${token}`,
+  );
+
+  return response.data;
+};
+
+// NEW — OTP-based verification (used right after registration)
+export const verifyEmailOtp = async (
+  data: VerifyEmailOtpRequest,
+): Promise<ApiResponse> => {
+  const response = await api.post<ApiResponse>(
+    "/auth/verify-email-otp",
+    data,
+  );
+
+  return response.data;
+};
+
+// NEW — resend OTP if it expired or user didn't receive it
+export const resendEmailOtp = async (
+  data: ResendEmailOtpRequest,
+): Promise<ApiResponse> => {
+  const response = await api.post<ApiResponse>(
+    "/auth/resend-email-otp",
+    data,
   );
 
   return response.data;

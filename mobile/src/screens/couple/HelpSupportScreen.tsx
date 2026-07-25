@@ -10,8 +10,8 @@ import { styles } from "./styles/HelpSupportScreen.styles";
 // TODO: replace with real values from a config/API once available
 const CONTACT_INFO = {
   phone: "+91 98765 43210",
-  email: "baratigharati@gmail.com",
-  office: ["Connaught Place,", "New Delhi, India"],
+  email: "support@baratigharati.com",
+  office: ["Office No. 2, Chamber 4, Udaigiri Tower, Kaushambi,", "Ghaziabad, Uttar Pradesh – 201010, India"],
   hours: ["Monday - Saturday", "9:00 AM – 7:00 PM"],
 };
 

@@ -1,4 +1,4 @@
-import { User } from "./user";
+import { User, CustomerMembership } from "./user";
 
 export interface LoginRequest {
   email: string;
@@ -10,6 +10,10 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
+  membership?: CustomerMembership;
+  membershipPaymentOrderId?: string;
+  membershipPaymentId?: string;
+  membershipPaymentSignature?: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -19,6 +23,17 @@ export interface ForgotPasswordRequest {
 export interface ResetPasswordRequest {
   token: string;
   password: string;
+}
+
+// NEW
+export interface VerifyEmailOtpRequest {
+  email: string;
+  otp: string;
+}
+
+// NEW
+export interface ResendEmailOtpRequest {
+  email: string;
 }
 
 export interface AuthUser {
@@ -35,6 +50,7 @@ export interface AuthUser {
   adminRole?: string | null;
   permissions?: string[];
   mustChangePassword?: boolean;
+  membership?: CustomerMembership;
 }
 
 export interface AuthResponse {

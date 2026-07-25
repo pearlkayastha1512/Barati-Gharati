@@ -38,19 +38,34 @@ export default function BookingsScreen() {
   };
 
   const totalCount = bookings.length;
-  const pendingCount = bookings.filter(
-    (b) => b.status === "Pending" || b.status === "Accepted"
-  ).length;
+
+  // FIXED: `b.status` is already the bucketed VendorBookingStatus
+  // ("Pending" | "Accepted" | "Completed" | "Cancelled" | "Rejected") produced by
+  // mapStatus() in vendorBookingsStore. It is never a raw backend string like
+  // "advance_paid" or "waiting_payment" — that raw value lives in `b.rawStatus`.
+  // Comparing b.status.toLowerCase() against raw backend strings always failed
+  // silently and pinned pendingCount at 0. Compare against the bucket directly.
+  const pendingCount = bookings.filter((b) => b.status === "Pending").length;
+
   const completedCount = bookings.filter((b) => b.status === "Completed").length;
+
+  // NOTE: this depends on the backend actually sending payoutStatus as the
+  // literal strings "released" / "settled" on every booking. If revenue still
+  // looks wrong after the status fix below, log a real booking object here
+  // and confirm payoutStatus's actual values against the Prisma schema —
+  // vendorNetAmount also defaults to 0 in mapBooking() if the backend omits it.
   const totalRevenue = bookings
-  .filter((b) => b.payoutStatus === "released" || b.payoutStatus === "settled")
-  .reduce((sum, b) => sum + b.vendorNetAmount, 0);
+    .filter((b) => b.payoutStatus === "released" || b.payoutStatus === "settled")
+    .reduce((sum, b) => sum + b.vendorNetAmount, 0);
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
       booking.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
       booking.eventType.toLowerCase().includes(searchText.toLowerCase());
 
+    // FIXED: compare directly against the bucketed status — no STATUS_MAP
+    // translation needed since booking.status and statusFilter are now the
+    // same shape ("Pending" | "Accepted" | "Completed" | "Cancelled").
     const matchesStatus =
       statusFilter === "All Status" || booking.status === statusFilter;
 

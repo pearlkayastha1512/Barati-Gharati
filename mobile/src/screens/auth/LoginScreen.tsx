@@ -17,6 +17,7 @@ import { StackActions, useNavigation } from "@react-navigation/native";
 import { login } from "../../api/auth.api";
 import { useAuthStore } from "../../store/authStore";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
+import { useVendorRegistrationStore } from "../../store/vendorRegistrationStore";
 
 type LoginForm = {
   email: string;
@@ -29,6 +30,7 @@ export default function LoginScreen() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const resetVendorRegistration = useVendorRegistrationStore((state) => state.reset);
 
   const {
     control,
@@ -46,6 +48,7 @@ export default function LoginScreen() {
       setLoading(true);
       const response = await login(data);
       await saveAuth(response.accessToken, response.user);
+console.log("LOGGED IN USER =>", JSON.stringify(response.user, null, 2));
 
       const appNavigation = navigation.getParent() ?? navigation;
 
@@ -195,6 +198,18 @@ export default function LoginScreen() {
                 <Text style={styles.register}>Register</Text>
               </TouchableRipple>
             </View>
+
+            <View style={styles.footerSecondary}>
+              <Text style={styles.footerText}>Want to list your services? </Text>
+              <TouchableRipple
+                onPress={() => {
+                  resetVendorRegistration();
+                  navigation.navigate("VendorRegister");
+                }}
+              >
+                <Text style={styles.register}>Become a Vendor</Text>
+              </TouchableRipple>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -328,6 +343,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginTop: SPACING.xl,
+  },
+
+  footerSecondary: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: SPACING.sm,
   },
 
   footerText: {

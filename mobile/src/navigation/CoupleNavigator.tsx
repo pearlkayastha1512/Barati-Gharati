@@ -21,6 +21,8 @@ import MessagesScreen from "../screens/couple/MessagesScreen";
 import ChatScreen from "../screens/couple/ChatScreen";
 import VendorRegistrationScreen from "../screens/vendor/VendorRegistration/VendorRegistrationScreen";
 import BookingDetailsScreen from "../screens/couple/BookingDetailsScreen";
+import { PlanMyWeddingScreen } from "../screens/couple/PlanMyWeddingScreen"; // NEW
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator(); // NEW
 
@@ -88,6 +90,7 @@ export default function CoupleNavigator() {
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
       <Stack.Screen name="RefundPolicy" component={RefundPolicyScreen} />
+      <Stack.Screen name="PlanMyWedding" component={PlanMyWeddingScreen} />
       
     </Stack.Navigator>
   );

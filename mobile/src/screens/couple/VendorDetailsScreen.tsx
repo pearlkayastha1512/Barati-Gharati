@@ -27,8 +27,6 @@ import { useAuthStore } from "../../store/authStore";
 import { BookVendorModal } from "../../components/users/vendors/BookVendorModal";
 import { useBookingStore } from "../../store/bookingStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Booking } from "../../types/booking";
-import { PaymentCheckoutModal } from "../../components/users/booking/PaymentCheckoutModal";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -56,7 +54,7 @@ const EMPTY_VENDOR: Vendor = {
   image: "",
   packages: [],
 };
-const EMPTY_PHOTOS: string[] = []; 
+const EMPTY_PHOTOS: string[] = [];
 
 export default function VendorDetailsScreen() {
   const navigation = useNavigation<any>();
@@ -66,7 +64,6 @@ export default function VendorDetailsScreen() {
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const { user } = useAuthStore();
   const [bookModalVisible, setBookModalVisible] = useState(false);
-  const [newBookingForPayment, setNewBookingForPayment] = useState<Booking | null>(null);
   const addBooking = useBookingStore((state) => state.addBooking);
   const bookings = useBookingStore((state) => state.bookings);
   const loadBookings = useBookingStore((state) => state.loadBookings);
@@ -75,7 +72,6 @@ export default function VendorDetailsScreen() {
   const [vendorError, setVendorError] = useState<string | null>(null);
   const vendor = vendorData ?? EMPTY_VENDOR;
 
-  // The UUID the backend actually expects for review endpoints (Review.vendorId FK)
   const reviewVendorId = vendor.backendId ?? "";
 
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
@@ -119,14 +115,12 @@ export default function VendorDetailsScreen() {
   const { average, total, breakdown } = getVendorAverage(reviewVendorId);
   const userReview = getUserReviewForVendor(reviewVendorId, currentUserId);
 
-  // Load real reviews for this vendor from the backend (uses the UUID, not the numeric id)
   useEffect(() => {
     if (reviewVendorId) {
       loadReviewsForVendor(reviewVendorId);
     }
   }, [reviewVendorId]);
 
-  // Load the user's bookings so we can find a reviewable (completed) booking with this vendor
   useEffect(() => {
     loadBookings();
   }, []);
@@ -281,7 +275,6 @@ export default function VendorDetailsScreen() {
         </View>
       </ImageBackground>
 
-      {/* Gallery — real portfolio items uploaded by the vendor */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Gallery</Text>
         {portfolioLoading ? (
@@ -306,13 +299,11 @@ export default function VendorDetailsScreen() {
         )}
       </View>
 
-      {/* About — vendor's own description, no dummy amenities */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>About</Text>
         <Text style={styles.aboutText}>{aboutText}</Text>
       </View>
 
-      {/* Services — real packages from vendor.packages */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Services</Text>
         {vendorPackages.length > 0 ? (
@@ -338,7 +329,6 @@ export default function VendorDetailsScreen() {
         )}
       </View>
 
-      {/* Customer Reviews */}
       <View style={styles.card}>
         <View style={styles.reviewsHeaderRow}>
           <View>
@@ -382,13 +372,11 @@ export default function VendorDetailsScreen() {
         )}
       </View>
 
-      {/* Send Inquiry — quick contact CTA above Book Now */}
       <TouchableOpacity style={styles.sendInquiryButton} onPress={handleSendInquiry}>
         <MaterialIcons name="chat-bubble-outline" size={18} color="#FF4D6D" />
         <Text style={styles.sendInquiryButtonText}>Send Inquiry</Text>
       </TouchableOpacity>
 
-      {/* Book Now — fixed action at bottom of scroll content */}
       <TouchableOpacity style={styles.bookNowFixed} onPress={() => setBookModalVisible(true)}>
         <Text style={styles.bookNowFixedText}>Book Now</Text>
       </TouchableOpacity>
@@ -448,19 +436,24 @@ export default function VendorDetailsScreen() {
             return false;
           }
 
-          setNewBookingForPayment(booking);
+          // We deliberately do NOT open a payment screen here. The booking
+          // is created as "pending" and the backend's Smart Booking Engine
+          // takes over (matching -> vendor accept/reject -> possible standby
+          // promotion). The customer only pays once the booking reaches
+          // "waiting_payment", handled by BookingScreen / BookingListItem /
+          // PaymentCheckoutModal on the Bookings tab.
+          setBookModalVisible(false);
+          Alert.alert(
+            "Request Sent!",
+            "Your booking request has been sent to the vendor. You'll be notified once they respond, and you can pay the advance from your Bookings tab.",
+            [
+              {
+                text: "View Bookings",
+                onPress: () => navigation.getParent()?.navigate("CoupleTabs", { screen: "Bookings" }),
+              },
+            ],
+          );
           return true;
-        }}
-      />
-      <PaymentCheckoutModal
-        booking={newBookingForPayment}
-        mode="advance"
-        visible={newBookingForPayment !== null}
-        onClose={() => setNewBookingForPayment(null)}
-        onPaid={async () => {
-          await useBookingStore.getState().loadBookings();
-          setNewBookingForPayment(null);
-          navigation.getParent()?.navigate("CoupleTabs", { screen: "Bookings" });
         }}
       />
       <WriteReviewModal
@@ -487,7 +480,6 @@ export default function VendorDetailsScreen() {
 
       </ScrollView>
 
-      {/* Full-screen portfolio image viewer */}
       <Modal
         visible={viewerVisible}
         transparent
