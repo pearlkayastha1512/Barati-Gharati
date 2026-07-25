@@ -6,10 +6,14 @@ import {
   createBooking,
   getBookingById,
   getMyBookings,
+  getAlternativeVendors,
+  selectAlternativeVendor,
+  AlternativeVendor,
 } from "../api/bookings.api";
 import { Booking, CreateBookingInput } from "../types/booking";
 
 export type { Booking, BookingStatus } from "../types/booking";
+export type { AlternativeVendor } from "../api/bookings.api";
 
 interface BookingState {
   bookings: Booking[];
@@ -17,10 +21,17 @@ interface BookingState {
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
+
+  alternativeVendors: AlternativeVendor[];
+  isLoadingAlternatives: boolean;
+  isSelectingVendor: boolean;
+
   loadBookings: () => Promise<void>;
   loadBooking: (id: string) => Promise<void>;
   addBooking: (input: CreateBookingInput) => Promise<Booking | null>;
   cancel: (id: string, reason: string) => Promise<boolean>;
+  loadAlternativeVendors: (bookingId: string) => Promise<void>;
+  selectVendor: (bookingId: string, vendorId: string) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -34,12 +45,16 @@ const errorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-export const useBookingStore = create<BookingState>((set) => ({
+export const useBookingStore = create<BookingState>((set, get) => ({
   bookings: [],
   selectedBooking: null,
   isLoading: false,
   isSubmitting: false,
   error: null,
+
+  alternativeVendors: [],
+  isLoadingAlternatives: false,
+  isSelectingVendor: false,
 
   clearError: () => set({ error: null }),
 
@@ -105,6 +120,49 @@ export const useBookingStore = create<BookingState>((set) => ({
       set({
         isSubmitting: false,
         error: errorMessage(error, "Booking cancel nahi ho saki."),
+      });
+      return false;
+    }
+  },
+
+  // Fetches candidate replacement vendors — used once the original vendor
+  // has rejected (bookingStatus "primary_rejected") or a standby is being
+  // sought ("promote_standby"), so the customer can pick instead of only
+  // waiting for the automatic promotion.
+  loadAlternativeVendors: async (bookingId) => {
+    set({ isLoadingAlternatives: true, error: null });
+    try {
+      const alternativeVendors = await getAlternativeVendors(bookingId);
+      set({ alternativeVendors, isLoadingAlternatives: false });
+    } catch (error) {
+      set({
+        alternativeVendors: [],
+        isLoadingAlternatives: false,
+        error: errorMessage(error, "Alternative vendors load nahi ho sake."),
+      });
+    }
+  },
+
+  selectVendor: async (bookingId, vendorId) => {
+    set({ isSelectingVendor: true, error: null });
+    try {
+      await selectAlternativeVendor(bookingId, vendorId);
+      // Refresh the booking so the screen picks up the new vendorId +
+      // "waiting_primary_vendor" status immediately.
+      const selectedBooking = await getBookingById(bookingId);
+      set((state) => ({
+        selectedBooking,
+        bookings: state.bookings.map((booking) =>
+          booking.id === bookingId ? selectedBooking : booking,
+        ),
+        alternativeVendors: [],
+        isSelectingVendor: false,
+      }));
+      return true;
+    } catch (error) {
+      set({
+        isSelectingVendor: false,
+        error: errorMessage(error, "Vendor select nahi ho saka."),
       });
       return false;
     }

@@ -70,9 +70,40 @@ export const cancelBooking = async (id: string, cancellationReason: string) => {
 
   return "data" in response.data ? response.data.data : response.data;
 };
+
 export const downloadBookingInvoice = async (id: string) => {
   const response = await api.get(`/invoice/download/${id}`, {
     responseType: "arraybuffer",
   });
+  return response.data;
+};
+
+// ── Smart Booking Engine — alternative vendor selection ──
+// Shown to the customer when the original vendor rejects and the system
+// is looking for a replacement (bookingStatus "primary_rejected" / "promote_standby").
+// Matches BookingEngineService.getAlternativeVendorsForCustomer() on the backend.
+export type AlternativeVendor = {
+  id: string;
+  businessName: string;
+  description: string | null;
+  profileImage: string | null;
+  coverImage: string | null;
+  badge: string;
+  city: string | null;
+  startingPrice: number;
+  category: string;
+  rating: number;
+  score: number;
+};
+
+export const getAlternativeVendors = async (bookingId: string) => {
+  const response = await api.get<{ success: boolean; data: AlternativeVendor[] }>(
+    `/bookings/${bookingId}/alternative-vendors`,
+  );
+  return response.data.data;
+};
+
+export const selectAlternativeVendor = async (bookingId: string, vendorId: string) => {
+  const response = await api.patch(`/bookings/${bookingId}/select-vendor`, { vendorId });
   return response.data;
 };

@@ -1,14 +1,23 @@
 export type BookingStatus =
   | "pending"
+  | "matching"
+  | "waiting_primary_vendor"
+  | "primary_accepted"
+  | "waiting_payment"
+  | "primary_rejected"
+  | "promote_standby"
+  | "standby_accepted"
   | "advance_paid"
   | "accepted"
+  | "in_progress"
   | "event_completed"
   | "awaiting_admin_review"
   | "payment_approved"
   | "payment_held"
+  | "review_pending"
   | "completed"
+  | "closed"
   | "rejected"
-
   | "cancelled";
 
 export type PaymentStatus =

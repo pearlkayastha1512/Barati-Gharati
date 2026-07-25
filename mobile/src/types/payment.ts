@@ -15,3 +15,25 @@ export type RazorpaySuccess = {
   razorpay_payment_id: string;
   razorpay_signature: string;
 };
+
+export type CustomerPremiumOrder = {
+  orderId: string;
+  keyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+};
+
+export type CustomerPremiumUpgradeOrder = CustomerPremiumOrder;
+
+export type VendorBadgeOrder = {
+  vendorId: string;
+  badge: string;
+  billingCycle: string;
+  orderId: string;
+  keyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+  monthlyBookingLimit: number;
+};

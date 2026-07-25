@@ -61,6 +61,7 @@ export const getMyBookings = async (): Promise<BackendBooking[]> => {
   return response.data.data;
 };
 
+// ── Legacy vendor actions (kept for back-compat / auto-accept flow) ──
 export const acceptBooking = async (id: string) => {
   const response = await api.patch(`/bookings/${id}/accept`);
   return response.data;
@@ -71,5 +72,34 @@ export const completeBookingEvent = async (id: string) => {
 };
 export const rejectBooking = async (id: string, cancellationReason: string) => {
   const response = await api.patch(`/bookings/${id}/reject`, { cancellationReason });
+  return response.data;
+};
+
+// ── Smart Booking Engine — vendor decision actions ──
+export const primaryAccept = async (id: string) => {
+  const response = await api.patch(`/bookings/${id}/primary-accept`);
+  return response.data;
+};
+
+export const primaryReject = async (id: string, reason?: string) => {
+  const response = await api.patch(`/bookings/${id}/primary-reject`, { reason });
+  return response.data;
+};
+
+export const promotedAccept = async (id: string) => {
+  const response = await api.patch(`/bookings/${id}/promoted-accept`);
+  return response.data;
+};
+
+export const promotedReject = async (id: string, reason?: string) => {
+  const response = await api.patch(`/bookings/${id}/promoted-reject`, { reason });
+  return response.data;
+};
+
+export const standbyRespond = async (
+  id: string,
+  response_: "AVAILABLE" | "NOT_AVAILABLE",
+) => {
+  const response = await api.patch(`/bookings/${id}/standby-respond`, { response: response_ });
   return response.data;
 };
