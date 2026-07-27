@@ -627,6 +627,7 @@ async getDashboard(userId: string) {
     },
     select: {
       amountPaid: true,
+      adminApproved: true,
       payout: {
         select: {
           status: true,

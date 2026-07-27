@@ -160,6 +160,38 @@ export class PaymentController {
   }
 
   // ==========================
+  // PREMIUM PLANNING ADVANCE
+  // ==========================
+
+  @Post('premium-advance/create-order')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  createPremiumAdvanceOrder(
+    @CurrentUser('sub') userId: string,
+    @Body() body: { planningRequestId: string },
+  ) {
+    return this.paymentService.createPremiumAdvanceOrder(
+      userId,
+      body.planningRequestId,
+    );
+  }
+
+  @Post('premium-advance/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  verifyPremiumAdvancePayment(
+    @CurrentUser('sub') userId: string,
+    @Body()
+    dto: VerifyPaymentDto & { planningRequestId: string },
+  ) {
+    return this.paymentService.verifyPremiumAdvancePayment(
+      userId,
+      dto.planningRequestId,
+      dto,
+    );
+  }
+
+  // ==========================
   // VERIFY PAYMENT
   // ==========================
 

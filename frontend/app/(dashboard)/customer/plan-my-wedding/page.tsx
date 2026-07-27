@@ -12,8 +12,45 @@ import {
   getMyPremiumPlanningRequestsApi,
   PremiumPlanningRequest,
   respondToPremiumQuotationApi,
-  payPremiumPlanningAdvanceApi,
+  createPremiumAdvanceOrderApi,
+  verifyPremiumAdvancePaymentApi,
 } from "@/services/api/premium-planning.api";
+
+type RazorpayResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+  modal?: { ondismiss?: () => void };
+  handler: (response: RazorpayResponse) => void;
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 
 const vendorOptions = ["Venue", "Catering", "Photography", "Videography", "Decoration", "Makeup", "Mehendi", "DJ & Entertainment", "Invitations", "Transport"];
@@ -113,12 +150,57 @@ export default function PlanMyWeddingPage() {
   const handlePayAdvance = async (id: string) => {
     setPayingAdvanceId(id);
     try {
-      await payPremiumPlanningAdvanceApi(id);
-      toast.success("🎉 Advance payment received! Your wedding plan is booked & vendors confirmed!");
-      await load();
+      const orderResult = await createPremiumAdvanceOrderApi(id);
+      if (!orderResult.ok || !orderResult.data) {
+        toast.error("Unable to prepare payment order.");
+        setPayingAdvanceId(null);
+        return;
+      }
+
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded || !window.Razorpay) {
+        toast.error("Payment gateway could not be loaded.");
+        setPayingAdvanceId(null);
+        return;
+      }
+
+      const order = orderResult.data;
+      const razorpay = new window.Razorpay({
+        key: order.keyId,
+        amount: order.amountInPaise,
+        currency: order.currency,
+        name: "Barati Gharati",
+        description: `${order.advancePercentage}% advance for Premium Wedding Plan`,
+        order_id: order.orderId,
+        prefill: {
+          name: user?.name ?? "",
+          email: user?.email ?? "",
+        },
+        theme: { color: "#e4005a" },
+        modal: {
+          ondismiss: () => setPayingAdvanceId(null),
+        },
+        handler: async (response) => {
+          try {
+            await verifyPremiumAdvancePaymentApi({
+              planningRequestId: id,
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
+            toast.success("🎉 Payment successful! Your wedding plan is booked & vendors confirmed!");
+            await load();
+          } catch (err: unknown) {
+            toast.error(axios.isAxiosError(err) ? err.response?.data?.message ?? "Payment verification failed." : "Payment verification failed.");
+          } finally {
+            setPayingAdvanceId(null);
+          }
+        },
+      });
+
+      razorpay.open();
     } catch (error: unknown) {
-      toast.error(axios.isAxiosError(error) ? error.response?.data?.message ?? "Failed to process advance payment." : "Failed to process advance payment.");
-    } finally {
+      toast.error(axios.isAxiosError(error) ? error.response?.data?.message ?? "Failed to initiate payment." : "Failed to initiate payment.");
       setPayingAdvanceId(null);
     }
   };

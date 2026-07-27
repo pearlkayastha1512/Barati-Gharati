@@ -1133,6 +1133,14 @@ async getAllBookings() {
       },
       review: true,
       payout: true,
+      vendorAssignments: {
+        include: {
+          vendor: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -1157,6 +1165,14 @@ async getBookingById(id: string) {
       package: true,
       review: true,
       payout: true,
+      vendorAssignments: {
+        include: {
+          vendor: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
     },
   });
 
@@ -1543,6 +1559,20 @@ private mapBooking(booking: any) {
     bookingStatus: this.mapBookingStatus(
       booking.status,
     ),
+    vendorAssignments: (booking.vendorAssignments || []).map((a: any) => ({
+      id: a.id,
+      vendorId: a.vendorId,
+      businessName: a.vendor?.businessName ?? '',
+      ownerName: a.vendor?.ownerName ?? '',
+      role: a.role,
+      priority: a.priority,
+      score: a.score,
+      status: a.status,
+      respondedAt: a.respondedAt,
+      promotedAt: a.promotedAt,
+      timeoutAt: a.timeoutAt,
+      createdAt: a.createdAt,
+    })),
     createdAt: booking.createdAt,
     updatedAt: booking.updatedAt,
     lastPaymentAt: booking.lastPaymentAt ?? null,

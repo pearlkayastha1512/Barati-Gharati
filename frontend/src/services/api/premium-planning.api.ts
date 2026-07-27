@@ -112,8 +112,32 @@ export async function bookPremiumPlanningRequestApi(id: string) {
   return data.data as PremiumPlanningRequest;
 }
 
-export async function payPremiumPlanningAdvanceApi(id: string) {
-  const { data } = await api.post(`/premium-planning/requests/${id}/pay-advance`);
+export async function createPremiumAdvanceOrderApi(planningRequestId: string) {
+  const { data } = await api.post(`/payment/premium-advance/create-order`, {
+    planningRequestId,
+  });
+  return {
+    ok: true,
+    data: data?.data as {
+      planningRequestId: string;
+      orderId: string;
+      keyId: string;
+      amount: number;
+      advancePercentage: number;
+      amountInPaise: number;
+      totalAmount: number;
+      currency: string;
+    },
+  };
+}
+
+export async function verifyPremiumAdvancePaymentApi(payload: {
+  planningRequestId: string;
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}) {
+  const { data } = await api.post(`/payment/premium-advance/verify`, payload);
   return data;
 }
 

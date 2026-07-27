@@ -53,6 +53,21 @@ export default function BookingManagementPage() {
 
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const bookingId = params.get("bookingId");
+      if (bookingId && bookings.length > 0) {
+        const match = bookings.find((b) => b.id === bookingId);
+        if (match) {
+          setSelectedBooking(match);
+          setIsModalOpen(true);
+        }
+      }
+    }
+  }, [bookings]);
+
+
   const [bookingStatus, setBookingStatus] =
     useState("all");
 

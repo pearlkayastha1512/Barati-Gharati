@@ -274,11 +274,13 @@ z-[999]
                           : "/customer";
 
                       const link =
-                        notification.type === "message"
+                        notification.link
+                          ? notification.link
+                          : notification.type === "message"
                           ? `${roleBase}/messages`
                           : notification.type === "booking"
                           ? `${roleBase}/bookings`
-                          : notification.link;
+                          : undefined;
 
                       if (link) {
                         router.push(link);

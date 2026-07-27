@@ -38,8 +38,12 @@ const loadWeddingBudget = useCustomerStore(
     useState(weddingBudget.toString());
 
   useEffect(() => {
-  loadWeddingBudget();
-}, [loadWeddingBudget]);
+    loadWeddingBudget();
+  }, [loadWeddingBudget]);
+
+  useEffect(() => {
+    setBudgetInput(weddingBudget.toString());
+  }, [weddingBudget]);
 
 const {
   totalSpent,
