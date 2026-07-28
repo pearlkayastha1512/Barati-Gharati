@@ -18,6 +18,7 @@ import { login } from "../../api/auth.api";
 import { useAuthStore } from "../../store/authStore";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
 import { useVendorRegistrationStore } from "../../store/vendorRegistrationStore";
+import { syncPushTokenWithBackend } from "../../hooks/usePushNotifications";
 
 type LoginForm = {
   email: string;
@@ -43,39 +44,40 @@ export default function LoginScreen() {
     },
   });
 
-  const onSubmit = async (data: LoginForm) => {
-    try {
-      setLoading(true);
-      const response = await login(data);
-      await saveAuth(response.accessToken, response.user);
-console.log("LOGGED IN USER =>", JSON.stringify(response.user, null, 2));
+ const onSubmit = async (data: LoginForm) => {
+  try {
+    setLoading(true);
+    const response = await login(data);
+    await saveAuth(response.accessToken, response.user);
+    await syncPushTokenWithBackend();   // <-- YE NAYI LINE
+    console.log("LOGGED IN USER =>", JSON.stringify(response.user, null, 2));
 
-      const appNavigation = navigation.getParent() ?? navigation;
+    const appNavigation = navigation.getParent() ?? navigation;
 
-      if (response.user.role === UserRole.VENDOR) {
-        appNavigation.dispatch(StackActions.replace("Vendor"));
-        return;
-      }
-
-      if (response.user.role === UserRole.ADMIN) {
-        appNavigation.dispatch(StackActions.replace("Admin"));
-        return;
-      }
-
-      appNavigation.dispatch(StackActions.replace("Couple"));
-    } catch (error: any) {
-      const isNetworkError = !error?.response;
-
-      Alert.alert(
-        "Login Failed",
-        isNetworkError
-          ? "Backend server se connect nahi ho pa raha. Please check that the backend is running and your phone and laptop are on the same Wi-Fi."
-          : error.response.data?.message ?? "Something went wrong."
-      );
-    } finally {
-      setLoading(false);
+    if (response.user.role === UserRole.VENDOR) {
+      appNavigation.dispatch(StackActions.replace("Vendor"));
+      return;
     }
-  };
+
+    if (response.user.role === UserRole.ADMIN) {
+      appNavigation.dispatch(StackActions.replace("Admin"));
+      return;
+    }
+
+    appNavigation.dispatch(StackActions.replace("Couple"));
+  } catch (error: any) {
+    const isNetworkError = !error?.response;
+
+    Alert.alert(
+      "Login Failed",
+      isNetworkError
+        ? "Backend server se connect nahi ho pa raha. Please check that the backend is running and your phone and laptop are on the same Wi-Fi."
+        : error.response.data?.message ?? "Something went wrong."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View style={styles.fullScreen}>
