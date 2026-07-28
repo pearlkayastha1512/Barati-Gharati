@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from './push.service';
 
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
@@ -13,6 +14,7 @@ import { UpdateNotificationStatusDto } from './dto/update-notification-status.dt
 export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly pushService: PushService,
   ) {}
 
   // CREATE
@@ -27,6 +29,14 @@ export class NotificationsService {
         message: dto.message,
       },
     });
+
+    // fire push notification (fail-safe, DB creation ko block nahi karta)
+    await this.pushService.sendPushToUser(
+      userId,
+      dto.title,
+      dto.message,
+      { notificationId: notification.id },
+    );
 
     return {
       success: true,

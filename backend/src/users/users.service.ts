@@ -128,4 +128,24 @@ export class UsersService {
     message: 'Password changed successfully',
   };
 }
+
+  // ===========================
+  // UPDATE PUSH TOKEN
+  // ===========================
+
+  async updatePushToken(userId: string, pushToken: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        pushToken,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Push token updated successfully',
+    };
+  }
 }

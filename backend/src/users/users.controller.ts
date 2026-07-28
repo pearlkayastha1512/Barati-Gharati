@@ -22,6 +22,7 @@ import { UsersService } from './users.service';
 
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdatePushTokenDto } from './dto/update-push-token.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -73,6 +74,23 @@ export class UsersController {
     return this.usersService.changePassword(
       req.user.sub,
       changePasswordDto,
+    );
+  }
+
+  // ===========================
+  // UPDATE PUSH TOKEN
+  // ===========================
+
+  @Patch('push-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.VENDOR)
+  async updatePushToken(
+    @Req() req: any,
+    @Body() updatePushTokenDto: UpdatePushTokenDto,
+  ) {
+    return this.usersService.updatePushToken(
+      req.user.sub,
+      updatePushTokenDto.pushToken,
     );
   }
 }
