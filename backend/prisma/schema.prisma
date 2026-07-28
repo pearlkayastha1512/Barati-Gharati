@@ -79,6 +79,7 @@ model User {
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  pushToken String?
 
   membership               CustomerMembership @default(FREE)
   membershipActivatedAt    DateTime?
@@ -129,6 +130,7 @@ model User {
   weddingWebsite WeddingWebsite?
 
   @@index([adminVerificationStatus])
+   
 }
 
 model PremiumPlanningRequest {
