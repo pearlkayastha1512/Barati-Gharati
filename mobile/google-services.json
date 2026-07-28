@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "697557358814",
+    "project_id": "baratigharati-d836e",
+    "storage_bucket": "baratigharati-d836e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697557358814:android:4dc4088722db01626c4a4f",
+        "android_client_info": {
+          "package_name": "com.pranjalis.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-HCCaY5LlCUMLJ6qcKSmA4ovgZx6wsdM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

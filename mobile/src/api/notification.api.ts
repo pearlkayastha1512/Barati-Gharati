@@ -11,6 +11,7 @@ export type BackendNotification = {
 
 type ApiListResponse = { success: boolean; count: number; data: BackendNotification[] };
 type ApiSingleResponse = { success: boolean; message?: string; data: BackendNotification };
+type ApiPushTokenResponse = { success: boolean; message: string };
 
 export const getNotifications = async (): Promise<BackendNotification[]> => {
   const response = await api.get<ApiListResponse>("/notifications");
@@ -25,6 +26,12 @@ export const markNotificationRead = async (id: string, isRead: boolean): Promise
 export const deleteNotification = async (id: string): Promise<void> => {
   await api.delete(`/notifications/${id}`);
 };
+
+export const registerPushToken = async (pushToken: string): Promise<ApiPushTokenResponse> => {
+  const response = await api.patch<ApiPushTokenResponse>("/users/push-token", { pushToken });
+  return response.data;
+};
+
 //temporary for chceking
 export const createTestNotification = async () => {
   const response = await api.post("/notifications", {
