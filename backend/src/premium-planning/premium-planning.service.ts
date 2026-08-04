@@ -16,6 +16,7 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PayoutsService } from '../payouts/payouts.service';
 import { CreatePremiumPlanningRequestDto } from './dto/create-premium-planning-request.dto';
 import { ReviewPremiumPlanningRequestDto } from './dto/review-premium-planning-request.dto';
 import { CreatePremiumQuotationDto } from './dto/create-premium-quotation.dto';
@@ -29,6 +30,7 @@ export class PremiumPlanningService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   private isClosed(status: PremiumPlanningStatus) {
@@ -343,6 +345,12 @@ export class PremiumPlanningService {
       });
 
       createdBookings.push(createdBooking);
+
+      await this.payoutsService.ensureAdvancePayout(
+        createdBooking.id,
+        vendorAdvancePaid,
+      );
+      await this.payoutsService.releaseAdvancePayout(createdBooking.id);
 
       await this.prisma.bookingVendorAssignment.create({
         data: {

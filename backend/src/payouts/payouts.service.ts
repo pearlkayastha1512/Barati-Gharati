@@ -31,6 +31,7 @@ export class PayoutsService {
 
   calculateRecognizedVendorEarnings(booking: {
     amountPaid: unknown;
+    adminApproved?: boolean;
     payout?: {
       status?: PayoutStatus | null;
       platformCommission?: unknown;
@@ -39,16 +40,17 @@ export class PayoutsService {
     const status = booking.payout?.status;
 
     if (
-      status !== PayoutStatus.RELEASED &&
-      status !== PayoutStatus.SETTLED
+      status === PayoutStatus.RELEASED ||
+      status === PayoutStatus.SETTLED ||
+      (booking.adminApproved && Number(booking.amountPaid) > 0)
     ) {
-      return 0;
+      return this.calculateVendorNetCollected(
+        booking.amountPaid,
+        booking.payout?.platformCommission,
+      );
     }
 
-    return this.calculateVendorNetCollected(
-      booking.amountPaid,
-      booking.payout?.platformCommission,
-    );
+    return 0;
   }
 
   calculateAdvanceCommission(grossAdvance: unknown) {

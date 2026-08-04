@@ -137,9 +137,25 @@ export interface Booking {
 
   bookingStatus: BookingStatus;
 
+  vendorAssignments?: Array<{
+    id: string;
+    vendorId: string;
+    businessName: string;
+    ownerName: string;
+    role: "PRIMARY" | "STANDBY";
+    priority: number;
+    score?: number | null;
+    status: "PENDING" | "ACCEPTED" | "REJECTED" | "AVAILABLE" | "NOT_AVAILABLE" | "PROMOTED" | "CLOSED" | "TIMED_OUT";
+    respondedAt?: string | null;
+    promotedAt?: string | null;
+    timeoutAt?: string | null;
+    createdAt: string;
+  }>;
+
   createdAt: string;
 
   updatedAt: string;
 
   lastPaymentAt?: string | null;
 }
+

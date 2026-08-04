@@ -274,6 +274,20 @@ export class BookingEngineService {
         title: 'Vendor Unavailable',
         message: `${booking.vendor.businessName} is unavailable. We are finding you an alternative vendor.`,
       });
+
+      // Notify admins
+      const admins = await this.prisma.user.findMany({
+        where: { role: Role.ADMIN },
+        select: { id: true },
+      });
+      for (const admin of admins) {
+        await this.notifications.create(admin.id, {
+          title: '🚨 Vendor Rejected Booking Request',
+          message: `${booking.vendor.businessName} rejected Booking ${booking.bookingNumber}. Standby vendor will be promoted.`,
+          type: 'booking',
+          link: `/admin/bookings?bookingId=${booking.id}`,
+        });
+      }
     }
 
     // Try to promote standby
@@ -312,6 +326,23 @@ export class BookingEngineService {
       where: { id: assignment.id },
       data: { status: newStatus, respondedAt: new Date() },
     });
+
+    const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
+    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    if (vendor && booking) {
+      const admins = await this.prisma.user.findMany({
+        where: { role: Role.ADMIN },
+        select: { id: true },
+      });
+      for (const admin of admins) {
+        await this.notifications.create(admin.id, {
+          title: '📋 Standby Vendor Indicated Availability',
+          message: `Standby ${vendor.businessName} responded: ${response} for Booking ${booking.bookingNumber}.`,
+          type: 'booking',
+          link: `/admin/bookings?bookingId=${bookingId}`,
+        });
+      }
+    }
 
     this.logger.log(
       `[Engine] Standby vendor ${vendorId} responded: ${response} for booking ${bookingId}`,
@@ -370,6 +401,20 @@ export class BookingEngineService {
         title: '🎉 New Vendor Confirmed!',
         message: `${promotedVendor.businessName} is now handling your booking. Please complete the advance payment to confirm.`,
       });
+
+      // Notify admins
+      const admins = await this.prisma.user.findMany({
+        where: { role: Role.ADMIN },
+        select: { id: true },
+      });
+      for (const admin of admins) {
+        await this.notifications.create(admin.id, {
+          title: '✅ Promoted Vendor Accepted Booking',
+          message: `${promotedVendor.businessName} accepted Booking ${booking.bookingNumber}.`,
+          type: 'booking',
+          link: `/admin/bookings?bookingId=${bookingId}`,
+        });
+      }
     }
   }
 
@@ -408,6 +453,25 @@ export class BookingEngineService {
         cancellationReason: reason,
       },
     });
+
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { vendor: true },
+    });
+    if (booking) {
+      const admins = await this.prisma.user.findMany({
+        where: { role: Role.ADMIN },
+        select: { id: true },
+      });
+      for (const admin of admins) {
+        await this.notifications.create(admin.id, {
+          title: '🚨 Promoted Vendor Rejected Request',
+          message: `Promoted ${booking.vendor.businessName} rejected Booking ${booking.bookingNumber}. Next standby will be promoted.`,
+          type: 'booking',
+          link: `/admin/bookings?bookingId=${bookingId}`,
+        });
+      }
+    }
 
     // Try next standby
     await this.promoteStandby(bookingId);
@@ -520,6 +584,20 @@ export class BookingEngineService {
       title: "🌟 You've Been Selected!",
       message: `You have been promoted to primary vendor for a booking. Please accept or reject within ${VENDOR_TIMEOUT_HOURS} hours.`,
     });
+
+    // Notify admins
+    const admins = await this.prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: { id: true },
+    });
+    for (const admin of admins) {
+      await this.notifications.create(admin.id, {
+        title: '📢 Standby Vendor Promoted',
+        message: `${nextStandby.vendor.businessName} was promoted to primary for Booking ${bookingId}.`,
+        type: 'booking',
+        link: `/admin/bookings?bookingId=${bookingId}`,
+      });
+    }
 
     this.logger.log(
       `[Engine] Promoted standby ${nextStandby.vendorId} to primary for booking ${bookingId}`,
@@ -1085,6 +1163,8 @@ export class BookingEngineService {
         this.notifications.create(admin.id, {
           title: '⚠️ Manual Assignment Required',
           message: `Booking ${booking.bookingNumber} has no available vendors. Manual assignment required.`,
+          type: 'booking',
+          link: `/admin/bookings?bookingId=${booking.id}`,
         }),
       ),
     );

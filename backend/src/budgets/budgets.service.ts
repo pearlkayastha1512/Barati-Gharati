@@ -57,7 +57,7 @@ export class BudgetsService {
         success: true,
 
         data: {
-          budget: 1000000,
+          budget: 0,
         },
       };
     }
@@ -94,11 +94,11 @@ export class BudgetsService {
         success: true,
 
         data: {
-          totalBudget: 1000000,
+          totalBudget: 0,
 
           spentAmount: 0,
 
-          remainingBudget: 1000000,
+          remainingBudget: 0,
 
           categoryBreakdown: {},
         },

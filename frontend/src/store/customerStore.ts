@@ -66,7 +66,7 @@ interface CustomerStore {
 
 export const useCustomerStore =
   create<CustomerStore>((set) => ({
-    weddingBudget: 1000000,
+    weddingBudget: 0,
 
     isLoading: false,
 
@@ -92,7 +92,7 @@ export const useCustomerStore =
       }
 
       set({
-        weddingBudget: 1000000,
+        weddingBudget: 0,
         isLoading: false,
       });
     },
@@ -129,7 +129,7 @@ export const useCustomerStore =
       }
 
       set({
-        weddingBudget: 1000000,
+        weddingBudget: 0,
       });
 
       return true;

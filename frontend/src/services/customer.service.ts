@@ -4,13 +4,13 @@ class CustomerService {
   // Wedding Budget
   getWeddingBudget(): number {
     if (typeof window === "undefined") {
-      return 1000000;
+      return 0;
     }
 
     const budget = localStorage.getItem(BUDGET_KEY);
 
     if (!budget) {
-      return 1000000;
+      return 0;
     }
 
     return Number(budget);

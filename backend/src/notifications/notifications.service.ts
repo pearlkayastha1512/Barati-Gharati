@@ -27,6 +27,8 @@ export class NotificationsService {
         userId,
         title: dto.title,
         message: dto.message,
+        type: dto.type,
+        link: dto.link,
       },
     });
 

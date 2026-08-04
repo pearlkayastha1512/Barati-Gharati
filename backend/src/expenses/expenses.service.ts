@@ -17,7 +17,7 @@ export class ExpensesService {
       update: {},
       create: {
         userId,
-        totalBudget: 1000000,
+        totalBudget: 0,
       },
     });
   }

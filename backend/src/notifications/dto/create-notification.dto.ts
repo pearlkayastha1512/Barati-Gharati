@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateNotificationDto {
   @ApiProperty({
@@ -13,4 +13,14 @@ export class CreateNotificationDto {
   })
   @IsString()
   message!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  link?: string;
 }

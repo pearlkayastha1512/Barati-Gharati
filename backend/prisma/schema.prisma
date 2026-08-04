@@ -756,6 +756,8 @@ model Notification {
   title   String
   message String
   isRead  Boolean @default(false)
+  type    String?
+  link    String?
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

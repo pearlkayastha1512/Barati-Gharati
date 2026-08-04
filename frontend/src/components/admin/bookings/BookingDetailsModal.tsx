@@ -286,7 +286,73 @@ export default function BookingDetailsModal({
             </div>
           )}
 
+          {/* Vendor Assignments & Engine Log */}
+          {booking.vendorAssignments && booking.vendorAssignments.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                ⚙️ Vendor Assignments & Smart Engine Log
+              </h3>
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Vendor</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Role</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Priority</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Activity Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white text-sm">
+                    {booking.vendorAssignments.map((a) => (
+                      <tr key={a.id} className="hover:bg-slate-50/50">
+                        <td className="whitespace-nowrap px-5 py-4">
+                          <p className="font-semibold text-slate-900">{a.businessName}</p>
+                          <p className="text-xs text-slate-500">{a.ownerName}</p>
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            a.role === "PRIMARY" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"
+                          }`}>
+                            {a.role}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-700">
+                          {a.priority === 1 ? "1 (Primary)" : `${a.priority} (Standby)`}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            a.status === "ACCEPTED" || a.status === "AVAILABLE"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : a.status === "REJECTED" || a.status === "NOT_AVAILABLE" || a.status === "TIMED_OUT"
+                              ? "bg-rose-100 text-rose-800"
+                              : a.status === "PROMOTED"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-slate-100 text-slate-800"
+                          }`}>
+                            {a.status.replaceAll("_", " ")}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-xs text-slate-500 space-y-1">
+                          <p>Created: {new Date(a.createdAt).toLocaleString("en-IN")}</p>
+                          {a.respondedAt && <p>Responded: {new Date(a.respondedAt).toLocaleString("en-IN")}</p>}
+                          {a.promotedAt && <p>Promoted: {new Date(a.promotedAt).toLocaleString("en-IN")}</p>}
+                          {a.timeoutAt && a.status === "PENDING" && (
+                            <p className="text-amber-600 font-medium animate-pulse">
+                              Timeout: {new Date(a.timeoutAt).toLocaleString("en-IN")}
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Special Requirements */}
+
 
           <div>
 
