@@ -4,30 +4,30 @@ import { vendors } from "./vendor-data";
 
 interface VendorFiltersProps {
   activeCategory: string;
-  onCategoryChange: (
-    category: string
-  ) => void;
+  onCategoryChange: (category: string) => void;
+  categories?: string[];
 }
 
-const filters = [
+const defaultFilters = [
   "All",
-  ...Array.from(
-    new Set(
-      vendors.map(
-        (vendor) => vendor.category
-      )
-    )
-  ),
+  "Venue",
+  "Photographer",
+  "Decorator",
+  "Catering",
+  "Makeup Artist",
+  "DJ",
 ];
 
 export default function VendorFilters({
   activeCategory,
   onCategoryChange,
+  categories,
 }: VendorFiltersProps) {
+  const filterItems = categories && categories.length > 1 ? categories : defaultFilters;
   return (
     <div className="flex flex-wrap items-center justify-center gap-4">
 
-      {filters.map((item) => (
+      {filterItems.map((item) => (
 
         <button
           key={item}

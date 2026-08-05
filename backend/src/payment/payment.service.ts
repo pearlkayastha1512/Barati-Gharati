@@ -23,6 +23,7 @@ import {
   PremiumPlanningStatus,
   VendorAssignmentRole,
   VendorAssignmentStatus,
+  CustomerMembership,
 } from '@prisma/client';
 import { PayoutsService } from '../payouts/payouts.service';
 import { CUSTOMER_PREMIUM_PRICE } from '../premium-planning/premium-planning.constants';
@@ -316,6 +317,40 @@ export class PaymentService {
         amount: CUSTOMER_PREMIUM_PRICE,
         amountInPaise: order.amount,
         currency: 'INR',
+      },
+    };
+  }
+
+  async verifyCustomerPremiumUpgrade(
+    userId: string,
+    dto: VerifyPaymentDto,
+  ) {
+    this.verifySignature(
+      dto.orderId,
+      dto.paymentId,
+      dto.signature,
+    );
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        membership: CustomerMembership.PREMIUM,
+        membershipActivatedAt: new Date(),
+        membershipPaymentOrderId: dto.orderId,
+        membershipPaymentId: dto.paymentId,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Congratulations! You are now a Premium Member.',
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        membership: user.membership,
       },
     };
   }

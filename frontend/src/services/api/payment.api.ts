@@ -247,6 +247,26 @@ export async function createCustomerPremiumRegistrationOrderApi() {
   }
 }
 
+export async function verifyCustomerPremiumUpgradeApi(payload: {
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}) {
+  try {
+    const { data } = await api.post("/payment/customer-premium/verify", payload);
+    return {
+      ok: true,
+      data: data?.data,
+      message: data?.message,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: getErrorMessage(error, "Failed to verify premium membership payment."),
+    };
+  }
+}
+
 export async function verifyVendorBadgePaymentApi(
   payload: {
     badge: "silver" | "gold";

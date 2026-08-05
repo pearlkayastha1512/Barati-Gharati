@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
+import { BASE_URL } from "../constants/api";
 
-const SOCKET_URL = "http://192.168.29.41:8000";; // change this
+const SOCKET_URL = BASE_URL.replace(/\/api\/v1\/?$/, "");
 
 class SocketService {
   socket: Socket | null = null;

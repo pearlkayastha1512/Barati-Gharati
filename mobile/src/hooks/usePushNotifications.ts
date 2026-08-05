@@ -4,17 +4,26 @@ import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { registerPushToken } from "../api/notification.api";
-import { useNotificationsStore } from "../store/notificationsStore"; // apna actual path daal do
+import { useNotificationsStore } from "../store/notificationsStore";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Expo SDK 53+ removed remote push notifications from Expo Go on Android.
+const isExpoGo = Constants.appOwnership === "expo";
+
+try {
+  if (!isExpoGo) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+} catch (e) {
+  console.warn("Notifications.setNotificationHandler not supported in Expo Go:", e);
+}
 
 let cachedExpoPushToken: string | null = null;
 let tokenPromise: Promise<string | null> | null = null;
@@ -24,19 +33,27 @@ export function usePushNotifications() {
   const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
 
   useEffect(() => {
-    // token generate karna shuru karo aur promise store kar lo
-    tokenPromise = registerForPushNotificationsAsync().then((token) => {
-      if (token) cachedExpoPushToken = token;
-      return token;
-    });
+    if (isExpoGo) {
+      console.warn("Push notifications are not supported in Expo Go (SDK 53+). Use a development build for push notifications.");
+      return;
+    }
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(() => {
-      useNotificationsStore.getState().fetchNotifications();
-    });
+    try {
+      tokenPromise = registerForPushNotificationsAsync().then((token) => {
+        if (token) cachedExpoPushToken = token;
+        return token;
+      });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(() => {
-      useNotificationsStore.getState().fetchNotifications();
-    });
+      notificationListener.current = Notifications.addNotificationReceivedListener(() => {
+        useNotificationsStore.getState().fetchNotifications();
+      });
+
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(() => {
+        useNotificationsStore.getState().fetchNotifications();
+      });
+    } catch (err) {
+      console.warn("Notification listener setup error:", err);
+    }
 
     return () => {
       notificationListener.current?.remove();
@@ -45,8 +62,9 @@ export function usePushNotifications() {
   }, []);
 }
 
-// Login ke baad call hoga — ab ye token ready hone ka wait karega agar zaroorat pade
 export async function syncPushTokenWithBackend() {
+  if (isExpoGo) return;
+
   try {
     let token = cachedExpoPushToken;
 
@@ -59,39 +77,45 @@ export async function syncPushTokenWithBackend() {
     await registerPushToken(token);
   } catch (err) {
     console.log("REGISTER PUSH TOKEN ERROR =>", err);
-    // push token fail hone se login process kabhi bhi fail nahi hona chahiye
   }
 }
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
-    });
-  }
+  if (isExpoGo) return null;
 
-  if (!Device.isDevice) {
-    console.log("Push notifications sirf physical device pe kaam karti hain");
+  try {
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
+    if (!Device.isDevice) {
+      console.log("Push notifications sirf physical device pe kaam karti hain");
+      return null;
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== "granted") {
+      console.log("Push notification permission denied");
+      return null;
+    }
+
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+  } catch (error) {
+    console.warn("registerForPushNotificationsAsync failed:", error);
     return null;
   }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") {
-    console.log("Push notification permission denied");
-    return null;
-  }
-
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-  const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-  return tokenData.data;
 }

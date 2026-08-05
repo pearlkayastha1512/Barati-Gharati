@@ -89,6 +89,28 @@ export async function loginApi(
   return result;
 }
 
+export async function sendLoginOtpApi(phone: string) {
+  const response = await fetch(`${API_URL}/login-otp/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Failed to send OTP");
+  return result;
+}
+
+export async function verifyLoginOtpApi(phone: string, otp: string) {
+  const response = await fetch(`${API_URL}/login-otp/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, otp }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "OTP verification failed");
+  return result;
+}
+
 
 export interface VendorRegisterRequest {
   registrationVerificationId: string;

@@ -10,6 +10,7 @@ import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendLoginOtpDto, VerifyLoginOtpDto } from './dto/login-otp.dto';
 import Razorpay from 'razorpay';
 
 
@@ -348,6 +349,7 @@ if (existingPhone) {
       phone: registerDto.phone,
       password: hashedPassword,
       role: Role.USER,
+      adminVerificationStatus: AdminVerificationStatus.APPROVED,
       membership: registerDto.membership ?? CustomerMembership.FREE,
       membershipActivatedAt:
         registerDto.membership === CustomerMembership.PREMIUM ? new Date() : undefined,
@@ -722,14 +724,7 @@ console.log('PASSWORD MATCH =', isPasswordCorrect);
     throw new UnauthorizedException('Please verify your email using the OTP before logging in.');
   }
 
-  if (user.role === Role.USER) {
-    if (user.adminVerificationStatus === AdminVerificationStatus.PENDING) {
-      throw new UnauthorizedException('Your account is awaiting admin approval.');
-    }
-    if (user.adminVerificationStatus === AdminVerificationStatus.REJECTED) {
-      throw new UnauthorizedException('Your account verification was rejected by the admin.');
-    }
-  }
+
 
   if (user.role === Role.VENDOR && user.vendor?.status === VendorStatus.PENDING) {
     throw new UnauthorizedException('Your vendor account is awaiting admin approval.');
@@ -972,6 +967,125 @@ async resetPassword(dto: ResetPasswordDto) {
   return {
     success: true,
     message: 'Password has been reset successfully.',
+  };
+}
+
+async sendLoginOtp(dto: SendLoginOtpDto) {
+  const phone = dto.phone.trim();
+  const user = await this.prisma.user.findFirst({
+    where: { phone },
+    include: { vendor: true },
+  });
+
+  if (!user) {
+    throw new BadRequestException('No account found registered with this phone number.');
+  }
+
+  if (user.role === Role.ADMIN && !user.adminIsActive) {
+    throw new UnauthorizedException('Your admin account is inactive.');
+  }
+
+  if (user.role !== Role.ADMIN && !user.isVerified) {
+    throw new UnauthorizedException('Please verify your account before logging in.');
+  }
+
+
+
+  if (user.role === Role.VENDOR && user.vendor?.status === VendorStatus.PENDING) {
+    throw new UnauthorizedException('Your vendor account is awaiting admin approval.');
+  }
+
+  if (user.role === Role.VENDOR && user.vendor?.status === VendorStatus.REJECTED) {
+    throw new UnauthorizedException('Your vendor registration has been rejected by the admin.');
+  }
+
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  await this.prisma.user.update({
+    where: { id: user.id },
+    data: {
+      phoneOtp: hashedOtp,
+      phoneOtpExpiresAt: expiresAt,
+    },
+  });
+
+  console.log(`📱 [PHONE LOGIN OTP] Sent to ${phone}: ${otp}`);
+
+  return {
+    success: true,
+    message: 'OTP has been sent to your registered phone number.',
+    ...(process.env.NODE_ENV !== 'production' ? { otp } : {}),
+  };
+}
+
+async verifyLoginOtp(dto: VerifyLoginOtpDto) {
+  const phone = dto.phone.trim();
+  const user = await this.prisma.user.findFirst({
+    where: { phone },
+    include: { vendor: true },
+  });
+
+  if (!user || !user.phoneOtp || !user.phoneOtpExpiresAt) {
+    throw new BadRequestException('Invalid OTP or no OTP request found for this phone number.');
+  }
+
+  if (new Date() > user.phoneOtpExpiresAt) {
+    throw new BadRequestException('OTP has expired. Please request a new one.');
+  }
+
+  const isMatch = await bcrypt.compare(dto.otp, user.phoneOtp);
+  if (!isMatch) {
+    throw new BadRequestException('Invalid OTP. Please try again.');
+  }
+
+  await this.prisma.user.update({
+    where: { id: user.id },
+    data: {
+      phoneOtp: null,
+      phoneOtpExpiresAt: null,
+    },
+  });
+
+  const adminAccess = this.adminAccessService.resolveAccess(user);
+
+  const token = await this.jwtService.signAsync({
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    adminRole: adminAccess.adminRole,
+    permissions: adminAccess.permissions,
+  });
+
+  await this.notificationsService.create(user.id, {
+    title: 'Login Successful',
+    message: 'You logged into your account using Phone OTP successfully.',
+  });
+
+  const roleMap = {
+    USER: 'customer',
+    VENDOR: 'vendor',
+    ADMIN: 'admin',
+  } as const;
+
+  return {
+    success: true,
+    message: 'Login successful',
+    accessToken: token,
+    user: {
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? '',
+      avatar: '',
+      role: roleMap[user.role],
+      membership: user.membership,
+      vendorId: user.vendor?.id,
+      businessName: user.vendor?.businessName,
+      adminRole: adminAccess.adminRole,
+      adminPermissions: adminAccess.permissions,
+    },
   };
 }
 

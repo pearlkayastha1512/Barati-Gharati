@@ -13,6 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendLoginOtpDto, VerifyLoginOtpDto } from './dto/login-otp.dto';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiBody,
@@ -147,6 +148,20 @@ resetPassword(@Body() dto: ResetPasswordDto) {
   return this.authService.resetPassword(dto);
 }
 
+
+@ApiOperation({ summary: 'Send login OTP to registered phone number' })
+@Post('login-otp/send')
+@Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
+sendLoginOtp(@Body() dto: SendLoginOtpDto) {
+  return this.authService.sendLoginOtp(dto);
+}
+
+@ApiOperation({ summary: 'Verify login OTP and generate access token' })
+@Post('login-otp/verify')
+@Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
+verifyLoginOtp(@Body() dto: VerifyLoginOtpDto) {
+  return this.authService.verifyLoginOtp(dto);
+}
 
 @Get("me")
 @UseGuards(AuthGuard("jwt"))
