@@ -211,9 +211,12 @@ export default function PlanMyWeddingPage() {
       <Crown className="mx-auto text-amber-500" size={54} />
       <h1 className="mt-5 text-3xl font-bold">Plan My Wedding is a Premium feature</h1>
       <p className="mx-auto mt-3 max-w-xl text-[#8d6171]">Premium members can submit complete wedding preferences, get vendor assignments reviewed by the Barati Gharati team, and receive one personalized quotation.</p>
-      <div className="mx-auto mt-7 max-w-sm rounded-2xl bg-amber-50 p-5 text-left">
+      <div className="mx-auto mt-7 max-w-sm rounded-2xl bg-amber-50 p-5 text-center">
         <p className="font-bold text-amber-900">Premium · ₹4,999 one-time</p>
-        <p className="mt-2 text-sm text-amber-800">Membership upgrade for existing accounts will be available from account settings.</p>
+        <p className="mt-2 text-sm text-amber-800">Upgrade your account anytime from Account Settings.</p>
+        <Link href="/customer/settings" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#ff4d6d] px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#e63b5f] transition-all">
+          <Sparkles size={16} /> Upgrade in Settings
+        </Link>
       </div>
     </div>
   );

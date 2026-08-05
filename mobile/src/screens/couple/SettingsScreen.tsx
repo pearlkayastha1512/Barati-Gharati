@@ -5,6 +5,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSettingsStore } from "../../store/settingsStore";
 import { useAuthStore } from "../../store/authStore";
+import { CustomerMembership } from "../../types/user";
 import { SettingsHeroCard } from "../../components/users/setting/SettingsHeroCard";
 import { AccountCard } from "../../components/users/setting/AccountCard";
 import { ToggleRow } from "../../components/users/setting/ToggleRow";
@@ -21,7 +22,7 @@ export default function SettingsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const {
     profile,
     notifications,
@@ -109,6 +110,55 @@ useEffect(() => {
         <SettingsHeroCard />
 
         <AccountCard profile={profile} onEdit={() => setEditModalVisible(true)} />
+
+        {/* Membership Banner Card */}
+        <TouchableOpacity
+          style={{
+            backgroundColor: user?.membership === CustomerMembership.PREMIUM ? "#ECFDF5" : "#6C2D45",
+            borderRadius: 20,
+            padding: 16,
+            marginBottom: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => navigation.navigate("UpgradeMembership")}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+            <MaterialIcons
+              name={user?.membership === CustomerMembership.PREMIUM ? "workspace-premium" : "auto-awesome"}
+              size={28}
+              color={user?.membership === CustomerMembership.PREMIUM ? "#10B981" : "#FF4D6D"}
+            />
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "800",
+                  color: user?.membership === CustomerMembership.PREMIUM ? "#065F46" : "#FFFFFF",
+                }}
+              >
+                {user?.membership === CustomerMembership.PREMIUM ? "VIP Premium Member" : "Upgrade to Premium"}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: user?.membership === CustomerMembership.PREMIUM ? "#047857" : "#FFCAD3",
+                  marginTop: 2,
+                }}
+              >
+                {user?.membership === CustomerMembership.PREMIUM
+                  ? "Full concierge & wedding planning active"
+                  : "Get dedicated wedding planners & single quotes (₹4,999)"}
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons
+            name="chevron-right"
+            size={24}
+            color={user?.membership === CustomerMembership.PREMIUM ? "#047857" : "#FFCAD3"}
+          />
+        </TouchableOpacity>
 
         <View style={styles.card}>
           <Text style={styles.cardHeaderTitle}>Notifications</Text>

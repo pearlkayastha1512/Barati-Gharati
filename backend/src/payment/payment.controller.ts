@@ -140,6 +140,16 @@ export class PaymentController {
     return this.paymentService.createCustomerPremiumRegistrationOrder();
   }
 
+  @Post('customer-premium/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  verifyCustomerPremiumUpgrade(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: VerifyPaymentDto,
+  ) {
+    return this.paymentService.verifyCustomerPremiumUpgrade(userId, dto);
+  }
+
   @Post('vendor-badge/verify')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.VENDOR)

@@ -133,7 +133,7 @@ export const createCustomerPremiumUpgradeOrder = async () => {
 };
 
 export const verifyCustomerPremiumUpgrade = async (payment: RazorpaySuccess) => {
-  const response = await api.post("/payment/customer-premium-upgrade/verify", {
+  const response = await api.post("/payment/customer-premium/verify", {
     orderId: payment.razorpay_order_id,
     paymentId: payment.razorpay_payment_id,
     signature: payment.razorpay_signature,

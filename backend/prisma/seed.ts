@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role, AdminRole } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,32 @@ async function main() {
     });
   }
   console.log('✅ Categories seeded!');
+
+  // Seed default Super Admin
+  const adminEmail = process.env.INITIAL_SUPER_ADMIN_EMAIL || 'admin@weddingplanner.com';
+  const adminPassword = process.env.INITIAL_SUPER_ADMIN_PASSWORD || 'Admin@123456';
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      role: Role.ADMIN,
+      adminRole: AdminRole.SUPER_ADMIN,
+      adminIsActive: true,
+      isVerified: true,
+    },
+    create: {
+      name: 'Super Admin',
+      email: adminEmail,
+      password: hashedPassword,
+      role: Role.ADMIN,
+      adminRole: AdminRole.SUPER_ADMIN,
+      adminIsActive: true,
+      isVerified: true,
+    },
+  });
+
+  console.log(`✅ Super Admin seeded! (${adminEmail})`);
 }
 
 main()
