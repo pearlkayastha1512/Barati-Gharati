@@ -481,6 +481,7 @@ model Booking {
   payout            BookingPayout?
   weddingWebsite    WeddingWebsite?
   vendorAssignments BookingVendorAssignment[]
+  activities        BookingActivity[]
 
   @@index([userId])
   @@index([vendorId])
@@ -564,6 +565,22 @@ model BookingVendorAssignment {
   @@index([vendorId])
   @@index([status])
   @@index([timeoutAt])
+}
+
+model BookingActivity {
+  id          String   @id @default(uuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  action      String   // e.g. REQUEST_CREATED, BROADCAST_SENT, PRIMARY_ACCEPTED, PRIMARY_REJECTED, STANDBY_RESPONSE, CUSTOMER_SELECTED_ALTERNATIVE, VENDOR_ACCEPTED, VENDOR_REJECTED, ADMIN_OVERRIDE
+  title       String
+  description String
+  actorType   String?  // "CUSTOMER", "VENDOR", "ADMIN", "SYSTEM"
+  actorId     String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([createdAt])
 }
 
 // Lead balance per vendor (reset monthly based on subscription plan)

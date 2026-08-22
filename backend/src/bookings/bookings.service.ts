@@ -226,15 +226,26 @@ export class BookingsService {
 
       include: {
         user: true,
-
         vendor: true,
-
         package: {
           include: {
             category: true,
           },
         },
         payout: true,
+        activities: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+        vendorAssignments: {
+          include: {
+            vendor: true,
+          },
+          orderBy: {
+            priority: 'asc',
+          },
+        },
       },
     });
 
@@ -1052,6 +1063,30 @@ export class BookingsService {
       // Smart engine fields
       matchedAt: booking.matchedAt ?? null,
       noVendorAvailable: booking.noVendorAvailable ?? false,
+      vendorAssignments: (booking.vendorAssignments || []).map((a: any) => ({
+        id: a.id,
+        vendorId: a.vendorId,
+        businessName: a.vendor?.businessName ?? '',
+        ownerName: a.vendor?.user?.name ?? '',
+        role: a.role,
+        priority: a.priority,
+        score: a.score,
+        status: a.status,
+        respondedAt: a.respondedAt,
+        promotedAt: a.promotedAt,
+        timeoutAt: a.timeoutAt,
+        createdAt: a.createdAt,
+      })),
+      activities: (booking.activities || []).map((act: any) => ({
+        id: act.id,
+        action: act.action,
+        title: act.title,
+        description: act.description,
+        actorType: act.actorType,
+        actorId: act.actorId,
+        metadata: act.metadata,
+        createdAt: act.createdAt,
+      })),
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
       lastPaymentAt: booking.lastPaymentAt ?? null,

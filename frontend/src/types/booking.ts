@@ -152,6 +152,17 @@ export interface Booking {
     createdAt: string;
   }>;
 
+  activities?: Array<{
+    id: string;
+    action: string;
+    title: string;
+    description: string;
+    actorType?: string | null;
+    actorId?: string | null;
+    metadata?: any;
+    createdAt: string;
+  }>;
+
   createdAt: string;
 
   updatedAt: string;

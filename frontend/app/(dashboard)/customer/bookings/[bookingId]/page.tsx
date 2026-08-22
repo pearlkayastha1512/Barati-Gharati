@@ -38,20 +38,13 @@ export default function BookingDetailsPage() {
     notFound();
   }
 
-  const showAlternativeVendors =
-    selectedBooking.bookingStatus === "primary_rejected" ||
-    selectedBooking.bookingStatus === "promote_standby" ||
-    Boolean(selectedBooking.noVendorAvailable);
-
   return (
     <div className="space-y-8">
       <BookingDetailsHero
         booking={selectedBooking}
       />
 
-      {showAlternativeVendors && (
-        <AlternativeVendorsCard booking={selectedBooking} />
-      )}
+      <AlternativeVendorsCard booking={selectedBooking} />
 
       <section className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
