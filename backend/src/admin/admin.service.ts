@@ -1133,6 +1133,11 @@ async getAllBookings() {
       },
       review: true,
       payout: true,
+      activities: {
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
       vendorAssignments: {
         include: {
           vendor: true,
@@ -1165,6 +1170,11 @@ async getBookingById(id: string) {
       package: true,
       review: true,
       payout: true,
+      activities: {
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
       vendorAssignments: {
         include: {
           vendor: true,
@@ -1572,6 +1582,16 @@ private mapBooking(booking: any) {
       promotedAt: a.promotedAt,
       timeoutAt: a.timeoutAt,
       createdAt: a.createdAt,
+    })),
+    activities: (booking.activities || []).map((act: any) => ({
+      id: act.id,
+      action: act.action,
+      title: act.title,
+      description: act.description,
+      actorType: act.actorType,
+      actorId: act.actorId,
+      metadata: act.metadata,
+      createdAt: act.createdAt,
     })),
     createdAt: booking.createdAt,
     updatedAt: booking.updatedAt,

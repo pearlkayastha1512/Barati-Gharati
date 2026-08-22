@@ -286,39 +286,45 @@ export default function BookingDetailsModal({
             </div>
           )}
 
-          {/* Vendor Assignments & Engine Log */}
+          {/* Vendor Assignments & Request Dispatched Log */}
           {booking.vendorAssignments && booking.vendorAssignments.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                ⚙️ Vendor Assignments & Smart Engine Log
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  📢 Request Broadcast & Vendor Response Log
+                </h3>
+                <span className="text-xs font-semibold rounded-full bg-slate-100 px-3 py-1 text-slate-600">
+                  {booking.vendorAssignments.length} Vendors Received Request
+                </span>
+              </div>
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Vendor</th>
                       <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Role</th>
-                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Priority</th>
                       <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
-                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Activity Details</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Timestamps</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white text-sm">
                     {booking.vendorAssignments.map((a) => (
-                      <tr key={a.id} className="hover:bg-slate-50/50">
+                      <tr key={a.id} className={a.role === "PRIMARY" ? "bg-blue-50/30 font-medium" : "hover:bg-slate-50/50"}>
                         <td className="whitespace-nowrap px-5 py-4">
-                          <p className="font-semibold text-slate-900">{a.businessName}</p>
+                          <p className="font-semibold text-slate-900 flex items-center gap-2">
+                            {a.businessName}
+                            {a.role === "PRIMARY" && (
+                              <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] text-white font-bold uppercase">Requested</span>
+                            )}
+                          </p>
                           <p className="text-xs text-slate-500">{a.ownerName}</p>
                         </td>
                         <td className="whitespace-nowrap px-5 py-4">
                           <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
                             a.role === "PRIMARY" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"
                           }`}>
-                            {a.role}
+                            {a.role === "PRIMARY" ? "Primary Vendor" : "Standby Vendor"}
                           </span>
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-700">
-                          {a.priority === 1 ? "1 (Primary)" : `${a.priority} (Standby)`}
                         </td>
                         <td className="whitespace-nowrap px-5 py-4">
                           <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
@@ -334,14 +340,9 @@ export default function BookingDetailsModal({
                           </span>
                         </td>
                         <td className="px-5 py-4 text-xs text-slate-500 space-y-1">
-                          <p>Created: {new Date(a.createdAt).toLocaleString("en-IN")}</p>
+                          <p>Sent: {new Date(a.createdAt).toLocaleString("en-IN")}</p>
                           {a.respondedAt && <p>Responded: {new Date(a.respondedAt).toLocaleString("en-IN")}</p>}
                           {a.promotedAt && <p>Promoted: {new Date(a.promotedAt).toLocaleString("en-IN")}</p>}
-                          {a.timeoutAt && a.status === "PENDING" && (
-                            <p className="text-amber-600 font-medium animate-pulse">
-                              Timeout: {new Date(a.timeoutAt).toLocaleString("en-IN")}
-                            </p>
-                          )}
                         </td>
                       </tr>
                     ))}
@@ -351,8 +352,41 @@ export default function BookingDetailsModal({
             </div>
           )}
 
-          {/* Special Requirements */}
+          {/* Activity Timeline & Audit Log */}
+          {booking.activities && booking.activities.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                📜 Complete Activity Timeline (Admin View)
+              </h3>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5">
+                <div className="relative border-l-2 border-slate-200 ml-3 space-y-6">
+                  {booking.activities.map((act) => (
+                    <div key={act.id} className="relative pl-6">
+                      <div className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-white bg-slate-700 shadow-sm" />
+                      <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-800 text-sm">{act.title}</span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(act.createdAt).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">{act.description}</p>
+                        {act.actorType && (
+                          <div className="pt-1">
+                            <span className="inline-block rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 uppercase">
+                              By: {act.actorType}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
+          {/* Special Requirements */}
 
           <div>
 
