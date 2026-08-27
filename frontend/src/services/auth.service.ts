@@ -1,6 +1,7 @@
 
 
 import { RegisterData, User } from "@/types/auth";
+import api from "@/lib/axios";
 
 const STORAGE_KEY = "users";
 
@@ -86,44 +87,38 @@ export function updateUser(updatedUser: User): void {
 }
 
 
-export function changePassword(
-  userId: string,
+export async function changePassword(
+  _userId: string,
   currentPassword: string,
   newPassword: string
-): {
+): Promise<{
   success: boolean;
   message: string;
-} {
-  const users = getUsers();
+}> {
+  try {
+    const response = await api.patch<{
+      success: boolean;
+      message?: string;
+    }>("/users/change-password", {
+      currentPassword,
+      newPassword,
+    });
 
-  const user = users.find(
-    (item) => item._id === userId
-  );
+    return {
+      success: true,
+      message: response.data.message ?? "Password changed successfully.",
+    };
+  } catch (error: any) {
+    const backendMessage = error?.response?.data?.message;
+    const message = Array.isArray(backendMessage)
+      ? backendMessage.join(" ")
+      : backendMessage ?? "Unable to change password.";
 
-  if (!user) {
     return {
       success: false,
-      message: "User not found.",
+      message,
     };
   }
-
-  if (user.password !== currentPassword) {
-    return {
-      success: false,
-      message: "Current password is incorrect.",
-    };
-  }
-
-  user.password = newPassword;
-
-  user.updatedAt = new Date().toISOString();
-
-  saveUsers(users);
-
-  return {
-    success: true,
-    message: "Password changed successfully.",
-  };
 }
 
 export function saveUsers(users: StoredUser[]) {

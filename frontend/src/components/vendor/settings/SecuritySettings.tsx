@@ -23,7 +23,7 @@ export default function SecuritySettings() {
   const [loading, setLoading] =
     useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
 
     if (
@@ -54,7 +54,7 @@ export default function SecuritySettings() {
 
     setLoading(true);
 
-    const result = changePassword(
+    const result = await changePassword(
       user._id,
       currentPassword,
       newPassword

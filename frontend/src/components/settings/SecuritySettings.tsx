@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Lock,
@@ -10,6 +10,8 @@ import {
 
 import { useAuthStore } from "@/store/authStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { changePassword } from "@/services/auth.service";
+import { toast } from "sonner";
 
 export default function SecuritySettings() {
   const user = useAuthStore(
@@ -21,6 +23,12 @@ export default function SecuritySettings() {
     loadSettings,
     updateSettings,
   } = useSettingsStore();
+
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +53,44 @@ export default function SecuritySettings() {
           !settings.security[key],
       },
     });
+  };
+
+  const handlePasswordChange = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill all password fields.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    const result = await changePassword(
+      user._id,
+      currentPassword,
+      newPassword
+    );
+
+    setPasswordLoading(false);
+
+    if (!result.success) {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success(result.message);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPasswordForm(false);
   };
 
   return (
@@ -81,19 +127,9 @@ export default function SecuritySettings() {
         />
 
         <button
-          disabled
-          className="
-            flex
-            w-full
-            items-center
-            justify-between
-            rounded-2xl
-            border
-            border-[#ffb3bf]
-            p-4
-            opacity-60
-            cursor-not-allowed
-          "
+          type="button"
+          onClick={() => setShowPasswordForm((visible) => !visible)}
+          className="flex w-full items-center justify-between rounded-2xl border border-[#ffb3bf] p-4 text-left transition hover:bg-[#fff8d8]"
         >
           <div className="flex items-center gap-4">
 
@@ -110,7 +146,7 @@ export default function SecuritySettings() {
               </p>
 
               <p className="text-sm text-[#8d6171]">
-                Coming soon
+                {showPasswordForm ? "Close password form" : "Update your password"}
               </p>
 
             </div>
@@ -118,6 +154,40 @@ export default function SecuritySettings() {
           </div>
 
         </button>
+
+        {showPasswordForm && (
+          <div className="space-y-4 rounded-2xl border border-[#ffb3bf] p-4">
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-gray-600 outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe1ec]"
+            />
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-gray-600 outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe1ec]"
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-gray-600 outline-none transition focus:border-[#ff4d6d] focus:ring-2 focus:ring-[#ffe1ec]"
+            />
+            <button
+              type="button"
+              onClick={handlePasswordChange}
+              disabled={passwordLoading}
+              className="w-full rounded-2xl bg-[#ff4d6d] py-3 font-semibold text-white transition hover:bg-[#e83f5e] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {passwordLoading ? "Updating..." : "Change Password"}
+            </button>
+          </div>
+        )}
 
       </div>
 
