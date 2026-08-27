@@ -59,14 +59,14 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-5 z-50 px-5 transition-all duration-500 ${
+      className={`fixed inset-x-0 top-5 z-50 px-4 sm:px-6 transition-all duration-500 ${
         scrolled ? "top-3" : "top-5"
       }`}
     >
       <div
-        className={`mx-auto flex h-20 max-w-7xl items-center justify-between rounded-3xl border px-8 transition-all duration-500 ${
+        className={`mx-auto flex h-20 max-w-7xl items-center justify-between rounded-3xl border px-4 sm:px-6 xl:px-8 transition-all duration-500 ${
           scrolled
-            ? "border-white/20 bg-black/20 backdrop-blur-xl"
+            ? "border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl"
             : "border-white/10 bg-black/20 backdrop-blur-xl"
         }`}
       >
@@ -76,55 +76,55 @@ export default function Navbar() {
           <DesktopNavigation />
         </div>
 
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="hidden items-center gap-3 xl:gap-4 lg:flex">
           {isAuthenticated ? (
-<div className="ml-6 flex shrink-0 items-center gap-4 border-l border-white/10 pl-6">
-    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-rose-500 font-bold text-white">
-      {displayImage ? (
-        <img
-          src={displayImage}
-          alt={displayName ?? "User"}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        displayInitial
-      )}
-    </div>
+            <div className="ml-2 flex shrink-0 items-center gap-2 xl:gap-3 border-l border-white/10 pl-3 xl:pl-4">
+              <div className="flex h-9 w-9 xl:h-10 xl:w-10 items-center justify-center overflow-hidden rounded-full bg-rose-500 font-bold text-white text-xs xl:text-sm shrink-0">
+                {displayImage ? (
+                  <img
+                    src={displayImage}
+                    alt={displayName ?? "User"}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  displayInitial
+                )}
+              </div>
 
-    <div className="min-w-0 max-w-36">
-      <p className="truncate font-semibold leading-tight text-white">
-        {displayName}
-      </p>
+              <div className="min-w-0 max-w-24 xl:max-w-32">
+                <p className="truncate text-xs xl:text-sm font-semibold leading-tight text-white">
+                  {displayName}
+                </p>
 
-      <p className="text-xs text-gray-300 capitalize">
-        {user?.role}
-      </p>
-    </div>
-  <div className="ml-1">
-  <NotificationBell />
-  </div>
-    <Link
-      href={
-        user
-          ? getDashboardRoute(user.role)
-          : "/"
-      }
-      className="whitespace-nowrap rounded-full border border-white/20 px-5 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-    >
-      {dashboardLabel}
-    </Link>
+                <p className="text-[10px] xl:text-xs text-gray-300 capitalize truncate">
+                  {user?.role}
+                </p>
+              </div>
 
-    <button
-      onClick={logout}
-      className="whitespace-nowrap rounded-full bg-rose-500 px-5 py-2 text-sm font-medium text-white transition hover:bg-rose-600"
-    >
-      Logout
-    </button>
-  </div>
-) : (
+              <NotificationBell />
+
+              <Link
+                href={
+                  user
+                    ? getDashboardRoute(user.role)
+                    : "/"
+                }
+                className="whitespace-nowrap rounded-full border border-white/20 px-3.5 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm font-medium text-white transition hover:bg-white/10"
+              >
+                {dashboardLabel}
+              </Link>
+
+              <button
+                onClick={logout}
+                className="whitespace-nowrap rounded-full bg-rose-500 px-3.5 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm font-medium text-white transition hover:bg-rose-600"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
             <button
               onClick={openLogin}
-              className="rounded-full bg-rose-500 px-6 py-2 font-semibold text-white transition hover:bg-rose-600"
+              className="rounded-full bg-rose-500 px-4 xl:px-5 py-2 text-xs xl:text-sm font-semibold text-white transition hover:bg-rose-600"
             >
               Login
             </button>

@@ -31,7 +31,8 @@ export default function VendorBookingCard({
 }: VendorBookingCardProps) {
 
 
-  const [date, setDate] = useState("");
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [inputDate, setInputDate] = useState("");
   const [guests, setGuests] = useState(200);
   const [open, setOpen] = useState(false);
 
@@ -194,34 +195,57 @@ if (pkg) {
 
       </div>
 
-      {/* Date */}
-
+      {/* Event Date(s) Multi-Selector */}
       <div className="mt-6">
+        <div className="mb-2 flex items-center justify-between">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-rose-50">
+            <Calendar className="h-4 w-4 text-rose-400" />
+            Event Date(s)
+          </label>
+          {selectedDates.length > 0 && (
+            <span className="rounded-full border border-rose-500/20 bg-rose-950/60 px-2 py-0.5 text-[11px] font-bold text-rose-300">
+              {selectedDates.length} {selectedDates.length === 1 ? "Date" : "Dates"}
+            </span>
+          )}
+        </div>
 
-        <label className="mb-2 block text-sm font-semibold text-rose-50">
-          Event Date
-        </label>
+        {selectedDates.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {selectedDates.map((d) => (
+              <span
+                key={d}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-400/30 bg-rose-900/40 px-3 py-1.5 text-xs font-semibold text-rose-100 shadow-sm"
+              >
+                <span>{new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDates((prev) => prev.filter((item) => item !== d))}
+                  className="font-bold text-rose-300 transition hover:text-rose-400"
+                  title="Remove date"
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         <input
           type="date"
-          value={date}
+          value={inputDate}
           min={new Date().toISOString().slice(0, 10)}
-          onChange={(e) => setDate(e.target.value)}
-          className="
-            h-12
-            w-full
-            rounded-xl
-            border
-            border-white/15
-            bg-[#12070d]
-            px-4
-            text-rose-50
-            outline-none
-            transition
-            focus:border-rose-300
-          "
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val && !selectedDates.includes(val)) {
+              setSelectedDates((prev) => [...prev, val].sort());
+            }
+            setInputDate("");
+          }}
+          className="h-12 w-full rounded-xl border border-white/15 bg-[#12070d] px-4 text-xs font-medium text-rose-50 outline-none transition focus:border-rose-300 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer"
         />
-
+        <p className="mt-1.5 text-[11px] text-rose-200/60">
+          💡 Select multiple dates for multi-day events (Haldi, Wedding, etc.).
+        </p>
       </div>
 
       {/* Guests */}
@@ -294,8 +318,8 @@ if (!storedVendor) {
   return;
 }
 
-if (!date) {
-  toast.error("Please select an event date.");
+if (selectedDates.length === 0) {
+  toast.error("Please select at least one event date.");
   return;
 }
 
@@ -340,98 +364,6 @@ if (!date) {
   </button>
 )}
 
-     <button
- onClick={async () => {
-  if (!isAuthenticated) {
-    openLogin();
-    return;
-  }
-
-
-
-
-
-  if (user?.role !== "customer") {
-    return;
-  }
-
-  const existingConversation =
-    conversations.find(
-      (conversation) =>
-        conversation.vendorId ===
-          (vendor.backendId ?? vendor.id.toString()) ||
-        conversation.vendor?.user?.id === vendor.userId
-    );
-
-  const conversationResult =
-    existingConversation
-      ? null
-      : await messageService.createConversation(
-          vendor.backendId ??
-            vendor.id.toString()
-        );
-
-  if (
-    conversationResult &&
-    !conversationResult.ok
-  ) {
-    toast.error(
-      conversationResult.error ??
-        "Chat unlocks after advance payment and admin approval."
-    );
-    return;
-  }
-
-  const conversation =
-    existingConversation ??
-    conversationResult?.data;
-
-  if (!conversation?.id) {
-    toast.error(
-      "Unable to start conversation."
-    );
-    return;
-  }
-
-  if (!existingConversation) {
-    await sendNewMessage(
-      conversation.id,
-      vendor.userId,
-      "Hello! I'm interested in your services."
-    );
-
-    await loadConversations();
-  }
-
- setSelectedConversation(conversation.id);
-
-  router.push("/customer/messages");
-}}
-  className="
-    mt-4
-    flex
-    w-full
-    items-center
-    justify-center
-    gap-2
-    rounded-xl
-    border
-    border-white/15
-    py-4
-    font-semibold
-    text-rose-50
-    transition
-    hover:border-rose-300
-    hover:text-rose-200
-  "
->
-  <MessageCircle size={20} />
-  Send Inquiry
-
-
-
-</button>
-
 
 
 
@@ -474,7 +406,8 @@ if (!date) {
   packageName={selectedPackage.name}
   price={selectedPackage.price}
   guests={guests}
-  date={date}
+  date={selectedDates[0] || ""}
+  eventDates={selectedDates}
 />
     </>
   );

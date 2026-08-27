@@ -306,6 +306,29 @@ export const useBookingStore =
     },
 
     standbyRespond: async (bookingId, response) => {
+      set((state) => ({
+        bookings: state.bookings.map((b) => {
+          if (b.id !== bookingId) return b;
+          const updatedAssignments = (b.vendorAssignments ?? []).map((a) => ({
+            ...a,
+            status: response,
+          }));
+          return { ...b, vendorAssignments: updatedAssignments };
+        }),
+        selectedBooking:
+          state.selectedBooking?.id === bookingId
+            ? {
+                ...state.selectedBooking,
+                vendorAssignments: (
+                  state.selectedBooking.vendorAssignments ?? []
+                ).map((a) => ({
+                  ...a,
+                  status: response,
+                })),
+              }
+            : state.selectedBooking,
+      }));
+
       const result = await standbyRespondApi(bookingId, response);
       if (!result.ok) return false;
       const refresh = await getVendorBookingsApi();

@@ -5,6 +5,8 @@ import { plannerService } from "@/services/planner.service";
 
 interface PlannerStore {
   tasks: PlannerTask[];
+  isLoading: boolean;
+  error: string | null;
 
   loadTasks: () => Promise<void>;
 
@@ -28,69 +30,144 @@ interface PlannerStore {
 export const usePlannerStore =
   create<PlannerStore>((set) => ({
     tasks: [],
+    isLoading: false,
+    error: null,
 
     loadTasks: async () => {
-      const result =
-        await plannerService.getTasks();
+      set({ isLoading: true, error: null });
+      try {
+        const result =
+          await plannerService.getTasks();
 
-      set({
-        tasks: result.data,
-      });
+        set({
+          tasks: Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result)
+            ? result
+            : [],
+          isLoading: false,
+        });
+      } catch (err: any) {
+        set({
+          tasks: [],
+          isLoading: false,
+          error:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to load tasks",
+        });
+      }
     },
 
     addTask: async (task) => {
-      await plannerService.addTask(task);
+      set({ error: null });
+      try {
+        await plannerService.addTask(task);
 
-      const result =
-        await plannerService.getTasks();
+        const result =
+          await plannerService.getTasks();
 
-      set({
-        tasks: result.data,
-      });
+        set({
+          tasks: Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result)
+            ? result
+            : [],
+        });
+      } catch (err: any) {
+        set({
+          error:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to add task",
+        });
+      }
     },
 
     updateTask: async (
       id,
       task
     ) => {
-      await plannerService.updateTask(
-        id,
-        task
-      );
+      set({ error: null });
+      try {
+        await plannerService.updateTask(
+          id,
+          task
+        );
 
-      const result =
-        await plannerService.getTasks();
+        const result =
+          await plannerService.getTasks();
 
-      set({
-        tasks: result.data,
-      });
+        set({
+          tasks: Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result)
+            ? result
+            : [],
+        });
+      } catch (err: any) {
+        set({
+          error:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to update task",
+        });
+      }
     },
 
     deleteTask: async (id) => {
-      await plannerService.deleteTask(id);
+      set({ error: null });
+      try {
+        await plannerService.deleteTask(id);
 
-      const result =
-        await plannerService.getTasks();
+        const result =
+          await plannerService.getTasks();
 
-      set({
-        tasks: result.data,
-      });
+        set({
+          tasks: Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result)
+            ? result
+            : [],
+        });
+      } catch (err: any) {
+        set({
+          error:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to delete task",
+        });
+      }
     },
 
     toggleTask: async (
       id,
       status
     ) => {
-      await plannerService.toggleTask(
-        id,
-        status
-      );
+      set({ error: null });
+      try {
+        await plannerService.toggleTask(
+          id,
+          status
+        );
 
-      const result =
-        await plannerService.getTasks();
+        const result =
+          await plannerService.getTasks();
 
-      set({
-        tasks: result.data,
-      });
+        set({
+          tasks: Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result)
+            ? result
+            : [],
+        });
+      } catch (err: any) {
+        set({
+          error:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to toggle task",
+        });
+      }
     },
   }));

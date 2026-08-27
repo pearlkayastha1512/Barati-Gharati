@@ -37,6 +37,7 @@ export interface Booking {
   customerId: string;
   vendorId: number;
   noVendorAvailable?: boolean;
+  cancellationReason?: string;
 
 
   customerName: string;
@@ -59,6 +60,7 @@ export interface Booking {
   eventType: string;
 
   eventDate: string;
+  eventDates?: string[];
 
   eventTime: string;
 

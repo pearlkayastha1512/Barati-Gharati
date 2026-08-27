@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   constructor(
     private readonly mailerService: MailerService,
     private readonly prisma: PrismaService,
@@ -311,5 +313,82 @@ async sendVendorRejectedEmail(
     message: 'Vendor rejection email sent.',
   };
 }
+
+  async sendPrimaryBookingRequestEmail(
+    to: string,
+    vendorName: string,
+    customerName: string,
+    bookingNumber: string,
+    eventDate: string,
+    city: string,
+    packageName: string,
+    totalAmount: number,
+  ) {
+    const subject = `Urgent: New Booking Request #${bookingNumber} - Barati Gharati`;
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#31202a;border:1px solid #fecdd3;padding:24px;border-radius:16px;background:#fff">
+        <h2 style="color:#be123c">Hello ${vendorName},</h2>
+        <p>You have received a new primary booking request on <strong>Barati Gharati</strong>!</p>
+        
+        <div style="background:#fff1f2;padding:16px;border-radius:12px;margin:20px 0;">
+          <p style="margin:4px 0;"><strong>Booking ID:</strong> ${bookingNumber}</p>
+          <p style="margin:4px 0;"><strong>Customer:</strong> ${customerName}</p>
+          <p style="margin:4px 0;"><strong>Event Date:</strong> ${eventDate}</p>
+          <p style="margin:4px 0;"><strong>City / Location:</strong> ${city}</p>
+          <p style="margin:4px 0;"><strong>Package Selected:</strong> ${packageName}</p>
+          <p style="margin:4px 0;"><strong>Amount:</strong> ₹${totalAmount.toLocaleString('en-IN')}</p>
+        </div>
+
+        <p>Please log in to your vendor dashboard to <strong>Accept</strong> or <strong>Reject</strong> this booking within 2 hours.</p>
+        
+        <br>
+        <p style="color:#888;font-size:12px">Barati Gharati Wedding Management System</p>
+      </div>
+    `;
+    try {
+      const res = await this.mailerService.sendMail({ to, subject, html });
+      this.logger.log(`Primary booking request email sent successfully to ${to} (${res?.messageId || 'OK'})`);
+      await this.logEmail(to, subject, html, 'sent');
+    } catch (err: any) {
+      this.logger.error(`Failed to send primary booking request email to ${to}: ${err?.message || err}`, err?.stack);
+      await this.logEmail(to, subject, html, `failed: ${err?.message || 'SMTP Error'}`);
+    }
+  }
+
+  async sendStandbyBookingBroadcastEmail(
+    to: string,
+    vendorName: string,
+    bookingNumber: string,
+    categoryName: string,
+    eventDate: string,
+    city: string,
+  ) {
+    const subject = `New Standby Booking Opportunity - ${categoryName} on ${eventDate}`;
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#31202a;border:1px solid #e2e8f0;padding:24px;border-radius:16px;background:#fff">
+        <h2 style="color:#4f46e5">Hello ${vendorName},</h2>
+        <p>A new customer has requested a vendor in your category (<strong>${categoryName}</strong>) on Barati Gharati!</p>
+        
+        <div style="background:#f8fafc;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #cbd5e1;">
+          <p style="margin:4px 0;"><strong>Event Date:</strong> ${eventDate}</p>
+          <p style="margin:4px 0;"><strong>City:</strong> ${city}</p>
+          <p style="margin:4px 0;"><strong>Category:</strong> ${categoryName}</p>
+        </div>
+
+        <p>Please log in to your vendor dashboard and indicate whether you are <strong>Available</strong> or <strong>Not Available</strong> on this date so the customer can view your profile.</p>
+        
+        <br>
+        <p style="color:#888;font-size:12px">Barati Gharati Smart Booking Engine</p>
+      </div>
+    `;
+    try {
+      const res = await this.mailerService.sendMail({ to, subject, html });
+      this.logger.log(`Standby broadcast email sent successfully to ${to} (${res?.messageId || 'OK'})`);
+      await this.logEmail(to, subject, html, 'sent');
+    } catch (err: any) {
+      this.logger.error(`Failed to send standby broadcast email to ${to}: ${err?.message || err}`, err?.stack);
+      await this.logEmail(to, subject, html, `failed: ${err?.message || 'SMTP Error'}`);
+    }
+  }
 
 }

@@ -60,6 +60,10 @@ export class CreateBookingDto {
   eventDate!: string;
 
   @IsOptional()
+  @IsString({ each: true })
+  eventDates?: string[];
+
+  @IsOptional()
   @IsString()
   eventTime?: string;
 

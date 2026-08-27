@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   CalendarDays,
   MapPin,
@@ -10,16 +11,37 @@ import {
   Clock,
   Users,
   FileText,
+  AlertTriangle,
 } from "lucide-react";
 
 import { useBookingStore } from "@/store/bookingStore";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { toast } from "sonner";
+import VendorRejectionModal from "@/components/vendors/VendorRejectionModal";
 
 export default function BookingDetailsCard() {
+  const { vendor } = useVendorProfile();
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isPromotedReject, setIsPromotedReject] = useState(false);
   const {
     selectedBooking,
     updateStatus,
   } = useBookingStore();
+
+  const handleConfirmRejection = async (reason: string) => {
+    if (!selectedBooking) return;
+    if (isPromotedReject) {
+      await useBookingStore.getState().promotedReject(selectedBooking.id, reason);
+    } else {
+      await useBookingStore.getState().primaryReject(selectedBooking.id, reason);
+    }
+    toast.success("Rejection reason submitted.");
+  };
+
+  const [pendingResponse, setPendingResponse] = useState<{
+    response: "AVAILABLE" | "NOT_AVAILABLE";
+  } | null>(null);
 
   if (!selectedBooking) {
     return (
@@ -48,6 +70,31 @@ export default function BookingDetailsCard() {
       </section>
     );
   }
+
+  const myAssignment = vendor
+    ? selectedBooking.vendorAssignments?.find(
+        (a) =>
+          String(a.vendorId) === String(vendor.id) ||
+          a.vendorId === vendor.userId
+      )
+    : null;
+
+  const isStandbyVendor =
+    myAssignment?.role === "STANDBY" ||
+    (selectedBooking.vendorAssignments?.some((a) => a.role === "STANDBY") &&
+      selectedBooking.vendorId !== vendor?.id);
+
+  const isPrimaryVendor = !isStandbyVendor;
+
+  const isAvailable =
+    myAssignment?.status === "AVAILABLE" ||
+    (!myAssignment && selectedBooking.vendorAssignments?.some((a) => a.status === "AVAILABLE"));
+
+  const isNotAvailable =
+    myAssignment?.status === "NOT_AVAILABLE" ||
+    (!myAssignment && selectedBooking.vendorAssignments?.some((a) => a.status === "NOT_AVAILABLE"));
+
+  const hasResponded = isAvailable || isNotAvailable;
 
   const canViewCustomerContact =
     Boolean(selectedBooking.adminApproved);
@@ -118,17 +165,24 @@ export default function BookingDetailsCard() {
 
         <Item
           icon={<CalendarDays size={18} />}
-          label="Event Date"
-          value={new Date(
-            selectedBooking.eventDate
-          ).toLocaleDateString(
-            "en-GB",
-            {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }
-          )}
+          label="Event Date(s)"
+          value={
+            selectedBooking.eventDates && selectedBooking.eventDates.length > 0
+              ? selectedBooking.eventDates
+                  .map((d) =>
+                    new Date(d.includes("T") ? d : d + "T00:00:00").toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  )
+                  .join(", ") + ` (${selectedBooking.eventDates.length} Days)`
+              : new Date(selectedBooking.eventDate).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+          }
         />
 
         <Item
@@ -364,8 +418,9 @@ export default function BookingDetailsCard() {
         </div>
       )}
 
-      {(selectedBooking.bookingStatus === "waiting_primary_vendor" ||
-        selectedBooking.bookingStatus === "pending") && (
+      {isPrimaryVendor &&
+        (selectedBooking.bookingStatus === "waiting_primary_vendor" ||
+          selectedBooking.bookingStatus === "pending") && (
         <div className="mt-8 flex gap-4">
           <button
             onClick={() => useBookingStore.getState().primaryAccept(selectedBooking.id)}
@@ -376,8 +431,8 @@ export default function BookingDetailsCard() {
 
           <button
             onClick={() => {
-              const reason = prompt("Reason for rejection (optional):") ?? undefined;
-              useBookingStore.getState().primaryReject(selectedBooking.id, reason);
+              setIsPromotedReject(false);
+              setIsRejectModalOpen(true);
             }}
             className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
           >
@@ -397,8 +452,8 @@ export default function BookingDetailsCard() {
 
           <button
             onClick={() => {
-              const reason = prompt("Reason for rejection (optional):") ?? undefined;
-              useBookingStore.getState().promotedReject(selectedBooking.id, reason);
+              setIsPromotedReject(true);
+              setIsRejectModalOpen(true);
             }}
             className="rounded-2xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
           >
@@ -406,6 +461,63 @@ export default function BookingDetailsCard() {
           </button>
         </div>
       )}
+
+      {isStandbyVendor &&
+        (selectedBooking.bookingStatus === "waiting_primary_vendor" ||
+          selectedBooking.bookingStatus === "pending" ||
+          selectedBooking.bookingStatus === "matching" ||
+          selectedBooking.bookingStatus === "primary_rejected") && (
+          <div className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5">
+            <h4 className="font-bold text-indigo-900 text-sm flex items-center gap-2">
+              📋 Standby Request — Confirm Your Availability
+            </h4>
+            <p className="mt-1 text-xs text-indigo-800 font-medium leading-relaxed">
+              Please confirm your availability for this date. You will be able to accept this booking if the primary vendor rejects the request.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <button
+                disabled={hasResponded}
+                onClick={() => {
+                  if (hasResponded) {
+                    toast.info("Availability status has already been confirmed and locked.");
+                    return;
+                  }
+                  setPendingResponse({ response: "AVAILABLE" });
+                }}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition-all duration-200 shadow-sm ${
+                  isAvailable
+                    ? "bg-emerald-600 text-white ring-2 ring-emerald-400 ring-offset-1 scale-[1.02] opacity-100 font-extrabold shadow-emerald-200 cursor-default"
+                    : isNotAvailable
+                    ? "bg-emerald-100/80 text-emerald-800 opacity-40 grayscale blur-[0.4px] border border-emerald-300 cursor-not-allowed"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95"
+                }`}
+                title={hasResponded ? "Availability confirmed and locked" : "Confirm Availability for Event Date"}
+              >
+                ✓ I&apos;m Available
+              </button>
+              <button
+                disabled={hasResponded}
+                onClick={() => {
+                  if (hasResponded) {
+                    toast.info("Availability status has already been confirmed and locked.");
+                    return;
+                  }
+                  setPendingResponse({ response: "NOT_AVAILABLE" });
+                }}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition-all duration-200 shadow-sm ${
+                  isNotAvailable
+                    ? "bg-rose-600 text-white ring-2 ring-rose-400 ring-offset-1 scale-[1.02] opacity-100 font-extrabold shadow-rose-200 cursor-default"
+                    : isAvailable
+                    ? "bg-rose-100/80 text-rose-800 opacity-40 grayscale blur-[0.4px] border border-rose-300 cursor-not-allowed"
+                    : "bg-rose-600 text-white hover:bg-rose-700 active:scale-95"
+                }`}
+                title={hasResponded ? "Availability confirmed and locked" : "Mark as Not Available"}
+              >
+                ✕ Not Available
+              </button>
+            </div>
+          </div>
+        )}
 
       {(selectedBooking.bookingStatus === "advance_paid" ||
         selectedBooking.bookingStatus === "in_progress" ||
@@ -425,9 +537,74 @@ export default function BookingDetailsCard() {
         </div>
       )}
 
+      {/* Confirmation & Lock Modal */}
+      {pendingResponse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl bg-amber-100 p-3 text-amber-600">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Confirm Availability Status
+                </h3>
+                <p className="text-xs text-amber-700 font-semibold">
+                  ⚠️ One-Time Action Only
+                </p>
+              </div>
+            </div>
 
+            <p className="mt-4 text-sm leading-relaxed text-slate-600">
+              You are marking yourself as{" "}
+              <span className="font-extrabold text-slate-900 underline decoration-amber-400">
+                {pendingResponse.response === "AVAILABLE" ? "AVAILABLE" : "NOT AVAILABLE"}
+              </span>{" "}
+              for this booking request.
+            </p>
 
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900 font-medium leading-relaxed">
+              <strong>Warning:</strong> Once you assure your availability status, <span className="underline font-bold text-amber-950">you cannot change it again</span>. Only one response submission is allowed per booking.
+            </div>
 
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setPendingResponse(null)}
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const { response } = pendingResponse;
+                  setPendingResponse(null);
+                  const ok = await useBookingStore.getState().standbyRespond(selectedBooking.id, response);
+                  if (ok) {
+                    toast.success(`Availability locked as ${response === "AVAILABLE" ? "Available" : "Not Available"}`);
+                  } else {
+                    toast.error("Failed to update availability");
+                  }
+                }}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-md transition ${
+                  pendingResponse.response === "AVAILABLE"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-rose-600 hover:bg-rose-700"
+                }`}
+              >
+                Confirm & Lock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Rejection Modal */}
+      <VendorRejectionModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onSubmit={handleConfirmRejection}
+        title="Reject Booking Request"
+      />
     </section>
   );
 }

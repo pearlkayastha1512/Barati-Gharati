@@ -38,11 +38,17 @@ export default function AlternativeVendorsCard({ booking }: { booking: Booking }
       const res = await getAlternativeVendorsApi(booking.id);
       setLoading(false);
       if (res.ok && res.data?.success) {
-        setVendors(res.data.data || []);
+        const rawList = res.data.data || [];
+        const filtered = rawList.filter(
+          (v: AlternativeVendor) =>
+            v.id !== String(booking.vendorId) &&
+            v.businessName.toLowerCase() !== (booking.vendorName || "").toLowerCase()
+        );
+        setVendors(filtered);
       }
     }
     fetchAlternatives();
-  }, [booking.id]);
+  }, [booking.id, booking.vendorId, booking.vendorName]);
 
   const isPrimaryRejected =
     booking.bookingStatus === "primary_rejected" ||

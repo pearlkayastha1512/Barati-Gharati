@@ -14,6 +14,8 @@ import {
   Role,
 } from '@prisma/client';
 
+import { MailService } from '../mail/mail.service';
+
 // ─── Lead allocations per badge plan ─────────────────────────────────────────
 const LEAD_ALLOCATIONS: Record<string, number> = {
   BRONZE: 10,
@@ -38,6 +40,7 @@ export class BookingEngineService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly mailService: MailService,
   ) {}
 
   async logActivity(
@@ -78,7 +81,7 @@ export class BookingEngineService {
       where: { id: bookingId },
       data: { status: BookingStatus.MATCHING },
       include: {
-        vendor: true,
+        vendor: { include: { user: true } },
         package: { include: { category: true } },
         user: true,
       },
@@ -96,10 +99,14 @@ export class BookingEngineService {
       booking.userId,
     );
 
-    // Step 2: Validate primary vendor eligibility
+    const datesList = booking.eventDates && booking.eventDates.length > 0
+      ? booking.eventDates.map((d: string) => new Date(d))
+      : [booking.eventDate];
+
+    // Step 2: Validate primary vendor eligibility across ALL requested dates
     const primaryEligibility = await this.checkVendorEligibility(
       primaryVendor.id,
-      booking.eventDate,
+      datesList,
     );
 
     if (!primaryEligibility.eligible) {
@@ -108,11 +115,11 @@ export class BookingEngineService {
       );
     }
 
-    // Step 3: Find standby candidates (same category, different vendor, eligible)
+    // Step 3: Find standby candidates (same category, different vendor, eligible on ALL dates)
     const standbyCandidates = await this.findStandbyCandidates(
       primaryVendor.id,
       booking.package.categoryId,
-      booking.eventDate,
+      datesList,
       booking.city ?? null,
       booking.eventLatitude ? Number(booking.eventLatitude) : null,
       booking.eventLongitude ? Number(booking.eventLongitude) : null,
@@ -155,8 +162,9 @@ export class BookingEngineService {
       timeoutAt,
     });
 
-    // Standby assignments for ALL matching vendors
+    // Standby assignments for ALL matching vendors (excluding primary vendor)
     for (let i = 0; i < broadcastStandbys.length; i++) {
+      if (broadcastStandbys[i].vendor.id === primaryVendor.id) continue;
       assignments.push({
         bookingId,
         vendorId: broadcastStandbys[i].vendor.id,
@@ -288,6 +296,11 @@ export class BookingEngineService {
       );
     }
 
+    const cleanReason = reason?.trim();
+    if (!cleanReason) {
+      throw new BadRequestException('Rejection reason is mandatory.');
+    }
+
     // Deduct lead for rejection
     await this.deductLead(vendorId, bookingId, assignment.id, 'PRIMARY_REJECTED');
 
@@ -305,9 +318,21 @@ export class BookingEngineService {
       where: { id: bookingId },
       data: {
         status: BookingStatus.PRIMARY_REJECTED,
-        cancellationReason: reason,
+        cancellationReason: cleanReason,
       },
     });
+
+    // Log Activity for Admin Review
+    const primaryVendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
+    await this.logActivity(
+      bookingId,
+      'PRIMARY_REJECTED',
+      'Primary Vendor Rejected Request',
+      `Primary vendor "${primaryVendor?.businessName || 'Vendor'}" rejected booking. Reason: "${cleanReason}".`,
+      'VENDOR',
+      vendorId,
+      { reason: cleanReason },
+    );
 
     // Notify user
     const booking = await this.prisma.booking.findUnique({
@@ -348,18 +373,48 @@ export class BookingEngineService {
     vendorId: string,
     response: 'AVAILABLE' | 'NOT_AVAILABLE',
   ): Promise<void> {
-    const assignment = await this.getAnyAssignment(bookingId, vendorId);
+    let assignment = await this.prisma.bookingVendorAssignment.findUnique({
+      where: { bookingId_vendorId: { bookingId, vendorId } },
+    });
 
-    if (assignment.role !== VendorAssignmentRole.STANDBY) {
+    if (!assignment) {
+      const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+      if (!booking) throw new NotFoundException('Booking not found');
+
+      assignment = await this.prisma.bookingVendorAssignment.create({
+        data: {
+          bookingId,
+          vendorId,
+          role: VendorAssignmentRole.STANDBY,
+          priority: 2,
+          status: VendorAssignmentStatus.PENDING,
+        },
+      });
+    }
+
+    if (
+      assignment.status === VendorAssignmentStatus.AVAILABLE ||
+      assignment.status === VendorAssignmentStatus.NOT_AVAILABLE
+    ) {
       throw new BadRequestException(
-        'Only standby vendors can use this endpoint.',
+        'Availability status has already been submitted and cannot be changed.',
       );
     }
 
-    if (assignment.status !== VendorAssignmentStatus.PENDING) {
-      throw new BadRequestException(
-        'This booking request is no longer actionable.',
-      );
+    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    if (response === 'AVAILABLE') {
+      const datesList = booking.eventDates && booking.eventDates.length > 0
+        ? booking.eventDates.map((d: string) => new Date(d))
+        : [booking.eventDate];
+
+      const eligibility = await this.checkVendorEligibility(vendorId, datesList);
+      if (!eligibility.eligible) {
+        throw new BadRequestException(
+          `Cannot mark available: ${eligibility.reason || 'You are blocked or booked on one of the requested event dates.'}`,
+        );
+      }
     }
 
     const newStatus =
@@ -372,9 +427,18 @@ export class BookingEngineService {
       data: { status: newStatus, respondedAt: new Date() },
     });
 
-    const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
-    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId }, include: { user: true } });
     if (vendor && booking) {
+      // Log Standby Vendor Availability Response Activity
+      await this.logActivity(
+        bookingId,
+        'STANDBY_AVAILABILITY_UPDATED',
+        `Standby Vendor Availability: ${response}`,
+        `Standby vendor "${vendor.businessName}" indicated availability status: ${response} for Booking ${booking.bookingNumber}.`,
+        'VENDOR',
+        vendorId,
+      );
+
       const admins = await this.prisma.user.findMany({
         where: { role: Role.ADMIN },
         select: { id: true },
@@ -493,6 +557,11 @@ export class BookingEngineService {
       );
     }
 
+    const cleanReason = reason?.trim();
+    if (!cleanReason) {
+      throw new BadRequestException('Rejection reason is mandatory.');
+    }
+
     // Deduct lead for promoted reject
     await this.deductLead(vendorId, bookingId, assignment.id, 'PROMOTED_REJECTED');
 
@@ -508,9 +577,21 @@ export class BookingEngineService {
       where: { id: bookingId },
       data: {
         status: BookingStatus.PRIMARY_REJECTED,
-        cancellationReason: reason,
+        cancellationReason: cleanReason,
       },
     });
+
+    // Log Activity for Admin Review
+    const promotedVendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
+    await this.logActivity(
+      bookingId,
+      'PROMOTED_REJECTED',
+      'Promoted Vendor Rejected Request',
+      `Promoted vendor "${promotedVendor?.businessName || 'Vendor'}" rejected booking. Reason: "${cleanReason}".`,
+      'VENDOR',
+      vendorId,
+      { reason: cleanReason },
+    );
 
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
@@ -820,13 +901,182 @@ export class BookingEngineService {
         cycleStartAt: new Date(),
         cycleEndAt: cycleEnd,
       },
-      update: {}, // don't overwrite if already exists
+      update: {
+        totalLeads,
+        planType,
+      },
     });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // LEAD BALANCE: Adjust (admin use)
+  // PRIVATE HELPERS
   // ═══════════════════════════════════════════════════════════════════════════
+
+  private async checkVendorEligibility(
+    vendorId: string,
+    eventDates: Date[] | Date,
+  ): Promise<{ eligible: boolean; reason?: string }> {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id: vendorId },
+      include: { leadBalance: true },
+    });
+
+    if (!vendor) return { eligible: false, reason: 'Vendor not found' };
+    if (!vendor.isActive) return { eligible: false, reason: 'Vendor is inactive' };
+    if (vendor.status !== VendorStatus.APPROVED)
+      return { eligible: false, reason: 'Vendor not approved' };
+    if (!vendor.leadBalance || vendor.leadBalance.remainingLeads <= 0)
+      return { eligible: false, reason: 'No lead balance remaining' };
+
+    const datesList = Array.isArray(eventDates)
+      ? eventDates
+      : [eventDates];
+
+    for (const singleDate of datesList) {
+      const { start, end } = this.getDateRange(new Date(singleDate));
+
+      const blocked = await this.prisma.vendorAvailability.findFirst({
+        where: { vendorId, date: { gte: start, lt: end } },
+      });
+      if (blocked) {
+        return {
+          eligible: false,
+          reason: `Vendor blocked date ${new Date(singleDate).toLocaleDateString()}`,
+        };
+      }
+
+      const dateStr = new Date(singleDate).toISOString().slice(0, 10);
+      const booked = await this.prisma.booking.findFirst({
+        where: {
+          vendorId,
+          OR: [
+            { eventDate: { gte: start, lt: end } },
+            { eventDates: { has: dateStr } },
+          ],
+          status: {
+            in: [
+              BookingStatus.ADVANCE_PAID,
+              BookingStatus.ACCEPTED,
+              BookingStatus.CONFIRMED,
+              BookingStatus.WAITING_PAYMENT,
+              BookingStatus.PRIMARY_ACCEPTED,
+              BookingStatus.STANDBY_ACCEPTED,
+            ],
+          },
+        },
+      });
+      if (booked) {
+        return {
+          eligible: false,
+          reason: `Vendor already booked on date ${new Date(singleDate).toLocaleDateString()}`,
+        };
+      }
+    }
+
+    return { eligible: true };
+  }
+
+  private async findStandbyCandidates(
+    excludeVendorId: string,
+    categoryId: string | null,
+    eventDates: Date[] | Date,
+    eventCity: string | null,
+    eventLat: number | null,
+    eventLng: number | null,
+  ): Promise<Array<{ vendor: any; score: number }>> {
+    let candidates = await this.prisma.vendor.findMany({
+      where: {
+        id: { not: excludeVendorId },
+        categoryId: categoryId ?? undefined,
+        status: VendorStatus.APPROVED,
+        isActive: true,
+        leadBalance: { remainingLeads: { gt: 0 } },
+      },
+      include: {
+        user: true,
+        leadBalance: true,
+        reviews: { select: { rating: true } },
+        vendorAssignments: { select: { status: true } },
+      },
+    });
+
+    // Fallback: If no vendors found in exact same category (e.g. test DB), search any active approved vendor
+    if (candidates.length === 0) {
+      candidates = await this.prisma.vendor.findMany({
+        where: {
+          id: { not: excludeVendorId },
+          status: VendorStatus.APPROVED,
+          isActive: true,
+          leadBalance: { remainingLeads: { gt: 0 } },
+        },
+        include: {
+          user: true,
+          leadBalance: true,
+          reviews: { select: { rating: true } },
+          vendorAssignments: { select: { status: true } },
+        },
+      });
+    }
+
+    const datesList = Array.isArray(eventDates)
+      ? eventDates
+      : [eventDates];
+
+    const scored: Array<{ vendor: any; score: number }> = [];
+
+    for (const vendor of candidates) {
+      let isAvailableAllDates = true;
+
+      for (const singleDate of datesList) {
+        const { start, end } = this.getDateRange(new Date(singleDate));
+        const isBlocked = await this.prisma.vendorAvailability.findFirst({
+          where: { vendorId: vendor.id, date: { gte: start, lt: end } },
+        });
+        if (isBlocked) {
+          isAvailableAllDates = false;
+          break;
+        }
+
+        const dateStr = new Date(singleDate).toISOString().slice(0, 10);
+        const isBooked = await this.prisma.booking.findFirst({
+          where: {
+            vendorId: vendor.id,
+            OR: [
+              { eventDate: { gte: start, lt: end } },
+              { eventDates: { has: dateStr } },
+            ],
+            status: {
+              in: [
+                BookingStatus.ADVANCE_PAID,
+                BookingStatus.ACCEPTED,
+                BookingStatus.CONFIRMED,
+                BookingStatus.WAITING_PAYMENT,
+                BookingStatus.PRIMARY_ACCEPTED,
+                BookingStatus.STANDBY_ACCEPTED,
+              ],
+            },
+          },
+        });
+        if (isBooked) {
+          isAvailableAllDates = false;
+          break;
+        }
+      }
+
+      if (!isAvailableAllDates) continue;
+
+      const score = await this.calculatePriorityScore(
+        vendor,
+        datesList[0] || new Date(),
+        eventCity,
+        eventLat,
+        eventLng,
+      );
+      scored.push({ vendor, score });
+    }
+
+    return scored.sort((a, b) => b.score - a.score);
+  }
 
   async adjustLeadBalance(
     vendorId: string,
@@ -852,10 +1102,6 @@ export class BookingEngineService {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GET ASSIGNMENTS
-  // ═══════════════════════════════════════════════════════════════════════════
-
   async getBookingAssignments(bookingId: string) {
     return this.prisma.bookingVendorAssignment.findMany({
       where: { bookingId },
@@ -869,136 +1115,6 @@ export class BookingEngineService {
       },
       orderBy: { priority: 'asc' },
     });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PRIVATE HELPERS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  private async checkVendorEligibility(
-    vendorId: string,
-    eventDate: Date,
-  ): Promise<{ eligible: boolean; reason?: string }> {
-    const vendor = await this.prisma.vendor.findUnique({
-      where: { id: vendorId },
-      include: { leadBalance: true },
-    });
-
-    if (!vendor) return { eligible: false, reason: 'Vendor not found' };
-    if (!vendor.isActive) return { eligible: false, reason: 'Vendor is inactive' };
-    if (vendor.status !== VendorStatus.APPROVED)
-      return { eligible: false, reason: 'Vendor not approved' };
-    if (!vendor.leadBalance || vendor.leadBalance.remainingLeads <= 0)
-      return { eligible: false, reason: 'No lead balance remaining' };
-
-    const { start, end } = this.getDateRange(eventDate);
-
-    const blocked = await this.prisma.vendorAvailability.findFirst({
-      where: { vendorId, date: { gte: start, lt: end } },
-    });
-    if (blocked) return { eligible: false, reason: 'Vendor blocked this date' };
-
-    const booked = await this.prisma.booking.findFirst({
-      where: {
-        vendorId,
-        eventDate: { gte: start, lt: end },
-        status: {
-          in: [
-            BookingStatus.ADVANCE_PAID,
-            BookingStatus.ACCEPTED,
-            BookingStatus.CONFIRMED,
-            BookingStatus.WAITING_PAYMENT,
-            BookingStatus.PRIMARY_ACCEPTED,
-            BookingStatus.STANDBY_ACCEPTED,
-          ],
-        },
-      },
-    });
-    if (booked) return { eligible: false, reason: 'Vendor already booked this date' };
-
-    return { eligible: true };
-  }
-
-  private async findStandbyCandidates(
-    excludeVendorId: string,
-    categoryId: string | null,
-    eventDate: Date,
-    eventCity: string | null,
-    eventLat: number | null,
-    eventLng: number | null,
-  ): Promise<Array<{ vendor: any; score: number }>> {
-    let candidates = await this.prisma.vendor.findMany({
-      where: {
-        id: { not: excludeVendorId },
-        categoryId: categoryId ?? undefined,
-        status: VendorStatus.APPROVED,
-        isActive: true,
-        leadBalance: { remainingLeads: { gt: 0 } },
-      },
-      include: {
-        leadBalance: true,
-        reviews: { select: { rating: true } },
-        vendorAssignments: { select: { status: true } },
-      },
-    });
-
-    // Fallback: If no vendors found in exact same category (e.g. test DB), search any active approved vendor
-    if (candidates.length === 0) {
-      candidates = await this.prisma.vendor.findMany({
-        where: {
-          id: { not: excludeVendorId },
-          status: VendorStatus.APPROVED,
-          isActive: true,
-          leadBalance: { remainingLeads: { gt: 0 } },
-        },
-        include: {
-          leadBalance: true,
-          reviews: { select: { rating: true } },
-          vendorAssignments: { select: { status: true } },
-        },
-      });
-    }
-
-
-    const { start, end } = this.getDateRange(eventDate);
-    const scored: Array<{ vendor: any; score: number }> = [];
-
-    for (const vendor of candidates) {
-      const isBlocked = await this.prisma.vendorAvailability.findFirst({
-        where: { vendorId: vendor.id, date: { gte: start, lt: end } },
-      });
-      if (isBlocked) continue;
-
-      const isBooked = await this.prisma.booking.findFirst({
-        where: {
-          vendorId: vendor.id,
-          eventDate: { gte: start, lt: end },
-          status: {
-            in: [
-              BookingStatus.ADVANCE_PAID,
-              BookingStatus.ACCEPTED,
-              BookingStatus.CONFIRMED,
-              BookingStatus.WAITING_PAYMENT,
-              BookingStatus.PRIMARY_ACCEPTED,
-              BookingStatus.STANDBY_ACCEPTED,
-            ],
-          },
-        },
-      });
-      if (isBooked) continue;
-
-      const score = await this.calculatePriorityScore(
-        vendor,
-        eventDate,
-        eventCity,
-        eventLat,
-        eventLng,
-      );
-
-      scored.push({ vendor, score });
-    }
-
-    return scored.sort((a, b) => b.score - a.score);
   }
 
   private async calculatePriorityScore(
@@ -1198,16 +1314,42 @@ export class BookingEngineService {
     primaryVendor: any,
     standbys: Array<{ vendor: any; score: number }>,
   ) {
+    // 1. In-App & Email to Primary Vendor
     await this.notifications.create(primaryVendor.userId, {
       title: '📬 New Booking Request',
       message: `You have a new booking request for ${booking.eventDate.toLocaleDateString('en-IN')}. Please accept or reject within ${VENDOR_TIMEOUT_HOURS} hours.`,
     });
 
+    if (primaryVendor.user?.email) {
+      await this.mailService.sendPrimaryBookingRequestEmail(
+        primaryVendor.user.email,
+        primaryVendor.businessName,
+        booking.user?.name || 'Customer',
+        booking.bookingNumber,
+        new Date(booking.eventDate).toLocaleDateString('en-IN'),
+        booking.city || primaryVendor.city || 'Location',
+        booking.package?.title || 'Selected Package',
+        Number(booking.totalAmount) || 0,
+      );
+    }
+
+    // 2. In-App & Email to Standby Vendors
     for (const { vendor } of standbys) {
       await this.notifications.create(vendor.userId, {
         title: '📋 Standby Booking Request',
         message: `You have been added as a standby vendor for a booking on ${booking.eventDate.toLocaleDateString('en-IN')}. Please indicate your availability.`,
       });
+
+      if (vendor.user?.email) {
+        await this.mailService.sendStandbyBookingBroadcastEmail(
+          vendor.user.email,
+          vendor.businessName,
+          booking.bookingNumber,
+          booking.package?.category?.name || 'Category',
+          new Date(booking.eventDate).toLocaleDateString('en-IN'),
+          booking.city || vendor.city || 'Location',
+        );
+      }
     }
   }
 
@@ -1236,6 +1378,7 @@ export class BookingEngineService {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
+        vendor: true,
         package: { include: { category: true } },
         vendorAssignments: {
           include: {
@@ -1254,9 +1397,14 @@ export class BookingEngineService {
 
     if (!booking) throw new NotFoundException('Booking not found');
 
-    // Get all broadcasted vendor assignments (excluding current primary vendor)
+    // Get all broadcasted vendor assignments (excluding current primary vendor & unavailable/rejected vendors)
     const broadcastedAssignments = booking.vendorAssignments.filter(
-      (a) => a.vendorId !== booking.vendorId,
+      (a) =>
+        a.vendorId !== booking.vendorId &&
+        a.vendor?.businessName !== booking.vendor?.businessName &&
+        a.role !== VendorAssignmentRole.PRIMARY &&
+        a.status !== VendorAssignmentStatus.NOT_AVAILABLE &&
+        a.status !== VendorAssignmentStatus.REJECTED,
     );
 
     const result: Array<{
@@ -1358,22 +1506,28 @@ export class BookingEngineService {
   async customerSelectVendor(bookingId: string, userId: string, vendorId: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { vendor: true, user: true },
+      include: {
+        vendor: { include: { user: true } },
+        user: true,
+        package: { include: { category: true } },
+      },
     });
 
     if (!booking) throw new NotFoundException('Booking not found');
 
     const selectedVendor = await this.prisma.vendor.findUnique({
       where: { id: vendorId },
+      include: { user: true },
     });
 
     if (!selectedVendor) throw new NotFoundException('Selected vendor not found');
     if (selectedVendor.status !== VendorStatus.APPROVED)
       throw new BadRequestException('Vendor is not approved');
 
-    const oldVendorName = booking.vendor?.businessName ?? 'Previous Vendor';
+    const oldVendor = booking.vendor;
+    const oldVendorName = oldVendor?.businessName ?? 'Previous Vendor';
 
-    // Demote existing primary assignment to standby
+    // 1. Demote existing primary assignment to standby and reset status to PENDING
     await this.prisma.bookingVendorAssignment.updateMany({
       where: {
         bookingId,
@@ -1381,13 +1535,34 @@ export class BookingEngineService {
       },
       data: {
         role: VendorAssignmentRole.STANDBY,
+        status: VendorAssignmentStatus.PENDING,
       },
     });
+
+    // Ensure old primary vendor has a STANDBY assignment row in PENDING status
+    if (oldVendor) {
+      await this.prisma.bookingVendorAssignment.upsert({
+        where: { bookingId_vendorId: { bookingId, vendorId: oldVendor.id } },
+        create: {
+          bookingId,
+          vendorId: oldVendor.id,
+          role: VendorAssignmentRole.STANDBY,
+          priority: 99,
+          score: 50,
+          status: VendorAssignmentStatus.PENDING,
+          timeoutAt: new Date(Date.now() + VENDOR_TIMEOUT_HOURS * 3600 * 1000),
+        },
+        update: {
+          role: VendorAssignmentRole.STANDBY,
+          status: VendorAssignmentStatus.PENDING,
+        },
+      });
+    }
 
     const timeoutAt = new Date();
     timeoutAt.setHours(timeoutAt.getHours() + VENDOR_TIMEOUT_HOURS);
 
-    // Set new vendor as PRIMARY
+    // 2. Set new vendor as PRIMARY
     await this.prisma.bookingVendorAssignment.upsert({
       where: { bookingId_vendorId: { bookingId, vendorId } },
       create: {
@@ -1408,7 +1583,7 @@ export class BookingEngineService {
       },
     });
 
-    // Update booking's vendorId and status
+    // 3. Update booking's vendorId and status
     await this.prisma.booking.update({
       where: { id: bookingId },
       data: {
@@ -1418,21 +1593,28 @@ export class BookingEngineService {
       },
     });
 
-    // Log activity for Admin & History
+    // 4. Log activity for Admin & Audit History
     await this.logActivity(
       bookingId,
       'CUSTOMER_SELECTED_ALTERNATIVE',
       'Customer Selected Alternative Vendor',
-      `Customer selected alternative vendor ${selectedVendor.businessName} (replacing ${oldVendorName}). New request sent to vendor.`,
+      `Customer selected alternative vendor ${selectedVendor.businessName} (replacing ${oldVendorName}). New primary request sent to ${selectedVendor.businessName}, and ${oldVendorName} moved to Standby.`,
       'CUSTOMER',
       userId,
     );
 
-    // Notifications
+    // 5. In-App Notifications
     await this.notifications.create(selectedVendor.userId, {
-      title: '📬 Customer Selected You!',
-      message: `A customer has selected you for booking ${booking.bookingNumber}. Please accept or reject within ${VENDOR_TIMEOUT_HOURS} hours.`,
+      title: '📬 Customer Selected You as Primary Vendor!',
+      message: `A customer has selected you as primary vendor for booking ${booking.bookingNumber}. Please accept or reject within ${VENDOR_TIMEOUT_HOURS} hours.`,
     });
+
+    if (oldVendor) {
+      await this.notifications.create(oldVendor.userId, {
+        title: '📋 Booking Status Update: Moved to Standby',
+        message: `For booking ${booking.bookingNumber}, customer selected another vendor as primary. You are now a Standby Vendor for this request.`,
+      });
+    }
 
     const admins = await this.prisma.user.findMany({
       where: { role: Role.ADMIN },
@@ -1441,10 +1623,42 @@ export class BookingEngineService {
     for (const admin of admins) {
       await this.notifications.create(admin.id, {
         title: '🔄 Customer Selected Alternative Vendor',
-        message: `Customer selected alternative vendor ${selectedVendor.businessName} for Booking ${booking.bookingNumber}.`,
+        message: `Customer selected ${selectedVendor.businessName} as new primary vendor for Booking ${booking.bookingNumber}. ${oldVendorName} moved to Standby.`,
         type: 'booking',
         link: `/admin/bookings?bookingId=${bookingId}`,
       });
+    }
+
+    // 6. Email Dispatches
+    const customerName = booking.customerName || booking.user?.name || 'Customer';
+    const eventDateStr = booking.eventDate ? new Date(booking.eventDate).toLocaleDateString('en-GB') : 'TBD';
+    const eventCity = booking.city || 'Delhi';
+    const categoryName = booking.package?.category?.name || 'Category';
+    const packageName = booking.package?.title || 'Package';
+    const amount = Number(booking.totalAmount) || 0;
+
+    if (selectedVendor.user?.email) {
+      await this.mailService.sendPrimaryBookingRequestEmail(
+        selectedVendor.user.email,
+        selectedVendor.businessName,
+        customerName,
+        booking.bookingNumber,
+        eventDateStr,
+        eventCity,
+        packageName,
+        amount,
+      );
+    }
+
+    if (oldVendor?.user?.email) {
+      await this.mailService.sendStandbyBookingBroadcastEmail(
+        oldVendor.user.email,
+        oldVendor.businessName,
+        booking.bookingNumber,
+        categoryName,
+        eventDateStr,
+        eventCity,
+      );
     }
 
     return { success: true, message: 'Vendor selected successfully' };

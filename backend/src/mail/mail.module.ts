@@ -12,23 +12,31 @@ import { PrismaModule } from '../prisma/prisma.module';
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-       transport: {
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: config.get('MAIL_USER'),
-    pass: config.get('MAIL_PASSWORD'),
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-},
-        defaults: {
-          from: config.get<string>('MAIL_FROM'),
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const mailHost = (config.get<string>('MAIL_HOST') || 'smtp.gmail.com').trim();
+        const mailPort = Number((config.get<string>('MAIL_PORT') || '587').trim());
+        const rawUser = config.get<string>('MAIL_USER') || '';
+        const rawPass = config.get<string>('MAIL_PASSWORD') || '';
+        const mailFrom = (config.get<string>('MAIL_FROM') || '"Barati Gharati" <shuklapranjali29@gmail.com>').trim();
+
+        const user = rawUser.trim();
+        const pass = rawPass.replace(/\s+/g, '');
+
+        return {
+          transport: {
+            host: mailHost,
+            port: mailPort,
+            secure: false,
+            auth: { user, pass },
+            tls: {
+              rejectUnauthorized: false,
+            },
+          },
+          defaults: {
+            from: mailFrom,
+          },
+        };
+      },
     }),
   ],
   controllers: [MailController],
