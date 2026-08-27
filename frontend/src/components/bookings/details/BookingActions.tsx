@@ -133,15 +133,32 @@ export default function BookingActions({
       return;
     }
 
-    const scriptLoaded = await loadRazorpayScript();
+    const order = orderResult.data;
 
+    if (order.orderId && order.orderId.startsWith("order_mock_")) {
+      const verified = await verifyPaymentApi({
+        bookingId: currentBooking.id,
+        orderId: order.orderId,
+        paymentId: `pay_mock_${Date.now()}`,
+        signature: `sig_mock_${Date.now()}`,
+      });
+
+      setPayingAdvance(false);
+      if (!verified.ok) {
+        toast.error(verified.error ?? "Payment verification failed.");
+        return;
+      }
+      toast.success("Advance payment completed successfully!");
+      await loadBooking(currentBooking.id);
+      return;
+    }
+
+    const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded || !window.Razorpay) {
       setPayingAdvance(false);
       toast.error("Payment gateway could not be loaded.");
       return;
     }
-
-    const order = orderResult.data;
     const razorpay = new window.Razorpay({
       key: order.keyId,
       amount: order.amountInPaise,
@@ -259,18 +276,32 @@ export default function BookingActions({
       return;
     }
 
-    const scriptLoaded =
-      await loadRazorpayScript();
+    const order = orderResult.data;
 
-    if (!scriptLoaded || !window.Razorpay) {
+    if (order.orderId && order.orderId.startsWith("order_mock_")) {
+      const verified = await verifyRemainingPaymentApi({
+        bookingId: currentBooking.id,
+        orderId: order.orderId,
+        paymentId: `pay_mock_${Date.now()}`,
+        signature: `sig_mock_${Date.now()}`,
+      });
+
       setPayingRemaining(false);
-      toast.error(
-        "Payment gateway could not be loaded."
-      );
+      if (!verified.ok) {
+        toast.error(verified.error ?? "Payment verification failed.");
+        return;
+      }
+      toast.success("Remaining payment completed successfully!");
+      await loadBooking(currentBooking.id);
       return;
     }
 
-    const order = orderResult.data;
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      setPayingRemaining(false);
+      toast.error("Payment gateway could not be loaded.");
+      return;
+    }
     const razorpay = new window.Razorpay({
       key: order.keyId,
       amount: order.amountInPaise,

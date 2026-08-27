@@ -414,6 +414,7 @@ model Booking {
   // Event Details
   eventType String?
   eventDate DateTime
+  eventDates String[] @default([])
   eventTime String?
 
   venue String?

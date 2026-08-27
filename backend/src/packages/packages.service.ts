@@ -52,6 +52,7 @@ export class PackagesService {
       id: pkg.id,
 
       vendorId: pkg.vendor.frontendVendorId,
+      vendorName: pkg.vendor.businessName ?? '',
 
       name: pkg.title,
 

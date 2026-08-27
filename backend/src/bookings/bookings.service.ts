@@ -78,6 +78,9 @@ export class BookingsService {
     }
 
     const eventDate = new Date(dto.eventDate);
+    const eventDates = Array.isArray(dto.eventDates) && dto.eventDates.length > 0
+      ? dto.eventDates
+      : [dto.eventDate];
 
     await this.ensureVendorAvailable(vendor.id, eventDate);
 
@@ -89,6 +92,7 @@ export class BookingsService {
         packageId: pkg.id,
         eventType: dto.eventType,
         eventDate,
+        eventDates,
         eventTime: dto.eventTime,
         venue: dto.venue,
         city: dto.city,
@@ -162,7 +166,10 @@ export class BookingsService {
 
       bookings = await this.prisma.booking.findMany({
         where: {
-          vendorId: vendor.id,
+          OR: [
+            { vendorId: vendor.id },
+            { vendorAssignments: { some: { vendorId: vendor.id } } },
+          ],
         },
 
         include: {
@@ -176,6 +183,11 @@ export class BookingsService {
             },
           },
           payout: true,
+          vendorAssignments: {
+            include: {
+              vendor: true,
+            },
+          },
         },
 
         orderBy: {
@@ -1028,6 +1040,7 @@ export class BookingsService {
       packageName: booking.package.title,
       eventType: booking.eventType ?? '',
       eventDate: booking.eventDate,
+      eventDates: booking.eventDates && booking.eventDates.length > 0 ? booking.eventDates : [new Date(booking.eventDate).toISOString().slice(0, 10)],
       eventTime: booking.eventTime ?? '',
       venue: booking.venue ?? '',
       city: booking.city ?? '',
@@ -1063,6 +1076,7 @@ export class BookingsService {
       // Smart engine fields
       matchedAt: booking.matchedAt ?? null,
       noVendorAvailable: booking.noVendorAvailable ?? false,
+      cancellationReason: booking.cancellationReason ?? null,
       vendorAssignments: (booking.vendorAssignments || []).map((a: any) => ({
         id: a.id,
         vendorId: a.vendorId,

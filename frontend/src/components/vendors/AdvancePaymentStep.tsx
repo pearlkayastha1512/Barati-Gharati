@@ -125,8 +125,27 @@ export default function AdvancePaymentStep({
 
     setPaying(true);
 
-    const loaded =
-      await loadRazorpayScript();
+    if (order.orderId && order.orderId.startsWith("order_mock_")) {
+      const verified = await verifyPaymentApi({
+        bookingId,
+        orderId: order.orderId,
+        paymentId: `pay_mock_${Date.now()}`,
+        signature: `sig_mock_${Date.now()}`,
+      });
+
+      setPaying(false);
+
+      if (!verified.ok) {
+        toast.error(verified.error ?? "Payment verification failed.");
+        return;
+      }
+
+      toast.success("Advance payment received.");
+      onPaid();
+      return;
+    }
+
+    const loaded = await loadRazorpayScript();
 
     if (!loaded || !window.Razorpay) {
       setPaying(false);

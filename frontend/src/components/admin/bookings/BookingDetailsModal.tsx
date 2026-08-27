@@ -93,10 +93,20 @@ export default function BookingDetailsModal({
             />
 
             <Info
-              label="Event Date"
-              value={new Date(
-                booking.eventDate
-              ).toLocaleDateString()}
+              label="Event Date(s)"
+              value={
+                booking.eventDates && booking.eventDates.length > 0
+                  ? booking.eventDates
+                      .map((d) =>
+                        new Date(d.includes("T") ? d : d + "T00:00:00").toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      )
+                      .join(", ") + ` (${booking.eventDates.length} Days)`
+                  : new Date(booking.eventDate).toLocaleDateString()
+              }
             />
 
             <Info
@@ -326,7 +336,7 @@ export default function BookingDetailsModal({
                             {a.role === "PRIMARY" ? "Primary Vendor" : "Standby Vendor"}
                           </span>
                         </td>
-                        <td className="whitespace-nowrap px-5 py-4">
+                        <td className="px-5 py-4">
                           <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
                             a.status === "ACCEPTED" || a.status === "AVAILABLE"
                               ? "bg-emerald-100 text-emerald-800"
@@ -338,6 +348,12 @@ export default function BookingDetailsModal({
                           }`}>
                             {a.status.replaceAll("_", " ")}
                           </span>
+                          {a.status === "REJECTED" && booking.cancellationReason && (
+                            <div className="mt-2 max-w-xs rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800">
+                              <span className="font-bold uppercase tracking-wider text-[10px] text-rose-600 block mb-0.5">Rejection Reason</span>
+                              <span className="italic font-medium">&ldquo;{booking.cancellationReason}&rdquo;</span>
+                            </div>
+                          )}
                         </td>
                         <td className="px-5 py-4 text-xs text-slate-500 space-y-1">
                           <p>Sent: {new Date(a.createdAt).toLocaleString("en-IN")}</p>

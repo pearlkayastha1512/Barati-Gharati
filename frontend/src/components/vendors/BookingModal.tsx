@@ -62,6 +62,8 @@ interface BookingModalProps {
   guests: number;
 
   date: string;
+
+  eventDates?: string[];
 }
 
 function createBookingNumber() {
@@ -79,6 +81,7 @@ export default function BookingModal({
   price,
   guests,
   date,
+  eventDates,
 }: BookingModalProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -171,6 +174,8 @@ const handleBooking = async () => {
     eventType: formData.eventType,
 
     eventDate,
+
+    eventDates: eventDates && eventDates.length > 0 ? eventDates : [eventDate],
 
     eventTime: "",
 
@@ -546,14 +551,17 @@ const isFormValid =
             className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl"
           >
             {success ? (
-  <BookingSuccess
-    bookingId={bookingId}
-    vendorName={vendorName}
-    date={date}
-    eventType={formData.eventType}
-    onClose={onClose}
-  />
-) : paymentBooking ? (
+              <BookingSuccess
+                bookingId={bookingId}
+                vendorId={vendorId}
+                vendorName={vendorName}
+                category={category}
+                currentPackageName={packageName}
+                date={date}
+                eventType={formData.eventType}
+                onClose={onClose}
+              />
+            ) : paymentBooking ? (
   <AdvancePaymentStep
     bookingId={paymentBooking.id}
     bookingNumber={paymentBooking.bookingNumber}
@@ -790,15 +798,39 @@ const isFormValid =
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-700">
-                      Event Date
-                    </label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        📅 Event Date(s)
+                      </label>
+                      {eventDates && eventDates.length > 1 && (
+                        <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-700">
+                          {eventDates.length} Days Total
+                        </span>
+                      )}
+                    </div>
 
-                    <input
-                      value={date}
-                      readOnly
-                      className="h-11 w-full rounded-xl border bg-gray-100 px-4 text-gray-500"
-                    />
+                    {eventDates && eventDates.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                        {eventDates.map((d) => (
+                          <span
+                            key={d}
+                            className="inline-flex items-center rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-sm"
+                          >
+                            {new Date(d.includes("T") ? d : d + "T00:00:00").toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <input
+                        value={date}
+                        readOnly
+                        className="h-11 w-full rounded-xl border bg-gray-100 px-4 text-gray-500"
+                      />
+                    )}
                   </div>
 
                   <div>
