@@ -110,8 +110,14 @@ export class MailService {
       </div>
     `;
 
-    await this.mailerService.sendMail({ to, subject, html });
-    await this.logEmail(to, subject, html);
+    try {
+      const info = await this.mailerService.sendMail({ to, subject, html });
+      this.logger.log(`Verification OTP email sent to ${to} (${info?.messageId || 'OK'})`);
+      await this.logEmail(to, subject, html, 'sent');
+    } catch (err: any) {
+      this.logger.error(`Failed to send verification OTP email to ${to}: ${err?.message || err}`, err?.stack);
+      await this.logEmail(to, subject, html, `failed: ${err?.message || 'SMTP Error'}`);
+    }
   }
 
   async sendCustomerVerificationDecision(

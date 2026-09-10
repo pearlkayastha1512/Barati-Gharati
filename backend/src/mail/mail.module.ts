@@ -14,9 +14,9 @@ import { PrismaModule } from '../prisma/prisma.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const mailHost = (config.get<string>('MAIL_HOST') || 'smtp.gmail.com').trim();
-        const mailPort = Number((config.get<string>('MAIL_PORT') || '587').trim());
-        const rawUser = config.get<string>('MAIL_USER') || '';
-        const rawPass = config.get<string>('MAIL_PASSWORD') || '';
+        const mailPort = Number((config.get<string>('MAIL_PORT') || '465').trim());
+        const rawUser = config.get<string>('MAIL_USER') || 'shuklapranjali29@gmail.com';
+        const rawPass = config.get<string>('MAIL_PASSWORD') || 'pbikrohptfkavecc';
         const mailFrom = (config.get<string>('MAIL_FROM') || '"Barati Gharati" <shuklapranjali29@gmail.com>').trim();
 
         const user = rawUser.trim();
