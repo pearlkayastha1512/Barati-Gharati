@@ -1,4 +1,7 @@
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
+const API_URL = `${
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://barati-gharati.onrender.com/api/v1"
+}/auth`;
 import api from "@/lib/axios";
 export interface RegisterRequest {
   name: string;
