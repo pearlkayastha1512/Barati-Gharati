@@ -1,4 +1,4 @@
-import { Injectable , BadRequestException, UnauthorizedException,} from '@nestjs/common';
+import { Injectable , BadRequestException, UnauthorizedException, Logger } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -41,6 +41,7 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
   private readonly prisma: PrismaService,
@@ -79,7 +80,13 @@ export class AuthService {
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       },
     });
-    await this.mailService.sendVerificationOtp(user.email, user.name, otp);
+    this.mailService
+      .sendVerificationOtp(user.email, user.name, otp)
+      .catch((err) => {
+        this.logger.error(
+          `Failed to send verification OTP email to ${user.email}: ${err?.message || err}`,
+        );
+      });
   }
 
   private verifyPaymentSignature(

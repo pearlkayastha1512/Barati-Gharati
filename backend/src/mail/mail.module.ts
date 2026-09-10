@@ -26,11 +26,14 @@ import { PrismaModule } from '../prisma/prisma.module';
           transport: {
             host: mailHost,
             port: mailPort,
-            secure: false,
+            secure: mailPort === 465,
             auth: { user, pass },
             tls: {
               rejectUnauthorized: false,
             },
+            connectionTimeout: 10000, // 10s connection timeout
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
           },
           defaults: {
             from: mailFrom,
