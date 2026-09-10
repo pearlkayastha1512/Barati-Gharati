@@ -72,7 +72,7 @@ export const styles = StyleSheet.create({
     elevation: 5,
   },
   heroDecorations: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   heroRingLarge: {
     position: "absolute",

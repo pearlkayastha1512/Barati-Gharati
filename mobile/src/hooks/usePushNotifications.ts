@@ -1,16 +1,20 @@
 import { useEffect, useRef } from "react";
-import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
-import Constants from "expo-constants";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { Platform } from "react-native";
 import { registerPushToken } from "../api/notification.api";
 import { useNotificationsStore } from "../store/notificationsStore";
 
 // Expo SDK 53+ removed remote push notifications from Expo Go on Android.
-const isExpoGo = Constants.appOwnership === "expo";
+const isExpoGo =
+  Constants.appOwnership === "expo" ||
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-try {
-  if (!isExpoGo) {
+let Notifications: any = null;
+
+if (!isExpoGo) {
+  try {
+    Notifications = require("expo-notifications");
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -20,21 +24,21 @@ try {
         shouldShowList: true,
       }),
     });
+  } catch (e) {
+    console.warn("expo-notifications not supported in this environment:", e);
   }
-} catch (e) {
-  console.warn("Notifications.setNotificationHandler not supported in Expo Go:", e);
 }
 
 let cachedExpoPushToken: string | null = null;
 let tokenPromise: Promise<string | null> | null = null;
 
 export function usePushNotifications() {
-  const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
-  const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
+  const notificationListener = useRef<any>(undefined);
+  const responseListener = useRef<any>(undefined);
 
   useEffect(() => {
-    if (isExpoGo) {
-      console.warn("Push notifications are not supported in Expo Go (SDK 53+). Use a development build for push notifications.");
+    if (isExpoGo || !Notifications) {
+      console.log("Push notifications skipped in Expo Go environment.");
       return;
     }
 
@@ -63,7 +67,7 @@ export function usePushNotifications() {
 }
 
 export async function syncPushTokenWithBackend() {
-  if (isExpoGo) return;
+  if (isExpoGo || !Notifications) return;
 
   try {
     let token = cachedExpoPushToken;
@@ -81,7 +85,7 @@ export async function syncPushTokenWithBackend() {
 }
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
-  if (isExpoGo) return null;
+  if (isExpoGo || !Notifications) return null;
 
   try {
     if (Platform.OS === "android") {
@@ -94,7 +98,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
 
     if (!Device.isDevice) {
-      console.log("Push notifications sirf physical device pe kaam karti hain");
+      console.log("Push notifications require physical device");
       return null;
     }
 

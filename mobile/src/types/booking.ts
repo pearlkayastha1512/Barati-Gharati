@@ -45,6 +45,7 @@ export interface Booking {
   packageName: string;
   eventType: string;
   eventDate: string;
+  eventDates?: string[];
   eventTime: string;
   venue: string;
   city: string;

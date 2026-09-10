@@ -21,6 +21,7 @@ const toCreatePayload = (booking: CreateBookingInput) => ({
   partnerOccupation: booking.partnerOccupation,
   eventType: booking.eventType,
   eventDate: booking.eventDate,
+  eventDates: booking.eventDates && booking.eventDates.length > 0 ? booking.eventDates : [booking.eventDate],
   eventTime: booking.eventTime,
   venue: booking.venue,
   city: booking.city,

@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 5,
   },
-  heroDecorations: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
+  heroDecorations: { ...StyleSheet.absoluteFill, overflow: "hidden" },
   heroRingOne: {
     position: "absolute",
     width: 210,

@@ -18,7 +18,7 @@ import { RazorpaySuccess } from "../../types/payment";
 
 export default function UpgradeMembershipScreen() {
   const navigation = useNavigation<any>();
-  const { user, saveAuth, token } = useAuthStore();
+  const { user, login, token } = useAuthStore();
   const [checkoutModalVisible, setCheckoutModalVisible] = useState(false);
 
   const isPremium = user?.membership === CustomerMembership.PREMIUM;
@@ -26,13 +26,8 @@ export default function UpgradeMembershipScreen() {
   const handlePaymentSuccess = async (payment: RazorpaySuccess) => {
     try {
       const res = await verifyCustomerPremiumUpgrade(payment);
-      if (res.success || res.user) {
-        if (user && token) {
-          const updatedUser = {
-            ...user,
-            membership: CustomerMembership.PREMIUM,
-          };
-          await saveAuth(token, updatedUser);
+        if (res.user && token) {
+          await login(token, res.user);
         }
         setCheckoutModalVisible(false);
         Alert.alert(
@@ -45,7 +40,6 @@ export default function UpgradeMembershipScreen() {
             },
           ]
         );
-      }
     } catch (error: any) {
       Alert.alert(
         "Verification Error",

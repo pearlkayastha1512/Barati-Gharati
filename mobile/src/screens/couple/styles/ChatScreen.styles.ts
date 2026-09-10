@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
   warningClose: { padding: 5, marginTop: -3, marginRight: -3 },
 
   chatBackground: { flex: 1, overflow: "hidden" },
-  decorations: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
+  decorations: { ...StyleSheet.absoluteFill, overflow: "hidden" },
   flowerTop: { position: "absolute", right: -22, top: 36, transform: [{ rotate: "-18deg" }] },
   heartCenter: { position: "absolute", left: 30, top: "42%", transform: [{ rotate: "-12deg" }] },
   sparkleBottom: { position: "absolute", right: 34, bottom: 70, transform: [{ rotate: "12deg" }] },

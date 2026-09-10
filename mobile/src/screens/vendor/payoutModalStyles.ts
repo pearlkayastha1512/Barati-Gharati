@@ -9,7 +9,7 @@ export const payoutModalStyles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   card: {
     width: "90%",
