@@ -3,7 +3,7 @@ import { AdminRole } from "@/lib/adminAccess";
 
 const API_URL = `${
   process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:8000/api/v1"
+  "https://barati-gharati.onrender.com/api/v1"
 }/admin`;
 
 type AdminApiResult = {
