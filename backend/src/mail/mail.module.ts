@@ -16,7 +16,7 @@ import { PrismaModule } from '../prisma/prisma.module';
         const mailHost = (config.get<string>('MAIL_HOST') || 'smtp.gmail.com').trim();
         const mailPort = Number((config.get<string>('MAIL_PORT') || '465').trim());
         const rawUser = config.get<string>('MAIL_USER') || 'shuklapranjali29@gmail.com';
-        const rawPass = config.get<string>('MAIL_PASSWORD') || 'pbikrohptfkavecc';
+        const rawPass = config.get<string>('MAIL_PASSWORD') || 'ubskcjnrxuxppjcw';
         const mailFrom = (config.get<string>('MAIL_FROM') || '"Barati Gharati" <shuklapranjali29@gmail.com>').trim();
 
         const user = rawUser.trim();
